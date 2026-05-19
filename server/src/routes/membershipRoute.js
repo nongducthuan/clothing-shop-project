@@ -1,0 +1,9 @@
+const express = require('express');
+const router = express.Router();
+const membershipController = require('../controllers/membershipController');
+
+router.get('/', membershipController.getMemberships);
+router.post('/', membershipController.addMembership); 
+router.put('/:id', membershipController.updateMembership);
+
+module.exports = router;
