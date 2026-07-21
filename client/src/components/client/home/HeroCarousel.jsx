@@ -28,7 +28,7 @@ export default function HeroCarousel({ banners }) {
             >
               <img
                 src={`${BACKEND_URL}${banner.image_url}`}
-                className="d-block w-full h-full object-cover object-top"
+                className="d-block w-full h-full object-cover object-center"
                 alt={banner.title || `Banner ${idx + 1}`}
               />
               {(banner.title || banner.subtitle) && (
@@ -41,7 +41,7 @@ export default function HeroCarousel({ banners }) {
           <div className="carousel-item active h-[45vh] sm:h-[60vh] md:h-[75vh] relative">
             <img
               src={`${BACKEND_URL}/public/images/placeholder-banner.png`}
-              className="d-block w-full h-full object-cover object-top"
+              className="d-block w-full h-full object-cover object-center"
               alt="Default Banner"
             />
             <BannerOverlay

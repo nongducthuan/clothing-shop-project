@@ -16,7 +16,7 @@ export default function SaleForm({ formData, setFormData, onSubmit }) {
         ::-webkit-calendar-picker-indicator:hover { opacity: 1; }
       `}</style>
 
-      <div className="bg-white p-6 rounded-3xl shadow-xl shadow-gray-200/50 border border-gray-100">
+      <div className="bg-white p-6 rounded-3xl shadow-xl shadow-gray-200/50 border border-gray-100 h-full">
         <h3 className="text-sm font-bold text-gray-400 uppercase mb-6 tracking-widest">Sale Details</h3>
 
         <form onSubmit={onSubmit} className="space-y-4">
