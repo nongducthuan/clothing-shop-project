@@ -28,6 +28,5 @@
 
 html,
 body {
-  padding-top: 35px;
   background-color: var(--color-bg) !important;
 }

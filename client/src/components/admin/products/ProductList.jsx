@@ -24,19 +24,21 @@ export default function ProductList({
 
         {/* Top Row: Gender Pills & Category Select */}
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="inline-flex p-1.5 bg-gray-100/80 rounded-full shadow-inner w-full md:w-auto">
-            {genders.map((g) => (
-              <button
-                key={g}
-                onClick={() => setFilterGender(g)}
-                className={`flex-1 md:flex-none px-5 py-2 rounded-full font-bold text-sm transition-all duration-300 ease-out capitalize ${filterGender === g
-                  ? "bg-white text-violet-600 shadow-sm scale-100"
-                  : "text-gray-500 bg-transparent hover:text-gray-800 hover:bg-gray-200/50 scale-95"
-                  }`}
-              >
-                {g}
-              </button>
-            ))}
+          <div className="w-full overflow-x-auto md:overflow-visible">
+            <div className="inline-flex p-1.5 bg-gray-100/80 rounded-full shadow-inner min-w-full md:min-w-0 md:w-auto">
+              {genders.map((g) => (
+                <button
+                  key={g}
+                  onClick={() => setFilterGender(g)}
+                  className={`flex-1 md:flex-none px-4 py-2 rounded-full font-bold text-sm transition-all duration-300 ease-out capitalize whitespace-nowrap ${filterGender === g
+                    ? "bg-white text-violet-600 shadow-sm scale-100"
+                    : "text-gray-500 bg-transparent hover:text-gray-800 hover:bg-gray-200/50 scale-95"
+                    }`}
+                >
+                  {g}
+                </button>
+              ))}
+            </div>
           </div>
 
           <select

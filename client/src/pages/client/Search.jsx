@@ -33,7 +33,7 @@ export default function SearchResults() {
       </div>
 
       {/* ========== MOBILE FILTER OVERLAY ========== */}
-      <MobileFilterOverlay state={state} actions={actions} />
+      <MobileFilterOverlay state={state} actions={actions} refs={refs} />
 
     </div>
   );
