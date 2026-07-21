@@ -16,10 +16,10 @@ export default function SaleForm({ formData, setFormData, onSubmit }) {
         ::-webkit-calendar-picker-indicator:hover { opacity: 1; }
       `}</style>
 
-      <div className="bg-white p-6 rounded-3xl shadow-xl shadow-gray-200/50 border border-gray-100 h-full">
+      <div className="bg-white p-6 rounded-3xl shadow-xl shadow-gray-200/50 border border-gray-100 h-full flex flex-col">
         <h3 className="text-sm font-bold text-gray-400 uppercase mb-6 tracking-widest">Sale Details</h3>
 
-        <form onSubmit={onSubmit} className="space-y-4">
+        <form onSubmit={onSubmit} className="space-y-4 flex-grow flex flex-col">
           <input
             type="text"
             placeholder="Campaign Name"
@@ -74,7 +74,7 @@ export default function SaleForm({ formData, setFormData, onSubmit }) {
               />
             </div>
           </div>
-
+          <div className="flex-grow"></div>
           <button type="submit" className="w-full py-3.5 bg-indigo-600 text-white rounded-xl font-bold text-xs tracking-wider hover:bg-indigo-700 hover:scale-[1.01] transition-all shadow-md shadow-indigo-200 uppercase mt-4">
             ACTIVATE SALE
           </button>

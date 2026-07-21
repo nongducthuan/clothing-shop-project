@@ -425,7 +425,7 @@ export default function Navbar() {
           <div className="flex-shrink-0">
             <NavLink
               to="/"
-              className="font-black text-violet-700 tracking-tighter text-xl md:text-2xl whitespace-nowrap drop-shadow-xs"
+              className="font-black text-violet-700 tracking-tighter text-xl md:text-2xl whitespace-nowrap drop-shadow-xs no-underline"
             >
               CLOTHING<span className="text-gray-900">SHOP</span>
             </NavLink>
@@ -483,7 +483,7 @@ export default function Navbar() {
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               aria-label="Toggle menu"
             >
-              <i className={isMobileMenuOpen ? "fa-solid fa-xmark text-violet-700" : "fa-solid fa-bars-staggered"}></i>
+              <i className={isMobileMenuOpen ? "fa-solid fa-xmark text-violet-700" : "fa-solid fa-bars"}></i>
             </button>
           </div>
         </div>

@@ -16,7 +16,7 @@ const BannerOverlay = ({ title, subtitle }) => (
   </div>
 );
 
-export default function HeroCarousel({ banners }) {
+export default function HeroCarousel({ banners = [] }) {
   return (
     <div id="heroCarousel" className="carousel slide mb-8" data-bs-ride="carousel">
       <div className="carousel-inner">
@@ -24,11 +24,16 @@ export default function HeroCarousel({ banners }) {
           banners.map((banner, idx) => (
             <div
               key={banner.id}
-              className={`carousel-item ${idx === 0 ? "active" : ""} h-[45vh] sm:h-[60vh] md:h-[75vh] relative`}
+              className={`carousel-item ${idx === 0 ? "active" : ""} 
+              h-[40vh]           
+              sm:h-[55vh]       
+              md:h-[70vh]        
+              lg:h-[85vh]        
+              relative w-full overflow-hidden`}
             >
               <img
                 src={`${BACKEND_URL}${banner.image_url}`}
-                className="d-block w-full h-full object-cover object-center"
+                className="d-block w-full h-full object-cover object-top md:object-center"
                 alt={banner.title || `Banner ${idx + 1}`}
               />
               {(banner.title || banner.subtitle) && (
@@ -41,7 +46,7 @@ export default function HeroCarousel({ banners }) {
           <div className="carousel-item active h-[45vh] sm:h-[60vh] md:h-[75vh] relative">
             <img
               src={`${BACKEND_URL}/public/images/placeholder-banner.png`}
-              className="d-block w-full h-full object-cover object-center"
+              className="d-block w-full h-full object-cover object-top md:object-center"
               alt="Default Banner"
             />
             <BannerOverlay
