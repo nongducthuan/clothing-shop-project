@@ -46,120 +46,122 @@ function App() {
           <BrowserRouter>
             <Navbar />
 
-            <Routes>
-              {/* --- PUBLIC ROUTES --- */}
-              <Route path="/" element={<Home />} />
-              <Route path="/products/:id" element={<ProductDetail />} />
-              <Route path="/category/:id" element={<Category />} />
-              <Route path="/search" element={<Search />} />
-              <Route path="/cart" element={<Cart />} />
-              <Route path="/checkout" element={<Checkout />} />
-              <Route path="/order" element={<Order />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/sales-policy" element={<SalesPolicy />} />
+            <main className="pt-16 min-h-screen flex flex-col">
+              <Routes>
+                {/* --- PUBLIC ROUTES --- */}
+                <Route path="/" element={<Home />} />
+                <Route path="/products/:id" element={<ProductDetail />} />
+                <Route path="/category/:id" element={<Category />} />
+                <Route path="/search" element={<Search />} />
+                <Route path="/cart" element={<Cart />} />
+                <Route path="/checkout" element={<Checkout />} />
+                <Route path="/order" element={<Order />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/sales-policy" element={<SalesPolicy />} />
 
-              {/* --- PROTECTED USER ROUTES --- */}
-              <Route
-                path="/profile"
-                element={
-                  <ProtectedRoute>
-                    <Profile />
-                  </ProtectedRoute>
-                }
-              />
+                {/* --- PROTECTED USER ROUTES --- */}
+                <Route
+                  path="/profile"
+                  element={
+                    <ProtectedRoute>
+                      <Profile />
+                    </ProtectedRoute>
+                  }
+                />
 
-              {/* --- ADMIN ROUTES --- */}
-              <Route
-                path="/admin"
-                element={
-                  <ProtectedRoute roleRequired="admin">
-                    <Dashboard />
-                  </ProtectedRoute>
-                }
-              />
+                {/* --- ADMIN ROUTES --- */}
+                <Route
+                  path="/admin"
+                  element={
+                    <ProtectedRoute roleRequired="admin">
+                      <Dashboard />
+                    </ProtectedRoute>
+                  }
+                />
 
-              <Route
-                path="/admin/banners"
-                element={
-                  <ProtectedRoute roleRequired="admin">
-                    <BannerManager />
-                  </ProtectedRoute>
-                }
-              />
+                <Route
+                  path="/admin/banners"
+                  element={
+                    <ProtectedRoute roleRequired="admin">
+                      <BannerManager />
+                    </ProtectedRoute>
+                  }
+                />
 
-              <Route
-                path="/admin/products"
-                element={
-                  <ProtectedRoute roleRequired="admin">
-                    <ProductManager />
-                  </ProtectedRoute>
-                }
-              />
+                <Route
+                  path="/admin/products"
+                  element={
+                    <ProtectedRoute roleRequired="admin">
+                      <ProductManager />
+                    </ProtectedRoute>
+                  }
+                />
 
-              <Route
-                path="/admin/orders"
-                element={
-                  <ProtectedRoute roleRequired="admin">
-                    <OrderManager />
-                  </ProtectedRoute>
-                }
-              />
+                <Route
+                  path="/admin/orders"
+                  element={
+                    <ProtectedRoute roleRequired="admin">
+                      <OrderManager />
+                    </ProtectedRoute>
+                  }
+                />
 
-              <Route
-                path="/admin/products/:id"
-                element={
-                  <ProtectedRoute roleRequired="admin">
-                    <ProductDetailManager />
-                  </ProtectedRoute>
-                }
-              />
+                <Route
+                  path="/admin/products/:id"
+                  element={
+                    <ProtectedRoute roleRequired="admin">
+                      <ProductDetailManager />
+                    </ProtectedRoute>
+                  }
+                />
 
-              <Route
-                path="/admin/report"
-                element={
-                  <ProtectedRoute roleRequired="admin">
-                    <Report />
-                  </ProtectedRoute>
-                }
-              />
+                <Route
+                  path="/admin/report"
+                  element={
+                    <ProtectedRoute roleRequired="admin">
+                      <Report />
+                    </ProtectedRoute>
+                  }
+                />
 
-              <Route
-                path="/admin/categories"
-                element={
-                  <ProtectedRoute roleRequired="admin">
-                    <CategoryManager />
-                  </ProtectedRoute>
-                }
-              />
+                <Route
+                  path="/admin/categories"
+                  element={
+                    <ProtectedRoute roleRequired="admin">
+                      <CategoryManager />
+                    </ProtectedRoute>
+                  }
+                />
 
-              <Route
-                path="/admin/vouchers"
-                element={
-                  <ProtectedRoute roleRequired="admin">
-                    <VoucherManager />
-                  </ProtectedRoute>
-                }
-              />
+                <Route
+                  path="/admin/vouchers"
+                  element={
+                    <ProtectedRoute roleRequired="admin">
+                      <VoucherManager />
+                    </ProtectedRoute>
+                  }
+                />
 
-              <Route
-                path="/admin/sales"
-                element={
-                  <ProtectedRoute roleRequired="admin">
-                    <SaleManager />
-                  </ProtectedRoute>
-                }
-              />
+                <Route
+                  path="/admin/sales"
+                  element={
+                    <ProtectedRoute roleRequired="admin">
+                      <SaleManager />
+                    </ProtectedRoute>
+                  }
+                />
 
-              <Route
-                path="/admin/promotions"
-                element={
-                  <ProtectedRoute roleRequired="admin">
-                    <PromotionManager />
-                  </ProtectedRoute>
-                }
-              />
-            </Routes>
+                <Route
+                  path="/admin/promotions"
+                  element={
+                    <ProtectedRoute roleRequired="admin">
+                      <PromotionManager />
+                    </ProtectedRoute>
+                  }
+                />
+              </Routes>
+            </main>
 
             <AIChatBubble />
           </BrowserRouter>

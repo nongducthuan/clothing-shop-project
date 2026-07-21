@@ -186,20 +186,20 @@ const UserDropdown = ({ user, navigate, onLogout }) => {
               </div>
               {user.role === "admin" && (
                 <div
-                  className="px-4 py-2.5 hover:bg-violet-50 hover:text-violet-700 font-medium text-gray-700 cursor-pointer transition-colors"
+                  className="px-4 py-2.5 hover:bg-violet-50 hover:text-violet-700 font-medium text-gray-700 cursor-pointer transition-colors flex items-center"
                   onClick={() => navigate("/admin")}
                 >
                   <i className="fa-solid fa-screwdriver-wrench mr-2 w-4 text-center"></i> Admin
                 </div>
               )}
               <div
-                className="px-4 py-2.5 hover:bg-violet-50 hover:text-violet-700 font-medium text-gray-700 cursor-pointer transition-colors"
+                className="px-4 py-2.5 hover:bg-violet-50 hover:text-violet-700 font-medium text-gray-700 cursor-pointer transition-colors flex items-center"
                 onClick={() => navigate("/profile")}
               >
                 <i className="fa-solid fa-user-circle mr-2 w-4 text-center"></i> Profile
               </div>
               <div
-                className="px-4 py-2.5 hover:bg-red-50 text-red-600 font-medium cursor-pointer transition-colors"
+                className="px-4 py-2.5 hover:bg-red-50 text-red-600 font-medium cursor-pointer transition-colors flex items-center"
                 onClick={onLogout}
               >
                 <i className="fa-solid fa-arrow-right-from-bracket mr-2 w-4 text-center"></i> Logout
@@ -208,13 +208,13 @@ const UserDropdown = ({ user, navigate, onLogout }) => {
           ) : (
             <>
               <div
-                className="px-4 py-2.5 hover:bg-violet-50 hover:text-violet-700 font-medium text-gray-700 cursor-pointer transition-colors"
+                className="px-4 py-2.5 hover:bg-violet-50 hover:text-violet-700 font-medium text-gray-700 cursor-pointer transition-colors flex items-center"
                 onClick={() => navigate("/login")}
               >
                 <i className="fa-solid fa-right-to-bracket mr-2 w-4 text-center"></i> Login
               </div>
               <div
-                className="px-4 py-2.5 hover:bg-violet-50 hover:text-violet-700 font-medium text-gray-700 cursor-pointer transition-colors"
+                className="px-4 py-2.5 hover:bg-violet-50 hover:text-violet-700 font-medium text-gray-700 cursor-pointer transition-colors flex items-center"
                 onClick={() => navigate("/register")}
               >
                 <i className="fa-solid fa-user-plus mr-2 w-4 text-center"></i> Register
@@ -231,6 +231,18 @@ const UserDropdown = ({ user, navigate, onLogout }) => {
 const MobileMenu = ({ isOpen, onClose, user, menuData, navigate, onLogout }) => {
   const [expandedGender, setExpandedGender] = useState(null);
 
+  // Lock background scroll when drawer is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [isOpen]);
+
   const toggleGender = (gender) => {
     setExpandedGender((prev) => (prev === gender ? null : gender));
   };
@@ -243,109 +255,147 @@ const MobileMenu = ({ isOpen, onClose, user, menuData, navigate, onLogout }) => 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed top-16 left-0 right-0 bottom-0 bg-white z-40 overflow-y-auto p-4 md:hidden animate-fadeIn">
-      {/* User Info Mobile */}
-      <div className="mb-6 border-b pb-4">
-        {user ? (
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-violet-100 rounded-full flex items-center justify-center text-violet-600 font-bold text-xl">
-              {user.name.charAt(0)}
-            </div>
-            <div>
-              <p className="font-bold text-gray-800 text-lg">{user.name}</p>
-              <p
-                className="text-sm text-gray-500 cursor-pointer hover:text-violet-600 font-medium"
-                onClick={() => handleNav("/profile")}
-              >
-                View profile
-              </p>
-            </div>
+    <>
+      {/* Backdrop overlay */}
+      <div 
+        className="fixed inset-0 top-16 bg-slate-900/40 backdrop-blur-xs z-30 md:hidden animate-fadeIn"
+        onClick={onClose}
+      />
+
+      <div className="fixed top-16 left-0 right-0 bottom-0 bg-white z-40 overflow-y-auto p-5 md:hidden animate-fadeIn flex flex-col justify-between">
+        <div>
+          {/* User Info Mobile */}
+          <div className="mb-6 border-b border-gray-100 pb-4">
+            {user ? (
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-violet-100 text-violet-700 rounded-full flex items-center justify-center font-bold text-xl shadow-sm">
+                  {user.name.charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <p className="font-bold text-gray-800 text-lg leading-tight">{user.name}</p>
+                  <p
+                    className="text-sm text-violet-600 cursor-pointer hover:underline font-medium mt-0.5"
+                    onClick={() => handleNav("/profile")}
+                  >
+                    View profile & orders →
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="flex gap-3">
+                <button
+                  onClick={() => handleNav("/login")}
+                  className="flex-1 py-3 border-2 border-violet-600 text-violet-600 rounded-xl font-bold transition-all active:scale-[0.98]"
+                >
+                  Login
+                </button>
+                <button
+                  onClick={() => handleNav("/register")}
+                  className="flex-1 py-3 bg-violet-600 text-white rounded-xl font-bold transition-all shadow-md active:scale-[0.98]"
+                >
+                  Register
+                </button>
+              </div>
+            )}
           </div>
-        ) : (
-          <div className="flex gap-4">
+
+          {/* Essential Quick Links (Mobile accessible!) */}
+          <div className="grid grid-cols-2 gap-3 mb-6">
             <button
-              onClick={() => handleNav("/login")}
-              className="flex-1 py-2.5 border-2 border-violet-600 text-violet-600 rounded-full font-bold transition-colors hover:bg-violet-50"
+              onClick={() => handleNav("/sales-policy")}
+              className="flex items-center gap-3 p-3.5 bg-slate-50 border border-slate-100 rounded-xl text-slate-700 font-semibold text-sm hover:bg-violet-50 hover:text-violet-700 transition-all text-left"
             >
-              Login
+              <div className="w-8 h-8 rounded-lg bg-violet-100 text-violet-600 flex items-center justify-center shrink-0">
+                <i className="fa-solid fa-shield-halved text-sm"></i>
+              </div>
+              <span className="truncate">Sales Policy</span>
             </button>
+
             <button
-              onClick={() => handleNav("/register")}
-              className="flex-1 py-2.5 bg-violet-600 text-white rounded-full font-bold transition-colors hover:bg-violet-700"
+              onClick={() => handleNav("/order")}
+              className="flex items-center gap-3 p-3.5 bg-slate-50 border border-slate-100 rounded-xl text-slate-700 font-semibold text-sm hover:bg-violet-50 hover:text-violet-700 transition-all text-left"
             >
-              Register
+              <div className="w-8 h-8 rounded-lg bg-sky-100 text-sky-600 flex items-center justify-center shrink-0">
+                <i className="fa-solid fa-truck-fast text-sm"></i>
+              </div>
+              <span className="truncate">Track Order</span>
+            </button>
+          </div>
+
+          {/* Categories Accordion */}
+          <div className="space-y-3">
+            <div className="text-xs font-bold uppercase tracking-wider text-slate-400 px-1 mb-1">
+              Categories
+            </div>
+            {GENDERS.map((gender) => (
+              <div key={gender} className="bg-gray-50 rounded-2xl overflow-hidden border border-slate-100">
+                <button
+                  onClick={() => toggleGender(gender)}
+                  className="w-full flex justify-between items-center p-4 text-left focus:outline-none"
+                >
+                  <span
+                    className={`font-bold text-base uppercase tracking-wide ${
+                      expandedGender === gender ? "text-violet-700" : "text-gray-800"
+                    }`}
+                  >
+                    {gender.toUpperCase()}
+                  </span>
+                  <div className={`w-7 h-7 rounded-full flex items-center justify-center transition-colors ${expandedGender === gender ? 'bg-violet-100' : 'bg-gray-200'}`}>
+                    <i
+                      className={`fa-solid fa-chevron-down text-xs transition-transform duration-300 ${
+                        expandedGender === gender ? "rotate-180 text-violet-700" : "text-gray-500"
+                      }`}
+                    ></i>
+                  </div>
+                </button>
+
+                <div
+                  className={`transition-all duration-300 ease-in-out ${
+                    expandedGender === gender ? "max-h-[1000px] opacity-100 pb-4 px-4" : "max-h-0 opacity-0 overflow-hidden"
+                  }`}
+                >
+                  <div className="grid grid-cols-2 gap-2.5">
+                    {menuData[gender].map((cat) => (
+                      <div
+                        key={cat.id}
+                        onClick={() => handleNav(`/category/${cat.id}?gender=${gender}`)}
+                        className="p-3 bg-white border border-gray-100 rounded-xl text-xs font-semibold text-gray-700 hover:border-violet-300 hover:text-violet-700 transition-all text-center truncate shadow-xs"
+                      >
+                        {cat.name}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Admin Link Mobile */}
+          {user?.role === "admin" && (
+            <div className="mt-6">
+              <button
+                onClick={() => handleNav("/admin")}
+                className="w-full py-3.5 bg-slate-900 text-white rounded-xl font-bold transition-all hover:bg-slate-800 flex items-center justify-center gap-2"
+              >
+                <i className="fa-solid fa-screwdriver-wrench"></i> Admin Dashboard
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Logout Mobile */}
+        {user && (
+          <div className="pt-6 border-t border-slate-100 mt-6">
+            <button
+              onClick={onLogout}
+              className="w-full py-3 text-red-500 bg-red-50 rounded-xl font-bold transition-colors hover:bg-red-100 flex items-center justify-center gap-2"
+            >
+              <i className="fa-solid fa-arrow-right-from-bracket"></i> Logout
             </button>
           </div>
         )}
       </div>
-
-      {/* Categories Accordion */}
-      <div className="space-y-3">
-        {GENDERS.map((gender) => (
-          <div key={gender} className="bg-gray-50 rounded-2xl overflow-hidden">
-            <button
-              onClick={() => toggleGender(gender)}
-              className="w-full flex justify-between items-center p-4 text-left focus:outline-none"
-            >
-              <span
-                className={`font-bold text-lg uppercase tracking-wide ${
-                  expandedGender === gender ? "text-violet-700" : "text-gray-700"
-                }`}
-              >
-                {gender.toUpperCase()}
-              </span>
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${expandedGender === gender ? 'bg-violet-100' : 'bg-gray-200'}`}>
-                <i
-                  className={`fa-solid fa-chevron-down transition-transform duration-300 ${
-                    expandedGender === gender ? "rotate-180 text-violet-700" : "text-gray-500"
-                  }`}
-                ></i>
-              </div>
-            </button>
-
-            <div
-              className={`transition-all duration-300 ease-in-out ${
-                expandedGender === gender ? "max-h-[1000px] opacity-100 pb-4 px-4" : "max-h-0 opacity-0"
-              }`}
-            >
-              <div className="grid grid-cols-2 gap-3">
-                {menuData[gender].map((cat) => (
-                  <div
-                    key={cat.id}
-                    onClick={() => handleNav(`/category/${cat.id}?gender=${gender}`)}
-                    className="p-3 bg-white border border-gray-100 rounded-xl text-sm font-semibold text-gray-600 hover:border-violet-300 hover:text-violet-700 hover:shadow-sm cursor-pointer truncate transition-all text-center"
-                  >
-                    {cat.name}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Admin Link Mobile */}
-      {user?.role === "admin" && (
-        <div className="mt-6">
-          <button
-            onClick={() => handleNav("/admin")}
-            className="w-full py-3.5 bg-gray-900 text-white rounded-xl font-bold transition-colors hover:bg-gray-800"
-          >
-            <i className="fa-solid fa-screwdriver-wrench mr-2"></i> Admin Dashboard
-          </button>
-        </div>
-      )}
-
-      {/* Logout Mobile */}
-      {user && (
-        <button
-          onClick={onLogout}
-          className="w-full py-3.5 mt-4 text-red-500 bg-red-50 rounded-xl font-bold transition-colors hover:bg-red-100 hover:text-red-600"
-        >
-          Logout
-        </button>
-      )}
-    </div>
+    </>
   );
 };
 
@@ -369,13 +419,13 @@ export default function Navbar() {
 
   return (
     <>
-      <nav className="bg-white shadow-sm border-b border-gray-100 fixed top-0 left-0 right-0 z-50 h-16">
+      <nav className="bg-white/95 backdrop-blur-md shadow-xs border-b border-gray-100 fixed top-0 left-0 right-0 z-50 h-16">
         <div className="container mx-auto px-4 flex justify-between items-center h-full">
           {/* Logo */}
           <div className="flex-shrink-0">
             <NavLink
               to="/"
-              className="font-black text-violet-700 tracking-tighter text-xl md:text-2xl whitespace-nowrap drop-shadow-sm"
+              className="font-black text-violet-700 tracking-tighter text-xl md:text-2xl whitespace-nowrap drop-shadow-xs"
             >
               CLOTHING<span className="text-gray-900">SHOP</span>
             </NavLink>
@@ -385,10 +435,10 @@ export default function Navbar() {
           <DesktopNav menuData={menuData} navigate={navigate} />
 
           {/* Icons & Actions */}
-          <div className="flex items-center gap-5">
+          <div className="flex items-center gap-4 sm:gap-5">
             {/* Policy Icon */}
             <div
-              className="cursor-pointer relative group hidden sm:block"
+              className="cursor-pointer relative group hidden sm:block p-1.5"
               onClick={() => navigate("/sales-policy")}
               title="Sales Policy"
             >
@@ -398,7 +448,7 @@ export default function Navbar() {
             {/* Order Lookup (Guest only) */}
             {!user && (
               <div
-                className="cursor-pointer relative group hidden sm:block"
+                className="cursor-pointer relative group hidden sm:block p-1.5"
                 onClick={() => navigate("/order")}
                 title="Track Order"
               >
@@ -407,19 +457,18 @@ export default function Navbar() {
             )}
 
             {/* Search Icon */}
-            <i
-              className="fa-solid fa-magnifying-glass text-xl text-gray-600 cursor-pointer hover:text-violet-600 transition-colors"
-              onClick={() => navigate("/search")}
-            ></i>
+            <div className="p-1.5 cursor-pointer" onClick={() => navigate("/search")}>
+              <i className="fa-solid fa-magnifying-glass text-xl text-gray-600 hover:text-violet-600 transition-colors"></i>
+            </div>
 
             {/* Cart Icon */}
             <div
-              className="relative cursor-pointer"
+              className="relative cursor-pointer p-1.5"
               onClick={() => navigate("/cart")}
             >
               <i className="fa-solid fa-cart-shopping text-xl text-gray-600 hover:text-violet-600 transition-colors"></i>
               {cart.length > 0 && (
-                <span className="absolute -top-2.5 -right-2.5 bg-red-500 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-white">
+                <span className="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center border border-white">
                   {cart.length > 99 ? "99+" : cart.length}
                 </span>
               )}
@@ -430,10 +479,11 @@ export default function Navbar() {
 
             {/* Mobile Hamburger Button */}
             <button
-              className="md:hidden text-2xl text-gray-700 focus:outline-none ml-2"
+              className="md:hidden text-2xl text-gray-700 focus:outline-none p-1.5 ml-1"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              aria-label="Toggle menu"
             >
-              <i className={isMobileMenuOpen ? "fa-solid fa-xmark" : "fa-solid fa-bars-staggered"}></i>
+              <i className={isMobileMenuOpen ? "fa-solid fa-xmark text-violet-700" : "fa-solid fa-bars-staggered"}></i>
             </button>
           </div>
         </div>

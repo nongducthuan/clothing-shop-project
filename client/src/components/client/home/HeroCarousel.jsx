@@ -2,14 +2,14 @@ import React from "react";
 import { BACKEND_URL } from "./homeData";
 
 const BannerOverlay = ({ title, subtitle }) => (
-  <div className="absolute inset-0 bg-black/30 flex flex-col items-center justify-end md:justify-center text-center text-white p-4">
+  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent flex flex-col items-center justify-end md:justify-center text-center text-white p-6 md:p-12">
     {title && (
-      <h1 className="fw-bold text-xl sm:text-2xl md:text-3xl drop-shadow-lg mb-2">
+      <h1 className="font-extrabold text-2xl sm:text-3xl md:text-5xl drop-shadow-md mb-3 tracking-tight">
         {title}
       </h1>
     )}
     {subtitle && (
-      <p className="text-base sm:text-lg md:text-xl drop-shadow-md max-w-2xl">
+      <p className="text-sm sm:text-base md:text-xl text-slate-200 drop-shadow-sm max-w-2xl font-medium">
         {subtitle}
       </p>
     )}
@@ -24,7 +24,7 @@ export default function HeroCarousel({ banners }) {
           banners.map((banner, idx) => (
             <div
               key={banner.id}
-              className={`carousel-item ${idx === 0 ? "active" : ""} h-[50vh] md:h-[100vh] relative`}
+              className={`carousel-item ${idx === 0 ? "active" : ""} h-[45vh] sm:h-[60vh] md:h-[75vh] relative`}
             >
               <img
                 src={`${BACKEND_URL}${banner.image_url}`}
@@ -38,7 +38,7 @@ export default function HeroCarousel({ banners }) {
           ))
         ) : (
           /* Fallback static banner if no banners are returned from API */
-          <div className="carousel-item active h-[50vh] md:h-[100vh] relative">
+          <div className="carousel-item active h-[45vh] sm:h-[60vh] md:h-[75vh] relative">
             <img
               src={`${BACKEND_URL}/public/images/placeholder-banner.png`}
               className="d-block w-full h-full object-cover object-top md:object-center"
