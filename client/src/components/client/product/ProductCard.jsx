@@ -1,8 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 
-// --- CONSTANTS & CONFIG ---
-
 const BACKEND_URL = import.meta.env.VITE_API_URL;
 const PLACEHOLDER_IMG = "https://via.placeholder.com/300x400?text=No+Image";
 
@@ -12,18 +10,12 @@ const GENDER_CONFIG = {
   unisex: { label: "Unisex", colorClass: "bg-emerald-50 text-emerald-600 border-emerald-100" },
 };
 
-// --- UTILS ---
-
-/** Formats number to Vietnamese Currency string */
 const formatCurrency = (amount) => Number(amount).toLocaleString("en-US") + " VND";
 
-/** Resolves image URL with fallback logic */
 const getImageUrl = (url) => {
   if (!url) return PLACEHOLDER_IMG;
   return url.startsWith("http") ? url : `${BACKEND_URL}${url}`;
 };
-
-// --- MAIN COMPONENT ---
 
 export default function ProductCard({ product, promotion }) {
   const navigate = useNavigate();
@@ -35,9 +27,8 @@ export default function ProductCard({ product, promotion }) {
   return (
     <div
       onClick={() => navigate(`/products/${product.id}`)}
-      className="group flex flex-col bg-white rounded-3xl overflow-hidden cursor-pointer border border-slate-100 transition-all duration-500 hover:shadow-xl hover:border-slate-200 hover:-translate-y-1.5"
+      className="group flex flex-col bg-white rounded-2xl sm:rounded-3xl overflow-hidden cursor-pointer border border-slate-100 transition-all duration-500 hover:shadow-xl hover:border-slate-200 hover:-translate-y-1.5"
     >
-      {/* IMAGE SECTION */}
       <div className="relative w-full aspect-[4/5] bg-slate-50 overflow-hidden">
         <img
           src={getImageUrl(product.image_url)}
@@ -49,62 +40,55 @@ export default function ProductCard({ product, promotion }) {
           }}
         />
 
-        {/* DIAGONAL SALE RIBBON */}
         {isSale && (
-          <div className="absolute top-6 -left-9 w-36 -rotate-45 bg-rose-500 text-white text-center text-[10px] font-black py-1.5 uppercase tracking-widest shadow-md z-10">
+          <div className="absolute top-4 sm:top-6 -left-10 sm:-left-9 w-32 sm:w-36 -rotate-45 bg-rose-500 text-white text-center text-[9px] sm:text-[10px] font-black py-1 sm:py-1.5 uppercase tracking-widest shadow-md z-10">
             -{Math.round(product.sale_percent)}% OFF
           </div>
         )}
 
-        {/* GENDER BADGE (TOP RIGHT) */}
-        <div className="absolute top-4 right-4 z-10">
-          <span className={`px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border shadow-sm backdrop-blur-md bg-white/90 ${genderInfo.colorClass}`}>
+        <div className="absolute top-2 right-2 sm:top-4 sm:right-4 z-10">
+          <span className={`px-2 py-1 sm:px-3 sm:py-1.5 rounded-full text-[9px] sm:text-[10px] font-bold uppercase tracking-wider sm:tracking-widest border shadow-sm backdrop-blur-md bg-white/90 ${genderInfo.colorClass}`}>
             {genderInfo.label}
           </span>
         </div>
 
-        {/* BUY X GET Y BADGE (BOTTOM RIGHT) */}
         {promotion && (
-          <div className="absolute bottom-4 right-4 z-10">
-            <span className="px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest bg-slate-900/90 backdrop-blur-md text-white shadow-md">
+          <div className="absolute bottom-2 right-2 sm:bottom-4 sm:right-4 z-10">
+            <span className="px-2 py-1 sm:px-3 sm:py-1.5 rounded-full text-[9px] sm:text-[10px] font-bold uppercase tracking-wider sm:tracking-widest bg-slate-900/90 backdrop-blur-md text-white shadow-md">
               BUY {promotion.buy_quantity} GET {promotion.gift_quantity}
             </span>
           </div>
         )}
       </div>
 
-      {/* CONTENT SECTION */}
-      <div className="p-5 flex flex-col flex-grow bg-white">
-
+      <div className="p-3 sm:p-5 flex flex-col flex-grow bg-white min-w-0">
         <h3
-          className="font-medium text-base text-slate-900 line-clamp-1 mb-1 transition-colors group-hover:text-violet-600"
+          className="font-medium text-sm sm:text-base text-slate-900 line-clamp-1 mb-1 transition-colors group-hover:text-violet-600 break-words"
           title={product.name}
         >
           {product.name}
         </h3>
 
-        <p className="text-sm text-slate-500 line-clamp-2 mb-4 flex-grow leading-relaxed">
+        <p className="text-xs sm:text-sm text-slate-500 line-clamp-2 mb-3 sm:mb-4 flex-grow leading-relaxed">
           {product.description || "No further description available for this item."}
         </p>
 
-        {/* PRICE SECTION */}
         <div className="mt-auto">
           {isSale ? (
-            <div className="flex items-center gap-3 flex-wrap">
-              <span className="text-lg font-semibold text-rose-500">
+            <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+              <span className="text-base sm:text-lg font-semibold text-rose-500">
                 {formatCurrency(salePrice)}
               </span>
-              <span className="text-sm font-medium text-slate-400 line-through decoration-slate-300">
+              <span className="text-xs sm:text-sm font-medium text-slate-400 line-through decoration-slate-300">
                 {formatCurrency(product.price)}
               </span>
             </div>
           ) : (
-            <span className="text-lg font-semibold text-slate-900">
+            <span className="text-base sm:text-lg font-semibold text-slate-900">
               {formatCurrency(product.price)}
             </span>
           )}
         </div>
-
       </div>
     </div>
   );

@@ -9,7 +9,7 @@ export default function OrderSummary({ state, actions, helpers, onCheckout }) {
   const { formatPrice } = helpers;
 
   return (
-    <div className="bg-slate-50 p-8 rounded-[2rem]">
+    <div className="bg-slate-50 p-6 sm:p-8 rounded-[2rem] min-w-0 box-border overflow-hidden">
       <h3 className="text-xl font-medium text-slate-900 mb-6">Summary</h3>
 
       {/* Auth / Tier Info */}
@@ -30,22 +30,24 @@ export default function OrderSummary({ state, actions, helpers, onCheckout }) {
 
       {/* Voucher Input */}
       <div className="mb-8">
-        <label className="block text-xs font-medium text-slate-500 uppercase tracking-widest mb-3">Promo Code</label>
-        <div className="flex gap-2">
+        <label className="block text-xs font-medium text-slate-500 uppercase tracking-widest mb-3">
+          Promo Code
+        </label>
+        <div className="flex gap-2 min-w-0">
           <input
             type="text"
             value={voucherCode}
             onChange={(e) => setVoucherCode(e.target.value.toUpperCase())}
             placeholder="Enter code"
             disabled={appliedVoucher !== null}
-            className="flex-grow bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-slate-900 font-medium uppercase transition-colors"
+            className="flex-1 min-w-0 bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-slate-900 font-medium uppercase transition-colors"
           />
           {appliedVoucher ? (
-            <button onClick={handleRemoveVoucher} className="px-6 py-3 bg-rose-50 text-rose-600 rounded-xl text-sm font-medium hover:bg-rose-100 transition-colors">
+            <button onClick={handleRemoveVoucher} className="px-5 py-3 bg-rose-50 text-rose-600 rounded-xl text-sm font-medium hover:bg-rose-100 transition-colors shrink-0">
               Remove
             </button>
           ) : (
-            <button onClick={handleApplyVoucher} disabled={isApplying || !voucherCode.trim()} className="px-6 py-3 bg-slate-900 text-white rounded-xl text-sm font-medium hover:bg-slate-800 disabled:opacity-50 transition-colors">
+            <button onClick={handleApplyVoucher} disabled={isApplying || !voucherCode.trim()} className="px-5 py-3 bg-slate-900 text-white rounded-xl text-sm font-medium hover:bg-slate-800 disabled:opacity-50 transition-colors shrink-0">
               {isApplying ? '...' : 'Apply'}
             </button>
           )}
@@ -86,14 +88,14 @@ export default function OrderSummary({ state, actions, helpers, onCheckout }) {
 
       {/* Total & Checkout */}
       <div className="border-t border-slate-200 pt-6">
-        <div className="flex justify-between items-end mb-8">
+        <div className="flex justify-between items-end mb-6 sm:mb-8">
           <span className="text-base font-medium text-slate-900">Total</span>
-          <span className="text-3xl font-medium text-slate-900">{formatPrice(finalTotal)}</span>
+          <span className="text-2xl sm:text-3xl font-medium text-slate-900">{formatPrice(finalTotal)}</span>
         </div>
 
         <button
           onClick={onCheckout}
-          className="w-full bg-slate-900 text-white py-4 rounded-full font-medium text-lg hover:bg-slate-800 transition-all active:scale-[0.98]"
+          className="w-full bg-slate-900 text-white py-3 sm:py-4 rounded-full font-medium text-base sm:text-lg hover:bg-slate-800 transition-all active:scale-[0.98]"
         >
           Checkout
         </button>

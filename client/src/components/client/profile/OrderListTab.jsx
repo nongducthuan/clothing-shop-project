@@ -48,15 +48,13 @@ export default function OrderListTab({ state, actions, helpers }) {
             </div>
 
             {/* Payment & Total */}
-            <div className="flex justify-between items-end mb-6">
+            <div className="grid grid-cols-2 items-center gap-y-1 mb-6">
               <div className="space-y-2">
                 <PaymentStatusBadge status={order.payment_status} />
-                <p className="text-xs font-medium text-slate-500 capitalize">{order.payment_method}</p>
               </div>
-              <div className="text-right">
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Total</p>
-                <p className="text-lg font-medium text-slate-900">{formatCurrency(order.total_price)}</p>
-              </div>
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest text-right">Total</p>
+              <p className="text-xs font-medium text-slate-500 capitalize">{order.payment_method}</p>
+              <p className="text-lg font-medium text-slate-900 text-right">{formatCurrency(order.total_price)}</p>
             </div>
 
             {/* Return Requested Notice */}

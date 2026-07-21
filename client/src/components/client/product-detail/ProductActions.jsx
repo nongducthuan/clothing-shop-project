@@ -32,13 +32,12 @@ export default function ProductActions({ state, actions, helpers }) {
           </button>
         </div>
 
-        {/* ADD TO CART BUTTON */}
         <button
           onClick={handleAddToCart}
           disabled={isOutOfStock || !state.selectedSize}
-          className="flex-1 w-full h-12 sm:h-14 bg-slate-900 text-white rounded-full font-semibold text-base sm:text-lg hover:bg-slate-800 disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed transition-all active:scale-[0.98] shadow-md"
+          className="flex-1 w-full min-h-12 sm:min-h-14 h-12 sm:h-14 bg-slate-900 text-white rounded-full font-semibold text-base sm:text-lg hover:bg-slate-800 disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed transition-all active:scale-[0.98] shadow-md inline-flex items-center justify-center px-6"
         >
-          {isProductIncomplete ? "Product Not Ready" : isOutOfStock ? "Out of Stock" : "Add to Bag"}
+          {isProductIncomplete ? "Product Not Ready" : isOutOfStock ? "Out of Stock" : "Add to Cart"}
         </button>
       </div>
 

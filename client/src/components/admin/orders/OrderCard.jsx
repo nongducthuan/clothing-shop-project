@@ -47,21 +47,19 @@ export default function OrderCard({
       <div className="inline-flex w-full p-1.5 bg-gray-100 rounded-2xl shadow-inner">
         <button
           onClick={() => handleTabSwitch("Standard")}
-          className={`flex-1 py-2.5 rounded-xl font-bold text-xs transition-all duration-300 flex items-center justify-center gap-1.5 ${
-            activeTab === "Standard"
-              ? "bg-white text-blue-600 shadow-sm"
-              : "text-gray-500 hover:text-gray-700"
-          }`}
+          className={`flex-1 py-2.5 rounded-xl font-bold text-xs transition-all duration-300 flex items-center justify-center gap-1.5 ${activeTab === "Standard"
+            ? "bg-white text-blue-600 shadow-sm"
+            : "text-gray-500 hover:text-gray-700"
+            }`}
         >
           <i className="fa-solid fa-box text-xs"></i> Orders
         </button>
         <button
           onClick={() => handleTabSwitch("Returns")}
-          className={`flex-1 py-2.5 rounded-xl font-bold text-xs transition-all duration-300 flex items-center justify-center gap-1.5 ${
-            activeTab === "Returns"
-              ? "bg-white text-orange-600 shadow-sm"
-              : "text-gray-500 hover:text-gray-700"
-          }`}
+          className={`flex-1 py-2.5 rounded-xl font-bold text-xs transition-all duration-300 flex items-center justify-center gap-1.5 ${activeTab === "Returns"
+            ? "bg-white text-orange-600 shadow-sm"
+            : "text-gray-500 hover:text-gray-700"
+            }`}
         >
           <i className="fa-solid fa-rotate-left text-xs"></i> Returns
         </button>
@@ -74,11 +72,10 @@ export default function OrderCard({
             <button
               key={f}
               onClick={() => setFilterStatus(f)}
-              className={`px-3.5 py-1.5 rounded-full font-bold text-xs whitespace-nowrap transition-all ${
-                filterStatus === f
-                  ? "bg-gray-800 text-white shadow-sm"
-                  : "bg-gray-100 text-gray-500 hover:bg-gray-200"
-              }`}
+              className={`px-3.5 py-1.5 rounded-full font-bold text-xs whitespace-nowrap transition-all ${filterStatus === f
+                ? "bg-gray-800 text-white shadow-sm"
+                : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                }`}
             >
               {f}
             </button>
@@ -146,12 +143,18 @@ export default function OrderCard({
 
               {/* Status Controls */}
               <div className="flex flex-col gap-3">
-                <div className="flex justify-between items-center">
+                <div className="text-center">
+                  <span className="text-red-600 font-black text-xl">
+                    {formatCurrency(order.total_price)}
+                  </span>
+                </div>
+
+                <div className="flex flex-col gap-2.5">
                   <select
                     value={order.payment_status || "Unpaid"}
                     onChange={(e) => handlePaymentStatus(order.id, e.target.value)}
                     disabled={isReturnLocked}
-                    className="text-xs font-bold text-white py-2.5 px-4 rounded-full outline-none focus:ring-2 focus:ring-blue-500/20 disabled:opacity-60 appearance-none text-center shadow-sm cursor-pointer min-w-[100px]"
+                    className="w-full min-w-0 text-xs font-bold text-white py-2.5 px-4 rounded-full outline-none focus:ring-2 focus:ring-blue-500/20 disabled:opacity-60 appearance-none text-center shadow-sm cursor-pointer"
                     style={{ backgroundColor: getPaymentStatusColor(order.payment_status) }}
                   >
                     {PAYMENT_OPTIONS.map((s) => (
@@ -159,17 +162,11 @@ export default function OrderCard({
                     ))}
                   </select>
 
-                  <span className="text-red-600 font-black text-lg">
-                    {formatCurrency(order.total_price)}
-                  </span>
-                </div>
-
-                <div className="flex gap-2.5">
                   <select
                     value={order.status}
                     onChange={(e) => handleOrderStatus(order.id, e.target.value)}
                     disabled={isReturnLocked}
-                    className="flex-1 text-xs font-bold text-white py-2.5 px-4 rounded-full outline-none text-center appearance-none shadow-sm disabled:opacity-60 cursor-pointer"
+                    className="w-full min-w-0 text-xs font-bold text-white py-2.5 px-4 rounded-full outline-none text-center appearance-none shadow-sm disabled:opacity-60 cursor-pointer"
                     style={{ backgroundColor: getOrderStatusColor(order.status) }}
                   >
                     {STATUS_OPTIONS.map((s) => (
@@ -179,7 +176,7 @@ export default function OrderCard({
 
                   <button
                     onClick={() => onViewDetails(order)}
-                    className="px-6 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white py-2.5 rounded-full text-xs font-bold uppercase tracking-wider transition-colors shadow-sm flex-shrink-0"
+                    className="w-full bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white py-2.5 rounded-full text-xs font-bold uppercase tracking-wider transition-colors shadow-sm inline-flex items-center justify-center"
                   >
                     Details
                   </button>
