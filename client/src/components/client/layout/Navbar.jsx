@@ -9,10 +9,11 @@ import API from "../../../services/apiClient";
 const GENDERS = ["male", "female", "unisex"];
 
 // Helper to format image URLs
-const getImgUrl = (path) =>
-  path?.startsWith("http")
-    ? path
-    : `import.meta.env.VITE_API_URL${path || "/public/placeholder.jpg"}`;
+const getImgUrl = (path) => {
+  if (!path) return "https://placehold.co/100x100?text=No+Image";
+  if (path.startsWith("http")) return path;
+  return `${import.meta.env.VITE_API_URL}${path}`;
+};
 
 // --- CUSTOM HOOKS ---
 
