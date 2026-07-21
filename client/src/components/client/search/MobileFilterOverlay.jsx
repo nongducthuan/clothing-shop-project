@@ -61,7 +61,7 @@ export default function MobileFilterOverlay({ state, actions, refs }) {
             <div className="flex justify-between items-center mb-3">
               <h4 className="font-bold text-sm text-gray-700 uppercase tracking-wider">Gender</h4>
             </div>
-            <div className="grid grid-cols-4 gap-2">
+            <div className="grid grid-cols-2 gap-2">
               {GENDERS.map((g) => (
                 <button
                   key={g.id}

@@ -36,15 +36,15 @@ export default function SaleTargetSelection({
       `}</style>
 
       <div className="bg-white p-6 rounded-3xl shadow-xl shadow-gray-200/50 border border-gray-100 h-full">
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 mb-8">
           <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest">Target Selection</h3>
-          <div className="flex gap-2 bg-gray-100 p-1 rounded-xl">
+          <div className="flex flex-wrap gap-2 bg-gray-100 p-1 rounded-xl w-full xl:w-auto">
             {["all", "category", "product"].map((scope) => (
               <button
                 key={scope}
                 type="button"
                 onClick={() => handleScopeChange(scope)}
-                className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase transition-all ${
+                className={`flex-1 xl:flex-none px-4 py-2 rounded-lg text-[10px] font-black uppercase transition-all ${
                   applyScope === scope ? 'bg-white shadow-sm text-blue-600' : 'bg-transparent text-gray-400'
                 }`}
               >

@@ -2,14 +2,14 @@ import React from "react";
 import { BACKEND_URL } from "./homeData";
 
 const BannerOverlay = ({ title, subtitle }) => (
-  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent flex flex-col items-center justify-end md:justify-center text-center text-white p-6 md:p-12">
+  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent flex flex-col items-center justify-center text-center text-white px-4 py-8 md:p-12">
     {title && (
-      <h1 className="font-extrabold text-2xl sm:text-3xl md:text-5xl drop-shadow-md mb-3 tracking-tight">
+      <h1 className="font-extrabold text-3xl sm:text-4xl md:text-5xl drop-shadow-lg mb-3 tracking-tight max-w-4xl">
         {title}
       </h1>
     )}
     {subtitle && (
-      <p className="text-sm sm:text-base md:text-xl text-slate-200 drop-shadow-sm max-w-2xl font-medium">
+      <p className="text-base sm:text-lg md:text-xl text-slate-200 drop-shadow-md max-w-2xl font-medium">
         {subtitle}
       </p>
     )}

@@ -144,45 +144,46 @@ export default function OrderCard({
                 </div>
               )}
 
-              {/* Payment Status & Total */}
-              <div className="flex justify-between items-center">
-                <select
-                  value={order.payment_status || "Unpaid"}
-                  onChange={(e) => handlePaymentStatus(order.id, e.target.value)}
-                  disabled={isReturnLocked}
-                  className="text-xs font-bold text-white py-2 px-3.5 rounded-full outline-none focus:ring-2 focus:ring-blue-500/20 disabled:opacity-60 appearance-none text-center shadow-sm"
-                  style={{ backgroundColor: getPaymentStatusColor(order.payment_status) }}
-                >
-                  {PAYMENT_OPTIONS.map((s) => (
-                    <option key={s} value={s} className="text-gray-800 bg-white">{s}</option>
-                  ))}
-                </select>
+              {/* Status Controls */}
+              <div className="flex flex-col gap-3">
+                <div className="flex justify-between items-center">
+                  <select
+                    value={order.payment_status || "Unpaid"}
+                    onChange={(e) => handlePaymentStatus(order.id, e.target.value)}
+                    disabled={isReturnLocked}
+                    className="text-xs font-bold text-white py-2.5 px-4 rounded-full outline-none focus:ring-2 focus:ring-blue-500/20 disabled:opacity-60 appearance-none text-center shadow-sm cursor-pointer min-w-[100px]"
+                    style={{ backgroundColor: getPaymentStatusColor(order.payment_status) }}
+                  >
+                    {PAYMENT_OPTIONS.map((s) => (
+                      <option key={s} value={s} className="text-gray-800 bg-white">{s}</option>
+                    ))}
+                  </select>
 
-                <span className="text-red-600 font-black text-lg">
-                  {formatCurrency(order.total_price)}
-                </span>
-              </div>
+                  <span className="text-red-600 font-black text-lg">
+                    {formatCurrency(order.total_price)}
+                  </span>
+                </div>
 
-              {/* Order Status & Details Button */}
-              <div className="flex gap-2.5">
-                <select
-                  value={order.status}
-                  onChange={(e) => handleOrderStatus(order.id, e.target.value)}
-                  disabled={isReturnLocked}
-                  className="flex-1 text-xs font-bold text-white py-2.5 px-3 rounded-full outline-none text-center appearance-none shadow-sm disabled:opacity-60"
-                  style={{ backgroundColor: getOrderStatusColor(order.status) }}
-                >
-                  {STATUS_OPTIONS.map((s) => (
-                    <option key={s} value={s} className="bg-white text-gray-800 text-left">{s}</option>
-                  ))}
-                </select>
+                <div className="flex gap-2.5">
+                  <select
+                    value={order.status}
+                    onChange={(e) => handleOrderStatus(order.id, e.target.value)}
+                    disabled={isReturnLocked}
+                    className="flex-1 text-xs font-bold text-white py-2.5 px-4 rounded-full outline-none text-center appearance-none shadow-sm disabled:opacity-60 cursor-pointer"
+                    style={{ backgroundColor: getOrderStatusColor(order.status) }}
+                  >
+                    {STATUS_OPTIONS.map((s) => (
+                      <option key={s} value={s} className="bg-white text-gray-800 text-center">{s}</option>
+                    ))}
+                  </select>
 
-                <button
-                  onClick={() => onViewDetails(order)}
-                  className="px-5 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white py-2.5 rounded-full text-xs font-bold uppercase tracking-wider transition-colors shadow-sm"
-                >
-                  Details
-                </button>
+                  <button
+                    onClick={() => onViewDetails(order)}
+                    className="px-6 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white py-2.5 rounded-full text-xs font-bold uppercase tracking-wider transition-colors shadow-sm flex-shrink-0"
+                  >
+                    Details
+                  </button>
+                </div>
               </div>
             </div>
           );

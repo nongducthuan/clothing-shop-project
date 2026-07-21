@@ -58,7 +58,7 @@ export default function CategoryManager() {
 
         {/* ======================== FORM SECTION ======================== */}
         {/* Placed inside a heavily rounded white card (sticky to screen on scroll) */}
-        <div className="lg:col-span-5 xl:col-span-4 bg-white p-6 md:p-8 rounded-[2rem] border border-gray-100 shadow-sm transition-all duration-300 hover:shadow-md sticky top-24">
+        <div className="lg:col-span-5 xl:col-span-4 bg-white p-6 md:p-8 rounded-[2rem] border border-gray-100 shadow-sm transition-all duration-300 hover:shadow-md lg:sticky lg:top-24 relative z-10">
           <CategoryForm
             form={form}
             setForm={setForm}

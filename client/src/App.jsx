@@ -8,6 +8,7 @@ import { AIChatProvider } from "./context/AIChatContext.jsx";
 // Components
 import ProtectedRoute from "./components/auth/ProtectedRoute.jsx";
 import Navbar from "./components/client/layout/Navbar.jsx";
+
 import AIChatBubble from "./components/client/chatbot/AIChatBubble.jsx";
 
 // Pages - Public
@@ -35,8 +36,6 @@ import SaleManager from "./pages/admin/SaleManager";
 import VoucherManager from "./pages/admin/VoucherManager";
 import PromotionManager from "./pages/admin/PromotionManager.jsx";
 
-// Styles
-import "./styles/style.css";
 
 function App() {
   return (
