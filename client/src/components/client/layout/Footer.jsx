@@ -13,7 +13,7 @@ export default function Footer() {
               CLOTHING<span className="text-violet-500">SHOP</span>
             </Link>
             <p className="text-slate-400 text-sm leading-relaxed">
-              Trải nghiệm thời trang cao cấp với thiết kế hiện đại, tinh tế và phong cách tối giản. Chất lượng và sự hài lòng của bạn là ưu tiên hàng đầu của chúng tôi.
+              Experience premium fashion with modern, sophisticated design and minimalist style. Your quality and satisfaction are our top priority.
             </p>
             <div className="flex items-center gap-3 pt-2">
               <a href="#" className="w-9 h-9 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 hover:text-violet-400 hover:border-violet-500 transition-all">
@@ -33,49 +33,49 @@ export default function Footer() {
 
           {/* Col 2: Quick Links */}
           <div>
-            <h4 className="text-white font-semibold text-base mb-4 tracking-wide uppercase">Khám Phá</h4>
+            <h4 className="text-white font-semibold text-base mb-4 tracking-wide uppercase">Explore</h4>
             <ul className="space-y-2.5 text-sm text-slate-400">
               <li>
-                <Link to="/" className="hover:text-violet-400 transition-colors">Trang chủ</Link>
+                <Link to="/" className="hover:text-violet-400 transition-colors">Home</Link>
               </li>
               <li>
-                <Link to="/sales-policy" className="hover:text-violet-400 transition-colors">Chính sách bán hàng</Link>
+                <Link to="/sales-policy" className="hover:text-violet-400 transition-colors">Sales Policy</Link>
               </li>
               <li>
-                <Link to="/order" className="hover:text-violet-400 transition-colors">Tra cứu đơn hàng</Link>
+                <Link to="/order" className="hover:text-violet-400 transition-colors">Order Tracking</Link>
               </li>
               <li>
-                <Link to="/search" className="hover:text-violet-400 transition-colors">Tìm kiếm sản phẩm</Link>
+                <Link to="/search" className="hover:text-violet-400 transition-colors">Search Products</Link>
               </li>
             </ul>
           </div>
 
           {/* Col 3: Customer Care & Policies */}
           <div>
-            <h4 className="text-white font-semibold text-base mb-4 tracking-wide uppercase">Chăm Sóc Khách Hàng</h4>
+            <h4 className="text-white font-semibold text-base mb-4 tracking-wide uppercase">Customer Care</h4>
             <ul className="space-y-2.5 text-sm text-slate-400">
               <li className="flex items-center gap-2">
                 <i className="fa-solid fa-truck-fast text-violet-500 text-xs"></i>
-                <span>Giao hàng toàn quốc</span>
+                <span>Nationwide Shipping</span>
               </li>
               <li className="flex items-center gap-2">
                 <i className="fa-solid fa-arrow-rotate-left text-violet-500 text-xs"></i>
-                <span>Đổi trả dễ dàng trong 7 ngày</span>
+                <span>Easy 7-Day Returns</span>
               </li>
               <li className="flex items-center gap-2">
                 <i className="fa-solid fa-shield-halved text-violet-500 text-xs"></i>
-                <span>Bảo hành chất lượng sản phẩm</span>
+                <span>Quality Product Warranty</span>
               </li>
               <li className="flex items-center gap-2">
                 <i className="fa-solid fa-headset text-violet-500 text-xs"></i>
-                <span>Hỗ trợ tư vấn 24/7</span>
+                <span>24/7 Advisory Support</span>
               </li>
             </ul>
           </div>
 
           {/* Col 4: Contact Info */}
           <div>
-            <h4 className="text-white font-semibold text-base mb-4 tracking-wide uppercase">Liên Hệ</h4>
+            <h4 className="text-white font-semibold text-base mb-4 tracking-wide uppercase">Contact Us</h4>
             <ul className="space-y-3 text-sm text-slate-400">
               <li className="flex items-start gap-3">
                 <i className="fa-solid fa-phone text-violet-500 mt-1"></i>
@@ -88,12 +88,12 @@ export default function Footer() {
               <li className="flex items-start gap-3">
                 <i className="fa-solid fa-location-dot text-violet-500 mt-1"></i>
                 <a
-                  href="https://www.google.com/maps/search/?api=1&query=Đường+Nam+Kỳ+Khởi+Nghĩa,+Phường+Hòa+Phú,+Thủ+Dầu+Một,+Bình+Dương,+Việt+Nam"
+                  href="https://www.google.com/maps/search/?api=1&query=Nam+Ky+Khoi+Nghia,+Hoa+Phu,+Thu+Dau+Mot,+Binh+Duong"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="hover:text-violet-400 transition-colors"
                 >
-                  Nam Kỳ Khởi Nghĩa, Bình Dương, TP. Hồ Chí Minh
+                  Nam Ky Khoi Nghia, Binh Duong, HCMC
                 </a>
               </li>
             </ul>

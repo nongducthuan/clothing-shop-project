@@ -136,7 +136,7 @@ export default function VoucherForm({ formData, setFormData, onSubmit }) {
 
           <button
             type="submit"
-            className="w-full py-5 bg-indigo-600 text-white rounded-2xl font-black text-sm tracking-widest hover:bg-indigo-700 hover:scale-[1.02] transition-all shadow-xl shadow-indigo-200 uppercase mt-4"
+            className="w-full py-3.5 bg-indigo-600 text-white rounded-xl font-bold text-xs tracking-wider hover:bg-indigo-700 hover:scale-[1.01] transition-all shadow-md shadow-indigo-200 uppercase mt-4"
           >
             Create Voucher
           </button>

@@ -5,7 +5,7 @@ export default function ProductImageGallery({ state, constants }) {
   const { PLACEHOLDER_IMG } = constants;
 
   return (
-    <div className="w-full aspect-[4/5] rounded-[2rem] bg-slate-50 overflow-hidden relative shadow-sm border border-slate-100">
+    <div className="w-full aspect-[4/5] max-h-[560px] rounded-3xl bg-slate-50 overflow-hidden relative shadow-sm border border-slate-100 mx-auto">
       <img
         src={mainImage}
         alt={product?.name || "Product"}
