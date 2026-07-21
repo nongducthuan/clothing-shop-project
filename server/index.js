@@ -19,16 +19,25 @@ const chatRoute = require("./src/routes/chatRoute");
 const promotionRoute = require('./src/routes/promotionRoute')
 const app = express();
 
+const allowedOrigins = [
+    'http://localhost:5173',
+    process.env.FRONTEND_URL 
+];
+
 app.use(cors({
-    origin: "http://localhost:5173",
+    origin: function (origin, callback) {
+        if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     credentials: true,
 }));
+
 app.use(express.json());
 
-// ✅ 2. Cho phép truy cập thư mục ảnh công khai
 app.use('/public', express.static(path.join(__dirname, 'public')));
-
-// ✅ 3. Đăng ký các đường dẫn API
 app.use('/products', productsRoute);
 app.use('/auth', authRoute);
 app.use('/orders', ordersRoute);
@@ -51,7 +60,9 @@ app.get('/banners', async (req, res) => {
     }
 });
 
+app.get('/', (req, res) => res.send("Server đang hoạt động!"));
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-    console.log(`Server is running at http://localhost:${PORT}`);
+    console.log(`Server is running at port ${PORT}`);
 });
