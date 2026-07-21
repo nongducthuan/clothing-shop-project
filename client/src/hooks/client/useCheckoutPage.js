@@ -4,7 +4,7 @@ import { CartContext } from "../../context/CartContext.jsx";
 import { AuthContext } from "../../context/AuthContext.jsx";
 import API from "../../services/apiClient.js";
 
-const BACKEND_URL = "http://localhost:5000";
+const BACKEND_URL = import.meta.env.VITE_API_URL;
 
 // --- HELPER HOOK: GEOLOCATION ---
 const useGeolocation = () => {

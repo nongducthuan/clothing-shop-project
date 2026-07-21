@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 // --- CONSTANTS & CONFIG ---
 
-const BACKEND_URL = "http://localhost:5000";
+const BACKEND_URL = import.meta.env.VITE_API_URL;
 const PLACEHOLDER_IMG = "https://via.placeholder.com/300x400?text=No+Image";
 
 const GENDER_CONFIG = {

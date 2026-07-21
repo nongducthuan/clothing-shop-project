@@ -12,7 +12,7 @@ const GENDERS = ["male", "female", "unisex"];
 const getImgUrl = (path) =>
   path?.startsWith("http")
     ? path
-    : `http://localhost:5000${path || "/public/placeholder.jpg"}`;
+    : `import.meta.env.VITE_API_URL${path || "/public/placeholder.jpg"}`;
 
 // --- CUSTOM HOOKS ---
 

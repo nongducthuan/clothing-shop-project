@@ -26,7 +26,7 @@ const PageHeader = () => (
  * Orchestrates the Banner Form and Banner List side-by-side in a modern UI wrapper.
  */
 export default function BannerManager() {
-  const backendUrl = "http://localhost:5000";
+  const backendUrl = import.meta.env.VITE_API_URL;
 
   // Destructure all logic from our custom hook (Logic remains 100% untouched)
   const {

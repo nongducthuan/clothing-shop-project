@@ -37,7 +37,7 @@ export default function OrdersStep({
                 <div className="bg-gray-50 p-4 border-t border-gray-100 space-y-3 animate-fadeIn">
                   {order.items?.map((item, idx) => (
                     <div key={idx} className="flex gap-3 items-center">
-                      <img src={`http://localhost:5000${item.image}`} alt={item.product_name} className="w-12 h-12 object-cover rounded-md border" onError={(e) => { e.target.src = 'https://via.placeholder.com/150' }} />
+                      <img src={`import.meta.env.VITE_API_URL${item.image}`} alt={item.product_name} className="w-12 h-12 object-cover rounded-md border" onError={(e) => { e.target.src = 'https://via.placeholder.com/150' }} />
                       <div className="flex-1">
                         <h4 className="text-sm font-medium text-gray-800 leading-tight">{item.product_name}</h4>
                         <p className="text-[11px] text-gray-500">Variant: {item.color}, {item.size} | Qty: x{item.quantity}</p>

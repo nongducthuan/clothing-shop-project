@@ -5,7 +5,7 @@ import API from "../../services/apiClient";
 // CONSTANTS (Declared outside to prevent re-creation on every render)
 // ==========================================
 
-const BASE_URL = "http://localhost:5000";
+const BASE_URL = import.meta.env.VITE_API_URL;
 
 const ORDER_STATUS_COLORS = {
   Pending: "#ffc107",

@@ -46,7 +46,7 @@ export default function SizeSection({
             <img
               src={selectedColorObj.image_url?.startsWith("http") ? selectedColorObj.image_url : `${BACKEND_URL}${selectedColorObj.image_url}`}
               className="w-full h-full object-cover"
-              onError={(e) => (e.target.src = "http://localhost:5000/public/placeholder.jpg")}
+              onError={(e) => (e.target.src = "import.meta.env.VITE_API_URL/public/placeholder.jpg")}
               alt="Selected"
             />
           </div>

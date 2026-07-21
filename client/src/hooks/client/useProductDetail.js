@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { CartContext } from "../../context/CartContext.jsx";
 import API from "../../services/apiClient.js";
 
-const BACKEND_URL = "http://localhost:5000";
+const BACKEND_URL = import.meta.env.VITE_API_URL;
 
 export function useProductDetail() {
   const { id } = useParams();

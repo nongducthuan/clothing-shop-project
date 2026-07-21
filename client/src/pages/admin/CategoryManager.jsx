@@ -38,7 +38,7 @@ const PageHeader = ({ navigate }) => (
  */
 export default function CategoryManager() {
   const navigate = useNavigate();
-  const backendUrl = "http://localhost:5000";
+  const backendUrl = import.meta.env.VITE_API_URL;
 
   // Destructure all required logic from the custom hook (Logic remains untouched)
   const {

@@ -92,7 +92,7 @@ export default function ProductList({
                       src={p.image_url?.startsWith("http") ? p.image_url : `${BACKEND_URL}${p.image_url}`}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       alt={p.name}
-                      onError={(e) => (e.target.src = "http://localhost:5000/public/placeholder.jpg")}
+                      onError={(e) => (e.target.src = "import.meta.env.VITE_API_URL/public/placeholder.jpg")}
                     />
 
                     {/* Gender Badge */}

@@ -3,7 +3,7 @@ import API from "../../services/apiClient.js";
 
 // Constants
 export const SIZE_ORDER = ["XS", "S", "M", "L", "XL", "XXL", "FreeSize", "29", "30", "31", "32"];
-export const BACKEND_URL = "http://localhost:5000";
+export const BACKEND_URL = import.meta.env.VITE_API_URL;
 
 /**
  * Custom hook managing the inventory (colors & sizes) of a specific product.

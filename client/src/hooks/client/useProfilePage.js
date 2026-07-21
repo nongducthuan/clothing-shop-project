@@ -3,7 +3,7 @@ import { AuthContext } from "../../context/AuthContext.jsx";
 import { useNavigate } from "react-router-dom";
 import API from "../../services/apiClient.js";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL;
 
 const TIER_CONFIG = {
   Normal: { next: 5000000, color: "text-slate-500", bg: "bg-slate-100", icon: "fa-circle-user", label: "Bronze" },
