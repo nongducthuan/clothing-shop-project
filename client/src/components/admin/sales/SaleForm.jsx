@@ -75,7 +75,7 @@ export default function SaleForm({ formData, setFormData, onSubmit }) {
             </div>
           </div>
 
-          <button type="submit" className="w-full py-5 bg-gray-900 text-white rounded-2xl font-black text-sm tracking-widest hover:bg-blue-600 hover:scale-[1.02] transition-all shadow-xl shadow-blue-200 mt-4">
+          <button type="submit" className="w-full py-3.5 bg-indigo-600 text-white rounded-xl font-bold text-xs tracking-wider hover:bg-indigo-700 hover:scale-[1.01] transition-all shadow-md shadow-indigo-200 uppercase mt-4">
             ACTIVATE SALE
           </button>
         </form>
