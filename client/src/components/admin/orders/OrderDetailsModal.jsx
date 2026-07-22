@@ -6,7 +6,7 @@ export default function OrderDetailsModal({ order, onClose, formatCurrency }) {
   const isReturnRequest = ["Return Requested", "Return Approved", "Return Rejected"].includes(order.status);
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-center items-center p-4 bg-gray-900/60 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[100] flex justify-center items-center p-4 bg-gray-900/60 backdrop-blur-sm">
       <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col animate-scaleIn relative overflow-hidden">
 
         {/* Header */}
@@ -26,7 +26,7 @@ export default function OrderDetailsModal({ order, onClose, formatCurrency }) {
         </div>
 
         {/* Scrollable Body */}
-        <div className="p-6 overflow-y-auto custom-scrollbar flex flex-col gap-6">
+        <div className="p-4 md:p-6 overflow-y-auto custom-scrollbar flex flex-col gap-4 md:gap-6">
           {isReturnRequest && <ReturnInfoSection order={order} />}
           <DeliveryInfoSection order={order} />
           <OrderItemsList items={order.items} formatCurrency={formatCurrency} />
@@ -34,7 +34,7 @@ export default function OrderDetailsModal({ order, onClose, formatCurrency }) {
           {/* Footer Total */}
           <div className="flex justify-between items-center pt-6 mt-2 border-t border-gray-100 bg-gray-50/50 p-6 rounded-2xl">
             <span className="font-bold text-gray-500 uppercase tracking-widest text-sm">Grand Total</span>
-            <span className="text-3xl font-black text-red-600">
+            <span className="text-xl font-black text-red-600">
               {formatCurrency(order.total_price)}
             </span>
           </div>
@@ -51,7 +51,7 @@ export default function OrderDetailsModal({ order, onClose, formatCurrency }) {
 
 const ReturnInfoSection = ({ order }) => {
   return (
-    <div className="bg-orange-50/80 p-5 rounded-[1.5rem] border border-orange-100 text-sm shadow-inner">
+    <div className="bg-orange-50/80 p-3 md:p-5 rounded-[1.5rem] border border-orange-100 text-sm shadow-inner">
       <h5 className="font-bold text-orange-800 mb-4 uppercase text-xs tracking-wider flex items-center gap-2">
         <i className="fa-solid fa-rotate-left text-orange-500 text-base"></i> Return Request Details
       </h5>
@@ -65,7 +65,7 @@ const ReturnInfoSection = ({ order }) => {
           <p className="text-sm text-gray-600 italic bg-gray-50 p-3 rounded-xl border border-gray-100">"{order.description || "No description provided"}"</p>
         </div>
 
-        <div className="bg-gradient-to-br from-blue-600 to-blue-800 p-5 rounded-2xl text-white shadow-md relative overflow-hidden">
+        <div className="bg-gradient-to-br from-blue-600 to-blue-800 p-3 md:p-5 rounded-2xl text-white shadow-md relative overflow-hidden">
           <div className="absolute -right-6 -top-6 text-white/10 text-8xl">
             <i className="fa-solid fa-building-columns"></i>
           </div>
@@ -105,11 +105,11 @@ const ReturnInfoSection = ({ order }) => {
 
 const DeliveryInfoSection = ({ order }) => {
   return (
-    <div className="bg-blue-50/50 p-5 rounded-[1.5rem] border border-blue-100/50 text-sm">
+    <div className="bg-blue-50/50 p-3 md:p-5 rounded-[1.5rem] border border-blue-100/50 text-sm">
       <h5 className="font-bold text-blue-800 mb-4 uppercase text-xs tracking-wider flex items-center gap-2">
         <i className="fa-solid fa-truck-fast text-blue-500 text-base"></i> Delivery Details
       </h5>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-6 bg-white p-5 rounded-2xl border border-blue-50 shadow-sm">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-6 bg-white p-4 md:p-5 rounded-2xl border border-blue-50 shadow-sm">
         <div>
           <span className="block text-[10px] uppercase font-bold text-gray-400 mb-1 tracking-wider">Recipient</span>
           <span className="font-bold text-gray-800">{order.user_name || order.name}</span>
@@ -159,26 +159,32 @@ const OrderItemsList = ({ items, formatCurrency }) => {
 };
 
 const OrderItemCard = ({ item, formatCurrency }) => {
+  // Sửa lại cú pháp lấy đúng biến môi trường Vite
   const imageUrl = item.image_url?.startsWith("http")
       ? item.image_url
-      : `import.meta.env.VITE_API_URL${item.image_url}`;
+      : `${import.meta.env.VITE_API_URL}${item.image_url}`;
 
   const isGift = Boolean(item.is_gift);
 
   return (
-    <div className={`flex gap-4 rounded-2xl p-3 items-center shadow-sm transition-all border ${
+    <div className={`flex gap-3 md:gap-4 rounded-2xl p-3 items-center shadow-sm transition-all border ${
       isGift ? "bg-rose-50 border-rose-100" : "bg-white border-gray-100 hover:border-violet-100 hover:shadow-md"
     }`}>
+      {/* Cố định kích thước khung ảnh để tránh bị giật layout */}
       <div className={`w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 ${isGift ? 'border-2 border-white shadow-sm' : 'bg-gray-50 border border-gray-100'}`}>
         <img
           src={imageUrl}
-          onError={(e) => (e.target.src = "import.meta.env.VITE_API_URL/public/placeholder.jpg")}
+          // Sửa lại cú pháp fallback image đúng chuẩn
+          onError={(e) => {
+            e.target.onerror = null; // Ngăn chặn lặp vô hạn lỗi onError
+            e.target.src = `${import.meta.env.VITE_API_URL}/public/placeholder.jpg`;
+          }}
           alt={item.product_name}
           className="w-full h-full object-cover"
         />
       </div>
 
-      <div className="flex-1 min-w-0 pr-2">
+      <div className="flex-1 min-w-0">
         <h4 className="text-sm font-extrabold text-gray-800 truncate mb-0.5">
           {item.product_name}
         </h4>
@@ -189,12 +195,11 @@ const OrderItemCard = ({ item, formatCurrency }) => {
           {item.size && `Size: ${item.size}`}
         </p>
 
-        <div className="flex justify-between items-center">
+        <div className="flex flex-wrap justify-between items-center gap-2">
           <span className="text-[10px] bg-gray-100 px-2.5 py-1 rounded-full font-bold text-gray-600 uppercase tracking-wider">
             Qty: {item.quantity}
           </span>
 
-          {/* Conditional Rendering for Price or Gift Badge */}
           {isGift ? (
             <div className="flex items-center gap-2">
               <span className="bg-rose-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider shadow-sm">

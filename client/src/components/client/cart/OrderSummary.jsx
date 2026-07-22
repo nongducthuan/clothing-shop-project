@@ -40,7 +40,7 @@ export default function OrderSummary({ state, actions, helpers, onCheckout }) {
             onChange={(e) => setVoucherCode(e.target.value.toUpperCase())}
             placeholder="Enter code"
             disabled={appliedVoucher !== null}
-            className="flex-1 min-w-0 bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-slate-900 font-medium uppercase transition-colors"
+            className="flex-1 min-w-0 bg-white border border-slate-200 rounded-xl px-3 py-3 text-sm focus:outline-none focus:border-slate-900 font-medium uppercase transition-colors"
           />
           {appliedVoucher ? (
             <button onClick={handleRemoveVoucher} className="px-5 py-3 bg-rose-50 text-rose-600 rounded-xl text-sm font-medium hover:bg-rose-100 transition-colors shrink-0">
@@ -48,7 +48,7 @@ export default function OrderSummary({ state, actions, helpers, onCheckout }) {
             </button>
           ) : (
             <button onClick={handleApplyVoucher} disabled={isApplying || !voucherCode.trim()} className="px-5 py-3 bg-slate-900 text-white rounded-xl text-sm font-medium hover:bg-slate-800 disabled:opacity-50 transition-colors shrink-0">
-              {isApplying ? '...' : 'Apply'}
+              {isApplying ? '...' : 'APPLY'}
             </button>
           )}
         </div>

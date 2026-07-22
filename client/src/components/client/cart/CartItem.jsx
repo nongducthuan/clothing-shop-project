@@ -51,9 +51,10 @@ export default function CartItem({ item, actions, helpers }) {
           </div>
           <button
             onClick={() => removeFromCart(item.cartItemId)}
-            className="text-sm text-slate-400 hover:text-red-500 transition-colors"
+            className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+            title="Remove item"
           >
-            Remove
+            <i className="fa-regular fa-trash-can text-base"></i>
           </button>
         </div>
       </div>

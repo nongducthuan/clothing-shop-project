@@ -16,59 +16,85 @@ export default function OrderListTab({ state, actions, helpers }) {
 
   if (orders.length === 0) {
     return (
-      <div className="text-center py-24 bg-slate-50 rounded-[2rem] border border-slate-100">
-        <i className="fa-solid fa-box-open text-4xl text-slate-300 mb-4"></i>
-        <p className="text-slate-500 font-medium">You have no order history yet.</p>
+      <div className="text-center py-20 bg-slate-50/50 rounded-2xl border border-slate-100 p-6">
+        <i className="fa-solid fa-box-open text-4xl text-slate-300 mb-3"></i>
+        <p className="text-slate-500 font-medium text-sm">You have no order history yet.</p>
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-in fade-in duration-500">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-5 animate-in fade-in duration-300">
       {orders.map((order) => {
-        // Calculate total items in the order
-        const totalItems = order.items.reduce((sum, item) => sum + (item.quantity || 1), 0);
-        // Create a summary text: "T-Shirt (x2), Jeans (x1)"
-        const itemsSummary = order.items.map(item => `${item.product_name || 'Item'} (x${item.quantity})`).join(', ');
+        const totalItems = order.items?.reduce((sum, item) => sum + (item.quantity || 1), 0) || 0;
+        const itemsSummary = order.items?.map(item => `${item.product_name || 'Item'} (x${item.quantity})`).join(', ');
 
         return (
-          <div key={order.id} className="bg-slate-50 rounded-[2rem] p-6 sm:p-8 border border-slate-100 flex flex-col transition-all hover:border-slate-200 hover:shadow-sm">
+          <div
+            key={order.id}
+            className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm flex flex-col justify-between hover:border-slate-300 transition-all"
+          >
+            <div>
+              {/* Header: Order ID & Status */}
+              <div className="flex justify-between items-start pb-3 mb-3 border-b border-slate-100">
+                <div>
+                  <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                    Order #{order.id}
+                  </span>
+                  <p className="text-xs font-medium text-slate-600 mt-0.5">
+                    {new Date(order.created_at).toLocaleDateString("en-US", { year: 'numeric', month: 'short', day: 'numeric' })}
+                  </p>
+                </div>
+                <ModernStatusBadge status={order.status} />
+              </div>
 
-            {/* Header: Order ID & Date */}
-            <div className="flex justify-between items-start mb-6">
-              <div>
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">
-                  Order #{order.id}
-                </p>
-                <p className="text-sm font-medium text-slate-900">
-                  {new Date(order.created_at).toLocaleDateString("en-US", { year: 'numeric', month: 'short', day: 'numeric' })}
+              {/* Items Summary */}
+              <div className="mb-4">
+                <p className="text-xs text-slate-500 font-medium line-clamp-1" title={itemsSummary}>
+                  <i className="fa-solid fa-bag-shopping mr-1.5 text-slate-400"></i>
+                  {itemsSummary || `${totalItems} items`}
                 </p>
               </div>
-              <ModernStatusBadge status={order.status} />
+
+              {/* Payment & Total Block */}
+              <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100/80 mb-4 flex justify-between items-stretch gap-2">
+
+                {/* Cột trái: Badge & Phương thức thanh toán */}
+                <div className="flex flex-col justify-between">
+                  <div className="mb-1">
+                    <PaymentStatusBadge status={order.payment_status} />
+                  </div>
+                  <p className="text-xs text-slate-500 font-medium capitalize pl-0.5">
+                    {order.payment_method}
+                  </p>
+                </div>
+
+                {/* Cột phải: Total & Giá tiền (đã rút gọn) */}
+                <div className="flex flex-col justify-between text-right shrink-0">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">
+                    Total
+                  </span>
+                  <p className="text-base font-bold text-slate-900 whitespace-nowrap leading-none">
+                    {/* Sửa trong hàm formatCurrency hoặc thay trực tiếp bằng .replace */}
+                    {formatCurrency(order.total_price).replace("VND", "đ")}
+                  </p>
+                </div>
+
+              </div>
+
+              {/* Notice Return */}
+              {order.status === "Return Requested" && (
+                <div className="mb-4 py-2 px-3 bg-amber-50 border border-amber-100 rounded-lg text-xs font-medium text-amber-700 text-center flex items-center justify-center gap-2">
+                  <i className="fa-solid fa-spinner animate-spin"></i> Processing Return
+                </div>
+              )}
             </div>
 
-            {/* Payment & Total */}
-            <div className="grid grid-cols-2 items-center gap-y-1 mb-6">
-              <div className="space-y-2">
-                <PaymentStatusBadge status={order.payment_status} />
-              </div>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest text-right">Total</p>
-              <p className="text-xs font-medium text-slate-500 capitalize">{order.payment_method}</p>
-              <p className="text-lg font-medium text-slate-900 text-right">{formatCurrency(order.total_price)}</p>
-            </div>
-
-            {/* Return Requested Notice */}
-            {order.status === "Return Requested" && (
-              <div className="mb-4 py-2 px-4 bg-white border border-slate-100 rounded-lg text-xs font-medium text-slate-500 text-center">
-                <i className="fa-solid fa-spinner animate-spin mr-2"></i> Processing Return
-              </div>
-            )}
-
-            {/* Actions */}
-            <div className="grid grid-cols-2 gap-3 mt-auto">
+            {/* Actions Button */}
+            <div className="flex gap-2.5 pt-1">
               <button
                 onClick={() => setSelectedOrder(order)}
-                className="py-3 bg-white border border-slate-200 text-slate-900 rounded-xl font-medium text-sm hover:bg-slate-100 transition-colors"
+                className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200/80 text-slate-700 rounded-xl font-medium text-xs sm:text-sm transition-colors"
               >
                 Details
               </button>
@@ -76,7 +102,7 @@ export default function OrderListTab({ state, actions, helpers }) {
               {order.payment_method === "momo" && order.payment_status === "Unpaid" && order.status !== "Cancelled" && (
                 <button
                   onClick={(e) => { e.stopPropagation(); handleMoMoPayment(order); }}
-                  className="py-3 bg-rose-50 text-rose-600 border border-rose-100 rounded-xl font-medium text-sm hover:bg-rose-100 transition-colors"
+                  className="flex-1 py-2.5 bg-pink-600 hover:bg-pink-700 text-white rounded-xl font-semibold text-xs sm:text-sm transition-colors shadow-sm shadow-pink-200"
                 >
                   Pay MoMo
                 </button>
@@ -85,7 +111,7 @@ export default function OrderListTab({ state, actions, helpers }) {
               {order.status === "Delivered" && !order.return_id && (
                 <button
                   onClick={(e) => { e.stopPropagation(); handleOpenReturnModal(order.id); }}
-                  className="py-3 bg-slate-900 text-white rounded-xl font-medium text-sm hover:bg-slate-800 transition-colors"
+                  className="flex-1 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-medium text-xs sm:text-sm transition-colors"
                 >
                   Return
                 </button>

@@ -111,6 +111,9 @@ export default function ProductList({
                     <h4 className="font-extrabold text-gray-900 text-base leading-tight truncate mb-3">
                       {p.name}
                     </h4>
+                    <p className="text-xs text-gray-500 line-clamp-2">
+                      {p.description || "No description available."}
+                    </p>
 
                     {/* Action Footer: Căn ngang Giá bên trái, Nút bên phải */}
                     <div className="mt-auto flex justify-between items-end pt-3 border-t border-gray-100">

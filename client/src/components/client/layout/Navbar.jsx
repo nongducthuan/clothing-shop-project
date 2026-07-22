@@ -120,9 +120,8 @@ const DesktopNav = ({ menuData, navigate }) => {
         >
           {/* Nav Item Text */}
           <div
-            className={`cursor-pointer uppercase font-bold text-sm tracking-wide px-6 py-2 transition-colors duration-300 ${
-              hoveredGender === gender ? "text-white" : "text-gray-500 hover:text-gray-800"
-            }`}
+            className={`cursor-pointer uppercase font-bold text-sm tracking-wide px-6 py-2 transition-colors duration-300 ${hoveredGender === gender ? "text-white" : "text-gray-500 hover:text-gray-800"
+              }`}
           >
             {gender.toUpperCase()}
           </div>
@@ -169,9 +168,8 @@ const UserDropdown = ({ user, navigate, onLogout }) => {
   return (
     <div className="relative hidden md:block" onMouseEnter={open} onMouseLeave={close}>
       <i
-        className={`fa-solid fa-user text-xl cursor-pointer transition-colors ${
-          user ? "text-violet-600" : "text-gray-700 hover:text-violet-600"
-        }`}
+        className={`fa-solid fa-user text-xl cursor-pointer transition-colors ${user ? "text-violet-600" : "text-gray-700 hover:text-violet-600"
+          }`}
       ></i>
 
       {isOpen && (
@@ -189,7 +187,7 @@ const UserDropdown = ({ user, navigate, onLogout }) => {
                   className="px-4 py-2.5 hover:bg-violet-50 hover:text-violet-700 font-medium text-gray-700 cursor-pointer transition-colors flex items-center"
                   onClick={() => navigate("/admin")}
                 >
-                  <i className="fa-solid fa-screwdriver-wrench mr-2 w-4 text-center"></i> Admin
+                  <i className="fa-solid fa-screwdriver-wrench mr-2 w-4 text-center"></i> Dashboard
                 </div>
               )}
               <div
@@ -257,12 +255,12 @@ const MobileMenu = ({ isOpen, onClose, user, menuData, navigate, onLogout }) => 
   return (
     <>
       {/* Backdrop overlay */}
-      <div 
+      <div
         className="fixed inset-0 top-16 bg-slate-900/40 backdrop-blur-xs z-30 md:hidden animate-fadeIn"
         onClick={onClose}
       />
 
-      <div className="fixed top-16 left-0 right-0 bottom-0 bg-white z-40 overflow-y-auto p-5 md:hidden animate-fadeIn flex flex-col justify-between">
+      <div className="fixed top-16 left-0 right-0 bottom-0 bg-white z-40 overflow-y-auto p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] md:hidden animate-fadeIn flex flex-col justify-between">
         <div>
           {/* User Info Mobile */}
           <div className="mb-6 border-b border-gray-100 pb-4">
@@ -303,22 +301,22 @@ const MobileMenu = ({ isOpen, onClose, user, menuData, navigate, onLogout }) => 
           <div className="grid grid-cols-2 gap-3 mb-6">
             <button
               onClick={() => handleNav("/sales-policy")}
-              className="flex items-center gap-3 p-3.5 bg-slate-50 border border-slate-100 rounded-xl text-slate-700 font-semibold text-sm hover:bg-violet-50 hover:text-violet-700 transition-all text-left"
+              className="flex items-center gap-2 px-2.5 py-3 bg-slate-50 border border-slate-100 rounded-xl text-slate-700 font-semibold text-[13px] hover:bg-violet-50 hover:text-violet-700 transition-all text-left"
             >
-              <div className="w-8 h-8 rounded-lg bg-violet-100 text-violet-600 flex items-center justify-center shrink-0">
-                <i className="fa-solid fa-shield-halved text-sm"></i>
+              <div className="w-7 h-7 rounded-lg bg-violet-100 text-violet-600 flex items-center justify-center shrink-0">
+                <i className="fa-solid fa-shield-halved text-xs"></i>
               </div>
-              <span className="truncate">Sales Policy</span>
+              <span className="whitespace-normal leading-tight">Sales Policy</span>
             </button>
 
             <button
               onClick={() => handleNav("/order")}
-              className="flex items-center gap-3 p-3.5 bg-slate-50 border border-slate-100 rounded-xl text-slate-700 font-semibold text-sm hover:bg-violet-50 hover:text-violet-700 transition-all text-left"
+              className="flex items-center gap-2 px-2.5 py-3 bg-slate-50 border border-slate-100 rounded-xl text-slate-700 font-semibold text-[13px] hover:bg-violet-50 hover:text-violet-700 transition-all text-left"
             >
-              <div className="w-8 h-8 rounded-lg bg-sky-100 text-sky-600 flex items-center justify-center shrink-0">
-                <i className="fa-solid fa-truck-fast text-sm"></i>
+              <div className="w-7 h-7 rounded-lg bg-sky-100 text-sky-600 flex items-center justify-center shrink-0">
+                <i className="fa-solid fa-truck-fast text-xs"></i>
               </div>
-              <span className="truncate">Track Order</span>
+              <span className="whitespace-normal leading-tight">Track Order</span>
             </button>
           </div>
 
@@ -334,25 +332,22 @@ const MobileMenu = ({ isOpen, onClose, user, menuData, navigate, onLogout }) => 
                   className="w-full flex justify-between items-center p-4 text-left focus:outline-none"
                 >
                   <span
-                    className={`font-bold text-base uppercase tracking-wide ${
-                      expandedGender === gender ? "text-violet-700" : "text-gray-800"
-                    }`}
+                    className={`font-bold text-base uppercase tracking-wide ${expandedGender === gender ? "text-violet-700" : "text-gray-800"
+                      }`}
                   >
                     {gender.toUpperCase()}
                   </span>
                   <div className={`w-7 h-7 rounded-full flex items-center justify-center transition-colors ${expandedGender === gender ? 'bg-violet-100' : 'bg-gray-200'}`}>
                     <i
-                      className={`fa-solid fa-chevron-down text-xs transition-transform duration-300 ${
-                        expandedGender === gender ? "rotate-180 text-violet-700" : "text-gray-500"
-                      }`}
+                      className={`fa-solid fa-chevron-down text-xs transition-transform duration-300 ${expandedGender === gender ? "rotate-180 text-violet-700" : "text-gray-500"
+                        }`}
                     ></i>
                   </div>
                 </button>
 
                 <div
-                  className={`transition-all duration-300 ease-in-out ${
-                    expandedGender === gender ? "max-h-[1000px] opacity-100 pb-4 px-4" : "max-h-0 opacity-0 overflow-hidden"
-                  }`}
+                  className={`transition-all duration-300 ease-in-out ${expandedGender === gender ? "max-h-[1000px] opacity-100 pb-4 px-4" : "max-h-0 opacity-0 overflow-hidden"
+                    }`}
                 >
                   <div className="grid grid-cols-2 gap-2.5">
                     {menuData[gender].map((cat) => (
@@ -377,7 +372,7 @@ const MobileMenu = ({ isOpen, onClose, user, menuData, navigate, onLogout }) => 
                 onClick={() => handleNav("/admin")}
                 className="w-full py-3.5 bg-slate-900 text-white rounded-xl font-bold transition-all hover:bg-slate-800 flex items-center justify-center gap-2"
               >
-                <i className="fa-solid fa-screwdriver-wrench"></i> Admin Dashboard
+                Dashboard
               </button>
             </div>
           )}
@@ -420,7 +415,7 @@ export default function Navbar() {
   return (
     <>
       <nav className="bg-white/95 backdrop-blur-md shadow-xs border-b border-gray-100 fixed top-0 left-0 right-0 z-50 h-16">
-        <div className="container mx-auto px-4 flex justify-between items-center h-full">
+        <div className="container mx-auto px-4 flex gap-4 lg:gap-8 justify-between items-center h-full">
           {/* Logo */}
           <div className="flex-shrink-0">
             <NavLink

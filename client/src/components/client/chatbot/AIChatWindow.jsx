@@ -47,14 +47,14 @@ export default function AIChatWindow({ onClose }) {
         <div className="flex gap-2">
           <button
             type="button"
-            className="rounded-lg px-3 py-1 text-xs font-medium text-black transition-colors hover:bg-white/50 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+            className="rounded-lg bg-white/80 px-3 py-1 text-xs font-medium text-black shadow-sm transition-colors hover:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400"
             onClick={resetChat}
           >
             Delete Chat
           </button>
           <button
             type="button"
-            className="rounded-lg px-3 py-1 text-xs font-medium text-black transition-colors hover:bg-white/50 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+            className="rounded-lg bg-white/80 px-3 py-1 text-xs font-medium text-black shadow-sm transition-colors hover:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400"
             onClick={onClose}
             aria-label="Đóng chat"
           >

@@ -25,7 +25,8 @@ export default function ColorSection({
         input[type="color"]::-webkit-color-swatch { border: none; border-radius: 50%; }
       `}</style>
 
-      <div className="lg:col-span-4 bg-white p-6 md:p-8 shadow-sm rounded-[2rem] border border-gray-100 flex flex-col h-[800px]">
+      {/* Đổi h-[800px] thành h-fit để tránh khoảng trắng thừa */}
+      <div className="lg:col-span-4 bg-white p-6 md:p-8 shadow-sm rounded-[2rem] border border-gray-100 flex flex-col h-fit">
         <h4 className="font-extrabold text-lg text-slate-800 mb-6 flex items-center gap-3">
           <div className="w-8 h-8 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center text-sm">
             1
@@ -33,8 +34,8 @@ export default function ColorSection({
           Color Variants
         </h4>
 
-        {/* Scrollable Color List */}
-        <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 space-y-3 mb-6">
+        {/* Scrollable Color List (Giới hạn max-height để nếu có nhiều màu thì tự cuộn) */}
+        <div className="max-h-[350px] overflow-y-auto custom-scrollbar pr-2 space-y-3 mb-6">
           {colors.map((color) => {
             const isSelected = selectedColorId === color.id;
             return (
@@ -85,7 +86,7 @@ export default function ColorSection({
             );
           })}
           {colors.length === 0 && (
-            <div className="text-center py-10 text-slate-400 italic text-sm border-2 border-dashed border-gray-100 rounded-2xl">
+            <div className="text-center py-6 text-slate-400 italic text-sm border-2 border-dashed border-gray-100 rounded-2xl">
               No variants added yet.
             </div>
           )}
@@ -123,12 +124,18 @@ export default function ColorSection({
 
             {/* Image Upload Row */}
             <div className="flex flex-col gap-3">
-              {/* Nút Upload to rõ ràng */}
+              {/* Nút Upload đã kết nối hàm onUploadImage */}
               <div className="relative w-full">
-                <input type="file" className="absolute inset-0 opacity-0 z-10 cursor-pointer" />
+                <input 
+                  type="file" 
+                  className="absolute inset-0 opacity-0 z-10 cursor-pointer" 
+                  onChange={(e) => e.target.files?.[0] && onUploadImage(e.target.files[0])}
+                />
                 <div className="w-full py-3 bg-indigo-50 border-2 border-dashed border-indigo-200 rounded-xl flex flex-col items-center justify-center gap-1 text-indigo-600 hover:bg-indigo-100 transition-all">
                   <i className="fa-solid fa-cloud-arrow-up text-lg"></i>
-                  <span className="text-[11px] font-bold uppercase">Upload Product Image</span>
+                  <span className="text-[11px] font-bold uppercase">
+                    {colorForm.image_url ? "Change Image Selected" : "Upload Product Image"}
+                  </span>
                 </div>
               </div>
 
@@ -142,6 +149,8 @@ export default function ColorSection({
               <input
                 className="w-full px-4 py-2 bg-white border border-gray-200 rounded-xl text-xs"
                 placeholder="Paste image link here..."
+                value={colorForm.image_url || ""}
+                onChange={(e) => setColorForm({ ...colorForm, image_url: e.target.value })}
               />
             </div>
 
