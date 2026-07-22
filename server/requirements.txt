@@ -1,1 +1,7 @@
 python-dotenv
+langchain
+langchain-core
+langchain-community
+langchain-experimental
+langchain-google-genai
+google-generativeai
