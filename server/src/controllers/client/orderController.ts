@@ -140,7 +140,7 @@ async function getMomoPayUrl(orderId: string, amountInput: number | string, orde
 export const createOrderController = async (req: Request, res: Response): Promise<void> => {
     try {
         const userId = req.user?.id || req.body.user_id || null;
-        const { address, items, phone, name, email, payment_method, voucher_id, total_price } = req.body;
+        const { address, items, phone, name, email, payment_method, voucher_id } = req.body;
 
         if (!address || !items || items.length === 0) {
             res.status(400).json({ message: "Invalid order data: Address or items are missing" });
@@ -207,19 +207,84 @@ export const createOrderController = async (req: Request, res: Response): Promis
                 });
             }
 
-            // 2. Membership Discount
-            if (userId && !total_price) {
+            // 2. Membership Discount (always applied server-side)
+            if (userId) {
                 const user = await tx.user.findUnique({
                     where: { id: userId },
                     include: { membership: true }
                 });
-                if (user?.membership) {
+                if (user?.membership && Number(user.membership.discount_percent) > 0) {
                     const discount = (serverCalculatedTotal * Number(user.membership.discount_percent)) / 100;
                     serverCalculatedTotal -= discount;
                 }
             }
 
-            finalTotal = total_price || serverCalculatedTotal;
+            // Bug fix 1: Always use server-calculated total — never trust client-sent price
+            finalTotal = serverCalculatedTotal;
+
+            // Bug fix 2: Re-validate voucher in transaction before decrementing usage
+            if (voucher_id) {
+                const voucher = await tx.voucher.findUnique({
+                    where: { id: Number(voucher_id) },
+                    include: { product_vouchers: true, voucher_categories: true }
+                });
+
+                if (!voucher || voucher.status === 0) {
+                    throw new Error('Mã giảm giá không tồn tại hoặc đã bị vô hiệu hóa.');
+                }
+                if (voucher.usage_limit !== null && voucher.usage_limit <= 0) {
+                    throw new Error('Mã giảm giá đã hết lượt sử dụng.');
+                }
+                if (voucher.start_date && new Date() < voucher.start_date) {
+                    throw new Error('Mã giảm giá chưa đến thời gian áp dụng.');
+                }
+                if (voucher.end_date && new Date() > voucher.end_date) {
+                    throw new Error('Mã giảm giá đã hết hạn.');
+                }
+                if (finalTotal < Number(voucher.min_order_value)) {
+                    throw new Error(`Đơn hàng chưa đạt giá trị tối thiểu ${Number(voucher.min_order_value).toLocaleString()}đ để dùng mã này.`);
+                }
+
+                // Re-verify scope: all scope always passes; product/category scopes must match at least 1 item
+                if (voucher.apply_scope !== 'all') {
+                    const productIds = itemsToSave.filter(i => !i.is_gift).map(i => i.product_id);
+                    let scopeValid = false;
+
+                    if (voucher.apply_scope === 'product') {
+                        const allowedIds = voucher.product_vouchers.map(pv => pv.product_id);
+                        scopeValid = productIds.some(id => allowedIds.includes(id));
+                    } else if (voucher.apply_scope === 'category') {
+                        const allowedCatIds = voucher.voucher_categories.map(vc => vc.category_id);
+                        // Fetch category_id for each product in order
+                        const products = await tx.product.findMany({
+                            where: { id: { in: productIds } },
+                            select: { id: true, category_id: true }
+                        });
+                        scopeValid = products.some(p => p.category_id && allowedCatIds.includes(p.category_id));
+                    }
+
+                    if (!scopeValid) {
+                        throw new Error('Mã giảm giá không áp dụng cho các sản phẩm trong đơn hàng này.');
+                    }
+                }
+
+                // Apply voucher discount to finalTotal
+                let voucherDiscount = (finalTotal * Number(voucher.discount_percent || 0)) / 100;
+                if (voucher.max_discount_amount && voucherDiscount > Number(voucher.max_discount_amount)) {
+                    voucherDiscount = Number(voucher.max_discount_amount);
+                }
+                finalTotal = Math.max(0, finalTotal - voucherDiscount);
+
+                // Decrement usage limit
+                await tx.voucher.update({
+                    where: { id: Number(voucher_id) },
+                    data: {
+                        usage_limit: voucher.usage_limit !== null
+                            ? { decrement: 1 }
+                            : undefined
+                    }
+                });
+            }
 
             // 3. Create Order
             const newOrder = await tx.order.create({
@@ -238,13 +303,6 @@ export const createOrderController = async (req: Request, res: Response): Promis
                 }
             });
             orderId = newOrder.id;
-
-            if (voucher_id) {
-                await tx.voucher.updateMany({
-                    where: { id: Number(voucher_id), usage_limit: { gt: 0 } },
-                    data: { usage_limit: { decrement: 1 } }
-                });
-            }
         });
 
         // Outside transaction: Emails, Analytics, MoMo
