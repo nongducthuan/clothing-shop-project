@@ -51,3 +51,20 @@ export const updateMembership = async (req: Request, res: Response): Promise<voi
         res.status(500).json({ message: error.message });
     }
 };
+
+// Alias for route compatibility
+export const createMembership = addMembership;
+
+export const deleteMembership = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { id } = req.params;
+        await prisma.membership.delete({
+            where: { id: Number(id) },
+        });
+        res.json({ message: "Đã xóa hạng hội viên thành công" });
+    } catch (error: any) {
+        console.error('Error deleting membership:', error);
+        res.status(500).json({ message: error.message });
+    }
+};
+

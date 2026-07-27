@@ -191,3 +191,48 @@ export const getMe = async (req: Request, res: Response): Promise<void> => {
     res.status(500).json({ message: 'Server error' });
   }
 };
+
+export const logout = (_req: Request, res: Response): void => {
+  // JWT is stateless — client simply discards the token
+  res.status(200).json({ message: 'Logged out successfully' });
+};
+
+export const changePassword = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      res.status(401).json({ message: 'Unauthorized' });
+      return;
+    }
+
+    const { currentPassword, newPassword } = req.body;
+    if (!currentPassword || !newPassword) {
+      res.status(400).json({ message: 'Please provide current and new password' });
+      return;
+    }
+
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      res.status(404).json({ message: 'User not found' });
+      return;
+    }
+
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      res.status(400).json({ message: 'Current password is incorrect' });
+      return;
+    }
+
+    const hashedNew = await bcrypt.hash(newPassword, 10);
+    await prisma.user.update({
+      where: { id: userId },
+      data: { password: hashedNew },
+    });
+
+    res.status(200).json({ message: 'Password changed successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+

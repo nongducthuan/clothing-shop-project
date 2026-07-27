@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { authenticateToken, authorizeRole } from '../../middleware/authMiddleware';
+import { authenticateToken, requireAdmin } from '../../middleware/authMiddleware';
 
 // Import Admin Controllers
 import * as categoryController from '../../controllers/admin/categoryController';
@@ -17,7 +17,7 @@ const router = Router();
 
 // Apply auth middleware for all admin routes
 router.use(authenticateToken);
-router.use(authorizeRole(['admin']));
+router.use(requireAdmin);
 
 // --- Stats / Dashboard ---
 router.get('/stats', statsController.getAdminStats);
