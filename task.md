@@ -61,7 +61,7 @@
 - [x] Bỏ tầng src/models/ (không tồn tại - đã bỏ hoàn toàn)
 - [x] Fix tsconfig.json (moduleResolution: node16, module: Node16)
 - [x] `node node_modules/typescript/bin/tsc --noEmit` → **0 errors** ✅
-- [ ] Test server chạy được với `npm run dev` (cần DB đang chạy)
+- [x] Test server chạy được với `npm run dev` (cần DB đang chạy) - Đã chạy thành công tại port 5000
 
 ---
 

@@ -114,6 +114,7 @@ export const getActiveVouchers = async (req: Request, res: Response): Promise<vo
     });
 
     const filteredVouchers = vouchers.filter(v => {
+        if (!category_id && !product_id) return true;
         if (v.apply_scope === 'all') return true;
         if (v.apply_scope === 'category' && category_id) {
             return v.voucher_categories.some(vc => vc.category_id === Number(category_id));

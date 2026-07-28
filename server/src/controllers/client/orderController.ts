@@ -13,10 +13,20 @@ export const sendOtpController = async (req: Request, res: Response): Promise<vo
         return;
     }
 
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
-
     try {
+        const oneMinuteAgo = new Date(Date.now() - 60 * 1000);
+        const recentOtp = await prisma.otp.findFirst({
+            where: { email, created_at: { gte: oneMinuteAgo } }
+        });
+
+        if (recentOtp) {
+            res.status(429).json({ message: "Please wait 1 minute before requesting a new OTP code." });
+            return;
+        }
+
+        const code = Math.floor(100000 + Math.random() * 900000).toString();
+        const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
+
         await prisma.$transaction(async (tx) => {
             await tx.otp.deleteMany({ where: { email } });
             await tx.otp.create({
@@ -93,7 +103,7 @@ async function getMomoPayUrl(orderId: string, amountInput: number | string, orde
     const amountString = amountNumber.toString();
     const requestId = `${orderId}_${Date.now()}`;
     const momoOrderId = requestId;
-    const redirectUrl = `${process.env.CLIENT_URL || 'http://localhost:5173'}/profile`;
+    const redirectUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/profile`;
     const ipnUrl = `${process.env.NGROK_URL}/orders/momo-callback`;
     const requestType = "captureWallet";
     const extraData = "";
@@ -491,11 +501,11 @@ export const submitReturnRequest = async (req: Request, res: Response): Promise<
 
         await prisma.$transaction(async (tx) => {
             const order = await tx.order.findFirst({
-                where: { id: orderId, email: email, status: 'Delivered' }
+                where: { id: orderId, email: email, status: 'Delivered', payment_status: 'Paid' }
             });
 
             if (!order) {
-                throw new Error("The order is invalid, not delivered, or the email does not match.");
+                throw new Error("The order is invalid, not delivered, unpaid, or the email does not match.");
             }
 
             const existing = await tx.returnRequest.findUnique({ where: { order_id: orderId } });

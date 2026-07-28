@@ -4,24 +4,34 @@ import { Prisma } from '@prisma/client';
 
 export const getOrders = async (req: Request, res: Response): Promise<void> => {
     try {
-        const orders = await prisma.order.findMany({
-            include: {
-                user: {
-                    select: { name: true, email: true }
-                },
-                return_request: true,
-                items: {
-                    include: {
-                        product: { select: { name: true, image_url: true } },
-                        color: { select: { color_name: true } },
-                        size: { select: { size: true } }
-                    }
-                }
-            },
-            orderBy: { created_at: 'desc' }
-        });
+        const { page = 1, limit = 500 } = req.query;
+        const p = Number(page) || 1;
+        const l = Number(limit) || 500;
+        const offset = (p - 1) * l;
 
-        const processedOrders = orders.map(order => {
+        const [ordersRaw, totalOrders] = await Promise.all([
+            prisma.order.findMany({
+                skip: offset,
+                take: l,
+                include: {
+                    user: {
+                        select: { name: true, email: true }
+                    },
+                    return_request: true,
+                    items: {
+                        include: {
+                            product: { select: { name: true, image_url: true } },
+                            color: { select: { color_name: true } },
+                            size: { select: { size: true } }
+                        }
+                    }
+                },
+                orderBy: { created_at: 'desc' }
+            }),
+            prisma.order.count()
+        ]);
+
+        const processedOrders = ordersRaw.map(order => {
             let bankInfo = null;
             let returnImages: any[] = [];
             const rr = order.return_request;
@@ -63,7 +73,13 @@ export const getOrders = async (req: Request, res: Response): Promise<void> => {
             };
         });
 
-        res.json(processedOrders);
+        // Return object with data property and other pagination metadata
+        res.json({
+            data: processedOrders,
+            totalPages: Math.ceil(totalOrders / l),
+            currentPage: p,
+            totalOrders
+        });
     } catch (err) {
         console.error("getOrders admin error:", err);
         res.status(500).json({ message: "Server error" });
@@ -102,7 +118,6 @@ export const changeOrderStatusLogic = async (orderId: number, newStatus: string)
         const userId = order.user_id;
 
         // 1. Inventory Updates
-        const inactiveStatuses = ["Cancelled", "Return Approved", "Return Rejected", "Return Requested"]; // Note: Adjusted based on enum
         const inactiveSet = new Set(["Cancelled", "Return_Approved"]); // Map to Prisma enums
         
         const oldIsInactive = inactiveSet.has(oldStatus);

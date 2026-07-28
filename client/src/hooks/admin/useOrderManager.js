@@ -73,7 +73,9 @@ export default function useOrderManager() {
         headers: { Authorization: `Bearer ${getToken()}` },
       });
 
-      const sortedOrders = res.data.sort(
+      const ordersData = res.data.data || res.data;
+      
+      const sortedOrders = (Array.isArray(ordersData) ? ordersData : []).sort(
         (a, b) => new Date(b.created_at) - new Date(a.created_at)
       );
       setOrders(sortedOrders);
