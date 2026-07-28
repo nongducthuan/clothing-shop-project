@@ -1,0 +1,74 @@
+import { Router } from 'express';
+import { authenticateToken } from '../../middleware/authMiddleware';
+
+// Import Client Controllers
+import * as authController from '../../controllers/client/authController';
+import * as categoryController from '../../controllers/client/categoryController';
+import * as chatController from '../../controllers/client/chatController';
+import * as membershipController from '../../controllers/client/membershipController';
+import * as orderController from '../../controllers/client/orderController';
+import * as productController from '../../controllers/client/productController';
+import * as productDetailController from '../../controllers/client/productDetailController';
+import * as promotionController from '../../controllers/client/promotionController';
+import * as saleController from '../../controllers/client/saleController';
+import * as voucherController from '../../controllers/client/voucherController';
+import * as bannerController from '../../controllers/client/bannerController';
+
+const router = Router();
+
+// --- Auth ---
+router.post('/auth/register', authController.register);
+router.post('/auth/login', authController.login);
+router.post('/auth/logout', authController.logout);
+router.get('/auth/me', authenticateToken, authController.getMe);
+router.put('/auth/profile', authenticateToken, authController.updateProfile);
+router.put('/auth/password', authenticateToken, authController.changePassword);
+
+// --- Banners ---
+router.get('/banners', bannerController.getBanners);
+
+// --- Categories ---
+router.get('/categories', categoryController.getCategories);
+router.get('/categories/preview', categoryController.getCategoriesWithPreview);
+router.get('/categories/recommend', categoryController.getRecommendCategories);
+
+// --- Chat AI ---
+router.post('/chat', chatController.handleChat);
+router.post('/chat/history', chatController.handleChatWithHistory);
+router.delete('/chat/history', chatController.clearChatHistory);
+
+// --- Memberships ---
+router.get('/memberships', membershipController.getMemberships);
+
+// --- Orders ---
+router.post('/orders/otp/send', orderController.sendOtpController);
+router.post('/orders/otp/verify', orderController.verifyOtpAndGetOrders);
+router.post('/orders', orderController.createOrderController); // Note: might use req.user if auth token present
+router.get('/orders', authenticateToken, orderController.getOrders);
+router.put('/orders/status', authenticateToken, orderController.changeOrderStatus);
+router.post('/orders/:id/repay', orderController.repayMoMoController);
+router.post('/orders/:id/return', orderController.submitReturnRequest);
+
+// MoMo Webhook (does not need /api prefix usually, but we'll include it or keep it as is, frontend config needs to match MoMo's setting)
+router.post('/orders/momo-callback', orderController.momoCallback);
+
+// --- Products ---
+router.get('/products', productController.getProducts);
+router.get('/products/search', productController.searchProducts);
+router.get('/products/representative', productController.getRepresentative);
+router.get('/products/:id', productController.getProduct);
+router.get('/products/:id/options', productController.getProductOptions);
+router.get('/products/:id/details', productDetailController.getProductDetail);
+router.post('/products/interaction', authenticateToken, productController.logInteraction);
+router.get('/products/recommendations/:userId', productController.getRecommendations);
+
+// --- Promotions & Sales ---
+router.get('/promotions', promotionController.getActivePromotions);
+router.post('/promotions/calculate', promotionController.calculateCart);
+router.get('/sales', saleController.getClientSales);
+
+// --- Vouchers ---
+router.get('/vouchers', voucherController.getActiveVouchers);
+router.post('/vouchers/apply', voucherController.applyVoucherClient);
+
+export default router;

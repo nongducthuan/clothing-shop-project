@@ -1,0 +1,431 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+// ==============================================================================
+// 1. AUTHENTICATION & USERS
+// ==============================================================================
+
+model Membership {
+  id               Int     @id @default(autoincrement())
+  name             String  @db.VarChar(50)
+  min_spending     Decimal @db.Decimal(10, 2)
+  discount_percent Decimal @default(0) @db.Decimal(5, 2)
+
+  users User[]
+
+  @@map("memberships")
+}
+
+model User {
+  id            Int        @id @default(autoincrement())
+  name          String     @db.VarChar(255)
+  email         String     @unique @db.VarChar(255)
+  phone         String?    @unique @db.VarChar(20)
+  password      String     @db.VarChar(100)
+  role          UserRole   @default(customer)
+  total_spent   Decimal    @default(0) @db.Decimal(10, 2)
+  membership_id Int?
+  created_at    DateTime   @default(now())
+
+  membership   Membership? @relation(fields: [membership_id], references: [id])
+  orders       Order[]
+  interactions UserProductInteraction[]
+
+  @@map("users")
+}
+
+model Otp {
+  id         Int      @id @default(autoincrement())
+  email      String   @db.VarChar(255)
+  code       String   @db.VarChar(6)
+  expires_at DateTime
+  created_at DateTime @default(now())
+
+  @@map("otps")
+}
+
+// ==============================================================================
+// 2. PRODUCT CATALOG
+// ==============================================================================
+
+model Category {
+  id          Int            @id @default(autoincrement())
+  name        String         @db.VarChar(100)
+  description String?        @db.Text
+  gender      Gender         @default(unisex)
+  image_url   String?        @db.VarChar(512)
+
+  products          Product[]
+  sale_categories   SaleCategory[]
+  voucher_categories VoucherCategory[]
+
+  @@map("categories")
+}
+
+model Product {
+  id           Int       @id @default(autoincrement())
+  name         String    @db.VarChar(255)
+  description  String?   @db.Text
+  price        Decimal   @db.Decimal(10, 2)
+  import_price Decimal   @default(0) @db.Decimal(15, 2)
+  image_url    String?   @db.VarChar(512)
+  gender       Gender    @default(unisex)
+  category_id  Int
+  created_at   DateTime  @default(now())
+
+  category     Category  @relation(fields: [category_id], references: [id])
+  colors       ProductColor[]
+  product_sales ProductSale[]
+  product_vouchers ProductVoucher[]
+  buy_promotions BuyXGetYPromotion[] @relation("BuyProduct")
+  gift_promotions BuyXGetYPromotion[] @relation("GiftProduct")
+  order_items  OrderItem[]
+  interactions UserProductInteraction[]
+
+  @@map("products")
+}
+
+model ProductColor {
+  id         Int     @id @default(autoincrement())
+  product_id Int
+  color_name String  @db.VarChar(50)
+  color_code String? @db.VarChar(10)
+  image_url  String  @db.VarChar(512)
+
+  product Product       @relation(fields: [product_id], references: [id], onDelete: Cascade)
+  sizes   ProductSize[]
+  order_items OrderItem[]
+
+  @@map("product_colors")
+}
+
+model ProductSize {
+  id          Int      @id @default(autoincrement())
+  color_id    Int
+  size        SizeEnum
+  stock       Int      @default(0)
+  extra_price Decimal  @default(0) @db.Decimal(10, 2)
+
+  color       ProductColor @relation(fields: [color_id], references: [id], onDelete: Cascade)
+  order_items OrderItem[]
+  promotion_usage_history PromotionUsageHistory[]
+
+  @@map("product_sizes")
+}
+
+// ==============================================================================
+// 3. MARKETING & PROMOTIONS
+// ==============================================================================
+
+model Banner {
+  id         Int      @id @default(autoincrement())
+  image_url  String   @db.VarChar(500)
+  title      String   @db.VarChar(255)
+  subtitle   String   @db.VarChar(500)
+  created_at DateTime @default(now())
+
+  @@map("banners")
+}
+
+model Sale {
+  id               Int       @id @default(autoincrement())
+  name             String    @db.VarChar(100)
+  discount_percent Decimal   @default(0) @db.Decimal(5, 2)
+  apply_scope      ApplyScope @default(all)
+  start_date       DateTime
+  end_date         DateTime
+  status           Int       @default(1) @db.TinyInt
+  created_at       DateTime  @default(now())
+
+  product_sales    ProductSale[]
+  sale_categories  SaleCategory[]
+
+  @@map("sales")
+}
+
+model ProductSale {
+  id         Int @id @default(autoincrement())
+  product_id Int
+  sale_id    Int
+
+  product Product @relation(fields: [product_id], references: [id], onDelete: Cascade)
+  sale    Sale    @relation(fields: [sale_id], references: [id], onDelete: Cascade)
+
+  @@unique([product_id, sale_id])
+  @@map("product_sales")
+}
+
+model SaleCategory {
+  id          Int @id @default(autoincrement())
+  sale_id     Int
+  category_id Int
+
+  sale     Sale     @relation(fields: [sale_id], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [category_id], references: [id], onDelete: Cascade)
+
+  @@unique([sale_id, category_id])
+  @@map("sale_categories")
+}
+
+model Voucher {
+  id                  Int        @id @default(autoincrement())
+  code                String     @unique @db.VarChar(50)
+  description         String?    @db.Text
+  discount_percent    Decimal?   @db.Decimal(5, 2)
+  max_discount_amount Decimal?   @db.Decimal(10, 2)
+  min_order_value     Decimal    @default(0) @db.Decimal(10, 2)
+  usage_limit         Int?
+  used_count          Int        @default(0)
+  start_date          DateTime?
+  end_date            DateTime?
+  status              Int        @default(1) @db.TinyInt
+  apply_scope         ApplyScope @default(all)
+  created_at          DateTime   @default(now())
+
+  product_vouchers   ProductVoucher[]
+  voucher_categories VoucherCategory[]
+  orders             Order[]
+
+  @@map("vouchers")
+}
+
+model ProductVoucher {
+  id         Int @id @default(autoincrement())
+  product_id Int
+  voucher_id Int
+
+  product Product @relation(fields: [product_id], references: [id], onDelete: Cascade)
+  voucher Voucher @relation(fields: [voucher_id], references: [id], onDelete: Cascade)
+
+  @@unique([product_id, voucher_id])
+  @@map("product_vouchers")
+}
+
+model VoucherCategory {
+  id          Int @id @default(autoincrement())
+  voucher_id  Int
+  category_id Int
+
+  voucher  Voucher  @relation(fields: [voucher_id], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [category_id], references: [id], onDelete: Cascade)
+
+  @@unique([voucher_id, category_id])
+  @@map("voucher_categories")
+}
+
+model BuyXGetYPromotion {
+  id                  Int             @id @default(autoincrement())
+  name                String          @db.VarChar(255)
+  description         String?         @db.Text
+  buy_product_id      Int
+  buy_quantity        Int
+  gift_product_id     Int
+  gift_quantity       Int
+  start_date          DateTime
+  end_date            DateTime
+  max_gift_per_order  Int?
+  total_gift_limit    Int?
+  priority            Int             @default(0)
+  is_stackable        Boolean         @default(false)
+  status              PromotionStatus @default(active)
+  times_applied       Int             @default(0)
+  total_gifts_issued  Int             @default(0)
+  created_at          DateTime        @default(now())
+  updated_at          DateTime        @updatedAt
+
+  buy_product  Product @relation("BuyProduct", fields: [buy_product_id], references: [id], onDelete: Cascade)
+  gift_product Product @relation("GiftProduct", fields: [gift_product_id], references: [id], onDelete: Cascade)
+  order_items  OrderItem[]
+  usage_history PromotionUsageHistory[]
+
+  @@map("buy_x_get_y_promotions")
+}
+
+// ==============================================================================
+// 4. ORDERS & TRANSACTIONS
+// ==============================================================================
+
+model Order {
+  id              Int            @id @default(autoincrement())
+  user_id         Int?
+  voucher_id      Int?
+  name            String         @db.VarChar(255)
+  email           String         @db.VarChar(255)
+  phone           String         @db.VarChar(20)
+  address         String         @db.Text
+  total_price     Decimal        @default(0) @db.Decimal(10, 2)
+  status          OrderStatus    @default(Pending)
+  payment_method  PaymentMethod  @default(cod)
+  payment_status  PaymentStatus  @default(Unpaid)
+  momo_order_id   String?        @db.VarChar(255)
+  momo_pay_url    String?        @db.Text
+  created_at      DateTime       @default(now())
+  updated_at      DateTime       @updatedAt
+
+  user          User?           @relation(fields: [user_id], references: [id], onDelete: SetNull)
+  voucher       Voucher?        @relation(fields: [voucher_id], references: [id])
+  items         OrderItem[]
+  return_request ReturnRequest?
+  promotion_usage_history PromotionUsageHistory[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id           Int      @id @default(autoincrement())
+  order_id     Int
+  product_id   Int
+  color_id     Int?
+  size_id      Int?
+  quantity     Int
+  price        Decimal  @db.Decimal(10, 2)
+  is_gift      Boolean  @default(false)
+  promotion_id Int?
+
+  order     Order             @relation(fields: [order_id], references: [id], onDelete: Cascade)
+  product   Product           @relation(fields: [product_id], references: [id])
+  color     ProductColor?     @relation(fields: [color_id], references: [id])
+  size      ProductSize?      @relation(fields: [size_id], references: [id])
+  promotion BuyXGetYPromotion? @relation(fields: [promotion_id], references: [id], onDelete: SetNull)
+
+  @@map("order_items")
+}
+
+model PromotionUsageHistory {
+  id               Int      @id @default(autoincrement())
+  order_id         Int
+  promotion_id     Int
+  buy_quantity_used Int
+  gifts_awarded    Int
+  // size_id field used in promotionModel.updateGiftStockAndIssued
+  size_id          Int?
+  created_at       DateTime @default(now())
+
+  order     Order             @relation(fields: [order_id], references: [id], onDelete: Cascade)
+  promotion BuyXGetYPromotion @relation(fields: [promotion_id], references: [id], onDelete: Cascade)
+  size      ProductSize?      @relation(fields: [size_id], references: [id])
+
+  @@map("promotion_usage_history")
+}
+
+model ReturnRequest {
+  id              Int           @id @default(autoincrement())
+  order_id        Int           @unique
+  reason_code     String        @db.VarChar(255)
+  description     String?       @db.Text
+  images          Json?
+  refund_bank_info Json?
+  admin_response  String?       @db.Text
+  refund_amount   Decimal       @default(0) @db.Decimal(10, 2)
+  status          ReturnStatus  @default(Pending)
+  created_at      DateTime      @default(now())
+  updated_at      DateTime      @updatedAt
+
+  order Order @relation(fields: [order_id], references: [id], onDelete: Cascade)
+
+  @@map("return_requests")
+}
+
+model Revenue {
+  id          Int      @id @default(autoincrement())
+  report_date DateTime @unique @db.Date
+  total_sales Decimal  @default(0) @db.Decimal(15, 2)
+  total_orders Int     @default(0)
+
+  @@map("revenues")
+}
+
+// ==============================================================================
+// 5. RECOMMENDATION SYSTEM
+// ==============================================================================
+
+model UserProductInteraction {
+  id               Int             @id @default(autoincrement())
+  user_id          Int
+  product_id       Int
+  interaction_type InteractionType
+  created_at       DateTime        @default(now())
+
+  user    User    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [product_id], references: [id], onDelete: Cascade)
+
+  @@map("user_product_interaction")
+}
+
+// ==============================================================================
+// ENUMS
+// ==============================================================================
+
+enum UserRole {
+  customer
+  admin
+}
+
+enum Gender {
+  male
+  female
+  unisex
+}
+
+enum SizeEnum {
+  XS
+  S
+  M
+  L
+  XL
+  XXL
+}
+
+enum ApplyScope {
+  all
+  category
+  product
+}
+
+enum PromotionStatus {
+  active
+  paused
+  expired
+}
+
+enum OrderStatus {
+  Pending
+  Confirmed
+  Shipping
+  Delivered
+  Cancelled
+  Return_Requested @map("Return Requested")
+  Return_Rejected  @map("Return Rejected")
+  Return_Approved  @map("Return Approved")
+}
+
+enum PaymentMethod {
+  cod
+  momo
+}
+
+enum PaymentStatus {
+  Unpaid
+  Paid
+  Refunded
+}
+
+enum ReturnStatus {
+  Pending
+  Approved
+  Rejected
+}
+
+enum InteractionType {
+  view
+  add_to_cart
+  purchase
+}
