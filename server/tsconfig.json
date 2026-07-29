@@ -12,6 +12,6 @@
     "resolveJsonModule": true,
     "moduleResolution": "node16"
   },
-  "include": ["src/**/*", "index.ts", "prisma/client.ts"],
+  "include": ["src/**/*", "index.ts", "prisma/**/*"],
   "exclude": ["node_modules", "dist"]
 }
