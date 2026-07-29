@@ -1,8 +1,8 @@
 import React from "react";
 
-export default function ProductImageGallery({ state, constants }) {
+export default function ProductImageGallery({ state }) {
   const { product, mainImage, isSale, activePromotion } = state;
-  const { PLACEHOLDER_IMG } = constants;
+  const PLACEHOLDER_IMG = "https://placehold.co/300x400?text=No+Image";
 
   return (
     <div className="w-full aspect-[4/5] max-h-[560px] rounded-3xl bg-slate-50 overflow-hidden relative shadow-sm border border-slate-100 mx-auto">
