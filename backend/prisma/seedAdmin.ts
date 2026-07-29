@@ -1,29 +1,13 @@
-import { PrismaClient } from "@prisma/client";
-import { PrismaMariaDb } from "@prisma/adapter-mariadb";
+// prisma/seedAdmin.ts
+import prisma from "./client";
 import bcrypt from "bcryptjs";
-import dotenv from "dotenv";
-
-dotenv.config();
-
-const adapter = new PrismaMariaDb({
-  host: process.env.DATABASE_HOST!,
-  port: Number(process.env.DATABASE_PORT),
-  user: process.env.DATABASE_USER!,
-  password: process.env.DATABASE_PASSWORD!,
-  database: process.env.DATABASE_NAME!,
-});
-
-const prisma = new PrismaClient({
-  adapter,
-});
+import "dotenv/config";
 
 async function seedAdmin() {
   const email = "admin@shop.com";
 
   const existingAdmin = await prisma.user.findUnique({
-    where: {
-      email,
-    },
+    where: { email },
   });
 
   if (existingAdmin) {
