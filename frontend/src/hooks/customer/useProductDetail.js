@@ -31,7 +31,7 @@ export function useProductDetail() {
   // Fetch Vouchers & Promotions
   useEffect(() => {
     if (product) {
-      API.get("/vouchers/active", {
+      API.get("/vouchers", {
         params: {
           product_id: product.id,
           category_id: product.category_id,
@@ -46,7 +46,7 @@ export function useProductDetail() {
         .catch((err) => console.error("Voucher error:", err));
     }
 
-    API.get("/promotions/active")
+    API.get("/promotions")
       .then((res) => {
         const promoList = res.data?.data || res.data || [];
         const matchedPromo = promoList.find(
@@ -162,7 +162,7 @@ export function useProductDetail() {
 
     const userProfile = JSON.parse(localStorage.getItem("user"));
     if (userProfile) {
-      API.post("/products/log-interaction", {
+      API.post("/products/interaction", {
         productId: product.id,
         type: "add_to_cart",
       }).catch((err) => console.log("Tracking error:", err));
