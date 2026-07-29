@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 
-const BACKEND_URL = import.meta.env.VITE_API_URL;
+const BACKEND_URL = import.meta.env.VITE_IMAGE_URL;
 const PLACEHOLDER_IMG = "https://placehold.co/300x400?text=No+Image";
 
 const GENDER_CONFIG = {

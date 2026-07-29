@@ -7,7 +7,7 @@ import path from 'path';
 
 // Import newly created TS routers
 import adminRoutes from './routes/admin';
-import clientRoutes from './routes/client';
+import customerRoutes from './routes/customer';
 
 const app = express();
 
@@ -36,7 +36,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // --- API Routes ---
 // Map everything under /api for clean and consistent routing
 app.use('/api/admin', adminRoutes);
-app.use('/api', clientRoutes);
+app.use('/api', customerRoutes);
 
 // Health Check
 app.get('/', (req, res) => res.send("TS Server is running successfully!"));
