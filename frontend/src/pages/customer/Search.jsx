@@ -1,10 +1,10 @@
 import React from "react";
-import { useSearch } from "../../hooks/client/useSearch";
+import { useSearch } from "../../hooks/customer/useSearch";
 
-import SidebarFilters from "../../components/client/search/SidebarFilters";
-import SearchBar from "../../components/client/search/SearchBar";
-import SearchResultsGrid from "../../components/client/search/SearchResultsGrid";
-import MobileFilterOverlay from "../../components/client/search/MobileFilterOverlay";
+import SidebarFilters from "../../components/customer/search/SidebarFilters";
+import SearchBar from "../../components/customer/search/SearchBar";
+import SearchResultsGrid from "../../components/customer/search/SearchResultsGrid";
+import MobileFilterOverlay from "../../components/customer/search/MobileFilterOverlay";
 
 export default function SearchResults() {
   const { state, refs, actions } = useSearch();

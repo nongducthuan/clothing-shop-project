@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import prisma from '../../../prisma/client';
 
-export const applyVoucherClient = async (req: Request, res: Response): Promise<void> => {
+export const applyVoucherCustomer = async (req: Request, res: Response): Promise<void> => {
   try {
     const { code, orderTotal, cartItems } = req.body;
     

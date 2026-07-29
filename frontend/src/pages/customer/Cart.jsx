@@ -1,8 +1,8 @@
 import { Link, useNavigate } from "react-router-dom";
-import { useCartPage } from "../../hooks/client/useCartPage";
-import CartItem from "../../components/client/cart/CartItem";
-import GiftItem from "../../components/client/cart/GiftItem";
-import OrderSummary from "../../components/client/cart/OrderSummary";
+import { useCartPage } from "../../hooks/customer/useCartPage";
+import CartItem from "../../components/customer/cart/CartItem";
+import GiftItem from "../../components/customer/cart/GiftItem";
+import OrderSummary from "../../components/customer/cart/OrderSummary";
 
 export default function Cart() {
   const navigate = useNavigate();

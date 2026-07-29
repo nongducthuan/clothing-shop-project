@@ -1,9 +1,9 @@
-import ProductCard from "../../components/client/product/ProductCard";
-import { useCategoryPage } from "../../hooks/client/useCategoryPage";
-import CategoryHeader from "../../components/client/category/CategoryHeader";
-import VoucherBanner from "../../components/client/category/VoucherBanner";
-import PaginationControls from "../../components/client/category/PaginationControls";
-import { ProductGridSkeleton, EmptyState } from "../../components/client/category/CategoryStates";
+import ProductCard from "../../components/customer/product/ProductCard";
+import { useCategoryPage } from "../../hooks/customer/useCategoryPage";
+import CategoryHeader from "../../components/customer/category/CategoryHeader";
+import VoucherBanner from "../../components/customer/category/VoucherBanner";
+import PaginationControls from "../../components/customer/category/PaginationControls";
+import { ProductGridSkeleton, EmptyState } from "../../components/customer/category/CategoryStates";
 
 export default function CategoryPage() {
   const { state, actions } = useCategoryPage();

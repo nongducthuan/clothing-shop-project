@@ -1,10 +1,10 @@
 import React from "react";
-import { useOrderLookup } from "../../hooks/client/useOrderLookup";
-import OrderLookupHeader from "../../components/client/order-lookup/OrderLookupHeader";
-import EmailStep from "../../components/client/order-lookup/EmailStep";
-import OtpStep from "../../components/client/order-lookup/OtpStep";
-import OrdersStep from "../../components/client/order-lookup/OrdersStep";
-import ReturnFormStep from "../../components/client/order-lookup/ReturnFormStep";
+import { useOrderLookup } from "../../hooks/customer/useOrderLookup";
+import OrderLookupHeader from "../../components/customer/order-lookup/OrderLookupHeader";
+import EmailStep from "../../components/customer/order-lookup/EmailStep";
+import OtpStep from "../../components/customer/order-lookup/OtpStep";
+import OrdersStep from "../../components/customer/order-lookup/OrdersStep";
+import ReturnFormStep from "../../components/customer/order-lookup/ReturnFormStep";
 
 export default function GuestOrderTracking() {
   const { state, actions, helpers } = useOrderLookup();

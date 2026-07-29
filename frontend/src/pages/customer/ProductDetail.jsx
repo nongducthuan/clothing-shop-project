@@ -1,11 +1,11 @@
 import React from "react";
-import { useProductDetail } from "../../hooks/client/useProductDetail";
+import { useProductDetail } from "../../hooks/customer/useProductDetail";
 
-import ProductImageGallery from "../../components/client/product-detail/ProductImageGallery";
-import ProductMeta from "../../components/client/product-detail/ProductMeta";
-import ProductVoucher from "../../components/client/product-detail/ProductVoucher";
-import ProductSelectors from "../../components/client/product-detail/ProductSelectors";
-import ProductActions from "../../components/client/product-detail/ProductActions";
+import ProductImageGallery from "../../components/customer/product-detail/ProductImageGallery";
+import ProductMeta from "../../components/customer/product-detail/ProductMeta";
+import ProductVoucher from "../../components/customer/product-detail/ProductVoucher";
+import ProductSelectors from "../../components/customer/product-detail/ProductSelectors";
+import ProductActions from "../../components/customer/product-detail/ProductActions";
 
 export default function ProductDetail() {
   const { state, actions, helpers, constants } = useProductDetail();

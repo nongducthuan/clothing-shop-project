@@ -1,9 +1,9 @@
 import React from "react";
-import { useSalesPolicy } from "../../hooks/client/useSalesPolicy";
-import PolicyHeader from "../../components/client/sales-policy/PolicyHeader";
-import PolicyCards from "../../components/client/sales-policy/PolicyCards";
-import PolicyOffers from "../../components/client/sales-policy/PolicyOffers";
-import PolicyFooter from "../../components/client/sales-policy/PolicyFooter";
+import { useSalesPolicy } from "../../hooks/customer/useSalesPolicy";
+import PolicyHeader from "../../components/customer/sales-policy/PolicyHeader";
+import PolicyCards from "../../components/customer/sales-policy/PolicyCards";
+import PolicyOffers from "../../components/customer/sales-policy/PolicyOffers";
+import PolicyFooter from "../../components/customer/sales-policy/PolicyFooter";
 
 export default function SalesPolicy() {
   const { state, actions } = useSalesPolicy();

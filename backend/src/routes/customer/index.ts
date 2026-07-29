@@ -1,18 +1,18 @@
 import { Router } from 'express';
 import { authenticateToken } from '../../middleware/authMiddleware';
 
-// Import Client Controllers
-import * as authController from '../../controllers/client/authController';
-import * as categoryController from '../../controllers/client/categoryController';
-import * as chatController from '../../controllers/client/chatController';
-import * as membershipController from '../../controllers/client/membershipController';
-import * as orderController from '../../controllers/client/orderController';
-import * as productController from '../../controllers/client/productController';
-import * as productDetailController from '../../controllers/client/productDetailController';
-import * as promotionController from '../../controllers/client/promotionController';
-import * as saleController from '../../controllers/client/saleController';
-import * as voucherController from '../../controllers/client/voucherController';
-import * as bannerController from '../../controllers/client/bannerController';
+// Import customer Controllers
+import * as authController from '../../controllers/customer/authController';
+import * as categoryController from '../../controllers/customer/categoryController';
+import * as chatController from '../../controllers/customer/chatController';
+import * as membershipController from '../../controllers/customer/membershipController';
+import * as orderController from '../../controllers/customer/orderController';
+import * as productController from '../../controllers/customer/productController';
+import * as productDetailController from '../../controllers/customer/productDetailController';
+import * as promotionController from '../../controllers/customer/promotionController';
+import * as saleController from '../../controllers/customer/saleController';
+import * as voucherController from '../../controllers/customer/voucherController';
+import * as bannerController from '../../controllers/customer/bannerController';
 
 const router = Router();
 
@@ -65,10 +65,10 @@ router.get('/products/recommendations/:userId', productController.getRecommendat
 // --- Promotions & Sales ---
 router.get('/promotions', promotionController.getActivePromotions);
 router.post('/promotions/calculate', promotionController.calculateCart);
-router.get('/sales', saleController.getClientSales);
+router.get('/sales', saleController.getCustomerSales);
 
 // --- Vouchers ---
 router.get('/vouchers', voucherController.getActiveVouchers);
-router.post('/vouchers/apply', voucherController.applyVoucherClient);
+router.post('/vouchers/apply', voucherController.applyVoucherCustomer);
 
 export default router;

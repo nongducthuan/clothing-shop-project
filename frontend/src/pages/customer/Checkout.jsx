@@ -1,8 +1,8 @@
 import React from "react";
-import { useCheckoutPage } from "../../hooks/client/useCheckoutPage";
-import { ShippingSection, GuestContactSection, PaymentSection } from "../../components/client/checkout/CheckoutForms";
-import { CheckoutSummary } from "../../components/client/checkout/CheckoutSummary";
-import { EmptyCheckout } from "../../components/client/checkout/EmptyCheckout";
+import { useCheckoutPage } from "../../hooks/customer/useCheckoutPage";
+import { ShippingSection, GuestContactSection, PaymentSection } from "../../components/customer/checkout/CheckoutForms";
+import { CheckoutSummary } from "../../components/customer/checkout/CheckoutSummary";
+import { EmptyCheckout } from "../../components/customer/checkout/EmptyCheckout";
 
 export default function Checkout() {
   const { state, actions, helpers } = useCheckoutPage();

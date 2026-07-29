@@ -1,12 +1,12 @@
 import React from "react";
-import { useProfilePage } from "../../hooks/client/useProfilePage";
+import { useProfilePage } from "../../hooks/customer/useProfilePage";
 
-import ProfileHeader from "../../components/client/profile/ProfileHeader";
-import ProfileTabs from "../../components/client/profile/ProfileTabs";
-import MembershipInfoTab from "../../components/client/profile/MembershipInfoTab";
-import OrderListTab from "../../components/client/profile/OrderListTab";
-import OrderDetailModal from "../../components/client/profile/OrderDetailModal";
-import ReturnRequestModal from "../../components/client/profile/ReturnRequestModal";
+import ProfileHeader from "../../components/customer/profile/ProfileHeader";
+import ProfileTabs from "../../components/customer/profile/ProfileTabs";
+import MembershipInfoTab from "../../components/customer/profile/MembershipInfoTab";
+import OrderListTab from "../../components/customer/profile/OrderListTab";
+import OrderDetailModal from "../../components/customer/profile/OrderDetailModal";
+import ReturnRequestModal from "../../components/customer/profile/ReturnRequestModal";
 
 export default function Profile() {
   const { state, actions, helpers } = useProfilePage();

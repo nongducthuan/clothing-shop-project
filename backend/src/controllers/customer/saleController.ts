@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import prisma from '../../../prisma/client';
 
-export const getClientSales = async (req: Request, res: Response): Promise<void> => {
+export const getCustomerSales = async (req: Request, res: Response): Promise<void> => {
   try {
     const sales = await prisma.sale.findMany({
       where: {

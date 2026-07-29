@@ -7,22 +7,22 @@ import { AIChatProvider } from "./context/AIChatContext.jsx";
 
 // Components
 import ProtectedRoute from "./components/auth/ProtectedRoute.jsx";
-import Navbar from "./components/client/layout/Navbar.jsx";
+import Navbar from "./components/customer/layout/Navbar.jsx";
 
-import AIChatBubble from "./components/client/chatbot/AIChatBubble.jsx";
+import AIChatBubble from "./components/customer/chatbot/AIChatBubble.jsx";
 
 // Pages - Public
-import Home from "./pages/client/Home.jsx";
-import Cart from "./pages/client/Cart.jsx";
+import Home from "./pages/customer/Home.jsx";
+import Cart from "./pages/customer/Cart.jsx";
 import Login from "./pages/auth/Login.jsx";
 import Register from "./pages/auth/Register.jsx";
-import Checkout from "./pages/client/Checkout.jsx";
-import Order from "./pages/client/OrderLookup.jsx";
-import Search from "./pages/client/Search.jsx";
-import ProductDetail from "./pages/client/ProductDetail.jsx";
-import Category from "./pages/client/Category.jsx";
-import Profile from "./pages/client/Profile.jsx";
-import SalesPolicy from "./pages/client/SalesPolicy.jsx";
+import Checkout from "./pages/customer/Checkout.jsx";
+import Order from "./pages/customer/OrderLookup.jsx";
+import Search from "./pages/customer/Search.jsx";
+import ProductDetail from "./pages/customer/ProductDetail.jsx";
+import Category from "./pages/customer/Category.jsx";
+import Profile from "./pages/customer/Profile.jsx";
+import SalesPolicy from "./pages/customer/SalesPolicy.jsx";
 
 // Pages - Admin
 import Dashboard from "./pages/admin/Dashboard.jsx";
