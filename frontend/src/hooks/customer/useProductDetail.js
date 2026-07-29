@@ -4,6 +4,7 @@ import { CartContext } from "../../context/CartContext.jsx";
 import API from "../../services/apiClient.js";
 
 const BACKEND_URL = import.meta.env.VITE_API_URL;
+const IMAGE_URL = import.meta.env.VITE_IMAGE_URL;
 
 export function useProductDetail() {
   const { id } = useParams();
@@ -79,7 +80,7 @@ export function useProductDetail() {
       })
       .then((data) => {
         if (data.image_url && !data.image_url.startsWith("http")) {
-          data.image_url = `${BACKEND_URL}${data.image_url}`;
+          data.image_url = `${IMAGE_URL}${data.image_url}`;
         }
 
         if (data.colors) {
@@ -87,7 +88,7 @@ export function useProductDetail() {
             ...color,
             image_url: color.image_url.startsWith("http")
               ? color.image_url
-              : `${BACKEND_URL}${color.image_url}`,
+              : `${IMAGE_URL}${color.image_url}`,
           }));
         }
 
@@ -183,7 +184,7 @@ export function useProductDetail() {
       getStockMessage, formatPrice
     },
     constants: {
-      PLACEHOLDER_IMG: `${BACKEND_URL}/public/placeholder.jpg`
+      PLACEHOLDER_IMG: `${IMAGE_URL}/public/placeholder.jpg`
     }
   };
 }

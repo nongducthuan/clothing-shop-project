@@ -12,7 +12,7 @@ const GENDERS = ["male", "female", "unisex"];
 const getImgUrl = (path) => {
   if (!path) return "https://placehold.co/100x100?text=No+Image";
   if (path.startsWith("http")) return path;
-  return `${import.meta.env.VITE_API_URL}${path}`;
+  return `${import.meta.env.VITE_IMAGE_URL}${path}`;
 };
 
 // --- CUSTOM HOOKS ---

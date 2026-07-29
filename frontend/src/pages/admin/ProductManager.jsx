@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import useProductManager from "../../hooks/admin/useProductManager";
 import ProductForm from "../../components/admin/products/ProductForm";
 import ProductList from "../../components/admin/products/ProductList";
-import Toast from "../../components/client/layout/Toast";
+import Toast from "../../components/customer/layout/Toast";
 
 // --- SUB-COMPONENTS ---
 

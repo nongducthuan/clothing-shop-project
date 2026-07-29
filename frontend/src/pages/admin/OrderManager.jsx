@@ -1,4 +1,4 @@
-import Toast from "../../components/client/layout/Toast.jsx";
+import Toast from "../../components/customer/layout/Toast.jsx";
 import OrderTable from "../../components/admin/orders/OrderTable.jsx";
 import OrderCard from "../../components/admin/orders/OrderCard.jsx";
 import OrderDetailsModal from "../../components/admin/orders/OrderDetailsModal.jsx";

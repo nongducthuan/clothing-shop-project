@@ -4,6 +4,7 @@ import { AuthContext } from "../../context/AuthContext.jsx";
 import API from "../../services/apiClient.js";
 
 const BACKEND_URL = import.meta.env.VITE_API_URL;
+const IMAGE_URL = import.meta.env.VITE_IMAGE_URL;
 
 export function useCartPage() {
   const { cart, removeFromCart, updateQuantity } = useContext(CartContext);
@@ -145,7 +146,7 @@ export function useCartPage() {
   const formatPrice = (n) => Number(n).toLocaleString("vi-VN") + " đ";
   const getImageUrl = (url) => {
     if (!url) return "https://via.placeholder.com/150?text=No+Image";
-    return url.startsWith("http") ? url : `${BACKEND_URL}${url}`;
+    return url.startsWith("http") ? url : `${IMAGE_URL}${url}`;
   };
 
   return {
