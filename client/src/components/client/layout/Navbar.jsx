@@ -27,7 +27,7 @@ function useCategoryData() {
 
   const fetchData = async () => {
     try {
-      const res = await API.get("/categories/with-preview");
+      const res = await API.get("/categories/preview");
       const list = res.data.data || [];
       const grouped = { male: [], female: [], unisex: [] };
       list.forEach((c) => {

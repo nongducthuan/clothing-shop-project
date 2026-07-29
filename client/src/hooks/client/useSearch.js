@@ -106,7 +106,7 @@ export function useSearch() {
         const [prodRes, catRes, promoRes] = await Promise.all([
           API.get("/products?limit=2000"),
           API.get("/categories"),
-          API.get("/promotions/active").catch(() => ({ data: [] })),
+          API.get("/promotions").catch(() => ({ data: [] })),
         ]);
 
         const prodData = Array.isArray(prodRes.data) ? prodRes.data : prodRes.data?.data || [];
