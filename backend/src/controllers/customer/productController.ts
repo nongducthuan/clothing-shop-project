@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import prisma from '../../../prisma/client';
 // Import the interaction service you mentioned in task.md
 import { recordInteraction } from '../../services/interactionService';
-import { Prisma } from '@prisma/client';
+import { Prisma } from '../../generated/prisma/client';
 
 // Helper to get active sales and calculate max discount for a product
 const getActiveSalesCache = async () => {
