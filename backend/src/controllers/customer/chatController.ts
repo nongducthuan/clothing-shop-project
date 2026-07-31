@@ -5,7 +5,7 @@ import path from 'path';
 // Store chat sessions in memory
 const activeChatSessions: Record<string, any[]> = {};
 
-const pythonEnginePath = path.join(__dirname, '../../../../ai_assistant/core_engine.py');
+const pythonEnginePath = path.join(__dirname, '../../ai_assistant/core_engine.py');
 const venvPythonPath = process.env.PYTHON_PATH || path.join(__dirname, '../../../../../../../env/Scripts/python.exe');
 const spawnOptions = {
     env: { ...process.env, PYTHONIOENCODING: 'utf-8' }

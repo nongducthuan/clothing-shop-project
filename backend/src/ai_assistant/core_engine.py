@@ -39,6 +39,7 @@ def execute_chat_query(user_query: str, chat_history_json: str) -> None:
     if not api_key:
         return
 
+    database_url = os.getenv("DATABASE_URL")
     db_user = os.getenv("DB_USER", "root")
     db_password = os.getenv("DB_PASSWORD", "")
     db_host = os.getenv("DB_HOST", "localhost")
@@ -46,7 +47,10 @@ def execute_chat_query(user_query: str, chat_history_json: str) -> None:
     db_port = os.getenv("DB_PORT", "3306") 
 
     try:
-        db_uri = f"mysql+mysqlconnector://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
+        if database_url:
+            db_uri = database_url.replace("mysql://", "mysql+pymysql://").replace("mysql+mysqlconnector://", "mysql+pymysql://")
+        else:
+            db_uri = f"mysql+pymysql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
         database = SQLDatabase.from_uri(db_uri)
 
         llm = ChatGoogleGenerativeAI(

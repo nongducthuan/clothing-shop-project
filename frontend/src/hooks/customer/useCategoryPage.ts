@@ -39,8 +39,8 @@ export function useCategoryPage() {
           params: { category_id: id, gender: gender, page: currentPage, limit: ITEMS_PER_PAGE },
         }),
         API.get("/categories"),
-        API.get("/vouchers/active", { params: { category_id: id } }).catch(() => ({ data: [] })),
-        API.get("/promotions/active").catch(() => ({ data: [] })),
+        API.get("/vouchers", { params: { category_id: id } }).catch(() => ({ data: [] })),
+        API.get("/promotions").catch(() => ({ data: [] })),
       ]);
 
       // Process Products

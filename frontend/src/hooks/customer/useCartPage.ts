@@ -20,7 +20,7 @@ export function useCartPage() {
 
   // Fetch active promotions
   useEffect(() => {
-    API.get("/promotions/active")
+    API.get("/promotions")
       .then(res => setActivePromotions(res.data?.data || res.data || []))
       .catch(err => console.error("Promotions error", err));
   }, []);

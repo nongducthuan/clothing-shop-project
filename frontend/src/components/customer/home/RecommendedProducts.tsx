@@ -25,15 +25,10 @@ const RecommendedProducts = ({ userId }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // If no userId is provided, skip fetching
-    if (!userId) {
-        setLoading(false);
-        return;
-    }
-
+    const targetUserId = userId || 'guest';
     setLoading(true);
 
-    API.get(`/recommendations/${userId}`)
+    API.get(`/products/recommendations/${targetUserId}`)
       .then((res) => {
         // Safely handle response data structure
         const data = res.data;
@@ -51,9 +46,7 @@ const RecommendedProducts = ({ userId }) => {
       });
   }, [userId]);
 
-  // If loading finished AND no products found, hide the entire section
-  if (!loading && products.length === 0) return null;
-
+  // Show section unconditionally (fallback products will be fetched if guest/new user)
   return (
     <section className="container mx-auto px-4 my-12" data-aos="fade-up">
       {/* Section Title */}

@@ -337,7 +337,8 @@ model UserProductInteraction {
   user             User            @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@index([product_id], map: "user_product_interaction_product_id_fkey")
-  @@index([user_id], map: "user_product_interaction_user_id_fkey")
+  @@index([user_id], map: "user_product_interaction_user_product_id_fkey")
+  @@index([user_id, product_id], map: "idx_upi_user_product")
   @@map("user_product_interaction")
 }
 
