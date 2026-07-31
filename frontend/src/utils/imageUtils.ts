@@ -31,7 +31,7 @@ export const PLACEHOLDER_IMG = "https://placehold.co/300x400?text=No+Image";
  * @returns A fully-qualified URL string ready to use in an <img src={}> attribute.
  */
 export const getImageUrl = (url?: string | null): string => {
-  if (!url) return PLACEHOLDER_IMG;
+  if (!url || url === "null" || url === "undefined") return PLACEHOLDER_IMG;
   if (url.startsWith("http")) return url;
   // Avoid double slashes: strip leading slash from url if IMAGE_BASE already ends with one
   const base = IMAGE_BASE.endsWith("/") ? IMAGE_BASE.slice(0, -1) : IMAGE_BASE;

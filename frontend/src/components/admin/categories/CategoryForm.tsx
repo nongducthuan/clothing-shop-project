@@ -95,6 +95,10 @@ export default function CategoryForm({
                       src={getImageUrl(imageSrc)}
                       className="w-full h-20 object-cover"
                       alt={`Preview ${idx}`}
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).onerror = null;
+                        (e.target as HTMLImageElement).src = getImageUrl(null);
+                      }}
                     />
                     {form.image_url === imageSrc && (
                       <div className="absolute inset-0 bg-violet-500/20 flex items-center justify-center">

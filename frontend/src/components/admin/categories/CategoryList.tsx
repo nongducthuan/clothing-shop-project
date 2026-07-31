@@ -76,13 +76,18 @@ export default function CategoryList({
                 <tr key={cat.id} className="hover:bg-gray-50/50 transition-colors duration-200 group">
                   <td className="p-4 pl-6">
                     {(() => {
-                      const imageSrc = cat.image_url || cat.preview_image;
+                      const rawImage = cat.image_url || cat.preview_image;
+                      const imageSrc = rawImage && rawImage !== "null" && rawImage !== "undefined" ? rawImage : null;
                       return imageSrc ? (
                         <div className="w-14 h-14 rounded-2xl overflow-hidden bg-gray-100 shadow-sm border border-gray-100">
                           <img
                             src={getImageUrl(imageSrc)}
                             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                             alt={cat.name}
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).onerror = null;
+                              (e.target as HTMLImageElement).src = getImageUrl(null);
+                            }}
                           />
                         </div>
                       ) : (
