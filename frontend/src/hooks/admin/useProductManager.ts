@@ -89,7 +89,7 @@ export default function useProductManager() {
   const fetchData = useCallback(async () => {
     try {
       const [prodRes, catRes] = await Promise.all([
-        API.get("/admin/products", { headers: { Authorization: `Bearer ${token}` } }),
+        API.get("/products", { headers: { Authorization: `Bearer ${token}` } }),
         API.get("/categories"),
       ]);
       setProducts(Array.isArray(prodRes.data) ? prodRes.data : []);
@@ -141,7 +141,7 @@ export default function useProductManager() {
     const payload = { ...form, name: cleanName, description: form.description.trim() };
 
     try {
-      const endpoint = editingId ? `/admin/products/${editingId}` : "/admin/products";
+      const endpoint = editingId ? `/products/${editingId}` : "/products";
       const method = editingId ? API.put : API.post;
       await method(endpoint, payload, { headers: { Authorization: `Bearer ${token}` } });
 
@@ -171,7 +171,7 @@ export default function useProductManager() {
   const handleDelete = useCallback(async (id) => {
     if (!window.confirm("Delete this product?")) return;
     try {
-      await API.delete(`/admin/products/${id}`, { headers: { Authorization: `Bearer ${token}` } });
+      await API.delete(`/products/${id}`, { headers: { Authorization: `Bearer ${token}` } });
       setProducts((prev) => prev.filter((p) => p.id !== id));
       showToast("Product deleted");
     } catch {

@@ -36,7 +36,7 @@ export default function usePromotionManager() {
     setIsLoading(true);
     try {
       const [promoRes, prodRes, catRes] = await Promise.all([
-        API.get("/promotions/admin").catch(() => ({ data: [] })),
+        API.get("/promotions").catch(() => ({ data: [] })),
         API.get("/products?limit=1000").catch(() => ({ data: { data: [] } })),
         API.get("/categories").catch(() => ({ data: { data: [] } })),
       ]);
@@ -81,10 +81,10 @@ export default function usePromotionManager() {
       payload.total_gift_limit = payload.total_gift_limit || null;
 
       if (editingId) {
-        await API.put(`/promotions/admin/${editingId}`, payload);
+        await API.put(`/promotions/${editingId}`, payload);
         alert("Promotion updated successfully!");
       } else {
-        await API.post("/promotions/admin", payload);
+        await API.post("/promotions", payload);
         alert("Promotion created successfully!");
       }
 
@@ -115,7 +115,7 @@ export default function usePromotionManager() {
   const handleDeleteClick = async (id) => {
     if (!window.confirm("Are you sure you want to delete this promotion?")) return;
     try {
-      await API.delete(`/promotions/admin/${id}`);
+      await API.delete(`/promotions/${id}`);
       setPromotions((prev) => prev.filter((p) => p.id !== id));
       if (editingId === id) handleResetForm();
     } catch (error) {

@@ -45,13 +45,13 @@ export function useDashboardStats() {
       try {
         // Fetch all required data concurrently
         const results = await Promise.allSettled([
-          API.get("/admin/products", { headers }),
-          API.get("/admin/orders", { headers }),
-          API.get("/admin/banners", { headers }),
+          API.get("/products", { headers }),
+          API.get("/orders", { headers }),
+          API.get("/banners", { headers }),
           API.get("/categories", { headers }),
-          API.get("/sales/admin", { headers }),
-          API.get("/vouchers/admin", { headers }),
-          API.get("/promotions/admin", { headers }),
+          API.get("/sales", { headers }),
+          API.get("/vouchers", { headers }),
+          API.get("/promotions", { headers }),
         ]);
 
         // Parse results using helper

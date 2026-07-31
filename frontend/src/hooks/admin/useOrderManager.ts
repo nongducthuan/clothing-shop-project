@@ -70,7 +70,7 @@ export default function useOrderManager() {
    */
   const fetchOrders = useCallback(async () => {
     try {
-      const res = await API.get("/admin/orders", {
+      const res = await API.get("/orders", {
         headers: { Authorization: `Bearer ${getToken()}` },
       });
 
@@ -98,7 +98,7 @@ export default function useOrderManager() {
   const handleOrderStatus = async (orderId, status) => {
     try {
       await API.put(
-        `/admin/orders/${orderId}`,
+        `/orders/${orderId}`,
         { status },
         { headers: { Authorization: `Bearer ${getToken()}` } }
       );
@@ -122,7 +122,7 @@ export default function useOrderManager() {
   const handlePaymentStatus = async (orderId, newStatus) => {
     try {
       await API.put(
-        `/admin/orders/${orderId}/payment`,
+        `/orders/${orderId}/payment`,
         { payment_status: newStatus },
         { headers: { Authorization: `Bearer ${getToken()}` } }
       );
@@ -160,7 +160,7 @@ export default function useOrderManager() {
     }
 
     try {
-      const response = await fetch(`${BASE_URL}/orders/admin/${orderId}/approve-return`, {
+      const response = await fetch(`${BASE_URL}/orders/${orderId}/approve-return`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -197,7 +197,7 @@ export default function useOrderManager() {
     }
 
     try {
-      const response = await fetch(`${BASE_URL}/orders/admin/${orderId}/reject-return`, {
+      const response = await fetch(`${BASE_URL}/orders/${orderId}/reject-return`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

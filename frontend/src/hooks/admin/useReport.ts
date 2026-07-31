@@ -8,7 +8,7 @@ export function useReport() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const response = await API.get("/admin/stats");
+        const response = await API.get("/stats");
         setStats(response.data);
       } catch (err) {
         console.error("Report Fetch Error:", err);

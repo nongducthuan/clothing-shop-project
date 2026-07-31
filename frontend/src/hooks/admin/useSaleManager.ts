@@ -26,7 +26,7 @@ export default function useSaleManager() {
     setIsLoading(true);
     try {
       const [salesRes, prodRes, catRes] = await Promise.all([
-        API.get("/sales/admin"),
+        API.get("/sales"),
         API.get("/products", { params: { limit: 1000 } }),
         API.get("/categories")
       ]);

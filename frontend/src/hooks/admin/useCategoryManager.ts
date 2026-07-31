@@ -28,7 +28,7 @@ export function useCategoryManager() {
    */
   const fetchCategories = useCallback(async () => {
     try {
-      const res = await API.get("/categories/with-preview");
+      const res = await API.get("/categories");
       let categoryList = Array.isArray(res.data) ? res.data : res.data.data;
 
       const genderOrder = { male: 1, female: 2, unisex: 3 };
