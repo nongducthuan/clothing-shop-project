@@ -6,11 +6,50 @@ export const getCategories = async (req: Request, res: Response): Promise<void> 
     const categories = await prisma.category.findMany({
       orderBy: { id: 'asc' },
     });
-    res.status(200).json({ data: categories });
+    
+    // Fetch preview image for each category if image_url is missing
+    const enhancedCategories = await Promise.all(categories.map(async (cat) => {
+      let preview_image = null;
+      if (!cat.image_url) {
+        const productWithColor = await prisma.product.findFirst({
+          where: { category_id: cat.id },
+          include: {
+            colors: {
+              where: { image_url: { not: '' } },
+              take: 1
+            }
+          }
+        });
+        if (productWithColor?.colors?.[0]?.image_url) {
+          preview_image = productWithColor.colors[0].image_url;
+        }
+      }
+      return {
+        ...cat,
+        preview_image,
+      };
+    }));
+    
+    res.status(200).json({ data: enhancedCategories });
   } catch (err) {
     console.error("getCategories error:", err);
     res.status(500).json({ message: "Error fetching categories" });
   }
+};
+
+export const getCategoryRecommendations = async (req: Request, res: Response): Promise<void> => {
+  const { gender } = req.query;
+  let recommendations: { name: string }[] = [];
+  
+  if (gender === 'male') {
+    recommendations = [{ name: 'Shirts' }, { name: 'T-Shirts' }, { name: 'Polo Shirts' }, { name: 'Jeans' }, { name: 'Shorts' }, { name: 'Trousers/Pants' }, { name: 'Jacket/Hoodie' }, { name: 'Shoes' }];
+  } else if (gender === 'female') {
+    recommendations = [{ name: 'Dresses' }, { name: 'Tops' }, { name: 'Skirts' }, { name: 'Leggings' }, { name: 'Jeans' }, { name: 'T-Shirts' }, { name: 'Jacket/Hoodie' }, { name: 'Shoes' }];
+  } else {
+    recommendations = [{ name: 'Hoodies' }, { name: 'Sweaters' }, { name: 'Jackets' }, { name: 'Accessories' }, { name: 'T-Shirts' }, { name: 'Shoes' }];
+  }
+  
+  res.json({ data: recommendations });
 };
 
 export const createCategory = async (req: Request, res: Response): Promise<void> => {

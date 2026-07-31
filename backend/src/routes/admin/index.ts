@@ -38,6 +38,8 @@ router.delete('/sizes/:id', productController.removeSize);
 // --- Categories ---
 router.get('/categories', categoryController.getCategories);
 router.post('/categories', categoryController.createCategory);
+router.get('/categories/recommend', categoryController.getCategoryRecommendations);
+router.get('/categories/:id/images', categoryController.getCategoryImages);
 router.put('/categories/:id', categoryController.updateCategory);
 router.delete('/categories/:id', categoryController.deleteCategory);
 
