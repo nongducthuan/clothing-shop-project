@@ -10,7 +10,7 @@ export default function Login() {
   const { handleChange, handleSubmit } = actions;
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col justify-center items-center py-12 px-6">
+    <div className="flex-1 bg-slate-50 flex flex-col justify-center items-center py-12 px-6">
       <div className="w-full max-w-md">
 
         {/* Header Section */}

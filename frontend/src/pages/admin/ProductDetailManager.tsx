@@ -17,7 +17,7 @@ export default function ProductDetailManager() {
 
   if (!product) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+      <div className="flex-1 flex items-center justify-center bg-slate-50">
         <div className="flex flex-col items-center gap-4">
           <i className="fa-solid fa-circle-notch fa-spin text-4xl text-indigo-500"></i>
           <p className="font-bold text-slate-500 tracking-widest uppercase text-sm">Loading Product Data...</p>
@@ -29,7 +29,7 @@ export default function ProductDetailManager() {
   const selectedColorObj = colors.find((c) => c.id === selectedColorId);
 
   return (
-    <div className="min-h-screen bg-slate-50 p-4 md:p-8 font-sans pb-20">
+    <div className="flex-1 bg-slate-50 p-4 md:p-8 font-sans pb-20">
 
       {/* HEADER SECTION (Pill UI Style) */}
       <div className="flex items-center gap-4 mb-8">

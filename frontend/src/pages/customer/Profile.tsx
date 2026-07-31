@@ -14,7 +14,7 @@ export default function Profile() {
   if (!state.user) return null;
 
   return (
-    <div className="min-h-screen bg-white pb-20">
+    <div className="flex-1 bg-white pb-20">
 
       {/* Header */}
       <ProfileHeader user={state.user} logout={actions.logout} />

@@ -28,7 +28,7 @@ export default function VoucherManager() {
   } = useVoucherManager();
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen font-sans">
+    <div className="p-6 bg-gray-50 flex-1 font-sans">
       <div className="max-w-7xl mx-auto">
         {/* Title Header */}
         <div className="flex justify-start mb-8">

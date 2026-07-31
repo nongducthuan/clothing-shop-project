@@ -152,7 +152,7 @@ export default function Dashboard() {
   const { stats } = useDashboardStats();
 
   return (
-    <div className="container mx-auto px-4 py-8 lg:px-8 max-w-7xl min-h-screen">
+    <div className="container mx-auto px-4 py-8 lg:px-8 max-w-7xl flex-1">
       <DashboardHeader />
 
       {/* 2D Sliding Pill Grid */}

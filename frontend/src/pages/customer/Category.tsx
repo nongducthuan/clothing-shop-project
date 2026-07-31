@@ -28,7 +28,7 @@ export default function CategoryPage() {
 
   // --- Main Render ---
   return (
-    <div className="max-w-[1400px] mx-auto py-12 px-6 min-h-screen bg-white">
+    <div className="max-w-[1400px] mx-auto py-12 px-6 flex-1 bg-white">
 
       <CategoryHeader
         categoryName={state.categoryName}

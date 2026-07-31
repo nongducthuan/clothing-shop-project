@@ -12,7 +12,7 @@ export default function Checkout() {
   }
 
   return (
-    <div className="bg-white min-h-screen pb-20">
+    <div className="bg-white flex-1 pb-20">
       <div className="max-w-[1200px] mx-auto px-6 py-16">
 
         <header className="mb-12">

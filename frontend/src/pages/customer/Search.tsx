@@ -18,7 +18,7 @@ export default function SearchResults() {
   }
 
   return (
-    <div className="sr-container container mx-auto py-6 px-3 md:px-4 min-h-screen flex flex-col md:flex-row gap-8">
+    <div className="sr-container container mx-auto py-6 px-3 md:px-4 flex-1 flex flex-col md:flex-row gap-8">
 
       {/* ========== SIDEBAR (PC only) ========== */}
       <SidebarFilters state={state} refs={refs} actions={actions} />

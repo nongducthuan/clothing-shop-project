@@ -40,7 +40,7 @@ export default function ProductDetail() {
 
   // --- MAIN RENDER ---
   return (
-    <div className="bg-white min-h-screen pb-24 pt-12">
+    <div className="bg-white flex-1 pb-24 pt-12">
       <div className="max-w-[1200px] mx-auto px-6">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-start">
 

@@ -9,7 +9,7 @@ export default function SalesPolicy() {
   const { state, actions } = useSalesPolicy();
 
   return (
-    <div className="min-h-screen bg-white py-16 px-6 sm:px-12">
+    <div className="flex-1 bg-white py-12 px-6 sm:px-12">
       <div className="max-w-[1000px] mx-auto">
 
         <PolicyHeader />

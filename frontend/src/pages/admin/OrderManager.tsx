@@ -39,7 +39,7 @@ export default function OrderManager() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 lg:px-8 max-w-7xl min-h-screen mb-20">
+    <div className="container mx-auto px-4 py-8 lg:px-8 max-w-7xl flex-1 mb-20">
 
       {/* Toast Notifications */}
       {toast && <Toast {...toast} onClose={() => setToast(null)} />}

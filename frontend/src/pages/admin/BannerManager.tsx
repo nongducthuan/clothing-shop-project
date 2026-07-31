@@ -33,7 +33,7 @@ export default function BannerManager() {
   } = useBannerManager();
 
   return (
-    <div className="container mx-auto px-4 py-8 lg:px-8 max-w-7xl min-h-screen">
+    <div className="container mx-auto px-4 py-8 lg:px-8 max-w-7xl flex-1">
 
       {/* Reusable Pill Header */}
       <PageHeader />

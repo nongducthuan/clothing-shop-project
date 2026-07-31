@@ -28,7 +28,7 @@ export default function SaleManager() {
   } = useSaleManager();
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen font-sans">
+    <div className="p-6 bg-gray-50 flex-1 font-sans">
       <div className="max-w-7xl mx-auto">
 
         {/* Pill UI Title */}
