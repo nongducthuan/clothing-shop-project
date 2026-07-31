@@ -18,7 +18,7 @@ export function useBannerManager() {
    */
   const fetchBanners = useCallback(async () => {
     try {
-      const res = await API.get("/banners", {
+      const res = await API.get("/admin/banners", {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -65,7 +65,7 @@ export function useBannerManager() {
     e.preventDefault();
     try {
       const payload = { ...form, image_url: form.imageUrl };
-      const endpoint = editingId ? `/banners/${editingId}` : "/banners";
+      const endpoint = editingId ? `/admin/banners/${editingId}` : "/admin/banners";
       const method = editingId ? "put" : "post";
 
       await API[method](endpoint, payload, {
@@ -86,7 +86,7 @@ export function useBannerManager() {
   const deleteBanner = async (id) => {
     if (!window.confirm("Delete this banner?")) return;
     try {
-      await API.delete(`/banners/${id}`, {
+      await API.delete(`/admin/banners/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       fetchBanners();

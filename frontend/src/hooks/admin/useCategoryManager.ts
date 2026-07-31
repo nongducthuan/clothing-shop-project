@@ -28,7 +28,7 @@ export function useCategoryManager() {
    */
   const fetchCategories = useCallback(async () => {
     try {
-      const res = await API.get("/categories");
+      const res = await API.get("/admins/categories");
       let categoryList = Array.isArray(res.data) ? res.data : res.data.data;
 
       const genderOrder = { male: 1, female: 2, unisex: 3 };
@@ -53,7 +53,7 @@ export function useCategoryManager() {
     // Fetch naming suggestions when user selects a gender
     if (name === "gender" && value) {
       try {
-        const res = await API.get(`/categories/recommend?gender=${value}`);
+        const res = await API.get(`/admin/categories/recommend?gender=${value}`);
         setRecommendNames(res.data.data || []);
       } catch (error) {
         setRecommendNames([]);
@@ -69,9 +69,9 @@ export function useCategoryManager() {
     setLoading(true);
     try {
       if (editingId) {
-        await API.put(`/categories/${editingId}`, form, authConfig);
+        await API.put(`/admin/categories/${editingId}`, form, authConfig);
       } else {
-        await API.post("/categories", form, authConfig);
+        await API.post("/admin/categories", form, authConfig);
       }
       resetForm();
       await fetchCategories();
@@ -100,8 +100,8 @@ export function useCategoryManager() {
     try {
       // Load preview images from existing products and current recommendations
       const [imagesRes, recommendRes] = await Promise.all([
-        API.get(`/categories/${cat.id}/images`),
-        API.get(`/categories/recommend?gender=${cat.gender}`),
+        API.get(`/admin/categories/${cat.id}/images`),
+        API.get(`/admin/categories/recommend?gender=${cat.gender}`),
       ]);
       setCategoryImages(imagesRes.data.data || []);
       setRecommendNames(recommendRes.data.data || []);
@@ -117,7 +117,7 @@ export function useCategoryManager() {
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this category?")) return;
     try {
-      await API.delete(`/categories/${id}`, authConfig);
+      await API.delete(`/admin/categories/${id}`, authConfig);
       await fetchCategories();
       alert("Category deleted successfully!");
     } catch (err) {

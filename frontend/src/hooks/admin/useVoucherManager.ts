@@ -35,9 +35,9 @@ export default function useVoucherManager() {
     setIsLoading(true);
     try {
       const [vouchRes, prodRes, catRes] = await Promise.all([
-        API.get("/vouchers"),
-        API.get("/products?limit=1000"),
-        API.get("/categories")
+        API.get("/admin/vouchers"),
+        API.get("/admin/products?limit=1000"),
+        API.get("/admin/categories")
       ]);
       setVouchers([...(vouchRes.data?.data || vouchRes.data || [])]);
       setProducts([...(prodRes.data?.products || prodRes.data?.data || prodRes.data || [])]);
@@ -64,7 +64,7 @@ export default function useVoucherManager() {
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this voucher?")) return;
     try {
-      await API.delete(`/vouchers/${id}`);
+      await API.delete(`/admin/vouchers/${id}`);
       alert("Deleted successfully!");
       fetchInitialData();
     } catch (error) {
@@ -75,7 +75,7 @@ export default function useVoucherManager() {
   const handleShowDetail = async (id, scope) => {
     if (scope === 'all') return;
     try {
-      const response = await API.get(`/vouchers/${id}/details`);
+      const response = await API.get(`/admin/vouchers/${id}/details`);
       setDetailModal({
         isOpen: true,
         data: response.data.details || [],
@@ -98,7 +98,7 @@ export default function useVoucherManager() {
     };
 
     try {
-      await API.post("/vouchers", payload);
+      await API.post("/admin/vouchers", payload);
       alert("Create voucher successfully! 🎉");
       setFormData({
         code: "",

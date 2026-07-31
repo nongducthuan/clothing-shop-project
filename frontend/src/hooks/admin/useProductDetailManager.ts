@@ -30,7 +30,7 @@ export function useProductInventory(productId) {
    */
   const fetchProductData = useCallback(async () => {
     try {
-      const { data } = await API.get(`/products/${productId}`, {
+      const { data } = await API.get(`/admin/products/${productId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -80,7 +80,7 @@ export function useProductInventory(productId) {
     if (!colorForm.color_name) return alert("Please enter a color name.");
 
     try {
-      await API.post(`/products/${productId}/colors`, colorForm, {
+      await API.post(`/admin/products/${productId}/colors`, colorForm, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -100,7 +100,7 @@ export function useProductInventory(productId) {
     if (!window.confirm("Deleting this color will delete all associated sizes. Continue?")) return;
 
     try {
-      await API.delete(`/colors/${colorId}`, {
+      await API.delete(`/admin/colors/${colorId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -127,7 +127,7 @@ export function useProductInventory(productId) {
       const existingSize = currentColor.sizes.find((s) => s.size === sizeForm.size);
 
       const { data } = await API.post(
-        `/colors/${selectedColorId}/sizes`,
+        `/admin/colors/${selectedColorId}/sizes`,
         { size: sizeForm.size, stock: stockValue, increment: true },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -154,7 +154,7 @@ export function useProductInventory(productId) {
     if (!window.confirm("Are you sure you want to delete this size?")) return;
 
     try {
-      await API.delete(`/sizes/${sizeId}`, {
+      await API.delete(`/admin/sizes/${sizeId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       fetchProductData();
