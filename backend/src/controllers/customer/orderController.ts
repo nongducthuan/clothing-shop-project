@@ -240,19 +240,19 @@ export const createOrderController = async (req: Request, res: Response): Promis
                 });
 
                 if (!voucher || voucher.status === 0) {
-                    throw new Error('Mã giảm giá không tồn tại hoặc đã bị vô hiệu hóa.');
+                    throw new Error('Voucher does not exist or has been disabled.');
                 }
                 if (voucher.usage_limit !== null && voucher.usage_limit <= 0) {
-                    throw new Error('Mã giảm giá đã hết lượt sử dụng.');
+                    throw new Error('Voucher usage limit reached.');
                 }
                 if (voucher.start_date && new Date() < voucher.start_date) {
-                    throw new Error('Mã giảm giá chưa đến thời gian áp dụng.');
+                    throw new Error('Voucher is not active yet.');
                 }
                 if (voucher.end_date && new Date() > voucher.end_date) {
-                    throw new Error('Mã giảm giá đã hết hạn.');
+                    throw new Error('Voucher has expired.');
                 }
                 if (finalTotal < Number(voucher.min_order_value)) {
-                    throw new Error(`Đơn hàng chưa đạt giá trị tối thiểu ${Number(voucher.min_order_value).toLocaleString()}đ để dùng mã này.`);
+                    throw new Error(`Minimum order value of ${Number(voucher.min_order_value).toLocaleString()}đ not met for this voucher.`);
                 }
 
                 // Re-verify scope: all scope always passes; product/category scopes must match at least 1 item
@@ -274,7 +274,7 @@ export const createOrderController = async (req: Request, res: Response): Promis
                     }
 
                     if (!scopeValid) {
-                        throw new Error('Mã giảm giá không áp dụng cho các sản phẩm trong đơn hàng này.');
+                        throw new Error('Voucher is not applicable to any products in this order.');
                     }
                 }
 

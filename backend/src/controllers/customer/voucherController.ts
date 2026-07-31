@@ -14,22 +14,22 @@ export const applyVoucherCustomer = async (req: Request, res: Response): Promise
     });
 
     if (!voucher || voucher.status === 0) {
-        res.status(404).json({ success: false, message: "Mã giảm giá không tồn tại hoặc đã hết hạn!" });
+        res.status(404).json({ success: false, message: "Voucher does not exist or has expired!" });
         return;
     }
 
     if (voucher.usage_limit !== null && voucher.usage_limit <= 0) {
-        res.status(400).json({ success: false, message: "Mã giảm giá đã hết lượt sử dụng!" });
+        res.status(400).json({ success: false, message: "Voucher usage limit reached!" });
         return;
     }
 
     if (voucher.start_date && new Date() < new Date(voucher.start_date)) {
-        res.status(400).json({ success: false, message: "Mã giảm giá chưa đến thời gian áp dụng!" });
+        res.status(400).json({ success: false, message: "Voucher is not active yet!" });
         return;
     }
 
     if (voucher.end_date && new Date() > new Date(voucher.end_date)) {
-        res.status(400).json({ success: false, message: "Mã giảm giá đã hết hạn!" });
+        res.status(400).json({ success: false, message: "Voucher has expired!" });
         return;
     }
     
@@ -47,7 +47,7 @@ export const applyVoucherCustomer = async (req: Request, res: Response): Promise
       const allowedIds = voucher.voucher_categories.map(vc => vc.category_id);
       const eligibleItems = cartItems.filter((item: any) => {
         if (!item.category_id) {
-          console.warn("CẢNH BÁO: Sản phẩm trong giỏ hàng thiếu category_id", item.name);
+          console.warn("WARNING: Cart item missing category_id", item.name);
           return false; 
         }
         return allowedIds.includes(Number(item.category_id));
@@ -56,12 +56,12 @@ export const applyVoucherCustomer = async (req: Request, res: Response): Promise
     }
     
     if (eligibleTotal === 0) {
-      res.status(400).json({ success: false, message: "Mã giảm giá này không áp dụng cho các sản phẩm trong giỏ hàng của bạn!" });
+      res.status(400).json({ success: false, message: "This voucher is not applicable to any products in your cart!" });
       return;
     }
     
     if (Number(orderTotal) < Number(voucher.min_order_value)) {
-      res.status(400).json({ success: false, message: `Đơn hàng chưa đạt mức tối thiểu ${Number(voucher.min_order_value).toLocaleString()}đ` });
+      res.status(400).json({ success: false, message: `Minimum order value of ${Number(voucher.min_order_value).toLocaleString()}đ not met` });
       return;
     }
     
@@ -73,7 +73,7 @@ export const applyVoucherCustomer = async (req: Request, res: Response): Promise
     
     res.json({
       success: true,
-      message: "Áp dụng mã thành công!",
+      message: "Voucher applied successfully!",
       data: {
         ...voucher,
         discount_amount: discountAmount,
@@ -82,8 +82,8 @@ export const applyVoucherCustomer = async (req: Request, res: Response): Promise
       }
     });
   } catch (error) {
-    console.error("Lỗi áp dụng Voucher:", error);
-    res.status(500).json({ success: false, message: "Lỗi hệ thống khi áp dụng mã giảm giá" });
+    console.error("Voucher application error:", error);
+    res.status(500).json({ success: false, message: "Server error applying voucher" });
   }
 };
 

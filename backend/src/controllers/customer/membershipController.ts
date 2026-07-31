@@ -17,6 +17,6 @@ export const getMemberships = async (req: Request, res: Response): Promise<void>
         res.json(data);
     } catch (error) {
         console.error('Error fetching memberships:', error);
-        res.status(500).json({ message: "Lỗi khi lấy danh sách hạng hội viên" });
+        res.status(500).json({ message: "Error fetching membership tiers" });
     }
 };

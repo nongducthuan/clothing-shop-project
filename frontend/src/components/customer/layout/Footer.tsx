@@ -1,7 +1,14 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 export default function Footer() {
+  const location = useLocation();
+
+  // Hide footer on admin pages and auth pages
+  if (location.pathname.startsWith("/admin") || location.pathname === "/login" || location.pathname === "/register") {
+    return null;
+  }
+
   return (
     <footer className="bg-[#020617] text-slate-300 pt-16 pb-8 border-t border-slate-800/60 mt-20">
       <div className="max-w-7xl mx-auto px-6">

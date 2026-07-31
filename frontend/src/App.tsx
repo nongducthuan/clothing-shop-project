@@ -8,6 +8,7 @@ import { AIChatProvider } from "./context/AIChatContext.tsx";
 // Components
 import ProtectedRoute from "./components/auth/ProtectedRoute.tsx";
 import Navbar from "./components/customer/layout/Navbar.tsx";
+import Footer from "./components/customer/layout/Footer.tsx";
 
 import AIChatBubble from "./components/customer/chatbot/AIChatBubble.tsx";
 
@@ -162,6 +163,7 @@ function App() {
               </Routes>
             </main>
 
+            <Footer />
             <AIChatBubble />
           </BrowserRouter>
         </AIChatProvider>

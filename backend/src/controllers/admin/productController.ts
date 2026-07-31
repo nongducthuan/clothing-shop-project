@@ -167,7 +167,7 @@ export const addSize = async (req: Request, res: Response): Promise<void> => {
                 });
                 res.json({ id: existing.id });
             } else {
-                res.status(400).json({ message: "Size đã tồn tại" });
+                res.status(400).json({ message: "Size already exists" });
             }
         } else {
             const newSize = await prisma.productSize.create({

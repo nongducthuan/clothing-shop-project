@@ -11,7 +11,7 @@ export const getMemberships = async (req: Request, res: Response): Promise<void>
         res.json(data);
     } catch (error) {
         console.error('Error fetching memberships:', error);
-        res.status(500).json({ message: "Lỗi khi lấy danh sách hạng hội viên" });
+        res.status(500).json({ message: "Error fetching membership tiers" });
     }
 };
 
@@ -25,7 +25,7 @@ export const addMembership = async (req: Request, res: Response): Promise<void> 
                 discount_percent,
             },
         });
-        res.status(201).json({ message: "Đã thêm hạng hội viên mới thành công" });
+        res.status(201).json({ message: "New membership tier added successfully" });
     } catch (error: any) {
         console.error('Error adding membership:', error);
         res.status(500).json({ message: error.message });
@@ -45,7 +45,7 @@ export const updateMembership = async (req: Request, res: Response): Promise<voi
                 discount_percent,
             },
         });
-        res.json({ message: "Cập nhật hạng hội viên thành công" });
+        res.json({ message: "Membership tier updated successfully" });
     } catch (error: any) {
         console.error('Error updating membership:', error);
         res.status(500).json({ message: error.message });
@@ -61,7 +61,7 @@ export const deleteMembership = async (req: Request, res: Response): Promise<voi
         await prisma.membership.delete({
             where: { id: Number(id) },
         });
-        res.json({ message: "Đã xóa hạng hội viên thành công" });
+        res.json({ message: "Membership tier deleted successfully" });
     } catch (error: any) {
         console.error('Error deleting membership:', error);
         res.status(500).json({ message: error.message });

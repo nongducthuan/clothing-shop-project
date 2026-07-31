@@ -141,13 +141,13 @@ const promotionService = {
 
   applyPromotionsAtCheckout: async (userSelectedGifts: UserSelectedGift[]): Promise<{ success: boolean; message: string }> => {
     if (!userSelectedGifts || userSelectedGifts.length === 0) {
-      return { success: true, message: 'Không có quà tặng nào cần xử lý.' };
+      return { success: true, message: 'No gifts to process.' };
     }
 
     try {
       await prisma.$transaction(async (tx) => {
         for (const gift of userSelectedGifts) {
-          // Cập nhật tổng số quà đã phát
+          // Update total gifts issued
           const promoUpdate = await tx.buyXGetYPromotion.updateMany({
             where: {
               id: gift.promotion_id,
@@ -160,10 +160,10 @@ const promotionService = {
           });
 
           if (promoUpdate.count === 0) {
-            throw new Error(`Khuyến mãi ID ${gift.promotion_id} đã hết lượt nhận quà hoặc không tồn tại.`);
+            throw new Error(`Promotion ID ${gift.promotion_id} has reached its gift limit or does not exist.`);
           }
 
-          // Trừ kho quà tặng
+          // Decrement gift stock
           const stockUpdate = await tx.productSize.updateMany({
             where: {
               id: gift.size_id,
@@ -173,14 +173,14 @@ const promotionService = {
           });
 
           if (stockUpdate.count === 0) {
-            throw new Error(`Quà tặng với size_id ${gift.size_id} đã hết hàng trong kho.`);
+            throw new Error(`Gift item with size_id ${gift.size_id} is out of stock.`);
           }
         }
       });
 
-      return { success: true, message: 'Đã áp dụng khuyến mãi và trừ kho thành công.' };
+      return { success: true, message: 'Promotions applied and stock updated successfully.' };
     } catch (error: any) {
-      console.error('Lỗi khi xử lý quà tặng lúc Checkout:', error.message);
+      console.error('Error processing gifts at checkout:', error.message);
       throw error;
     }
   },

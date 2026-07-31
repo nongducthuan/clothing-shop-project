@@ -42,8 +42,8 @@ export const createVoucherAdmin = async (req: Request, res: Response): Promise<v
 
     res.status(201).json({ success: true, message: "Voucher Created Successfully!" });
   } catch (error: any) {
-    console.error("LỖI BACKEND:", error.message);
-    res.status(500).json({ success: false, message: "Lỗi hệ thống khi tạo Voucher" });
+    console.error("BACKEND ERROR:", error.message);
+    res.status(500).json({ success: false, message: "Server error creating voucher" });
   }
 };
 
@@ -66,7 +66,7 @@ export const toggleVoucherStatus = async (req: Request, res: Response): Promise<
       where: { id: Number(id) },
       data: { status: Number(status) }
     });
-    res.json({ success: true, message: "Cập nhật trạng thái mã giảm giá thành công!" });
+    res.json({ success: true, message: "Voucher status updated successfully!" });
   } catch (error: any) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -109,7 +109,7 @@ export const getVoucherDetails = async (req: Request, res: Response): Promise<vo
     });
 
     if (!voucher) {
-      res.status(404).json({ success: false, message: "Không tìm thấy" });
+      res.status(404).json({ success: false, message: "Voucher not found" });
       return;
     }
 

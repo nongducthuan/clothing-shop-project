@@ -23,38 +23,46 @@ Website thương mại điện tử chuyên bán quần áo và thời trang, t�
 
 ## 🛠️ Công Nghệ Sử Dụng
 
-- **Frontend**: React.js (Vite), React Router, TailwindCSS, Bootstrap, Axios, Lucide Icons, Swiper, SweetAlert2.
-- **Backend**: Node.js, Express.js, MySQL (`mysql2`), JSON Web Token (JWT), `bcryptjs`, Multer, Nodemailer / Resend.
+- **Frontend**: React.js (Vite), TypeScript, React Router, TailwindCSS, Bootstrap, Axios, Lucide Icons, Swiper, SweetAlert2.
+- **Backend**: Node.js, TypeScript, Express.js, Prisma ORM, MySQL/MariaDB, JSON Web Token (JWT), `bcryptjs`, Multer, Nodemailer / Resend.
 
 ---
 
 ## 🚀 Cách Khởi Động Dự Án
 
-### 1. Cấu hình Backend (`/server`)
+### 1. Cấu hình Backend (`/backend`)
 
 ```bash
-cd server
+cd backend
 npm install
 ```
 
-- Tạo cơ sở dữ liệu MySQL và cấu hình thông tin kết nối trong file `.env` (hoặc `src/db.js`).
-- Khởi tạo tài khoản Admin mặc định:
-  ```bash
-  node seedAdmin.js
+- Tạo file `.env` trong thư mục `backend` và cấu hình chuỗi kết nối CSDL (Database URL) cho Prisma:
+  ```env
+  DATABASE_URL="mysql://root:password@localhost:3306/clothing_db"
+  JWT_SECRET="your_jwt_secret"
   ```
-- Khởi động Server:
+- Khởi tạo Schema và Push dữ liệu vào MySQL bằng Prisma:
+  ```bash
+  npx prisma db push
+  # Hoặc npx prisma migrate dev
+  ```
+- Nạp dữ liệu tài khoản Admin / Mẫu (Seed Data - nếu có):
+  ```bash
+  npm run seed
+  ```
+- Khởi động Server (dùng `tsx` hỗ trợ TypeScript trực tiếp):
   ```bash
   npm run dev
-  # hoặc npm start
   ```
   *(Server chạy tại: http://localhost:5000)*
 
 ---
 
-### 2. Cấu hình Frontend (`/client`)
+## 2. Cấu hình Frontend (`/frontend`)
 
 ```bash
-cd client
+cd frontend
 npm install
 npm run dev
 ```
@@ -64,7 +72,7 @@ npm run dev
 
 ## 🔑 Tài Khoản Admin Mặc Định
 
-Tài khoản Admin được tạo tự động khi chạy `node seedAdmin.js`:
+Tài khoản Admin mặc định hệ thống:
 
 - **Email**: `admin@shop.com`
 - **Mật khẩu**: `123456`

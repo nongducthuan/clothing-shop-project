@@ -6,7 +6,6 @@ import FeaturedCollections from "../../components/customer/home/FeaturedCollecti
 import GenderPromos from "../../components/customer/home/GenderPromos";
 import Lookbook from "../../components/customer/home/Lookbook";
 import Policies from "../../components/customer/home/Policies";
-import Footer from "../../components/customer/layout/Footer";
 
 export default function Home() {
   const { banners, currentUser } = useHomePage();
@@ -31,8 +30,6 @@ export default function Home() {
       {/* 🎁 Offers Policy Section */}
       <Policies />
 
-      {/* ⚙️ Footer */}
-      <Footer />
     </div>
   );
 }
