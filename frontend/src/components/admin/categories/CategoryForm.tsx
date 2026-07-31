@@ -1,4 +1,5 @@
 import React from "react";
+import { getImageUrl } from "../../../utils/imageUtils";
 
 export default function CategoryForm({
   form,
@@ -10,7 +11,6 @@ export default function CategoryForm({
   resetForm,
   recommendNames,
   categoryImages,
-  backendUrl,
 }) {
   return (
     <div className="flex flex-col h-full">
@@ -92,11 +92,7 @@ export default function CategoryForm({
                     }`}
                   >
                     <img
-                      src={
-                        imageSrc.startsWith("http")
-                          ? imageSrc
-                          : `${backendUrl}${imageSrc}`
-                      }
+                      src={getImageUrl(imageSrc)}
                       className="w-full h-20 object-cover"
                       alt={`Preview ${idx}`}
                     />

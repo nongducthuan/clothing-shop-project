@@ -94,7 +94,6 @@ export default function ProductManager() {
           setSearchTerm={actions.setSearchTerm}
           handleEdit={actions.handleEdit}
           handleDelete={actions.handleDelete}
-          API_URL={state.API_URL}
         />
 
       </div>

@@ -3,17 +3,10 @@ import { useContext, useState, useEffect, useRef } from "react";
 import { AuthContext } from "../../../context/AuthContext";
 import { CartContext } from "../../../context/CartContext";
 import API from "../../../services/apiClient";
+import { getImageUrl as getImgUrl } from "../../../utils/imageUtils";
 
 // --- UTILS & CONSTANTS ---
-
 const GENDERS = ["male", "female", "unisex"];
-
-// Helper to format image URLs
-const getImgUrl = (path) => {
-  if (!path) return "https://placehold.co/100x100?text=No+Image";
-  if (path.startsWith("http")) return path;
-  return `${import.meta.env.VITE_IMAGE_URL}${path}`;
-};
 
 // --- CUSTOM HOOKS ---
 

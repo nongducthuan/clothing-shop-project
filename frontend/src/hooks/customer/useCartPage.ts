@@ -2,9 +2,7 @@ import { useContext, useState, useEffect, useMemo } from "react";
 import { CartContext } from "../../context/CartContext.jsx";
 import { AuthContext } from "../../context/AuthContext.jsx";
 import API from "../../services/apiClient.js";
-
-const API_URL = import.meta.env.VITE_API_URL;
-const IMAGE_URL = import.meta.env.VITE_IMAGE_URL;
+import { getImageUrl } from "../../utils/imageUtils";
 
 export function useCartPage() {
   const { cart, removeFromCart, updateQuantity } = useContext(CartContext);
@@ -144,10 +142,6 @@ export function useCartPage() {
 
   // Helpers
   const formatPrice = (n) => Number(n).toLocaleString("vi-VN") + " đ";
-  const getImageUrl = (url) => {
-    if (!url) return "https://via.placeholder.com/150?text=No+Image";
-    return url.startsWith("http") ? url : `${IMAGE_URL}${url}`;
-  };
 
   return {
     state: {

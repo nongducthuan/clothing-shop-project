@@ -1,4 +1,5 @@
 import React from "react";
+import { getImageUrl } from "../../../utils/imageUtils";
 
 export default function BannerForm({
   form,
@@ -8,7 +9,6 @@ export default function BannerForm({
   uploading,
   editingId,
   onCancel,
-  backendUrl,
 }) {
   return (
     <div className="flex flex-col h-full">
@@ -83,11 +83,7 @@ export default function BannerForm({
           {form.imageUrl ? (
             <div className="w-full h-32 rounded-2xl overflow-hidden bg-gray-100 shadow-inner border border-gray-100 relative group mt-2">
               <img
-                src={
-                  form.imageUrl.startsWith("http")
-                    ? form.imageUrl
-                    : `${backendUrl}${form.imageUrl}`
-                }
+                src={getImageUrl(form.imageUrl)}
                 alt="Preview"
                 className="w-full h-full object-cover"
               />

@@ -26,8 +26,6 @@ const PageHeader = () => (
  * Orchestrates the Banner Form and Banner List side-by-side in a modern UI wrapper.
  */
 export default function BannerManager() {
-  const backendUrl = import.meta.env.VITE_API_URL;
-
   // Destructure all logic from our custom hook (Logic remains 100% untouched)
   const {
     banners, isUploading, editingId, form, setForm,
@@ -54,7 +52,6 @@ export default function BannerManager() {
             uploading={isUploading}
             editingId={editingId}
             onCancel={resetForm}
-            backendUrl={backendUrl}
           />
         </div>
 
@@ -65,7 +62,6 @@ export default function BannerManager() {
             banners={banners}
             handleEdit={selectForEdit}
             handleDelete={deleteBanner}
-            backendUrl={backendUrl}
           />
         </div>
 

@@ -1,5 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { getImageUrl } from "../../../utils/imageUtils";
 
 export default function ProductList({
   products,
@@ -12,7 +13,6 @@ export default function ProductList({
   setSearchTerm,
   handleEdit,
   handleDelete,
-  API_URL
 }) {
   const navigate = useNavigate();
   const genders = ["all", "male", "female", "unisex"];
@@ -91,10 +91,10 @@ export default function ProductList({
                   {/* Image & Badges */}
                   <div className="relative h-56 bg-gray-100 overflow-hidden">
                     <img
-                      src={p.image_url?.startsWith("http") ? p.image_url : `${API_URL}${p.image_url}`}
+                      src={getImageUrl(p.image_url)}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       alt={p.name}
-                      onError={(e) => ((e.target as HTMLImageElement).src = "import.meta.env.VITE_API_URL/public/placeholder.jpg")}
+                      onError={(e) => ((e.target as HTMLImageElement).src = getImageUrl(null))}
                     />
 
                     {/* Gender Badge */}

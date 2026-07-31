@@ -3,9 +3,7 @@ import { useState, useEffect, useContext, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { CartContext } from "../../context/CartContext.jsx";
 import API from "../../services/apiClient.js";
-
-const API_URL = import.meta.env.VITE_API_URL;
-const IMAGE_URL = import.meta.env.VITE_IMAGE_URL;
+import { getImageUrl, PLACEHOLDER_IMG } from "../../utils/imageUtils";
 
 export function useProductDetail() {
   const { id } = useParams();
@@ -69,7 +67,7 @@ export function useProductDetail() {
 
   // Fetch Product Details
   useEffect(() => {
-    let url = `${API_URL}/products/${id}`;
+    let url = `${API.defaults?.baseURL || import.meta.env.VITE_API_URL}/products/${id}`;
     if (currentUserId) {
       url += `?userId=${currentUserId}`;
     }
@@ -80,16 +78,14 @@ export function useProductDetail() {
         return response.json();
       })
       .then((data) => {
-        if (data.image_url && !data.image_url.startsWith("http")) {
-          data.image_url = `${IMAGE_URL}${data.image_url}`;
+        if (data.image_url) {
+          data.image_url = getImageUrl(data.image_url);
         }
 
         if (data.colors) {
           data.colors = data.colors.map((color) => ({
             ...color,
-            image_url: color.image_url.startsWith("http")
-              ? color.image_url
-              : `${IMAGE_URL}${color.image_url}`,
+            image_url: getImageUrl(color.image_url),
           }));
         }
 
@@ -185,7 +181,7 @@ export function useProductDetail() {
       getStockMessage, formatPrice
     },
     constants: {
-      PLACEHOLDER_IMG: `${IMAGE_URL}/public/placeholder.jpg`
+      PLACEHOLDER_IMG
     }
   };
 }

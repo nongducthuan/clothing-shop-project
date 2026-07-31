@@ -1,5 +1,5 @@
 import React from "react";
-import { API_URL } from "../../../hooks/admin/useProductDetailManager";
+import { getImageUrl } from "../../../utils/imageUtils";
 
 export default function ColorSection({
   colors,
@@ -52,7 +52,7 @@ export default function ColorSection({
                   <div className={`w-12 h-12 rounded-xl overflow-hidden flex-shrink-0 ${isSelected ? "border-2 border-indigo-200" : "bg-gray-100"}`}>
                     {color.image_url ? (
                       <img
-                        src={color.image_url.startsWith("http") ? color.image_url : `${API_URL}${color.image_url}`}
+                        src={getImageUrl(color.image_url)}
                         className="w-full h-full object-cover"
                         alt={color.color_name}
                       />

@@ -1,8 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-
-const IMAGE_URL = import.meta.env.VITE_IMAGE_URL;
-const PLACEHOLDER_IMG = "https://placehold.co/300x400?text=No+Image";
+import { getImageUrl } from "../../../utils/imageUtils";
 
 const GENDER_CONFIG = {
   male: { label: "Male", colorClass: "bg-blue-50 text-blue-600 border-blue-100" },
@@ -12,10 +10,6 @@ const GENDER_CONFIG = {
 
 const formatCurrency = (amount) => Number(amount).toLocaleString("en-US") + " VND";
 
-const getImageUrl = (url) => {
-  if (!url) return PLACEHOLDER_IMG;
-  return url.startsWith("http") ? url : `${IMAGE_URL}${url}`;
-};
 
 export default function ProductCard({ product, promotion }) {
   const navigate = useNavigate();

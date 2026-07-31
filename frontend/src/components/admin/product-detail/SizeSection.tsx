@@ -1,5 +1,6 @@
 import React from "react";
-import { SIZE_ORDER, API_URL } from "../../../hooks/admin/useProductDetailManager";
+import { SIZE_ORDER } from "../../../hooks/admin/useProductDetailManager";
+import { getImageUrl } from "../../../utils/imageUtils";
 
 export default function SizeSection({
   selectedColorObj,
@@ -44,11 +45,11 @@ export default function SizeSection({
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-6 bg-gradient-to-r from-indigo-50 to-blue-50 p-4 md:p-5 rounded-[1.5rem] border border-indigo-100/50 shadow-inner">
           <div className="w-20 h-20 md:w-24 md:h-24 rounded-2xl overflow-hidden bg-white border-2 border-white shadow-sm flex-shrink-0">
             <img
-              src={selectedColorObj.image_url?.startsWith("http") ? selectedColorObj.image_url : `${API_URL}${selectedColorObj.image_url}`}
+              src={getImageUrl(selectedColorObj.image_url)}
               className="w-full h-full object-cover"
               onError={(e) => {
                 (e.target as HTMLImageElement).onerror = null;
-                (e.target as HTMLImageElement).src = `${API_URL}/public/placeholder.jpg`;
+                (e.target as HTMLImageElement).src = getImageUrl(null);
               }}
               alt="Selected"
             />

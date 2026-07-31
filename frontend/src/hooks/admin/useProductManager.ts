@@ -233,8 +233,7 @@ export default function useProductManager() {
       searchTerm,
       editingId,
       form,
-      mobileFormOpen,
-      API_URL
+      mobileFormOpen
     },
     actions: {
       setToast,

@@ -1,4 +1,5 @@
 import React from "react";
+import { getImageUrl } from "../../../utils/imageUtils";
 
 export default function OrderDetailsModal({ order, onClose, formatCurrency }) {
   if (!order) return null;
@@ -159,10 +160,7 @@ const OrderItemsList = ({ items, formatCurrency }) => {
 };
 
 const OrderItemCard = ({ item, formatCurrency }) => {
-  // Sửa lại cú pháp lấy đúng biến môi trường Vite
-  const imageUrl = item.image_url?.startsWith("http")
-      ? item.image_url
-      : `${import.meta.env.VITE_API_URL}${item.image_url}`;
+  const imageUrl = getImageUrl(item.image_url);
 
   const isGift = Boolean(item.is_gift);
 
@@ -177,7 +175,7 @@ const OrderItemCard = ({ item, formatCurrency }) => {
           // Sửa lại cú pháp fallback image đúng chuẩn
           onError={(e) => {
             (e.target as HTMLImageElement).onerror = null; // Ngăn chặn lặp vô hạn lỗi onError
-            (e.target as HTMLImageElement).src = `${import.meta.env.VITE_API_URL}/public/placeholder.jpg`;
+            (e.target as HTMLImageElement).src = getImageUrl(null);
           }}
           alt={item.product_name}
           className="w-full h-full object-cover"

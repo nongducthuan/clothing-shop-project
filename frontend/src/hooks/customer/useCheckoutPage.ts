@@ -3,8 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { CartContext } from "../../context/CartContext.jsx";
 import { AuthContext } from "../../context/AuthContext.jsx";
 import API from "../../services/apiClient.js";
-
-const API_URL = import.meta.env.VITE_API_URL;
+import { getImageUrl } from "../../utils/imageUtils";
 
 // --- HELPER HOOK: GEOLOCATION ---
 const useGeolocation = () => {
@@ -111,10 +110,9 @@ export function useCheckoutPage() {
   const voucherDiscount = appliedVoucher ? Number(appliedVoucher.discount_amount) : 0;
   const finalTotal = Math.max(0, subtotal - membershipDiscount - voucherDiscount);
 
-  const getImageUrl = (item) => {
+  const resolveItemImage = (item) => {
     const rawUrl = item.color_image || item.image_url;
-    if (!rawUrl) return "https://via.placeholder.com/150?text=No+Image";
-    return rawUrl.startsWith("http") ? rawUrl : `${API_URL}/${rawUrl.replace(/^\/+/, "")}`;
+    return getImageUrl(rawUrl);
   };
 
   // Handlers
@@ -204,7 +202,7 @@ export function useCheckoutPage() {
       handleSubmitOrder, fetchCurrentLocation, navigate
     },
     helpers: {
-      getImageUrl, formatPrice
+      getImageUrl: resolveItemImage, formatPrice
     }
   };
 }

@@ -1,10 +1,10 @@
 import React from "react";
+import { getImageUrl } from "../../../utils/imageUtils";
 
 export default function BannerList({
   banners,
   handleEdit,
   handleDelete,
-  backendUrl,
 }) {
   return (
     <div className="h-full">
@@ -21,9 +21,7 @@ export default function BannerList({
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {banners.map((b) => {
-            const imageSrc = b.image_url.startsWith("http")
-              ? b.image_url
-              : `${backendUrl}${b.image_url}`;
+            const imageSrc = getImageUrl(b.image_url);
 
             return (
               <div

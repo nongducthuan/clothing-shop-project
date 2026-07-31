@@ -38,7 +38,6 @@ const PageHeader = ({ navigate }) => (
  */
 export default function CategoryManager() {
   const navigate = useNavigate();
-  const backendUrl = import.meta.env.VITE_API_URL;
 
   // Destructure all required logic from the custom hook (Logic remains untouched)
   const {
@@ -69,7 +68,6 @@ export default function CategoryManager() {
             resetForm={resetForm}
             recommendNames={recommendNames}
             categoryImages={categoryImages}
-            backendUrl={backendUrl}
           />
         </div>
 
@@ -82,7 +80,6 @@ export default function CategoryManager() {
             setFilterGender={setFilterGender}
             handleEdit={handleEdit}
             handleDelete={handleDelete}
-            backendUrl={backendUrl}
           />
         </div>
 

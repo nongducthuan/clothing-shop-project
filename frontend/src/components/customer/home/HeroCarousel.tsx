@@ -1,5 +1,5 @@
 import React from "react";
-import { IMAGE_URL } from "./homeData";
+import { getImageUrl } from "../../../utils/imageUtils";
 
 const BannerOverlay = ({ title, subtitle }) => (
   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent flex flex-col items-center justify-center text-center text-white px-4 py-8 md:p-12">
@@ -32,7 +32,7 @@ export default function HeroCarousel({ banners = [] }) {
               relative w-full overflow-hidden`}
             >
               <img
-                src={`${IMAGE_URL}${banner.image_url}`}
+                src={getImageUrl(banner.image_url)}
                 className="d-block w-full h-full object-cover object-top md:object-center"
                 alt={banner.title || `Banner ${idx + 1}`}
               />
@@ -45,7 +45,7 @@ export default function HeroCarousel({ banners = [] }) {
           /* Fallback static banner if no banners are returned from API */
           <div className="carousel-item active h-[45vh] sm:h-[60vh] md:h-[75vh] relative">
             <img
-              src={`${IMAGE_URL}/public/images/placeholder-banner.png`}
+              src={getImageUrl("/public/images/placeholder-banner.png")}
               className="d-block w-full h-full object-cover object-top md:object-center"
               alt="Default Banner"
             />

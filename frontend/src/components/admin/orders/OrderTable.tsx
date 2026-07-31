@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { getImageUrl } from "../../../utils/imageUtils";
 
 export default function OrderTable({
   orders,
@@ -309,7 +310,7 @@ const ReturnInfoSection = ({ order }) => {
           <p className="text-[10px] font-bold text-orange-600/80 uppercase mb-3 tracking-wider">Evidence Images</p>
           <div className="flex flex-wrap gap-4">
             {order.return_images.map((img, idx) => {
-              const fullImgUrl = img.startsWith('http') ? img : `import.meta.env.VITE_API_URL${img}`;
+              const fullImgUrl = getImageUrl(img);
               return (
                 <img
                   key={idx}
@@ -383,9 +384,7 @@ const OrderItemsList = ({ items, formatCurrency }) => {
 };
 
 const OrderItemCard = ({ item, formatCurrency }) => {
-  const imageUrl = item.image_url?.startsWith("http")
-      ? item.image_url
-      : `import.meta.env.VITE_API_URL${item.image_url}`;
+  const imageUrl = getImageUrl(item.image_url);
 
   const isGift = Boolean(item.is_gift);
 
@@ -396,7 +395,7 @@ const OrderItemCard = ({ item, formatCurrency }) => {
       <div className={`w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 ${isGift ? 'border-2 border-white shadow-sm' : 'bg-gray-50 border border-gray-100'}`}>
         <img
           src={imageUrl}
-          onError={(e) => ((e.target as HTMLImageElement).src = "import.meta.env.VITE_API_URL/public/placeholder.jpg")}
+          onError={(e) => ((e.target as HTMLImageElement).src = getImageUrl(null))}
           alt={item.product_name}
           className="w-full h-full object-cover"
         />

@@ -1,4 +1,5 @@
 import React from "react";
+import { getImageUrl } from "../../../utils/imageUtils";
 
 export default function CategoryList({
   categories,
@@ -6,7 +7,6 @@ export default function CategoryList({
   setFilterGender,
   handleEdit,
   handleDelete,
-  backendUrl,
 }) {
   // Gender tabs configuration
   const genderTabs = [
@@ -80,11 +80,7 @@ export default function CategoryList({
                       return imageSrc ? (
                         <div className="w-14 h-14 rounded-2xl overflow-hidden bg-gray-100 shadow-sm border border-gray-100">
                           <img
-                            src={
-                              imageSrc.startsWith("http")
-                                ? imageSrc
-                                : `${backendUrl}${imageSrc}`
-                            }
+                            src={getImageUrl(imageSrc)}
                             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                             alt={cat.name}
                           />
