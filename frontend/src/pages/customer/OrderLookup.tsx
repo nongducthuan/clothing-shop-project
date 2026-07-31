@@ -10,7 +10,7 @@ export default function GuestOrderTracking() {
   const { state, actions, helpers } = useOrderLookup();
 
   return (
-    <div className="min-h-[calc(100vh-25vh)] bg-gray-100 flex items-center justify-center p-4">
+    <div className="min-h-[calc(100vh-25vh)] flex items-center justify-center p-4">
       <div className="bg-white w-full max-w-lg rounded-2xl shadow-xl overflow-hidden">
 
         {/* CARD HEADER */}
