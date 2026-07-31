@@ -13,7 +13,7 @@ export const sendChatMessage = async ({
   message,
   sessionId,
 }: SendChatMessageParams): Promise<ChatMessageResponse> => {
-  const res = await API.post("/api/chat/message-with-history", {
+  const res = await API.post("/chat/message-with-history", {
     message,
     sessionId,
   });
@@ -25,7 +25,7 @@ export const clearChatHistory = async ({
 }: {
   sessionId: string;
 }): Promise<void> => {
-  const res = await API.post("/api/chat/clear-history", {
+  const res = await API.post("/chat/clear-history", {
     sessionId,
   });
   return res.data;
