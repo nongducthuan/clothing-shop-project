@@ -19,7 +19,7 @@ export function ShippingSection({ address, setAddress, fetchLocation, isLocating
         value={address}
         onChange={(e) => setAddress(e.target.value)}
         placeholder="Enter your house number, street, ward, district..."
-        className="w-full bg-slate-50 border border-slate-200 p-4 rounded-2xl focus:ring-2 focus:ring-slate-900 focus:border-slate-900 outline-none transition-all resize-none text-slate-900 placeholder:text-slate-400"
+        className="w-full bg-slate-50 border border-slate-200 px-4 py-3.5 rounded-2xl focus:ring-2 focus:ring-slate-900 focus:border-slate-900 outline-none transition-all resize-none text-slate-900 placeholder:text-slate-400 text-sm"
       />
       {locationError && <p className="text-rose-500 text-xs mt-2 ml-1">{locationError}</p>}
     </section>
@@ -66,7 +66,7 @@ const InputField = ({ label, type = "text", ...props }) => (
     <input
       {...props}
       type={type}
-      className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-slate-900 focus:border-slate-900 outline-none transition-all text-slate-900 placeholder:text-slate-400"
+      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-slate-900 focus:border-slate-900 outline-none transition-all text-slate-900 placeholder:text-slate-400 text-sm"
     />
   </div>
 );

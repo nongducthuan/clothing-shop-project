@@ -95,7 +95,7 @@ export default function OrderSummary({ state, actions, helpers, onCheckout }) {
 
         <button
           onClick={onCheckout}
-          className="w-full bg-slate-900 text-white py-3 sm:py-4 rounded-full font-medium text-base sm:text-lg hover:bg-slate-800 transition-all active:scale-[0.98]"
+          className="w-full bg-slate-900 text-white h-12 py-3.5 rounded-full font-semibold text-base hover:bg-slate-800 transition-all active:scale-[0.98] shadow-md flex items-center justify-center"
         >
           Checkout
         </button>

@@ -12,7 +12,7 @@ export default function ProductActions({ state, actions, helpers }) {
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
 
         {/* QUANTITY CONTROL */}
-        <div className="flex items-center border border-slate-200 rounded-full h-14 w-36 overflow-hidden bg-white">
+        <div className="flex items-center border border-slate-200 rounded-full h-12 w-32 overflow-hidden bg-white shrink-0">
           <button
             onClick={() => setQuantity(Math.max(1, quantity - 1))}
             className="flex-1 h-full text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-colors disabled:opacity-50"
@@ -20,7 +20,7 @@ export default function ProductActions({ state, actions, helpers }) {
           >
             <i className="fa-solid fa-minus text-xs"></i>
           </button>
-          <span className="flex-1 text-center font-medium text-slate-900">
+          <span className="flex-1 text-center font-medium text-slate-900 text-sm">
             {quantity}
           </span>
           <button
@@ -35,7 +35,7 @@ export default function ProductActions({ state, actions, helpers }) {
         <button
           onClick={handleAddToCart}
           disabled={isOutOfStock || !state.selectedSize}
-          className="flex-1 w-full min-h-12 sm:min-h-14 h-12 sm:h-14 bg-slate-900 text-white rounded-full font-semibold text-base sm:text-lg hover:bg-slate-800 disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed transition-all active:scale-[0.98] shadow-md inline-flex items-center justify-center px-6"
+          className="flex-1 w-full h-12 bg-slate-900 text-white rounded-full font-semibold text-base hover:bg-slate-800 disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed transition-all active:scale-[0.98] shadow-md inline-flex items-center justify-center px-6"
         >
           {isProductIncomplete ? "Product Not Ready" : isOutOfStock ? "Out of Stock" : "Add to Cart"}
         </button>
