@@ -39,7 +39,7 @@ npm install
 
 - Tạo file `.env` trong thư mục `backend` và cấu hình chuỗi kết nối CSDL (Database URL) cho Prisma:
   ```env
-  DATABASE_URL="mysql://root:password@localhost:3306/clothing_db"
+  DATABASE_URL="mysql://root:password@localhost:3306/shop_db"
   JWT_SECRET="your_jwt_secret"
   ```
 - Khởi tạo Schema và Push dữ liệu vào MySQL bằng Prisma:
