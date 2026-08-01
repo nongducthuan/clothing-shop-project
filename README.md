@@ -1,19 +1,19 @@
-# 🛒 Đồ Án Website Bán Quần Áo (Clothing Shop Project)
+# Đồ Án Website Bán Quần Áo (Clothing Shop Project)
 
 Website thương mại điện tử chuyên bán quần áo và thời trang, tích hợp hệ thống quản lý bán hàng và gợi ý sản phẩm dành cho đồ án sinh viên.
 
 ---
 
-## ✨ Tính Năng Chính
+## Tính Năng Chính
 
-### 👨‍💻 Dành Cho Khách Hàng (Client)
+### Dành Cho Khách Hàng (Client)
 - **Xem & Tìm kiếm sản phẩm**: Lọc theo danh mục, khuyến mãi, danh sách sản phẩm nổi bật.
 - **Giỏ hàng & Đặt hàng**: Thêm/xóa sản phẩm vào giỏ hàng, áp dụng Voucher và tiến hành thanh toán.
 - **Tài khoản người dùng**: Đăng ký, đăng nhập (JWT Auth), tích điểm hạng thành viên (Membership).
 - **Gợi ý sản phẩm**: Gợi ý các sản phẩm phù hợp theo hành vi/sở thích.
 - **Trợ lý AI Chatbot**: Hỗ trợ tư vấn và giải đáp thắc mắc khách hàng.
 
-### 🛡️ Dành Cho Quản Trị Viên (Admin)
+### Dành Cho Quản Trị Viên (Admin)
 - **Quản lý sản phẩm & Kho hàng**: Thêm, sửa, xóa sản phẩm, danh mục, cập nhật số lượng tồn kho.
 - **Quản lý đơn hàng**: Xem danh sách đơn hàng, cập nhật trạng thái xử lý/giao hàng.
 - **Mã giảm giá & Khuyến mãi**: Tạo và quản lý Voucher, chương trình khuyến mãi (Sale / Promotion).
@@ -21,14 +21,14 @@ Website thương mại điện tử chuyên bán quần áo và thời trang, t�
 
 ---
 
-## 🛠️ Công Nghệ Sử Dụng
+## Công Nghệ Sử Dụng
 
 - **Frontend**: React.js (Vite), TypeScript, React Router, TailwindCSS, Bootstrap, Axios, Lucide Icons, Swiper, SweetAlert2.
 - **Backend**: Node.js, TypeScript, Express.js, Prisma ORM, MySQL/MariaDB, JSON Web Token (JWT), `bcryptjs`, Multer, Nodemailer / Resend.
 
 ---
 
-## 🚀 Cách Khởi Động Dự Án
+## Cách Khởi Động Dự Án
 
 ### 1. Cấu hình Backend (`/backend`)
 
@@ -70,7 +70,7 @@ npm run dev
 
 ---
 
-## 🔑 Tài Khoản Admin Mặc Định
+## Tài Khoản Admin Mặc Định
 
 Tài khoản Admin mặc định hệ thống:
 
