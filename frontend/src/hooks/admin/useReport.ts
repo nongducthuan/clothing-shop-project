@@ -25,11 +25,12 @@ export function useReport() {
 
   // Nếu đang loading hoặc lỗi thì chưa cần map data
   if (loading || !stats) {
-    return { loading, stats, formatCurrency };
+    return { loading, stats, summary: {}, formatCurrency };
   }
 
   // Lấy dữ liệu từ Backend
-  const { summary, revenue7Days, orderStatus, revenueMonths, categoryStats, returnStatuses, returnReasons } = stats;
+  const summary = stats.summary || stats || {};
+  const { revenue7Days, orderStatus, revenueMonths, categoryStats, returnStatuses, returnReasons } = stats;
 
   // Xử lý dữ liệu cho các biểu đồ
   const weeklyChartData = [

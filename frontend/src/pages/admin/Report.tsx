@@ -79,10 +79,10 @@ export default function Report() {
               <h3 className="text-[10px] font-black text-indigo-800 uppercase tracking-widest">7-Day Overview</h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <StatCard title="Orders" value={summary.weeklyOrders} color="text-indigo-600" />
-              <StatCard title="Revenue" value={formatCurrency(summary.weeklyRevenue)} color="text-amber-500" />
-              <StatCard title="Profit" value={formatCurrency(summary.weeklyProfit)} color="text-emerald-500" />
-              <StatCard title="Units Sold" value={summary.productsSoldWeek || 0} color="text-rose-500" />
+              <StatCard title="Orders" value={summary?.weeklyOrders ?? 0} color="text-indigo-600" />
+              <StatCard title="Revenue" value={formatCurrency(summary?.weeklyRevenue ?? 0)} color="text-amber-500" />
+              <StatCard title="Profit" value={formatCurrency(summary?.weeklyProfit ?? 0)} color="text-emerald-500" />
+              <StatCard title="Units Sold" value={summary?.productsSoldWeek ?? 0} color="text-rose-500" />
             </div>
           </section>
 
@@ -92,10 +92,10 @@ export default function Report() {
               <h3 className="text-[10px] font-black text-purple-800 uppercase tracking-widest">30-Day Overview</h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <StatCard title="Orders" value={summary.monthlyOrders} color="text-emerald-600" />
-              <StatCard title="Revenue" value={formatCurrency(summary.monthlyRevenue)} color="text-purple-600" />
-              <StatCard title="Profit" value={formatCurrency(summary.monthlyProfit)} color="text-teal-600" />
-              <StatCard title="Units Sold" value={summary.productsSoldMonth || 0} color="text-blue-600" />
+              <StatCard title="Orders" value={summary?.monthlyOrders ?? 0} color="text-emerald-600" />
+              <StatCard title="Revenue" value={formatCurrency(summary?.monthlyRevenue ?? 0)} color="text-purple-600" />
+              <StatCard title="Profit" value={formatCurrency(summary?.monthlyProfit ?? 0)} color="text-teal-600" />
+              <StatCard title="Units Sold" value={summary?.productsSoldMonth ?? 0} color="text-blue-600" />
             </div>
           </section>
         </div>
