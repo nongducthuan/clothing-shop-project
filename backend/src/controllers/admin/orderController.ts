@@ -3,9 +3,10 @@ import prisma from '../../../prisma/client';
 
 export const getOrders = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { page = 1, limit = 500 } = req.query;
+        // Fix 15: Default limit 500 → 50 để tránh memory spike
+        const { page = 1, limit = 50 } = req.query;
         const p = Number(page) || 1;
-        const l = Number(limit) || 500;
+        const l = Number(limit) || 50;
         const offset = (p - 1) * l;
 
         const [ordersRaw, totalOrders] = await Promise.all([
@@ -37,8 +38,8 @@ export const getOrders = async (req: Request, res: Response): Promise<void> => {
 
             if (rr) {
                 try {
-                    bankInfo = typeof rr.refund_bank_info === 'string' 
-                        ? JSON.parse(rr.refund_bank_info) 
+                    bankInfo = typeof rr.refund_bank_info === 'string'
+                        ? JSON.parse(rr.refund_bank_info)
                         : rr.refund_bank_info;
                     returnImages = typeof rr.images === 'string'
                         ? JSON.parse(rr.images)
@@ -72,7 +73,6 @@ export const getOrders = async (req: Request, res: Response): Promise<void> => {
             };
         });
 
-        // Return object with data property and other pagination metadata
         res.json({
             data: processedOrders,
             totalPages: Math.ceil(totalOrders / l),
@@ -90,7 +90,7 @@ export const confirmPayment = async (req: Request, res: Response): Promise<void>
     const { payment_status } = req.body;
 
     try {
-        const order = await prisma.order.update({
+        await prisma.order.update({
             where: { id: Number(id) },
             data: { payment_status: payment_status as any }
         });
@@ -117,8 +117,8 @@ export const changeOrderStatusLogic = async (orderId: number, newStatus: string)
         const userId = order.user_id;
 
         // 1. Inventory Updates
-        const inactiveSet = new Set(["Cancelled", "Return_Approved"]); // Map to Prisma enums
-        
+        const inactiveSet = new Set(["Cancelled", "Return_Approved"]);
+
         const oldIsInactive = inactiveSet.has(oldStatus);
         const newIsInactive = inactiveSet.has(newStatus as any);
 
@@ -133,7 +133,7 @@ export const changeOrderStatusLogic = async (orderId: number, newStatus: string)
                         data: { stock: { increment: item.quantity } }
                     });
                 } else if (oldIsInactive && !newIsInactive) {
-                    // Deduct stock (e.g. Cancelled -> Pending)
+                    // Deduct stock (e.g. Cancelled → Pending)
                     const size = await tx.productSize.findUnique({ where: { id: item.size_id } });
                     if (!size || size.stock < item.quantity) {
                         throw new Error(`Insufficient stock for product (size_id=${item.size_id})`);
@@ -149,34 +149,32 @@ export const changeOrderStatusLogic = async (orderId: number, newStatus: string)
         // 2. Financial Updates
         let revenueChange = 0;
         let orderCountChange = 0;
-        let paymentStatusUpdate: any = undefined;
+        let deliveredAtUpdate: Date | null = null;
 
         if (oldStatus !== "Delivered" && newStatus === "Delivered") {
             revenueChange = totalPrice;
             orderCountChange = 1;
-            paymentStatusUpdate = 'Paid';
+            deliveredAtUpdate = new Date(); // Fix 7: ghi lại thời điểm giao hàng
         } else if ((newStatus === "Return_Approved" || newStatus === "Cancelled") && oldStatus === "Delivered") {
             revenueChange = -totalPrice;
             orderCountChange = -1;
-            paymentStatusUpdate = 'Refunded';
         } else if (oldStatus === "Delivered" && newStatus !== "Delivered") {
             revenueChange = -totalPrice;
             orderCountChange = -1;
-        } else if (newStatus === "Return_Approved") {
-            paymentStatusUpdate = 'Refunded';
         }
 
-        // Update User Spending and Membership
+        // Fix 6: Update User Spending – đảm bảo total_spent không bị âm
         if (revenueChange !== 0 && userId) {
-            await tx.user.update({
-                where: { id: userId },
-                data: { total_spent: { increment: revenueChange } }
-            });
+            const currentUser = await tx.user.findUnique({ where: { id: userId } });
+            if (currentUser) {
+                const newTotalSpent = Math.max(0, Number(currentUser.total_spent) + revenueChange);
+                await tx.user.update({
+                    where: { id: userId },
+                    data: { total_spent: newTotalSpent }
+                });
 
-            const updatedUser = await tx.user.findUnique({ where: { id: userId } });
-            if (updatedUser) {
                 const tier = await tx.membership.findFirst({
-                    where: { min_spending: { lte: updatedUser.total_spent } },
+                    where: { min_spending: { lte: newTotalSpent } },
                     orderBy: { min_spending: 'desc' }
                 });
                 if (tier) {
@@ -188,18 +186,28 @@ export const changeOrderStatusLogic = async (orderId: number, newStatus: string)
             }
         }
 
-        // Update Daily Revenues
+        // Fix 7: Update Daily Revenues – dùng ngày giao hàng thực tế, không phải ngày hôm nay
         if (revenueChange !== 0 || orderCountChange !== 0) {
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
+            // Xác định ngày để ghi revenue:
+            // - Khi status → Delivered: dùng ngày hôm nay
+            // - Khi cancel/return từ Delivered: dùng delivered_at của đơn (ngày gốc)
+            let revenueDate: Date;
+            if (newStatus === "Delivered") {
+                revenueDate = new Date();
+            } else if (order.delivered_at) {
+                revenueDate = new Date(order.delivered_at);
+            } else {
+                revenueDate = new Date(); // fallback nếu chưa có delivered_at
+            }
+            revenueDate.setHours(0, 0, 0, 0);
 
             const existingRevenue = await tx.revenue.findUnique({
-                where: { report_date: today }
+                where: { report_date: revenueDate }
             });
 
             if (existingRevenue) {
                 await tx.revenue.update({
-                    where: { report_date: today },
+                    where: { report_date: revenueDate },
                     data: {
                         total_sales: { increment: revenueChange },
                         total_orders: { increment: orderCountChange }
@@ -208,9 +216,9 @@ export const changeOrderStatusLogic = async (orderId: number, newStatus: string)
             } else {
                 await tx.revenue.create({
                     data: {
-                        report_date: today,
-                        total_sales: revenueChange,
-                        total_orders: orderCountChange
+                        report_date: revenueDate,
+                        total_sales: Math.max(0, revenueChange),
+                        total_orders: Math.max(0, orderCountChange)
                     }
                 });
             }
@@ -218,9 +226,7 @@ export const changeOrderStatusLogic = async (orderId: number, newStatus: string)
 
         // 3. Update Order
         const updateData: any = { status: newStatus as any };
-        if (paymentStatusUpdate) {
-            updateData.payment_status = paymentStatusUpdate;
-        }
+        if (deliveredAtUpdate) updateData.delivered_at = deliveredAtUpdate; // Fix 7
 
         await tx.order.update({
             where: { id: orderId },
@@ -241,15 +247,9 @@ export const updateOrderStatus = async (req: Request, res: Response): Promise<vo
     }
 };
 
-export const changeOrderStatus = async (req: Request, res: Response): Promise<void> => {
-    try {
-        const { order_id, new_status } = req.body;
-        await changeOrderStatusLogic(Number(order_id), new_status);
-        res.json({ message: "Order status updated successfully!" });
-    } catch (err: any) {
-        res.status(500).json({ message: "Failed to update order status", error: err.message });
-    }
-};
+// Fix 17: Xóa hàm changeOrderStatus trùng với updateOrderStatus —
+// Route admin dùng updateOrderStatus (id từ params), đây là alias tương thích
+export const changeOrderStatus = updateOrderStatus;
 
 export const approveReturn = async (req: Request, res: Response): Promise<void> => {
     const orderId = Number(req.params.id);

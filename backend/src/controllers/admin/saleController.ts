@@ -13,7 +13,7 @@ export const createSaleAdmin = async (req: Request, res: Response): Promise<void
           apply_scope: apply_scope as any,
           start_date: new Date(start_date),
           end_date: new Date(end_date),
-          status: 1
+          status: true // Fix 10: Boolean
         }
       });
 
@@ -60,7 +60,7 @@ export const toggleSaleStatus = async (req: Request, res: Response): Promise<voi
     const { status } = req.body; 
     await prisma.sale.update({
       where: { id: Number(id) },
-      data: { status: Number(status) }
+      data: { status: Boolean(Number(status)) } // Fix 10: Boolean (1→true, 0→false)
     });
     res.json({ success: true, message: "Update status successfully!" });
   } catch (error: any) {
@@ -73,7 +73,7 @@ export const removeSale = async (req: Request, res: Response): Promise<void> => 
     const { id } = req.params;
     const sale = await prisma.sale.update({
       where: { id: Number(id) },
-      data: { status: 0 }
+      data: { status: false } // Fix 10: Boolean
     });
     
     if (!sale) {

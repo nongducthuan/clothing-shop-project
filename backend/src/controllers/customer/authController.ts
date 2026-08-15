@@ -86,8 +86,8 @@ export const login = async (req: Request, res: Response): Promise<void> => {
         name: user.name,
         email: user.email,
         role: user.role,
-        tier: user.membership?.name,
-        discount: user.membership?.discount_percent,
+        // Fix 16: Không nhúng tier/discount vào JWT để tránh dữ liệu stale trong 7 ngày.
+        // Frontend nên lấy thông tin membership từ GET /auth/me.
       },
       process.env.JWT_SECRET as string,
       { expiresIn: '7d' }

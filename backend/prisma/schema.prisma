@@ -36,12 +36,14 @@ model User {
 }
 
 model Otp {
-  id         Int      @id @default(autoincrement())
-  email      String   @db.VarChar(255)
-  code       String   @db.VarChar(6)
-  expires_at DateTime
-  created_at DateTime @default(now())
+  id              Int      @id @default(autoincrement())
+  email           String   @db.VarChar(255)
+  code            String   @db.VarChar(6)
+  expires_at      DateTime
+  created_at      DateTime @default(now())
+  failed_attempts Int      @default(0)
 
+  @@index([email])
   @@map("otps")
 }
 
@@ -126,7 +128,7 @@ model Sale {
   apply_scope      ApplyScope     @default(all)
   start_date       DateTime
   end_date         DateTime
-  status           Int            @default(1) @db.TinyInt
+  status           Boolean        @default(true)
   created_at       DateTime       @default(now())
   product_sales    ProductSale[]
   sale_categories  SaleCategory[]
@@ -169,7 +171,7 @@ model Voucher {
   used_count          Int               @default(0)
   start_date          DateTime?
   end_date            DateTime?
-  status              Int               @default(1) @db.TinyInt
+  status              Boolean           @default(true)
   apply_scope         ApplyScope        @default(all)
   created_at          DateTime          @default(now())
   orders              Order[]
@@ -246,6 +248,7 @@ model Order {
   payment_status          PaymentStatus           @default(Unpaid)
   momo_order_id           String?                 @db.VarChar(255)
   momo_pay_url            String?                 @db.Text
+  delivered_at            DateTime?               // Thời điểm giao hàng, dùng để tính revenue đúng ngày
   created_at              DateTime                @default(now())
   updated_at              DateTime                @updatedAt
   items                   OrderItem[]

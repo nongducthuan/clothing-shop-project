@@ -13,7 +13,7 @@ export const applyVoucherCustomer = async (req: Request, res: Response): Promise
         }
     });
 
-    if (!voucher || voucher.status === 0) {
+    if (!voucher || !voucher.status) { // Fix 10: Boolean check
         res.status(404).json({ success: false, message: "Voucher does not exist or has expired!" });
         return;
     }
@@ -33,6 +33,15 @@ export const applyVoucherCustomer = async (req: Request, res: Response): Promise
         return;
     }
     
+    // Fix 9: Re-fetch prices from DB thay vì tin giá từ client
+    const productIds = cartItems.map((item: any) => Number(item.product_id || item.id)).filter(Boolean);
+    const dbProducts = await prisma.product.findMany({
+        where: { id: { in: productIds } },
+        select: { id: true, price: true, category_id: true }
+    });
+    const priceMap = new Map(dbProducts.map(p => [p.id, Number(p.price)]));
+    const categoryMap = new Map(dbProducts.map(p => [p.id, p.category_id]));
+
     let eligibleTotal = 0;
     
     if (voucher.apply_scope === 'all') {
@@ -40,19 +49,26 @@ export const applyVoucherCustomer = async (req: Request, res: Response): Promise
     } 
     else if (voucher.apply_scope === 'product') {
       const allowedIds = voucher.product_vouchers.map(pv => pv.product_id);
-      const eligibleItems = cartItems.filter((item: any) => item.id && allowedIds.includes(Number(item.id)));
-      eligibleTotal = eligibleItems.reduce((sum: number, item: any) => sum + (Number(item.price) * Number(item.quantity)), 0);
+      const eligibleItems = cartItems.filter((item: any) => {
+        const pid = Number(item.product_id || item.id);
+        return allowedIds.includes(pid);
+      });
+      eligibleTotal = eligibleItems.reduce((sum: number, item: any) => {
+        const pid = Number(item.product_id || item.id);
+        return sum + (priceMap.get(pid) ?? 0) * Number(item.quantity);
+      }, 0);
     } 
     else if (voucher.apply_scope === 'category') {
       const allowedIds = voucher.voucher_categories.map(vc => vc.category_id);
       const eligibleItems = cartItems.filter((item: any) => {
-        if (!item.category_id) {
-          console.warn("WARNING: Cart item missing category_id", item.name);
-          return false; 
-        }
-        return allowedIds.includes(Number(item.category_id));
+        const pid = Number(item.product_id || item.id);
+        const catId = categoryMap.get(pid);
+        return catId !== undefined && allowedIds.includes(catId);
       });
-      eligibleTotal = eligibleItems.reduce((sum: number, item: any) => sum + (Number(item.price) * Number(item.quantity)), 0);
+      eligibleTotal = eligibleItems.reduce((sum: number, item: any) => {
+        const pid = Number(item.product_id || item.id);
+        return sum + (priceMap.get(pid) ?? 0) * Number(item.quantity);
+      }, 0);
     }
     
     if (eligibleTotal === 0) {
@@ -93,7 +109,7 @@ export const getActiveVouchers = async (req: Request, res: Response): Promise<vo
 
     const vouchers = await prisma.voucher.findMany({
         where: {
-            status: 1,
+            status: true, // Fix 10: Boolean
             OR: [
                 { start_date: null, end_date: null },
                 { start_date: { lte: new Date() }, end_date: { gte: new Date() } }

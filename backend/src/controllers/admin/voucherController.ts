@@ -17,7 +17,7 @@ export const createVoucherAdmin = async (req: Request, res: Response): Promise<v
           start_date: start_date ? new Date(start_date) : null,
           end_date: end_date ? new Date(end_date) : null,
           apply_scope: apply_scope as any,
-          status: 1
+          status: true // Fix 10: Boolean
         }
       });
 
@@ -64,7 +64,7 @@ export const toggleVoucherStatus = async (req: Request, res: Response): Promise<
     const { status } = req.body;
     await prisma.voucher.update({
       where: { id: Number(id) },
-      data: { status: Number(status) }
+      data: { status: Boolean(Number(status)) } // Fix 10: Boolean (1→true, 0→false)
     });
     res.json({ success: true, message: "Voucher status updated successfully!" });
   } catch (error: any) {
@@ -77,7 +77,7 @@ export const removeVoucher = async (req: Request, res: Response): Promise<void> 
     const { id } = req.params;
     const voucher = await prisma.voucher.update({
       where: { id: Number(id) },
-      data: { status: 0 }
+      data: { status: false } // Fix 10: Boolean (soft delete)
     });
     
     if (!voucher) {

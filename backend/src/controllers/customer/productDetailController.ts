@@ -32,7 +32,7 @@ export const getProductDetail = async (req: Request, res: Response): Promise<voi
     // Lấy thông tin Sale (khuyến mãi) của sản phẩm
     const sales = await prisma.sale.findMany({
       where: {
-        status: 1,
+        status: true, // Fix 10: Boolean
         start_date: { lte: new Date() },
         end_date: { gte: new Date() },
         OR: [

@@ -6,6 +6,8 @@ import https from 'https';
 import crypto from 'crypto';
 import { changeOrderStatusLogic } from '../admin/orderController';
 
+// ─── OTP ──────────────────────────────────────────────────────────────────────
+
 export const sendOtpController = async (req: Request, res: Response): Promise<void> => {
     const { email } = req.body;
     if (!email) {
@@ -47,7 +49,7 @@ export const verifyOtpAndGetOrders = async (req: Request, res: Response): Promis
 
     try {
         const otpData = await prisma.otp.findFirst({
-            where: { email, code }
+            where: { email }
         });
 
         if (!otpData) {
@@ -55,8 +57,28 @@ export const verifyOtpAndGetOrders = async (req: Request, res: Response): Promis
             return;
         }
 
+        // Fix 14: Giới hạn số lần thử sai để chống brute-force
+        const MAX_ATTEMPTS = 5;
+        if (otpData.failed_attempts >= MAX_ATTEMPTS) {
+            await prisma.otp.deleteMany({ where: { email } });
+            res.status(429).json({ message: "Too many failed attempts. Please request a new OTP." });
+            return;
+        }
+
         if (new Date() > new Date(otpData.expires_at)) {
+            await prisma.otp.deleteMany({ where: { email } });
             res.status(400).json({ message: "OTP code has expired!" });
+            return;
+        }
+
+        if (otpData.code !== code) {
+            // Tăng failed_attempts
+            await prisma.otp.update({
+                where: { id: otpData.id },
+                data: { failed_attempts: { increment: 1 } }
+            });
+            const remaining = MAX_ATTEMPTS - otpData.failed_attempts - 1;
+            res.status(400).json({ message: `Invalid OTP code! ${remaining} attempt(s) remaining.` });
             return;
         }
 
@@ -74,7 +96,6 @@ export const verifyOtpAndGetOrders = async (req: Request, res: Response): Promis
             }
         });
 
-        // Flatten items for frontend compatibility
         const formattedOrders = orders.map(order => ({
             ...order,
             items: order.items.map(item => ({
@@ -93,6 +114,8 @@ export const verifyOtpAndGetOrders = async (req: Request, res: Response): Promis
         res.status(500).json({ message: "System error while fetching orders" });
     }
 };
+
+// ─── MoMo ─────────────────────────────────────────────────────────────────────
 
 async function getMomoPayUrl(orderId: string, amountInput: number | string, orderInfo: string): Promise<any> {
     const partnerCode = process.env.MOMO_PARTNER_CODE || '';
@@ -133,11 +156,8 @@ async function getMomoPayUrl(orderId: string, amountInput: number | string, orde
             let data = '';
             res.on('data', chunk => data += chunk);
             res.on('end', () => {
-                try {
-                    resolve(JSON.parse(data));
-                } catch (e) {
-                    resolve({ errorCode: -1, message: "Error parsing MoMo response" });
-                }
+                try { resolve(JSON.parse(data)); }
+                catch (e) { resolve({ errorCode: -1, message: "Error parsing MoMo response" }); }
             });
         });
 
@@ -147,9 +167,11 @@ async function getMomoPayUrl(orderId: string, amountInput: number | string, orde
     });
 }
 
+// ─── ORDER CREATION ───────────────────────────────────────────────────────────
+
 export const createOrderController = async (req: Request, res: Response): Promise<void> => {
     try {
-        const userId = req.user?.id || req.body.user_id || null;
+        const userId = req.user?.id || null;
         const { address, items, phone, name, email, payment_method, voucher_id } = req.body;
 
         if (!address || !items || items.length === 0) {
@@ -164,16 +186,25 @@ export const createOrderController = async (req: Request, res: Response): Promis
             let serverCalculatedTotal = 0;
             const itemsToSave: any[] = [];
 
-            // 1. Calculate price and check stock
+            // 1. Calculate price, check stock, validate size selection
             for (const item of items) {
                 const product = await tx.product.findUnique({
-                    where: { id: Number(item.product_id) }
+                    where: { id: Number(item.product_id) },
+                    include: { colors: { include: { sizes: true } } }
                 });
                 if (!product) throw new Error(`Product not found`);
 
+                // Fix 13: Validate size bắt buộc nếu sản phẩm có size
+                const isGift = item.is_gift === true;
+                const hasSizes = product.colors.some(c => c.sizes.length > 0);
+                if (hasSizes && !item.size_id && !isGift) {
+                    throw new Error(`Please select a size for product "${product.name}"`);
+                }
+
+                // Fix 10: status: true (Boolean) thay vì status: 1
                 const sales = await tx.sale.findMany({
                     where: {
-                        status: 1,
+                        status: true,
                         start_date: { lte: new Date() },
                         end_date: { gte: new Date() },
                         OR: [
@@ -186,9 +217,7 @@ export const createOrderController = async (req: Request, res: Response): Promis
                     take: 1
                 });
 
-                const isGift = item.is_gift === true;
                 let finalItemPrice = 0;
-
                 if (!isGift) {
                     const discount = sales.length > 0 ? Number(sales[0].discount_percent) : 0;
                     finalItemPrice = Number(product.price) * (1 - discount / 100);
@@ -198,12 +227,20 @@ export const createOrderController = async (req: Request, res: Response): Promis
                 if (item.size_id) {
                     const size = await tx.productSize.findUnique({ where: { id: Number(item.size_id) } });
                     if (!size || size.stock < item.quantity) {
-                        throw new Error(`Insufficient stock for product (size_id=${item.size_id})`);
+                        throw new Error(`Insufficient stock for product "${product.name}" (size_id=${item.size_id})`);
                     }
-                    await tx.productSize.update({
-                        where: { id: Number(item.size_id) },
+                    // FIX RACE CONDITION: Sử dụng Atomic Update để trừ kho
+                    const updateResult = await tx.productSize.updateMany({
+                        where: { 
+                            id: Number(item.size_id),
+                            stock: { gte: item.quantity } // Phải đảm bảo còn đủ hàng lúc update
+                        },
                         data: { stock: { decrement: item.quantity } }
                     });
+
+                    if (updateResult.count === 0) {
+                        throw new Error(`Out of stock for product "${product.name}" due to high traffic!`);
+                    }
                 }
 
                 itemsToSave.push({
@@ -217,7 +254,7 @@ export const createOrderController = async (req: Request, res: Response): Promis
                 });
             }
 
-            // 2. Membership Discount (always applied server-side)
+            // 2. Membership Discount
             if (userId) {
                 const user = await tx.user.findUnique({
                     where: { id: userId },
@@ -229,17 +266,16 @@ export const createOrderController = async (req: Request, res: Response): Promis
                 }
             }
 
-            // Bug fix 1: Always use server-calculated total — never trust client-sent price
             finalTotal = serverCalculatedTotal;
 
-            // Bug fix 2: Re-validate voucher in transaction before decrementing usage
+            // Fix 8 + Fix 9: Re-validate voucher, tính discount trên eligible items
             if (voucher_id) {
                 const voucher = await tx.voucher.findUnique({
                     where: { id: Number(voucher_id) },
                     include: { product_vouchers: true, voucher_categories: true }
                 });
 
-                if (!voucher || voucher.status === 0) {
+                if (!voucher || !voucher.status) {
                     throw new Error('Voucher does not exist or has been disabled.');
                 }
                 if (voucher.usage_limit !== null && voucher.usage_limit <= 0) {
@@ -252,48 +288,65 @@ export const createOrderController = async (req: Request, res: Response): Promis
                     throw new Error('Voucher has expired.');
                 }
                 if (finalTotal < Number(voucher.min_order_value)) {
-                    throw new Error(`Minimum order value of ${Number(voucher.min_order_value).toLocaleString()}đ not met for this voucher.`);
+                    throw new Error(`Minimum order value of ${Number(voucher.min_order_value).toLocaleString()}đ not met.`);
                 }
 
-                // Re-verify scope: all scope always passes; product/category scopes must match at least 1 item
-                if (voucher.apply_scope !== 'all') {
-                    const productIds = itemsToSave.filter(i => !i.is_gift).map(i => i.product_id);
-                    let scopeValid = false;
+                // Fix 9: Tính discount chỉ trên phần eligible items (đồng bộ với applyVoucherCustomer)
+                let eligibleTotal = 0;
+                const nonGiftItems = itemsToSave.filter(i => !i.is_gift);
 
-                    if (voucher.apply_scope === 'product') {
-                        const allowedIds = voucher.product_vouchers.map(pv => pv.product_id);
-                        scopeValid = productIds.some(id => allowedIds.includes(id));
-                    } else if (voucher.apply_scope === 'category') {
-                        const allowedCatIds = voucher.voucher_categories.map(vc => vc.category_id);
-                        // Fetch category_id for each product in order
-                        const products = await tx.product.findMany({
-                            where: { id: { in: productIds } },
-                            select: { id: true, category_id: true }
-                        });
-                        scopeValid = products.some(p => p.category_id && allowedCatIds.includes(p.category_id));
-                    }
-
-                    if (!scopeValid) {
-                        throw new Error('Voucher is not applicable to any products in this order.');
-                    }
+                if (voucher.apply_scope === 'all') {
+                    eligibleTotal = finalTotal;
+                } else if (voucher.apply_scope === 'product') {
+                    const allowedIds = voucher.product_vouchers.map(pv => pv.product_id);
+                    eligibleTotal = nonGiftItems
+                        .filter(i => allowedIds.includes(i.product_id))
+                        .reduce((sum, i) => sum + (i.price * i.quantity), 0);
+                } else if (voucher.apply_scope === 'category') {
+                    const allowedCatIds = voucher.voucher_categories.map(vc => vc.category_id);
+                    const products = await tx.product.findMany({
+                        where: { id: { in: nonGiftItems.map(i => i.product_id) } },
+                        select: { id: true, category_id: true }
+                    });
+                    const eligibleProductIds = products
+                        .filter(p => allowedCatIds.includes(p.category_id))
+                        .map(p => p.id);
+                    eligibleTotal = nonGiftItems
+                        .filter(i => eligibleProductIds.includes(i.product_id))
+                        .reduce((sum, i) => sum + (i.price * i.quantity), 0);
                 }
 
-                // Apply voucher discount to finalTotal
-                let voucherDiscount = (finalTotal * Number(voucher.discount_percent || 0)) / 100;
+                if (eligibleTotal === 0) {
+                    throw new Error('Voucher is not applicable to any products in this order.');
+                }
+
+                let voucherDiscount = (eligibleTotal * Number(voucher.discount_percent || 0)) / 100;
                 if (voucher.max_discount_amount && voucherDiscount > Number(voucher.max_discount_amount)) {
                     voucherDiscount = Number(voucher.max_discount_amount);
                 }
                 finalTotal = Math.max(0, finalTotal - voucherDiscount);
 
-                // Decrement usage limit
-                await tx.voucher.update({
-                    where: { id: Number(voucher_id) },
-                    data: {
-                        usage_limit: voucher.usage_limit !== null
-                            ? { decrement: 1 }
-                            : undefined
+                // FIX RACE CONDITION: Atomic update cho Voucher limit
+                if (voucher.usage_limit !== null) {
+                    const voucherUpdateResult = await tx.voucher.updateMany({
+                        where: { 
+                            id: Number(voucher_id),
+                            usage_limit: { gte: 1 } 
+                        },
+                        data: {
+                            usage_limit: { decrement: 1 },
+                            used_count: { increment: 1 }
+                        }
+                    });
+                    if (voucherUpdateResult.count === 0) {
+                        throw new Error('Voucher was just fully consumed by other users.');
                     }
-                });
+                } else {
+                    await tx.voucher.update({
+                        where: { id: Number(voucher_id) },
+                        data: { used_count: { increment: 1 } }
+                    });
+                }
             }
 
             // 3. Create Order
@@ -307,9 +360,7 @@ export const createOrderController = async (req: Request, res: Response): Promis
                     address,
                     total_price: finalTotal,
                     payment_method: payment_method || 'cod',
-                    items: {
-                        create: itemsToSave
-                    }
+                    items: { create: itemsToSave }
                 }
             });
             orderId = newOrder.id;
@@ -329,35 +380,27 @@ export const createOrderController = async (req: Request, res: Response): Promis
         if (payment_method === "momo") {
             try {
                 const momoResponse = await getMomoPayUrl(orderId.toString(), finalTotal, `Payment for order #${orderId}`);
-                res.status(201).json({
-                    message: "Redirecting to MoMo",
-                    orderId,
-                    payUrl: momoResponse.payUrl
-                });
+                res.status(201).json({ message: "Redirecting to MoMo", orderId, payUrl: momoResponse.payUrl });
                 return;
             } catch (momoError) {
                 console.error("MoMo API Error:", momoError);
                 res.status(201).json({
                     message: "Order created but MoMo payment link failed. Please retry payment in your profile.",
-                    orderId,
-                    payUrl: null
+                    orderId, payUrl: null
                 });
                 return;
             }
         }
 
-        res.status(201).json({
-            message: "Order placed successfully (COD)",
-            orderId,
-            total: finalTotal,
-            payUrl: null
-        });
+        res.status(201).json({ message: "Order placed successfully (COD)", orderId, total: finalTotal, payUrl: null });
 
     } catch (error: any) {
         console.error("Order creation failed:", error.message);
         res.status(500).json({ message: "Failed to create order", error: error.message });
     }
 };
+
+// ─── GET ORDERS ───────────────────────────────────────────────────────────────
 
 export const getOrders = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -399,19 +442,65 @@ export const getOrders = async (req: Request, res: Response): Promise<void> => {
     }
 };
 
+// ─── CUSTOMER CHANGE ORDER STATUS ─────────────────────────────────────────────
+
+// Fix 3: Customer chỉ được cancel đơn của chính mình, khi đang Pending/Confirmed
 export const changeOrderStatus = async (req: Request, res: Response): Promise<void> => {
     try {
         const { order_id, new_status } = req.body;
+        const userId = req.user?.id;
+
+        if (!userId) {
+            res.status(401).json({ message: "Unauthorized" });
+            return;
+        }
+
+        const order = await prisma.order.findUnique({ where: { id: Number(order_id) } });
+        if (!order || order.user_id !== userId) {
+            res.status(403).json({ message: "Forbidden: This order does not belong to you." });
+            return;
+        }
+
+        // Customer chỉ được Cancel, và chỉ khi đơn chưa ship
+        const allowedCustomerStatuses = ['Cancelled'];
+        const cancellableFrom = ['Pending', 'Confirmed'];
+        if (!allowedCustomerStatuses.includes(new_status)) {
+            res.status(403).json({ message: "You are not allowed to set this order status." });
+            return;
+        }
+        if (!cancellableFrom.includes(order.status)) {
+            res.status(400).json({ message: `Cannot cancel an order that is already "${order.status}".` });
+            return;
+        }
+
         await changeOrderStatusLogic(Number(order_id), new_status);
-        res.json({ message: "Order status updated successfully!" });
+        res.json({ message: "Order cancelled successfully!" });
     } catch (err: any) {
         res.status(500).json({ message: "Failed to update order status", error: err.message });
     }
 };
 
+// ─── MOMO CALLBACK ────────────────────────────────────────────────────────────
+
+// Fix 2: Verify HMAC signature từ MoMo trước khi xử lý
 export const momoCallback = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { orderId, resultCode } = req.body;
+        const {
+            partnerCode, orderId, requestId, amount, orderInfo,
+            orderType, transId, resultCode, message, payType,
+            responseTime, extraData, signature
+        } = req.body;
+
+        const secretKey = process.env.MOMO_SECRET_KEY || '';
+        const rawSignature = `accessKey=${process.env.MOMO_ACCESS_KEY}&amount=${amount}&extraData=${extraData}&message=${message}&orderId=${orderId}&orderInfo=${orderInfo}&orderType=${orderType}&partnerCode=${partnerCode}&payType=${payType}&requestId=${requestId}&responseTime=${responseTime}&resultCode=${resultCode}&transId=${transId}`;
+        const expectedSignature = crypto.createHmac('sha256', secretKey).update(rawSignature).digest('hex');
+
+        if (signature !== expectedSignature) {
+            console.warn(`MoMo IPN: Invalid signature for orderId=${orderId}`);
+            res.status(400).json({ message: "Invalid signature" });
+            return;
+        }
+
         if (resultCode === 0) {
             const parts = orderId.split('_');
             const realOrderId = orderId.startsWith('REPAY') ? Number(parts[1]) : Number(parts[0]);
@@ -434,27 +523,31 @@ export const momoCallback = async (req: Request, res: Response): Promise<void> =
     }
 };
 
+// ─── REPAY MOMO ───────────────────────────────────────────────────────────────
+
+// Fix 4: Sửa auth logic – không cho bypass JWT bằng email
 export const repayMoMoController = async (req: Request, res: Response): Promise<void> => {
     try {
         const { id } = req.params;
         const { email } = req.body;
 
         const order = await prisma.order.findUnique({ where: { id: Number(id) } });
-
         if (!order) {
             res.status(404).json({ message: "Order not found" });
             return;
         }
 
+        // Kiểm tra ownership đúng cách
         if (order.user_id) {
-            const isOwner = (req.user && req.user.id === order.user_id) || (order.email === email);
-            if (!isOwner) {
-                res.status(403).json({ message: "Member mismatch: You do not have permission to pay for this order." });
+            // Đơn hàng của member → phải có JWT và khớp user_id
+            if (!req.user || req.user.id !== order.user_id) {
+                res.status(403).json({ message: "Forbidden: You do not have permission to pay for this order." });
                 return;
             }
         } else {
+            // Đơn hàng của guest → phải cung cấp email khớp
             if (!email || order.email !== email) {
-                res.status(403).json({ message: "Guest mismatch: Email does not match the order." });
+                res.status(403).json({ message: "Forbidden: Email does not match the order." });
                 return;
             }
         }
@@ -465,24 +558,20 @@ export const repayMoMoController = async (req: Request, res: Response): Promise<
         }
 
         const momoOrderId = `REPAY_${order.id}_${Date.now()}`;
-        const momoResponse = await getMomoPayUrl(
-            momoOrderId,
-            Number(order.total_price),
-            `Retry payment for order #${order.id}`
-        );
+        const momoResponse = await getMomoPayUrl(momoOrderId, Number(order.total_price), `Retry payment for order #${order.id}`);
 
         res.json({ payUrl: momoResponse.payUrl });
-
     } catch (error) {
         console.error("MOMO_REPAY_ERROR:", error);
         res.status(500).json({ message: "Internal Server Error during repayment" });
     }
 };
 
+// ─── RETURN REQUEST ───────────────────────────────────────────────────────────
+
 const parseBankInfo = (rawBank: any) => {
     if (!rawBank) return null;
     let bankData = typeof rawBank === 'string' ? JSON.parse(rawBank) : rawBank;
-
     return {
         name: bankData.name || bankData.bankName || "N/A",
         acc: bankData.acc || bankData.bankNumber || "N/A",
@@ -490,6 +579,7 @@ const parseBankInfo = (rawBank: any) => {
     };
 };
 
+// Fix 5: Tăng cường ownership check – JWT user_id ưu tiên hơn email
 export const submitReturnRequest = async (req: Request, res: Response): Promise<void> => {
     try {
         const { reason_code, description, email } = req.body;
@@ -497,15 +587,23 @@ export const submitReturnRequest = async (req: Request, res: Response): Promise<
 
         const rawBank = req.body.refund_bank_info || req.body.bankInfo;
         const finalBankInfo = parseBankInfo(rawBank);
-        const images = (req as any).files ? (req as any).files.map((file: any) => `/uploads/${file.filename}`) : [];
+        const images = (req as any).files
+            ? (req as any).files.map((file: any) => `/uploads/${file.filename}`)
+            : [];
 
         await prisma.$transaction(async (tx) => {
-            const order = await tx.order.findFirst({
-                where: { id: orderId, email: email, status: 'Delivered', payment_status: 'Paid' }
-            });
+            // Fix 5: Nếu có JWT, ưu tiên verify bằng user_id; nếu guest thì verify bằng email
+            const where: any = { id: orderId, status: 'Delivered', payment_status: 'Paid' };
+            if (req.user) {
+                where.user_id = req.user.id;
+            } else {
+                if (!email) throw new Error("Email is required for guest orders.");
+                where.email = email;
+            }
 
+            const order = await tx.order.findFirst({ where });
             if (!order) {
-                throw new Error("The order is invalid, not delivered, unpaid, or the email does not match.");
+                throw new Error("The order is invalid, not delivered, unpaid, or you don't have permission.");
             }
 
             const existing = await tx.returnRequest.findUnique({ where: { order_id: orderId } });
