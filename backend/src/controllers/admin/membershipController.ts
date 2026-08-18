@@ -4,6 +4,7 @@ import prisma from '../../../prisma/client';
 export const getMemberships = async (req: Request, res: Response): Promise<void> => {
     try {
         const data = await prisma.membership.findMany({
+            where: { is_active: true },
             orderBy: {
                 min_spending: 'asc',
             },
@@ -58,8 +59,9 @@ export const createMembership = addMembership;
 export const deleteMembership = async (req: Request, res: Response): Promise<void> => {
     try {
         const { id } = req.params;
-        await prisma.membership.delete({
+        await prisma.membership.update({
             where: { id: Number(id) },
+            data: { is_active: false }
         });
         res.json({ message: "Membership tier deleted successfully" });
     } catch (error: any) {

@@ -47,7 +47,7 @@ export const getRepresentative = async (req: Request, res: Response): Promise<vo
 
     try {
         const product = await prisma.product.findFirst({
-            where: { category_id: Number(category_id) },
+            where: { category_id: Number(category_id), is_active: true },
             orderBy: { created_at: 'desc' }
         });
 
@@ -70,7 +70,7 @@ export const getProducts = async (req: Request, res: Response): Promise<void> =>
         const l = Number(limit) || 8;
         const offset = (p - 1) * l;
 
-        const where: Prisma.ProductWhereInput = {};
+        const where: Prisma.ProductWhereInput = { is_active: true };
         if (category_id) where.category_id = Number(category_id);
         if (gender && gender !== '') where.gender = gender as any;
 
@@ -125,6 +125,7 @@ export const searchProducts = async (req: Request, res: Response): Promise<void>
         const searchStr = q ? String(q) : "";
 
         const where: Prisma.ProductWhereInput = {
+            is_active: true,
             OR: [
                 { name: { contains: searchStr } },
                 { description: { contains: searchStr } }

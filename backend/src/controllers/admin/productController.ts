@@ -4,6 +4,7 @@ import prisma from '../../../prisma/client';
 export const getProducts = async (req: Request, res: Response): Promise<void> => {
     try {
         const products = await prisma.product.findMany({
+            where: { is_active: true },
             include: {
                 category: true,
                 colors: {
@@ -82,9 +83,10 @@ export const editProduct = async (req: Request, res: Response): Promise<void> =>
 export const removeProduct = async (req: Request, res: Response): Promise<void> => {
     try {
         const { id } = req.params;
-        // Cascade delete is configured in prisma schema, so we just delete the product
-        await prisma.product.delete({
-            where: { id: Number(id) }
+        // SOFT DELETE: Update is_active to false instead of deleting the record
+        await prisma.product.update({
+            where: { id: Number(id) },
+            data: { is_active: false }
         });
         res.json({ affected: 1 });
     } catch (err) {

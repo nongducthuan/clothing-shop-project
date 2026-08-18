@@ -4,6 +4,7 @@ import prisma from '../../../prisma/client';
 export const getMemberships = async (req: Request, res: Response): Promise<void> => {
     try {
         const data = await prisma.membership.findMany({
+            where: { is_active: true },
             orderBy: {
                 min_spending: 'asc',
             },

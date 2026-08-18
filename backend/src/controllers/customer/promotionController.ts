@@ -5,6 +5,7 @@ export const getActivePromotions = async (req: Request, res: Response): Promise<
     try {
         const promotions = await prisma.buyXGetYPromotion.findMany({
             where: {
+                is_active: true,
                 status: 'active',
                 start_date: { lte: new Date() },
                 end_date: { gte: new Date() },
@@ -41,6 +42,7 @@ export const calculateCart = async (req: Request, res: Response): Promise<void> 
 
         const promotions = await prisma.buyXGetYPromotion.findMany({
             where: {
+                is_active: true,
                 status: 'active',
                 start_date: { lte: new Date() },
                 end_date: { gte: new Date() }

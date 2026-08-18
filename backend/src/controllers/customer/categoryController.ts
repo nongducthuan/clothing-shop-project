@@ -4,6 +4,7 @@ import prisma from '../../../prisma/client';
 export const getCategories = async (req: Request, res: Response): Promise<void> => {
   try {
     const categories = await prisma.category.findMany({
+      where: { is_active: true },
       orderBy: { id: 'asc' },
     });
     res.status(200).json({ data: categories });
@@ -27,7 +28,7 @@ export const getRecommendCategories = async (req: Request, res: Response): Promi
     // Categories that are NOT of the specified gender, AND their names do not match any category that IS of the specified gender.
     // e.g. Recommend categories that only exist for men to women.
     const categoriesOfTarget = await prisma.category.findMany({
-      where: { gender: validGender },
+      where: { gender: validGender, is_active: true },
       select: { name: true }
     });
     const targetNames = categoriesOfTarget.map(c => c.name);
@@ -35,7 +36,8 @@ export const getRecommendCategories = async (req: Request, res: Response): Promi
     const recommendCategories = await prisma.category.findMany({
       where: {
         gender: { not: validGender },
-        name: { notIn: targetNames }
+        name: { notIn: targetNames },
+        is_active: true
       },
       select: { name: true },
       distinct: ['name'],
@@ -53,8 +55,9 @@ export const getCategoriesWithPreview = async (req: Request, res: Response): Pro
   try {
     const categories = await prisma.category.findMany({
       where: {
+        is_active: true,
         products: {
-          some: {} // At least one product exists
+          some: { is_active: true } // At least one active product exists
         }
       },
       orderBy: { id: 'asc' },

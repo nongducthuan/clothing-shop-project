@@ -4,6 +4,7 @@ import prisma from '../../../prisma/client';
 export const getCategories = async (req: Request, res: Response): Promise<void> => {
   try {
     const categories = await prisma.category.findMany({
+      where: { is_active: true },
       orderBy: { id: 'asc' },
     });
     
@@ -96,8 +97,9 @@ export const deleteCategory = async (req: Request, res: Response): Promise<void>
   try {
     const { id } = req.params;
     
-    await prisma.category.delete({
-      where: { id: Number(id) },
+    await prisma.category.update({
+        where: { id: Number(id) },
+        data: { is_active: false }
     });
     
     res.json({ message: "Successfully deleted" });

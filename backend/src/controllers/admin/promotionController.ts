@@ -4,6 +4,7 @@ import prisma from '../../../prisma/client';
 export const getAdminPromotions = async (req: Request, res: Response): Promise<void> => {
     try {
         const promotions = await prisma.buyXGetYPromotion.findMany({
+            where: { is_active: true },
             orderBy: { created_at: 'desc' }
         });
         res.status(200).json(promotions);
@@ -72,8 +73,9 @@ export const updatePromotion = async (req: Request, res: Response): Promise<void
 export const deletePromotion = async (req: Request, res: Response): Promise<void> => {
     try {
         const { id } = req.params;
-        await prisma.buyXGetYPromotion.delete({
-            where: { id: Number(id) }
+        await prisma.buyXGetYPromotion.update({
+            where: { id: Number(id) },
+            data: { is_active: false }
         });
         res.status(200).json({ success: true, message: 'Deleted successfully' });
     } catch (error) {

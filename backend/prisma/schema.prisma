@@ -8,10 +8,12 @@ datasource db {
 }
 
 model Membership {
-  id               Int     @id @default(autoincrement())
-  name             String  @db.VarChar(50)
-  min_spending     Decimal @db.Decimal(10, 2)
-  discount_percent Decimal @default(0.00) @db.Decimal(5, 2)
+  id               Int      @id @default(autoincrement())
+  name             String   @db.VarChar(50)
+  min_spending     Decimal  @default(0.00) @db.Decimal(10, 2)
+  discount_percent Decimal  @default(0.00) @db.Decimal(5, 2)
+  is_active        Boolean  @default(true) // Soft delete
+  created_at       DateTime @default(now())
   users            User[]
 
   @@map("memberships")
@@ -53,6 +55,8 @@ model Category {
   description        String?           @db.Text
   gender             Gender            @default(unisex)
   image_url          String?           @db.VarChar(512)
+  is_active          Boolean           @default(true) // Soft delete
+  created_at         DateTime          @default(now())
   products           Product[]
   sale_categories    SaleCategory[]
   voucher_categories VoucherCategory[]
@@ -69,6 +73,7 @@ model Product {
   image_url        String?                  @db.VarChar(512)
   gender           Gender                   @default(unisex)
   category_id      Int
+  is_active        Boolean                  @default(true) // Soft delete
   created_at       DateTime                 @default(now())
   buy_promotions   BuyXGetYPromotion[]      @relation("BuyProduct")
   gift_promotions  BuyXGetYPromotion[]      @relation("GiftProduct")
@@ -220,6 +225,7 @@ model BuyXGetYPromotion {
   priority           Int                     @default(0)
   is_stackable       Boolean                 @default(false)
   status             PromotionStatus         @default(active)
+  is_active          Boolean                 @default(true) // Soft delete
   times_applied      Int                     @default(0)
   total_gifts_issued Int                     @default(0)
   created_at         DateTime                @default(now())
