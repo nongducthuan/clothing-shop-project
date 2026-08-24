@@ -34,8 +34,8 @@ export default function VoucherForm({ formData, setFormData, onSubmit }) {
       `}</style>
 
       <div className="bg-white rounded-3xl shadow-xl shadow-gray-200/50 border border-gray-100 overflow-hidden h-full flex flex-col">
-        <div className="bg-gradient-to-r from-indigo-500 to-purple-500 p-5 shrink-0 flex justify-between items-center">
-          <h2 className="text-lg font-bold text-white flex items-center gap-2">
+        <div className="bg-gradient-to-r from-indigo-500 to-purple-500 p-4 shrink-0 flex justify-between items-center">
+          <h2 className="text-sm font-bold text-white flex items-center gap-2 uppercase tracking-wider">
             <i className="fa-solid fa-ticket text-indigo-100"></i>
             Voucher Details
           </h2>

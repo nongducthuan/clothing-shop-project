@@ -117,8 +117,8 @@ export default function OrderTable({
                 <th className="p-4 pl-6 text-xs font-bold text-gray-400 uppercase tracking-wider">ID / Date</th>
                 <th className="p-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Customer</th>
                 <th className="p-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Total</th>
-                <th className="p-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Payment</th>
-                <th className="p-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Status</th>
+                <th className="p-4 text-center text-xs font-bold text-gray-400 uppercase tracking-wider">Payment</th>
+                <th className="p-4 text-center text-xs font-bold text-gray-400 uppercase tracking-wider">Status</th>
                 <th className="p-4 pr-6 text-center text-xs font-bold text-gray-400 uppercase tracking-wider w-36">Actions</th>
               </tr>
             </thead>
@@ -161,32 +161,38 @@ export default function OrderTable({
                           {formatCurrency(order.total_price)}
                         </td>
 
-                        <td className="p-4 whitespace-nowrap">
-                          <select
-                            value={order.payment_status || "Unpaid"}
-                            onChange={(e) => handlePaymentStatus(order.id, e.target.value)}
-                            disabled={isReturnLocked}
-                            className="text-xs font-bold text-white py-2 px-4 rounded-full cursor-pointer outline-none focus:ring-4 focus:ring-blue-500/20 disabled:opacity-60 appearance-none text-center shadow-sm"
-                            style={{ backgroundColor: getPaymentStatusColor(order.payment_status) }}
-                          >
-                            {PAYMENT_OPTIONS.map((status) => (
-                              <option key={status} value={status} className="text-gray-800 bg-white">{status}</option>
-                            ))}
-                          </select>
+                        <td className="p-4 whitespace-nowrap text-center">
+                          <div className="relative inline-block w-full max-w-[130px]">
+                            <select
+                              value={order.payment_status || "Unpaid"}
+                              onChange={(e) => handlePaymentStatus(order.id, e.target.value)}
+                              disabled={isReturnLocked}
+                              className="w-full text-xs font-bold text-white py-2 pl-3 pr-8 rounded-full cursor-pointer outline-none focus:ring-4 focus:ring-blue-500/20 disabled:opacity-60 appearance-none text-left shadow-sm transition-all"
+                              style={{ backgroundColor: getPaymentStatusColor(order.payment_status) }}
+                            >
+                              {PAYMENT_OPTIONS.map((status) => (
+                                <option key={status} value={status} className="text-gray-800 bg-white">{status}</option>
+                              ))}
+                            </select>
+                            <i className="fa-solid fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-white/80 pointer-events-none text-[10px]"></i>
+                          </div>
                         </td>
 
-                        <td className="p-4 whitespace-nowrap">
-                          <select
-                            value={order.status}
-                            onChange={(e) => handleOrderStatus(order.id, e.target.value)}
-                            disabled={isReturnLocked}
-                            className="text-xs font-bold text-white py-2 px-4 rounded-full cursor-pointer outline-none focus:ring-4 focus:ring-blue-500/20 disabled:opacity-60 appearance-none text-center shadow-sm"
-                            style={{ backgroundColor: getOrderStatusColor(order.status) }}
-                          >
-                            {STATUS_OPTIONS.map((status) => (
-                              <option key={status} value={status} className="text-gray-800 bg-white">{status}</option>
-                            ))}
-                          </select>
+                        <td className="p-4 whitespace-nowrap text-center">
+                          <div className="relative inline-block w-full max-w-[130px]">
+                            <select
+                              value={order.status}
+                              onChange={(e) => handleOrderStatus(order.id, e.target.value)}
+                              disabled={isReturnLocked}
+                              className="w-full text-xs font-bold text-white py-2 pl-3 pr-8 rounded-full cursor-pointer outline-none focus:ring-4 focus:ring-blue-500/20 disabled:opacity-60 appearance-none text-left shadow-sm transition-all"
+                              style={{ backgroundColor: getOrderStatusColor(order.status) }}
+                            >
+                              {STATUS_OPTIONS.map((status) => (
+                                <option key={status} value={status} className="text-gray-800 bg-white">{status}</option>
+                              ))}
+                            </select>
+                            <i className="fa-solid fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-white/80 pointer-events-none text-[10px]"></i>
+                          </div>
                         </td>
 
                         <td className="p-4 pr-6 text-center whitespace-nowrap">
