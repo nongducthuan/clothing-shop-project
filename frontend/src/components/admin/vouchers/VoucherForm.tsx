@@ -33,12 +33,15 @@ export default function VoucherForm({ formData, setFormData, onSubmit }) {
         }
       `}</style>
 
-      <div className="bg-white p-6 rounded-3xl shadow-xl shadow-gray-200/50 border border-gray-100">
-        <h3 className="text-sm font-bold text-gray-400 uppercase mb-6 tracking-widest">
-          Voucher Details
-        </h3>
+      <div className="bg-white rounded-3xl shadow-xl shadow-gray-200/50 border border-gray-100 overflow-hidden h-full flex flex-col">
+        <div className="bg-gradient-to-r from-indigo-500 to-purple-500 p-5 shrink-0 flex justify-between items-center">
+          <h2 className="text-lg font-bold text-white flex items-center gap-2">
+            <i className="fa-solid fa-ticket text-indigo-100"></i>
+            Voucher Details
+          </h2>
+        </div>
 
-        <form onSubmit={onSubmit} className="space-y-4">
+        <form onSubmit={onSubmit} className="p-6 space-y-4 flex-grow flex flex-col">
           {/* Code & Discount % */}
           <div className="grid grid-cols-2 gap-3">
             <input
@@ -136,7 +139,7 @@ export default function VoucherForm({ formData, setFormData, onSubmit }) {
 
           <button
             type="submit"
-            className="w-full py-3.5 bg-indigo-600 text-white rounded-xl font-bold text-xs tracking-wider hover:bg-indigo-700 hover:scale-[1.01] transition-all shadow-md shadow-indigo-200 uppercase mt-4"
+            className="w-full py-3 bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white rounded-xl font-bold text-xs tracking-wider hover:scale-[1.01] transition-all shadow-md shadow-indigo-200 uppercase mt-4"
           >
             Create Voucher
           </button>

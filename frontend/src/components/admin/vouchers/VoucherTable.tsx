@@ -70,7 +70,7 @@ export default function VoucherTable({ vouchers, onShowDetail, onDelete }) {
                   <td className="py-4 px-4">
                     <button
                       onClick={() => onDelete(item.id)}
-                      className="bg-transparent text-rose-500 hover:text-rose-700 hover:bg-rose-50 px-3 py-1.5 rounded-xl transition-all text-sm font-bold border border-transparent hover:border-rose-100"
+                      className="bg-transparent text-rose-500 hover:text-rose-700 hover:bg-rose-50 px-2.5 py-1 rounded-lg transition-all text-xs font-semibold border border-transparent hover:border-rose-100"
                     >
                       Delete
                     </button>

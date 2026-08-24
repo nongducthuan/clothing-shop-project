@@ -285,11 +285,11 @@ export default function PromotionForm({ state, actions, helpers }) {
 
             <div className="flex gap-4 w-full md:w-auto">
               {editingId && (
-                <button type="button" onClick={handleResetForm} className="w-full md:w-auto px-6 py-3.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl shadow-sm transition-all whitespace-nowrap uppercase tracking-wider text-sm">
+                <button type="button" onClick={handleResetForm} className="w-full md:w-auto px-6 py-3 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl shadow-sm transition-all whitespace-nowrap uppercase tracking-wider text-xs">
                   Cancel
                 </button>
               )}
-              <button type="submit" disabled={isLoading} className="w-full md:w-auto px-10 py-3.5 bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white font-bold rounded-xl shadow-md transition-all whitespace-nowrap uppercase tracking-wider text-sm">
+              <button type="submit" disabled={isLoading} className="w-full md:w-auto px-8 py-3 bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white font-bold rounded-xl shadow-md transition-all whitespace-nowrap uppercase tracking-wider text-xs">
                 {isLoading ? "Saving..." : editingId ? "Update Promotion" : "Create Promotion"}
               </button>
             </div>
