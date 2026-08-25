@@ -22,7 +22,6 @@
         "mysql2": "^3.23.1",
         "node-cache": "^5.1.2",
         "nodemailer": "^8.0.7",
-        "resend": "^6.6.0",
         "tsx": "^4.23.1",
         "typescript": "^7.0.2"
     },

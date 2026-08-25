@@ -13,9 +13,9 @@ export default function Checkout() {
 
   return (
     <div className="bg-white flex-1 pb-20">
-      <div className="max-w-[1200px] mx-auto px-6 py-16">
+      <div className="max-w-[1200px] mx-auto px-6 py-8">
 
-        <header className="mb-12">
+        <header className="mb-8">
           <h1 className="text-4xl sm:text-5xl font-light tracking-tight text-slate-900">Checkout</h1>
           <p className="text-slate-500 mt-3 text-lg">Please provide your details to complete the order.</p>
         </header>

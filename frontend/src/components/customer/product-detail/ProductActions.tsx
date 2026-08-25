@@ -8,11 +8,10 @@ export default function ProductActions({ state, actions, helpers }) {
   const isOutOfStock = currentStock === 0;
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
-
-        {/* QUANTITY CONTROL */}
-        <div className="flex items-center border border-slate-200 rounded-full h-12 w-32 overflow-hidden bg-white shrink-0">
+    <div className="space-y-4">
+      {/* QUANTITY CONTROL */}
+      <div className="flex items-center gap-4">
+        <div className="flex items-center border border-slate-200 rounded-full h-13 w-36 overflow-hidden bg-white shrink-0">
           <button
             onClick={() => setQuantity(Math.max(1, quantity - 1))}
             className="flex-1 h-full text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-colors disabled:opacity-50"
@@ -32,18 +31,20 @@ export default function ProductActions({ state, actions, helpers }) {
           </button>
         </div>
 
-        <button
-          onClick={handleAddToCart}
-          disabled={isOutOfStock || !state.selectedSize}
-          className="flex-1 w-full h-12 bg-slate-900 text-white rounded-full font-semibold text-base hover:bg-slate-800 disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed transition-all active:scale-[0.98] shadow-md inline-flex items-center justify-center px-6"
-        >
-          {isProductIncomplete ? "Product Not Ready" : isOutOfStock ? "Out of Stock" : "Add to Cart"}
-        </button>
+        <p className={`text-sm font-medium ${currentStock > 0 ? "text-emerald-600" : "text-rose-500"}`}>
+          {getStockMessage()}
+        </p>
       </div>
 
-      <p className={`text-sm font-medium ${currentStock > 0 ? "text-emerald-600" : "text-rose-500"}`}>
-        {getStockMessage()}
-      </p>
+      {/* ADD TO CART BUTTON — full width, tall */}
+      <button
+        onClick={handleAddToCart}
+        disabled={isOutOfStock || !state.selectedSize}
+        className="w-full h-14 bg-slate-900 text-white rounded-full font-semibold text-base hover:bg-slate-800 disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed transition-all active:scale-[0.98] shadow-md inline-flex items-center justify-center gap-2"
+      >
+        <i className="fa-solid fa-bag-shopping text-sm"></i>
+        {isProductIncomplete ? "Product Not Ready" : isOutOfStock ? "Out of Stock" : "Add to Cart"}
+      </button>
     </div>
   );
 }

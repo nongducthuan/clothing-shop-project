@@ -1,17 +1,30 @@
-import { Resend } from 'resend';
+import nodemailer from 'nodemailer';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Singleton transporter — tạo 1 lần, dùng lại cho mọi request
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST || 'smtp.gmail.com',
+  port: Number(process.env.SMTP_PORT) || 587,
+  secure: false, // TLS (STARTTLS) — dùng true nếu port 465
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS, // Gmail App Password (không phải mật khẩu thường)
+  },
+});
 
-export const sendEmail = async (to: string, subject: string, text: string): Promise<{ success: boolean; data?: any; error?: string }> => {
+export const sendEmail = async (
+  to: string,
+  subject: string,
+  text: string
+): Promise<{ success: boolean; data?: any; error?: string }> => {
   try {
-    // Kiểm tra an toàn cho mã OTP để tránh lỗi regex
+    // Lấy mã OTP từ nội dung text nếu có
     const otpMatch = text.match(/\d+/);
     const otp = otpMatch ? otpMatch[0] : 'N/A';
 
-    const { data, error } = await resend.emails.send({
-      from: 'MyStore <onboarding@resend.dev>',
-      to: [to],
-      subject: subject,
+    const info = await transporter.sendMail({
+      from: `"MyStore" <${process.env.EMAIL_USER}>`,
+      to,
+      subject,
       html: `
         <div style="font-family: sans-serif; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
           <h2 style="color: #7c3aed;">Mã xác thực đơn hàng</h2>
@@ -24,15 +37,10 @@ export const sendEmail = async (to: string, subject: string, text: string): Prom
       `,
     });
 
-    if (error) {
-      console.error('❌ Resend API Error (Có thể do mail chưa verify):', error.message);
-      return { success: false, error: error.message };
-    }
-
-    console.log('✅ Email sent successfully:', data!.id);
-    return { success: true, data };
+    console.log('✅ Email sent successfully:', info.messageId);
+    return { success: true, data: { id: info.messageId } };
   } catch (err: any) {
-    console.error('❌ System Error in sendEmail:', err.message);
+    console.error('❌ Nodemailer Error:', err.message);
     return { success: false, error: err.message };
   }
 };

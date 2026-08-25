@@ -31,9 +31,9 @@ export default function Cart() {
 
   return (
     <div className="bg-white flex-1">
-      <div className="max-w-7xl mx-auto px-6 py-16">
+      <div className="max-w-7xl mx-auto px-6 py-8">
 
-        <header className="mb-16">
+        <header className="mb-8">
           <h1 className="text-4xl sm:text-5xl font-light tracking-tight text-slate-900">Cart</h1>
           <p className="text-slate-500 mt-4 text-lg">Free delivery and free returns.</p>
         </header>

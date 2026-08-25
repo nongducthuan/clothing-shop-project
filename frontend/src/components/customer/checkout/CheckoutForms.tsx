@@ -74,17 +74,17 @@ const InputField = ({ label, type = "text", ...props }) => (
 const PaymentOption = ({ id, label, sub, icon, current, onChange }) => {
   const isSelected = current === id;
   return (
-    <label onClick={() => onChange(id)} className={`flex items-center justify-between p-5 border rounded-2xl cursor-pointer transition-all duration-300 ${isSelected ? "border-slate-900 bg-slate-900 text-white shadow-md" : "border-slate-200 bg-white hover:border-slate-400"}`}>
+    <label onClick={() => onChange(id)} className={`flex items-center justify-between p-5 border-2 rounded-2xl cursor-pointer transition-all duration-300 ${isSelected ? "border-slate-900 bg-slate-900 text-white shadow-lg" : "border-slate-200 bg-white hover:border-slate-400"}`}>
       <div className="flex items-center gap-4">
-        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${isSelected ? "border-white" : "border-slate-300"}`}>
-          {isSelected && <div className="w-2.5 h-2.5 bg-white rounded-full"></div>}
+        <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 ${isSelected ? "border-white" : "border-slate-300"}`}>
+          {isSelected && <div className="w-3 h-3 bg-white rounded-full"></div>}
         </div>
         <div>
-          <span className={`block font-medium ${isSelected ? "text-white" : "text-slate-900"}`}>{label}</span>
-          <p className={`text-xs mt-0.5 ${isSelected ? "text-slate-300" : "text-slate-500"}`}>{sub}</p>
+          <span className={`block font-semibold text-base ${isSelected ? "text-white" : "text-slate-900"}`}>{label}</span>
+          <p className={`text-sm mt-0.5 ${isSelected ? "text-slate-300" : "text-slate-500"}`}>{sub}</p>
         </div>
       </div>
-      <i className={`fa-solid ${icon} text-xl opacity-80`}></i>
+      <i className={`fa-solid ${icon} text-2xl opacity-80`}></i>
     </label>
   );
 };
