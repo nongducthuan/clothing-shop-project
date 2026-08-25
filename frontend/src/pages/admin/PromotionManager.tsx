@@ -9,7 +9,7 @@ export default function PromotionManager() {
   const { setSearchTerm } = actions;
 
   return (
-    <div className="p-6 bg-slate-50 flex-1 font-sans pb-20">
+    <div className="p-6 bg-slate-50 flex-1 font-sans">
       <div className="max-w-7xl mx-auto">
         {/* HEADER PAGE with Pill UI Title & Search Bar */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">

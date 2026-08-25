@@ -57,7 +57,7 @@ export default function Report() {
   }
 
   return (
-    <div className="flex-1 bg-slate-50 p-4 md:p-8 font-sans pb-20">
+    <div className="flex-1 bg-slate-50 p-4 md:p-8 font-sans">
 
       {/* Pill UI Header */}
       <div className="flex items-center gap-4 mb-8">

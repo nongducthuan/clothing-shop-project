@@ -24,7 +24,7 @@ Website thương mại điện tử chuyên bán quần áo và thời trang, t�
 ## Công Nghệ Sử Dụng
 
 - **Frontend**: React.js (Vite), TypeScript, React Router, TailwindCSS, Bootstrap, Axios, Lucide Icons, Swiper, SweetAlert2.
-- **Backend**: Node.js, TypeScript, Express.js, Prisma ORM, MySQL/MariaDB, JSON Web Token (JWT), `bcryptjs`, Multer, Nodemailer / Resend.
+- **Backend**: Node.js, TypeScript, Express.js, Prisma ORM, MySQL/MariaDB, JSON Web Token (JWT), `bcryptjs`, Multer, Nodemailer & SMTP.
 
 ---
 
@@ -37,10 +37,14 @@ cd backend
 npm install
 ```
 
-- Tạo file `.env` trong thư mục `backend` và cấu hình chuỗi kết nối CSDL (Database URL) cho Prisma:
+- Tạo file `.env` trong thư mục `backend` và cấu hình chuỗi kết nối CSDL (Database URL) cho Prisma cùng với các cấu hình khác (tham khảo `backend/.env.example`):
   ```env
   DATABASE_URL="mysql://root:password@localhost:3306/shopdb"
   JWT_SECRET="your_jwt_secret"
+  SMTP_HOST="smtp.gmail.com"
+  SMTP_PORT="587"
+  EMAIL_USER="your-email@gmail.com"
+  EMAIL_PASS="your-gmail-app-password"
   ```
 - Khởi tạo Schema và Push dữ liệu vào MySQL bằng Prisma:
   ```bash

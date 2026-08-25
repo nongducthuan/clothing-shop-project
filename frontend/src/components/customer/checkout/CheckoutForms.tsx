@@ -74,7 +74,7 @@ const InputField = ({ label, type = "text", ...props }) => (
 const PaymentOption = ({ id, label, sub, icon, current, onChange }) => {
   const isSelected = current === id;
   return (
-    <label onClick={() => onChange(id)} className={`flex items-center justify-between p-5 border-2 rounded-2xl cursor-pointer transition-all duration-300 ${isSelected ? "border-slate-900 bg-slate-900 text-white shadow-lg" : "border-slate-200 bg-white hover:border-slate-400"}`}>
+    <label onClick={() => onChange(id)} className={`flex items-center justify-between p-4 border-2 rounded-2xl cursor-pointer transition-all duration-300 ${isSelected ? "border-slate-900 bg-slate-900 text-white shadow-lg" : "border-slate-200 bg-white hover:border-slate-400"}`}>
       <div className="flex items-center gap-4">
         <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 ${isSelected ? "border-white" : "border-slate-300"}`}>
           {isSelected && <div className="w-3 h-3 bg-white rounded-full"></div>}

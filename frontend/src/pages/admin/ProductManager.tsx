@@ -48,7 +48,7 @@ export default function ProductManager() {
   const { state, actions } = useProductManager();
 
   return (
-    <div className="container mx-auto px-4 py-8 lg:px-8 max-w-7xl flex-1 mb-10">
+    <div className="container mx-auto px-4 py-8 lg:px-8 max-w-7xl flex-1">
 
       {/* Toast Notification */}
       {state.toast && (

@@ -11,7 +11,7 @@ export default function ProductActions({ state, actions, helpers }) {
     <div className="space-y-4">
       {/* QUANTITY CONTROL */}
       <div className="flex items-center gap-4">
-        <div className="flex items-center border border-slate-200 rounded-full h-13 w-36 overflow-hidden bg-white shrink-0">
+        <div className="flex items-center border border-slate-200 rounded-full h-12 w-32 overflow-hidden bg-white shrink-0">
           <button
             onClick={() => setQuantity(Math.max(1, quantity - 1))}
             className="flex-1 h-full text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-colors disabled:opacity-50"
