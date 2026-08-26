@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { getImageUrl } from "../../../utils/imageUtils";
+import { getImageUrl, PLACEHOLDER_IMG } from "../../../utils/imageUtils";
 
 const GENDER_CONFIG = {
   male: { label: "Male", colorClass: "bg-blue-50 text-blue-600 border-blue-100" },

@@ -17,7 +17,9 @@ export default function PromotionForm({ state, actions, helpers }) {
     const setSearch = isBuyType ? setSearchBuyTerm : setSearchGetTerm;
     const currentSelectedId = isBuyType ? formData.buy_product_id : formData.gift_product_id;
     const fieldName = isBuyType ? "buy_product_id" : "gift_product_id";
-    const activeColor = isBuyType ? "indigo" : "purple";
+    const activeColorClasses = isBuyType 
+      ? { border: "border-indigo-500", bg: "bg-indigo-50", text: "text-indigo-700", check: "text-indigo-500" } 
+      : { border: "border-purple-500", bg: "bg-purple-50", text: "text-purple-700", check: "text-purple-500" };
 
     const filteredProducts = products.filter((p) => {
       const catName = getCategoryName(p.category_id);
@@ -58,12 +60,12 @@ export default function PromotionForm({ state, actions, helpers }) {
                 onClick={() => setFormData((prev) => ({ ...prev, [fieldName]: p.id }))}
                 className={`p-3 rounded-2xl border flex items-center justify-between cursor-pointer transition-all duration-200 ${
                   isSelected
-                    ? `border-${activeColor}-500 bg-${activeColor}-50 shadow-sm`
+                    ? `${activeColorClasses.border} ${activeColorClasses.bg} shadow-sm`
                     : "border-gray-100 bg-white hover:border-gray-300"
                 }`}
               >
                 <div className="flex flex-col gap-1.5 overflow-hidden pr-2">
-                  <span className={`text-[11px] font-black truncate ${isSelected ? `text-${activeColor}-700` : "text-gray-700"}`}>
+                  <span className={`text-[11px] font-black truncate ${isSelected ? activeColorClasses.text : "text-gray-700"}`}>
                     {p.name}
                   </span>
                   <div className="flex gap-1.5 flex-wrap items-center">
@@ -81,7 +83,7 @@ export default function PromotionForm({ state, actions, helpers }) {
                   </div>
                 </div>
                 <div className="ml-1 flex-shrink-0">
-                  <i className={`fa-solid ${isSelected ? `fa-check-circle text-${activeColor}-500 text-lg` : "fa-circle text-gray-100 text-lg"}`}></i>
+                  <i className={`fa-solid ${isSelected ? `fa-check-circle ${activeColorClasses.check} text-lg` : "fa-circle text-gray-100 text-lg"}`}></i>
                 </div>
               </div>
             );

@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { getImageUrl } from "../../../utils/imageUtils";
 
+import { PAYMENT_OPTIONS, STATUS_OPTIONS } from "../../../hooks/admin/useOrderManager";
+
 export default function OrderTable({
   orders,
   getOrderStatusColor,
@@ -10,45 +12,27 @@ export default function OrderTable({
   handleOrderStatus,
   handleApproveReturn,
   handleRejectReturn,
+  filters // Nhận filters từ props
 }) {
-  // --- STATES ---
-  const [activeTab, setActiveTab] = useState("Standard"); // "Standard" | "Returns"
-  const [filterStandard, setFilterStandard] = useState("All");
-  const [filterReturn, setFilterReturn] = useState("All");
+  const {
+    activeTab,
+    handleTabSwitch,
+    currentFilters,
+    currentActiveFilter,
+    setCurrentFilter,
+    displayedOrders,
+  } = filters;
+
   const [expandedOrderId, setExpandedOrderId] = useState(null);
 
-  // --- CONSTANTS ---
-  const PAYMENT_OPTIONS = ["Unpaid", "Paid", "Refunded"];
-
-  const STANDARD_STATUSES = ["Pending", "Confirmed", "Shipping", "Delivered", "Cancelled"];
-  const RETURN_STATUSES = ["Return Requested", "Return Rejected", "Return Approved"];
-
-  const STATUS_OPTIONS = [...STANDARD_STATUSES, ...RETURN_STATUSES];
-
-  // --- HANDLERS ---
   const toggleExpand = (orderId) => {
     setExpandedOrderId((prev) => (prev === orderId ? null : orderId));
   };
 
-  const handleTabSwitch = (tab) => {
-    setActiveTab(tab);
+  const onTabSwitch = (tab) => {
+    handleTabSwitch(tab);
     setExpandedOrderId(null); // Đóng hàng đang mở khi chuyển tab
   };
-
-  // --- LỌC DỮ LIỆU ---
-  const displayedOrders = orders.filter((order) => {
-    if (activeTab === "Standard") {
-      if (RETURN_STATUSES.includes(order.status)) return false;
-      return filterStandard === "All" || order.status === filterStandard;
-    } else {
-      if (!RETURN_STATUSES.includes(order.status)) return false;
-      return filterReturn === "All" || order.status === filterReturn;
-    }
-  });
-
-  const currentFilters = activeTab === "Standard" ? ["All", ...STANDARD_STATUSES] : ["All", ...RETURN_STATUSES];
-  const currentActiveFilter = activeTab === "Standard" ? filterStandard : filterReturn;
-  const setCurrentFilter = activeTab === "Standard" ? setFilterStandard : setFilterReturn;
 
   return (
     <div className="hidden md:flex flex-col gap-6">
@@ -67,7 +51,7 @@ export default function OrderTable({
 
           <div className="inline-flex p-1.5 bg-gray-50 border border-gray-100 rounded-full shadow-inner">
             <button
-              onClick={() => handleTabSwitch("Standard")}
+              onClick={() => onTabSwitch("Standard")}
               className={`px-6 py-2.5 rounded-full font-bold text-sm transition-all duration-300 ease-out flex items-center gap-2 ${
                 activeTab === "Standard"
                   ? "bg-white text-blue-600 shadow-sm scale-100"
@@ -77,7 +61,7 @@ export default function OrderTable({
               <i className="fa-solid fa-box"></i> Standard Orders
             </button>
             <button
-              onClick={() => handleTabSwitch("Returns")}
+              onClick={() => onTabSwitch("Returns")}
               className={`px-6 py-2.5 rounded-full font-bold text-sm transition-all duration-300 ease-out flex items-center gap-2 ${
                 activeTab === "Returns"
                   ? "bg-white text-orange-600 shadow-sm scale-100"

@@ -33,7 +33,10 @@ export default function MembershipInfoTab({ state, actions, helpers }) {
               placeholder="Enter phone number"
             />
           </div>
-          <button className="w-full py-4 bg-slate-900 text-white font-medium text-sm rounded-full hover:bg-slate-800 transition-colors shadow-sm">
+          <button 
+            onClick={actions.updateProfile}
+            className="w-full py-4 bg-slate-900 text-white font-medium text-sm rounded-full hover:bg-slate-800 transition-colors shadow-sm"
+          >
             Update Profile
           </button>
         </div>

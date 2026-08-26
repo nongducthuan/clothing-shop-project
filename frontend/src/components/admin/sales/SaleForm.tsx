@@ -1,6 +1,6 @@
 import React, { useRef } from "react";
 
-export default function SaleForm({ formData, setFormData, onSubmit }) {
+export default function SaleForm({ formData, setFormData, onSubmit, editingId, onCancel }) {
   const startDateRef = useRef(null);
   const endDateRef = useRef(null);
 
@@ -20,7 +20,7 @@ export default function SaleForm({ formData, setFormData, onSubmit }) {
         <div className="bg-gradient-to-r from-blue-500 to-indigo-600 p-4 shrink-0 flex justify-between items-center">
           <h2 className="text-sm font-bold text-white flex items-center gap-2 uppercase tracking-wider">
             <i className="fa-solid fa-tags text-blue-100"></i>
-            Sale Details
+            {editingId ? "Edit Sale" : "Sale Details"}
           </h2>
         </div>
 
@@ -80,9 +80,16 @@ export default function SaleForm({ formData, setFormData, onSubmit }) {
             </div>
           </div>
           <div className="flex-grow"></div>
-          <button type="submit" className="w-full py-3 bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white rounded-xl font-bold text-xs tracking-wider hover:scale-[1.01] transition-all shadow-md shadow-indigo-200 uppercase mt-4">
-            ACTIVATE SALE
-          </button>
+          <div className="flex gap-3 mt-4">
+            {editingId && (
+              <button type="button" onClick={onCancel} className="flex-1 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-bold text-xs tracking-wider uppercase transition-all">
+                CANCEL
+              </button>
+            )}
+            <button type="submit" className="flex-1 py-3 bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white rounded-xl font-bold text-xs tracking-wider hover:scale-[1.01] transition-all shadow-md shadow-indigo-200 uppercase">
+              {editingId ? "UPDATE SALE" : "ACTIVATE SALE"}
+            </button>
+          </div>
         </form>
       </div>
     </>

@@ -1,6 +1,6 @@
 import React from "react";
 
-export default function VoucherTable({ vouchers, onShowDetail, onDelete }) {
+export default function VoucherTable({ vouchers, onShowDetail, onDelete, onEdit }) {
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
     const date = new Date(dateString);
@@ -61,13 +61,19 @@ export default function VoucherTable({ vouchers, onShowDetail, onDelete }) {
                       Min Spend: <span className="font-bold text-gray-800">{Number(item.min_order_value).toLocaleString()}đ</span>
                     </div>
                     <div className="text-[11px] text-pink-500 font-bold mt-1">
-                      {item.usage_limit} uses remaining
+                      {item.usage_limit === null ? "Unlimited uses" : `${item.usage_limit - (item.used_count || 0)} uses remaining`}
                     </div>
                   </td>
                   <td className="py-4 px-4 text-xs font-medium text-slate-500 leading-relaxed">
                     {formatDate(item.start_date)} - {formatDate(item.end_date)}
                   </td>
-                  <td className="py-4 px-4">
+                  <td className="py-4 px-4 flex justify-center items-center gap-2">
+                    <button
+                      onClick={() => onEdit(item)}
+                      className="bg-transparent text-blue-500 hover:text-blue-700 hover:bg-blue-50 px-2.5 py-1 rounded-lg transition-all text-xs font-semibold border border-transparent hover:border-blue-100"
+                    >
+                      Edit
+                    </button>
                     <button
                       onClick={() => onDelete(item.id)}
                       className="bg-transparent text-rose-500 hover:text-rose-700 hover:bg-rose-50 px-2.5 py-1 rounded-lg transition-all text-xs font-semibold border border-transparent hover:border-rose-100"

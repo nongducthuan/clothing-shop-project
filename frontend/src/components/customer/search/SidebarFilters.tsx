@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React from "react";
 import { PRICE_RANGES, GENDERS } from "./searchConstants";
 

@@ -1,6 +1,6 @@
 import React from "react";
 
-export default function SaleTable({ sales, onShowDetail, onDelete }) {
+export default function SaleTable({ sales, onShowDetail, onDelete, onEdit }) {
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
     const date = new Date(dateString);
@@ -49,7 +49,13 @@ export default function SaleTable({ sales, onShowDetail, onDelete }) {
                 <td className="py-4 px-4 text-xs font-medium text-slate-500">
                   {formatDate(item.start_date)} - {formatDate(item.end_date)}
                 </td>
-                <td className="py-4 px-4">
+                <td className="py-4 px-4 flex items-center justify-center gap-2">
+                  <button
+                    onClick={() => onEdit(item)}
+                    className="text-blue-500 bg-transparent hover:text-blue-700 hover:bg-blue-50 px-2.5 py-1 rounded-lg transition-all text-xs font-semibold border border-transparent hover:border-blue-100"
+                  >
+                    Edit
+                  </button>
                   <button
                     onClick={() => onDelete(item.id)}
                     className="text-rose-500 bg-transparent hover:text-rose-700 hover:bg-rose-50 px-2.5 py-1 rounded-lg transition-all text-xs font-semibold border border-transparent hover:border-rose-100"

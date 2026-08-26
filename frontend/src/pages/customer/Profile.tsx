@@ -11,7 +11,14 @@ import ReturnRequestModal from "../../components/customer/profile/ReturnRequestM
 export default function Profile() {
   const { state, actions, helpers } = useProfilePage();
 
-  if (!state.user) return null;
+  if (!state.user) {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center bg-gray-50/80 font-sans min-h-[50vh]">
+        <div className="w-12 h-12 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin mb-4"></div>
+        <p className="font-bold text-slate-500 uppercase tracking-widest text-xs">Loading Profile...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex-1 bg-white pb-20">

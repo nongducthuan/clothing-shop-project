@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { PRICE_RANGES, GENDERS } from "./searchConstants";
 
 export default function MobileFilterOverlay({ state, actions, refs }) {
@@ -15,17 +15,25 @@ export default function MobileFilterOverlay({ state, actions, refs }) {
   const { setShowMobileFilter, updateFilter, clearFilters } = actions;
   const { categoryRefs, priceRefs } = refs || {};
 
+  // Lock body scroll
+  useEffect(() => {
+    if (typeof document !== "undefined") {
+      if (showMobileFilter) {
+        document.body.style.overflow = "hidden";
+      } else {
+        document.body.style.overflow = "unset";
+      }
+    }
+    return () => {
+      if (typeof document !== "undefined") {
+        document.body.style.overflow = "unset";
+      }
+    };
+  }, [showMobileFilter]);
+
   if (!showMobileFilter) return null;
 
-  // Lock body scroll
-  if (typeof document !== "undefined") {
-    document.body.style.overflow = "hidden";
-  }
-
   const handleClose = () => {
-    if (typeof document !== "undefined") {
-      document.body.style.overflow = "unset";
-    }
     setShowMobileFilter(false);
   };
 

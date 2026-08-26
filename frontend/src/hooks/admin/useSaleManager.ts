@@ -13,6 +13,7 @@ export default function useSaleManager() {
   const [applyScope, setApplyScope] = useState("all");
 
   const [detailModal, setDetailModal] = useState({ isOpen: false, data: [], title: "" });
+  const [editingId, setEditingId] = useState(null);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -80,6 +81,27 @@ export default function useSaleManager() {
     }
   };
 
+  const handleEdit = (sale) => {
+    setEditingId(sale.id);
+    setFormData({
+      name: sale.name,
+      discount_percent: sale.discount_percent,
+      start_date: sale.start_date ? sale.start_date.slice(0, 16) : "",
+      end_date: sale.end_date ? sale.end_date.slice(0, 16) : "",
+      apply_scope: sale.apply_scope || "all"
+    });
+    setApplyScope(sale.apply_scope || "all");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setFormData({ name: "", discount_percent: "", start_date: "", end_date: "", apply_scope: "all" });
+    setApplyScope("all");
+    setSelectedCategoryIds([]);
+    setSelectedProductIds([]);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -91,9 +113,15 @@ export default function useSaleManager() {
     };
 
     try {
-      await API.post("/sales/admin", payload);
-      alert("Created Successfully!");
+      if (editingId) {
+        await API.put(`/sales/admin/${editingId}`, payload);
+        alert("Updated Successfully!");
+      } else {
+        await API.post("/sales/admin", payload);
+        alert("Created Successfully!");
+      }
       // Reset form
+      setEditingId(null);
       setFormData({ name: "", discount_percent: "", start_date: "", end_date: "", apply_scope: "all" });
       setApplyScope("all");
       setSelectedCategoryIds([]);
@@ -109,6 +137,7 @@ export default function useSaleManager() {
     products,
     categories,
     isLoading,
+    editingId,
     selectedCategoryIds,
     selectedProductIds,
     searchTerm,
@@ -123,6 +152,8 @@ export default function useSaleManager() {
     toggleProduct,
     handleShowDetail,
     handleDelete,
+    handleEdit,
+    handleCancelEdit,
     handleSubmit
   };
 }

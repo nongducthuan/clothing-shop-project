@@ -1,8 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
+import Toast from "../layout/Toast";
 
 export default function ProductVoucher({ state, helpers }) {
   const { activeVoucher, isVoucherValidForProduct, product } = state;
   const { formatPrice } = helpers;
+  const [toastMessage, setToastMessage] = useState(null);
 
   const isAvailable = activeVoucher?.usage_limit === null || (activeVoucher?.usage_limit - activeVoucher?.used_count > 0);
 
@@ -10,11 +12,19 @@ export default function ProductVoucher({ state, helpers }) {
 
   const handleCopy = () => {
     navigator.clipboard.writeText(activeVoucher.code);
-    alert("Code copied: " + activeVoucher.code);
+    setToastMessage("Code copied: " + activeVoucher.code);
   };
 
   return (
-    <div className="mb-8 p-5 bg-rose-50 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between border border-rose-100 gap-4 transition-all">
+    <>
+      {toastMessage && (
+        <Toast
+          message={toastMessage}
+          type="success"
+          onClose={() => setToastMessage(null)}
+        />
+      )}
+      <div className="mb-8 p-5 bg-rose-50 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between border border-rose-100 gap-4 transition-all">
       <div className="flex items-start gap-4">
         <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-lg flex-shrink-0">
           {activeVoucher.apply_scope === "all" ? "✨" : "🎁"}
@@ -50,5 +60,6 @@ export default function ProductVoucher({ state, helpers }) {
         Copy Code
       </button>
     </div>
+    </>
   );
 }

@@ -15,6 +15,7 @@ export default function useVoucherManager() {
     data: [],
     title: ""
   });
+  const [editingId, setEditingId] = useState(null);
   const [formData, setFormData] = useState({
     code: "",
     description: "",
@@ -86,6 +87,34 @@ export default function useVoucherManager() {
     }
   };
 
+  const handleEdit = (voucher) => {
+    setEditingId(voucher.id);
+    setFormData({
+      code: voucher.code,
+      description: voucher.description || "",
+      discount_percent: voucher.discount_percent,
+      max_discount_amount: voucher.max_discount_amount || "",
+      min_order_value: voucher.min_order_value || "",
+      usage_limit: voucher.usage_limit || "",
+      start_date: voucher.start_date ? voucher.start_date.slice(0, 16) : "",
+      end_date: voucher.end_date ? voucher.end_date.slice(0, 16) : "",
+      apply_scope: voucher.apply_scope || "all"
+    });
+    setApplyScope(voucher.apply_scope || "all");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setFormData({
+      code: "", description: "", discount_percent: "", max_discount_amount: "",
+      min_order_value: "", usage_limit: "", start_date: "", end_date: "", apply_scope: "all"
+    });
+    setApplyScope("all");
+    setSelectedCategoryIds([]);
+    setSelectedProductIds([]);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const payload = {
@@ -98,18 +127,17 @@ export default function useVoucherManager() {
     };
 
     try {
-      await API.post("/admin/vouchers", payload);
-      alert("Create voucher successfully! 🎉");
+      if (editingId) {
+        await API.put(`/admin/vouchers/${editingId}`, payload);
+        alert("Voucher updated successfully! ✅");
+      } else {
+        await API.post("/admin/vouchers", payload);
+        alert("Create voucher successfully! 🎉");
+      }
+      setEditingId(null);
       setFormData({
-        code: "",
-        description: "",
-        discount_percent: "",
-        max_discount_amount: "",
-        min_order_value: "",
-        usage_limit: "",
-        start_date: "",
-        end_date: "",
-        apply_scope: "all"
+        code: "", description: "", discount_percent: "", max_discount_amount: "",
+        min_order_value: "", usage_limit: "", start_date: "", end_date: "", apply_scope: "all"
       });
       setApplyScope("all");
       setSelectedCategoryIds([]);
@@ -125,6 +153,7 @@ export default function useVoucherManager() {
     products,
     categories,
     isLoading,
+    editingId,
     selectedCategoryIds,
     selectedProductIds,
     searchTerm,
@@ -138,6 +167,8 @@ export default function useVoucherManager() {
     toggleCategory,
     toggleProduct,
     handleDelete,
+    handleEdit,
+    handleCancelEdit,
     handleShowDetail,
     handleSubmit
   };

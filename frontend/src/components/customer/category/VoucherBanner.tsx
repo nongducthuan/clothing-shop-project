@@ -1,4 +1,9 @@
+import { useState } from "react";
+import Toast from "../layout/Toast";
+
 export default function VoucherBanner({ voucher, categoryName }) {
+  const [toastMessage, setToastMessage] = useState(null);
+
   const isAvailable = voucher.usage_limit === null || voucher.usage_limit - voucher.used_count > 0;
   if (!isAvailable) return null;
 
@@ -8,11 +13,19 @@ export default function VoucherBanner({ voucher, categoryName }) {
 
   const handleCopyCode = () => {
     navigator.clipboard.writeText(voucher.code);
-    alert("Copied to clipboard: " + voucher.code);
+    setToastMessage("Copied to clipboard: " + voucher.code);
   };
 
   return (
-    <div className="mb-12 flex flex-col md:flex-row items-center justify-between bg-slate-50 border border-slate-200 p-6 rounded-3xl transition-all">
+    <>
+      {toastMessage && (
+        <Toast
+          message={toastMessage}
+          type="success"
+          onClose={() => setToastMessage(null)}
+        />
+      )}
+      <div className="mb-12 flex flex-col md:flex-row items-center justify-between bg-slate-50 border border-slate-200 p-6 rounded-3xl transition-all">
       <div className="flex items-center gap-4 mb-4 md:mb-0">
         <div className="w-12 h-12 bg-white rounded-full shadow-sm flex items-center justify-center text-xl flex-shrink-0">
           {voucher.apply_scope === "all" ? "✨" : "🎟️"}
@@ -48,5 +61,6 @@ export default function VoucherBanner({ voucher, categoryName }) {
         Copy Code
       </button>
     </div>
+    </>
   );
 }

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React from "react";
 import { useProductDetail } from "../../hooks/customer/useProductDetail";
 
@@ -46,7 +45,7 @@ export default function ProductDetail() {
 
           {/* LEFT: IMAGE GALLERY (5 cols) */}
           <div className="lg:col-span-5 lg:sticky lg:top-24">
-            <ProductImageGallery state={state} constants={constants} />
+            <ProductImageGallery state={state} />
           </div>
 
           {/* RIGHT: PRODUCT DETAILS (7 cols) */}

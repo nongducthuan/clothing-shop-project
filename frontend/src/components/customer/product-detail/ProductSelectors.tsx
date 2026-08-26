@@ -1,4 +1,4 @@
-import React from "react";
+import { getImageUrl } from "../../../utils/imageUtils";
 
 export default function ProductSelectors({ state, actions }) {
   const { product, selectedColor, selectedSize, isProductIncomplete } = state;
@@ -13,7 +13,7 @@ export default function ProductSelectors({ state, actions }) {
           {product.colors.map((color) => (
             <img
               key={`thumb-${color.id}`}
-              src={color.image_url}
+              src={getImageUrl(color.image_url)}
               className={`w-16 h-20 object-cover rounded-xl cursor-pointer border-2 transition-all ${
                 selectedColor?.id === color.id ? "border-slate-900 opacity-100 shadow-md" : "border-transparent opacity-60 hover:opacity-100"
               }`}

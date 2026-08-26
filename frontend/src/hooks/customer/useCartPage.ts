@@ -108,17 +108,13 @@ export function useCartPage() {
 
     try {
       const orderTotalForVoucher = subtotal - membershipDiscount;
-      const response = await fetch(`${API_URL}/vouchers/apply`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          code: voucherCode,
-          orderTotal: orderTotalForVoucher,
-          cartItems: cart
-        })
+      const response = await API.post("/vouchers/apply", {
+        code: voucherCode,
+        orderTotal: orderTotalForVoucher,
+        cartItems: cart
       });
 
-      const data = await response.json();
+      const data = response.data;
 
       if (data.success) {
         setAppliedVoucher(data.data);
@@ -128,7 +124,8 @@ export function useCartPage() {
         setVoucherMessage({ type: 'error', text: data.message });
       }
     } catch (error) {
-      setVoucherMessage({ type: 'error', text: 'Server connection error' });
+      setAppliedVoucher(null);
+      setVoucherMessage({ type: 'error', text: error.response?.data?.message || 'Server connection error' });
     } finally {
       setIsApplying(false);
     }

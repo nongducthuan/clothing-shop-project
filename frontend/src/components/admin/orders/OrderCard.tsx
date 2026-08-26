@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 
+import { PAYMENT_OPTIONS, STATUS_OPTIONS } from "../../../hooks/admin/useOrderManager";
+
 export default function OrderCard({
   orders,
   getOrderStatusColor,
@@ -10,35 +12,16 @@ export default function OrderCard({
   onViewDetails,
   handleApproveReturn,
   handleRejectReturn,
+  filters // Nhận filters từ props
 }) {
-  const [activeTab, setActiveTab] = useState("Standard");
-  const [filterStatus, setFilterStatus] = useState("All");
-
-  const PAYMENT_OPTIONS = ["Unpaid", "Paid", "Refunded"];
-  const RETURN_STATUSES = ["Return Requested", "Return Rejected", "Return Approved"];
-  const STANDARD_STATUSES = ["Pending", "Confirmed", "Shipping", "Delivered", "Cancelled"];
-  const STATUS_OPTIONS = [...STANDARD_STATUSES, ...RETURN_STATUSES];
-
-  // Switch tab resets filter
-  const handleTabSwitch = (tab) => {
-    setActiveTab(tab);
-    setFilterStatus("All");
-  };
-
-  // Filter orders by current tab + status filter
-  const displayedOrders = orders.filter((order) => {
-    if (activeTab === "Standard") {
-      if (RETURN_STATUSES.includes(order.status)) return false;
-      return filterStatus === "All" || order.status === filterStatus;
-    } else {
-      if (!RETURN_STATUSES.includes(order.status)) return false;
-      return filterStatus === "All" || order.status === filterStatus;
-    }
-  });
-
-  const currentFilterOptions = activeTab === "Standard"
-    ? ["All", ...STANDARD_STATUSES]
-    : ["All", ...RETURN_STATUSES];
+  const {
+    activeTab,
+    handleTabSwitch,
+    currentFilters,
+    currentActiveFilter,
+    setCurrentFilter,
+    displayedOrders,
+  } = filters;
 
   return (
     <div className="md:hidden space-y-4">
@@ -68,11 +51,11 @@ export default function OrderCard({
       {/* === STATUS FILTER CHIPS (Scrollable horizontally) === */}
       <div className="overflow-x-auto pb-1 -mx-1 px-1">
         <div className="flex gap-2 w-max">
-          {currentFilterOptions.map((f) => (
+          {currentFilters.map((f) => (
             <button
               key={f}
-              onClick={() => setFilterStatus(f)}
-              className={`px-3.5 py-1.5 rounded-full font-bold text-xs whitespace-nowrap transition-all ${filterStatus === f
+              onClick={() => setCurrentFilter(f)}
+              className={`px-3.5 py-1.5 rounded-full font-bold text-xs whitespace-nowrap transition-all ${currentActiveFilter === f
                 ? "bg-gray-800 text-white shadow-sm"
                 : "bg-gray-100 text-gray-500 hover:bg-gray-200"
                 }`}
@@ -90,7 +73,7 @@ export default function OrderCard({
             <i className="fa-solid fa-folder-open text-gray-300 text-2xl"></i>
           </div>
           <p className="font-bold text-gray-700 text-base">No Orders Found</p>
-          <p className="text-xs text-gray-400 mt-1">No <span className="font-semibold">{filterStatus}</span> orders</p>
+          <p className="text-xs text-gray-400 mt-1">No <span className="font-semibold">{currentActiveFilter}</span> orders</p>
         </div>
       ) : (
         displayedOrders.map((order) => {

@@ -73,7 +73,7 @@ export default function ProductForm({
                 <select
                   className="w-full px-4 py-3 bg-gray-50 border-transparent focus:bg-white focus:border-violet-500 focus:ring-4 focus:ring-violet-500/10 rounded-2xl transition-all duration-300 outline-none text-gray-800 font-medium appearance-none cursor-pointer"
                   value={form.gender}
-                  onChange={(e) => setForm({ ...form, gender: e.target.value })}
+                  onChange={(e) => setForm({ ...form, gender: e.target.value, category_id: "" })}
                 >
                   <option value="unisex">Unisex</option>
                   <option value="male">Male</option>

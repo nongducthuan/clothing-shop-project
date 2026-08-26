@@ -29,7 +29,7 @@ export default function ProductDetailManager() {
   const selectedColorObj = colors.find((c) => c.id === selectedColorId);
 
   return (
-    <div className="flex-1 bg-slate-50 p-4 md:p-8 font-sans">
+    <div className="container mx-auto px-4 py-8 lg:px-8 max-w-7xl flex-1 font-sans">
 
       {/* HEADER SECTION (Pill UI Style) */}
       <div className="flex items-center gap-4 mb-8">

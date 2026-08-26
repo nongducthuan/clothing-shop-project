@@ -160,6 +160,22 @@ export function useProfilePage() {
   const formatCurrency = (val) => Number(val).toLocaleString("en-US") + " VND";
   const getImgUrl = (path) => getImageUrl(path);
 
+  const updateProfile = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      await API.put(
+        "/auth/profile",
+        { phone },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      alert("Profile updated successfully!");
+      refreshUser();
+    } catch (error) {
+      console.error("Update profile error:", error);
+      alert("Failed to update profile. " + (error.response?.data?.message || ""));
+    }
+  };
+
   return {
     state: {
       user, tier, phone, activeTab, orders, loadingOrders, selectedOrder,
@@ -168,7 +184,7 @@ export function useProfilePage() {
     actions: {
       setActiveTab, setPhone, logout, setSelectedOrder,
       handleMoMoPayment, handleOpenReturnModal, setShowReturnModal,
-      handleSubmitReturn, handleReturnDataChange
+      handleSubmitReturn, handleReturnDataChange, updateProfile
     },
     helpers: {
       formatCurrency, getImgUrl

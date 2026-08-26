@@ -86,7 +86,7 @@ const ReturnInfoSection = ({ order }) => {
           <p className="text-[10px] font-bold text-orange-600/80 uppercase mb-2 tracking-wider">Evidence Images</p>
           <div className="flex flex-wrap gap-3">
             {order.return_images.map((img, idx) => {
-              const fullImgUrl = img.startsWith('http') ? img : `import.meta.env.VITE_API_URL${img}`;
+              const fullImgUrl = getImageUrl(img);
               return (
                 <img
                   key={idx}

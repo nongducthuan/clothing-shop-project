@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useEffect, useState } from "react";
 import API from "../../../services/apiClient";
 import ProductCard from "../product/ProductCard";

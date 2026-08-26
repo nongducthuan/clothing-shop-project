@@ -455,9 +455,9 @@ export default function Navbar() {
               onClick={() => navigate("/cart")}
             >
               <i className="fa-solid fa-cart-shopping text-xl text-gray-600 hover:text-violet-600 transition-colors"></i>
-              {cart.length > 0 && (
+              {cart.reduce((total, item) => total + item.quantity, 0) > 0 && (
                 <span className="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center border border-white">
-                  {cart.length > 99 ? "99+" : cart.length}
+                  {cart.reduce((total, item) => total + item.quantity, 0) > 99 ? "99+" : cart.reduce((total, item) => total + item.quantity, 0)}
                 </span>
               )}
             </div>

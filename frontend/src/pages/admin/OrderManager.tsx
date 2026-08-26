@@ -3,6 +3,7 @@ import OrderTable from "../../components/admin/orders/OrderTable.jsx";
 import OrderCard from "../../components/admin/orders/OrderCard.jsx";
 import OrderDetailsModal from "../../components/admin/orders/OrderDetailsModal.jsx";
 import useOrderManager from "../../hooks/admin/useOrderManager";
+import useOrderFilters from "../../hooks/admin/useOrderFilters";
 
 // --- SUB-COMPONENTS ---
 const PageHeader = () => (
@@ -32,6 +33,8 @@ export default function OrderManager() {
     handleApproveReturn,
     handleRejectReturn,
   } = useOrderManager();
+
+  const filters = useOrderFilters(orders);
 
   // Handler mở Modal (chỉ còn dùng cho Mobile / OrderCard)
   const handleOpenDetails = (order) => {
@@ -72,6 +75,7 @@ export default function OrderManager() {
               handleApproveReturn={handleApproveReturn}
               handleRejectReturn={handleRejectReturn}
               onViewDetails={handleOpenDetails}
+              filters={filters}
             />
 
             {/* Desktop View - Bảng đã tự tích hợp Tabs, Filter và Expandable Row bên trong */}
@@ -84,6 +88,7 @@ export default function OrderManager() {
               handleOrderStatus={handleOrderStatus}
               handleApproveReturn={handleApproveReturn}
               handleRejectReturn={handleRejectReturn}
+              filters={filters}
             />
           </>
         )}
