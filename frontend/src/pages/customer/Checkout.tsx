@@ -47,7 +47,7 @@ export default function Checkout() {
             <div className="mt-12 pt-8 border-t border-slate-100">
               <button
                 onClick={actions.handleSubmitOrder}
-                className="w-full md:w-80 md:mx-auto bg-slate-900 text-white h-12 py-3.5 rounded-full font-semibold text-base hover:bg-slate-800 transition-all active:scale-[0.98] shadow-md flex items-center justify-center"
+                className="w-full md:w-80 md:ml-auto bg-slate-900 text-white h-12 py-3.5 rounded-full font-semibold text-base hover:bg-slate-800 transition-all active:scale-[0.98] shadow-md flex items-center justify-center"
               >
                 Place Order
               </button>
