@@ -40,9 +40,8 @@ export default function ProductActions({ state, actions, helpers }) {
       <button
         onClick={handleAddToCart}
         disabled={isOutOfStock || !state.selectedSize}
-        className="w-full h-14 bg-slate-900 text-white rounded-full font-semibold text-base hover:bg-slate-800 disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed transition-all active:scale-[0.98] shadow-md inline-flex items-center justify-center gap-2"
+        className="w-full md:w-80 h-14 bg-slate-900 text-white rounded-full font-semibold text-base hover:bg-slate-800 disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed transition-all active:scale-[0.98] shadow-md flex items-center justify-center"
       >
-        <i className="fa-solid fa-bag-shopping text-sm"></i>
         {isProductIncomplete ? "Product Not Ready" : isOutOfStock ? "Out of Stock" : "Add to Cart"}
       </button>
     </div>
