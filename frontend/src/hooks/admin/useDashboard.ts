@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useState, useEffect } from "react";
 import API from "../../services/apiClient";
 
@@ -8,16 +7,18 @@ import API from "../../services/apiClient";
  * * @param {Object} result - The result object from Promise.allSettled
  * @returns {Array} The extracted data array or empty array
  */
-const extractData = (result) => {
+type SettledResult = PromiseSettledResult<{ data: any }>;
+
+const extractData = (result: SettledResult): any[] => {
   if (result.status !== "fulfilled") return [];
 
-  const data = result.value.data;
+  const data = (result as PromiseFulfilledResult<{ data: any }>).value.data;
 
   // Case 1: API returns array directly
   if (Array.isArray(data)) return data;
 
   // Case 2: API returns { data: [...] }
-  if (data && Array.isArray(data.data)) return data.data;
+  if (data && Array.isArray((data as { data?: any[] }).data)) return (data as { data: any[] }).data;
 
   return [];
 };
@@ -82,9 +83,9 @@ export function useDashboardStats() {
           banners: banners.length,
           activeSales: activeSalesCount,
           activeVouchers: activeVouchersCount,
-          activePromotions: activePromotionsCount,
+          activePromotion: activePromotionsCount,
         });
-      } catch (error) {
+      } catch (error: unknown) {
         console.error("Failed to fetch dashboard stats", error);
       }
     };

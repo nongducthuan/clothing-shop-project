@@ -77,7 +77,7 @@ export interface Product {
 // --------------- Cart ---------------
 
 export interface CartItem {
-  cartItemId: string;
+  cartItemId?: string; // Made optional since addToCart constructs it if not present
   id: number;
   name: string;
   price: number;
@@ -89,6 +89,10 @@ export interface CartItem {
   image_url?: string;
   variant_id?: number;
   stock?: number;
+  category_id?: number;
+  color?: string;
+  color_image?: string;
+  size?: string;
 }
 
 // --------------- Order ---------------

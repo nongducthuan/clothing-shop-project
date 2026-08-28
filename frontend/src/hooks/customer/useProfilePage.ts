@@ -3,6 +3,7 @@ import { AuthContext } from "../../context/AuthContext.jsx";
 import { useNavigate } from "react-router-dom";
 import API from "../../services/apiClient.js";
 import { getImageUrl } from "../../utils/imageUtils";
+import { useToast } from "../../context/ToastContext";
 
 const TIER_CONFIG = {
   Normal: { next: 5000000, color: "text-slate-500", bg: "bg-slate-100", icon: "fa-circle-user", label: "Bronze" },
@@ -22,6 +23,7 @@ const INITIAL_RETURN_DATA = {
 };
 
 export function useProfilePage() {
+  const { showToast } = useToast();
   const { user, logout, tier, refreshUser } = useContext(AuthContext);
   const navigate = useNavigate();
 
@@ -59,10 +61,10 @@ export function useProfilePage() {
 
     if (paymentResult) {
       if (paymentResult === "0") {
-        alert("🎉 Order paid successfully! Thank you.");
+        showToast("🎉 Order paid successfully! Thank you.", "success");
         fetchOrders(); // Refresh orders to show 'Paid' status
       } else {
-        alert("❌ Payment failed or was cancelled.");
+        showToast("❌ Payment failed or was cancelled.", "error");
       }
       window.history.replaceState({}, document.title, "/profile");
     }
@@ -106,7 +108,7 @@ export function useProfilePage() {
       }
     } catch (error) {
       console.error("Repay error:", error);
-      alert(error.response?.data?.message || "Unable to create payment link right now.");
+      showToast(error.response?.data?.message || "Unable to create payment link right now.", "error");
     }
   };
 
@@ -120,12 +122,14 @@ export function useProfilePage() {
     const { bankName, bankNumber, accountHolder, reason, note, images } = returnData;
 
     if (!bankName || !bankNumber || !accountHolder) {
-      return alert("Please fill in all bank details.");
+      showToast("Please fill in all bank details.", "warning");
+      return;
     }
 
     const currentOrder = orders.find((o) => o.id === returnOrderId);
     if (!currentOrder?.email) {
-      return alert("Order email information not found!");
+      showToast("Order email information not found!", "error");
+      return;
     }
 
     const formData = new FormData();
@@ -146,13 +150,13 @@ export function useProfilePage() {
       );
 
       if (response.status === 200 || response.status === 201) {
-        alert("Return request submitted successfully! Your order is being processed.");
+        showToast("Return request submitted successfully! Your order is being processed.", "success");
         setShowReturnModal(false);
         fetchOrders();
       }
     } catch (error) {
       console.error("Connection error:", error);
-      alert(error.response?.data?.message || "Unable to connect to the server or process request.");
+      showToast(error.response?.data?.message || "Unable to connect to the server or process request.", "error");
     }
   };
 
@@ -168,11 +172,11 @@ export function useProfilePage() {
         { phone },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      alert("Profile updated successfully!");
+      showToast("Profile updated successfully!", "success");
       refreshUser();
     } catch (error) {
       console.error("Update profile error:", error);
-      alert("Failed to update profile. " + (error.response?.data?.message || ""));
+      showToast("Failed to update profile. " + (error.response?.data?.message || ""), "error");
     }
   };
 

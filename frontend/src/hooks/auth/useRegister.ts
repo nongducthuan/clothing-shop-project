@@ -18,14 +18,14 @@ export function useRegister() {
 
   /** * Synchronizes input field values with the local state object
    */
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
   /** * Validates input data and submits the registration request to the API
    */
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");
     setSuccess("");
@@ -53,8 +53,9 @@ export function useRegister() {
       setTimeout(() => {
         navigate("/login");
       }, 2000);
-    } catch (err) {
-      const errorMessage = err.response?.data?.message || "Registration failed. Please try again later.";
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { message?: string } } };
+      const errorMessage = axiosErr.response?.data?.message || "Registration failed. Please try again later.";
       setError(errorMessage);
     } finally {
       setIsLoading(false);

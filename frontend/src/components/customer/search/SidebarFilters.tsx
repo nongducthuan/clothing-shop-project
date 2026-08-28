@@ -35,7 +35,7 @@ export default function SidebarFilters({ state, refs, actions }) {
             {GENDERS.map((g, index) => (
               <button
                 key={g.id}
-                ref={(el) => (buttonRefs.current[index] = el)}
+                ref={(el) => { buttonRefs.current[index] = el; }}
                 onClick={() => updateFilter("gender", g.id)}
                 className={`relative z-10 flex-1 px-3 py-2 text-xs font-bold bg-transparent transition-colors duration-300 outline-none ring-0 focus:ring-0 ${
                   urlGender === g.id ? "text-violet-600" : "text-gray-400 hover:text-gray-600"
@@ -57,7 +57,7 @@ export default function SidebarFilters({ state, refs, actions }) {
             ></div>
 
             <button
-              ref={(el) => (categoryRefs.current[0] = el)}
+              ref={(el) => { categoryRefs.current[0] = el; }}
               onClick={() => updateFilter("category", "")}
               className={`bg-transparent relative z-10 px-3 py-2 text-sm rounded-lg text-left transition-all font-bold outline-none ring-0 focus:ring-0 ${
                 !urlCategory ? "text-violet-600" : "text-gray-500 hover:text-gray-700 bg-transparent"
@@ -73,7 +73,7 @@ export default function SidebarFilters({ state, refs, actions }) {
               return (
                 <button
                   key={c.id}
-                  ref={(el) => (categoryRefs.current[index + 1] = el)}
+                  ref={(el) => { categoryRefs.current[index + 1] = el; }}
                   onClick={() => updateFilter("category", c.id)}
                   className={`relative bg-transparent z-10 px-3 py-2 text-sm rounded-lg text-left transition-all font-bold truncate outline-none ring-0 focus:ring-0 ${
                     isSelected ? "text-violet-600" : "text-gray-500 hover:text-gray-700 bg-transparent"
@@ -98,7 +98,7 @@ export default function SidebarFilters({ state, refs, actions }) {
             {PRICE_RANGES.map((r, i) => (
               <button
                 key={i}
-                ref={(el) => (priceRefs.current[i] = el)}
+                ref={(el) => { priceRefs.current[i] = el; }}
                 onClick={() => updateFilter("price", i)}
                 className={`bg-transparent relative z-10 block w-full text-left px-3 py-2 text-sm rounded-lg transition-all font-bold outline-none ring-0 focus:ring-0 ${
                   filterPrice === i ? "text-violet-600" : "text-gray-500 hover:text-gray-700 bg-transparent"

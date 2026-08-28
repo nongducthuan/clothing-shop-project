@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import API from "../../services/apiClient.js";
+import { useToast } from "../../context/ToastContext";
 
 // Constants
 export const SIZE_ORDER = ["XS", "S", "M", "L", "XL", "XXL", "FreeSize", "29", "30", "31", "32"];
@@ -10,6 +11,7 @@ export const API_URL = import.meta.env.VITE_API_URL;
  * @param {string|number} productId - The ID of the product being managed.
  */
 export function useProductInventory(productId) {
+  const { showToast } = useToast();
   const token = localStorage.getItem("token");
 
   // Data States
@@ -67,7 +69,7 @@ export function useProductInventory(productId) {
       });
       setColorForm((prev) => ({ ...prev, image_url: data.url }));
     } catch (err) {
-      alert("Upload failed. Please try again.");
+      showToast("Upload failed. Please try again.", "error");
     } finally {
       setIsUploading(false);
     }
@@ -77,7 +79,7 @@ export function useProductInventory(productId) {
    * Sends a request to add a new color variant to the current product.
    */
   const addColor = async () => {
-    if (!colorForm.color_name) return alert("Please enter a color name.");
+    if (!colorForm.color_name) return showToast("Please enter a color name.", "warning");
 
     try {
       await API.post(`/admin/products/${productId}/colors`, colorForm, {
@@ -87,9 +89,9 @@ export function useProductInventory(productId) {
       // Reset form & refresh data
       setColorForm({ color_name: "", color_code: "#000000", image_url: "" });
       fetchProductData();
-      alert("Color added successfully!");
+      showToast("Color added successfully!", "success");
     } catch (err) {
-      alert("Failed to add color. Please try again.");
+      showToast("Failed to add color. Please try again.", "error");
     }
   };
 
@@ -107,8 +109,9 @@ export function useProductInventory(productId) {
       // Clear selection if the deleted color was selected
       if (selectedColorId === colorId) setSelectedColorId(null);
       fetchProductData();
+      showToast("Color deleted.", "success");
     } catch (err) {
-      alert("Failed to delete color.");
+      showToast("Failed to delete color.", "error");
     }
   };
 
@@ -116,11 +119,11 @@ export function useProductInventory(productId) {
    * Adds a new size or increments stock for an existing size under the selected color.
    */
   const addSize = async () => {
-    if (!selectedColorId) return alert("Please select a color first!");
-    if (!sizeForm.size?.trim()) return alert("Please select a size.");
+    if (!selectedColorId) return showToast("Please select a color first!", "warning");
+    if (!sizeForm.size?.trim()) return showToast("Please select a size.", "warning");
 
     const stockValue = Number(sizeForm.stock);
-    if (isNaN(stockValue) || stockValue < 0) return alert("Invalid stock value.");
+    if (isNaN(stockValue) || stockValue < 0) return showToast("Invalid stock value.", "warning");
 
     try {
       const currentColor = colors.find((c) => c.id === selectedColorId);
@@ -141,9 +144,9 @@ export function useProductInventory(productId) {
 
       setColors([...colors]); // Trigger re-render
       setSizeForm({ size: "S", stock: 0 }); // Reset form
-      alert("Size stock updated successfully!");
+      showToast("Size stock updated successfully!", "success");
     } catch (err) {
-      alert("Failed to add/update size stock.");
+      showToast("Failed to add/update size stock.", "error");
     }
   };
 
@@ -158,11 +161,13 @@ export function useProductInventory(productId) {
         headers: { Authorization: `Bearer ${token}` },
       });
       fetchProductData();
+      showToast("Size deleted.", "success");
     } catch (err) {
       console.error("Delete Size Error:", err);
-      alert("Failed to delete size.");
+      showToast("Failed to delete size.", "error");
     }
   };
+
 
   // Initial Data Fetch
   useEffect(() => {

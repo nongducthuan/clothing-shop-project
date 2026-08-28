@@ -1,4 +1,5 @@
 import React from "react";
+import EmptyState from "../../common/EmptyState";
 
 export default function PromotionList({ state, actions, helpers }) {
   const { filteredPromotions, searchTerm } = state;
@@ -107,9 +108,12 @@ export default function PromotionList({ state, actions, helpers }) {
             </div>
           ))
         ) : (
-          <div className="col-span-full text-center py-20 bg-white rounded-3xl border border-slate-100 border-dashed">
-            <i className="fa-solid fa-folder-open text-4xl text-slate-300 mb-4"></i>
-            <p className="text-slate-500 font-medium">No promotions found.</p>
+          <div className="col-span-full bg-white rounded-3xl border border-slate-100 border-dashed">
+            <EmptyState 
+              title="No Promotions Found"
+              subtitle="There are currently no promotions matching your criteria."
+              icon="fa-gift"
+            />
           </div>
         )}
       </div>

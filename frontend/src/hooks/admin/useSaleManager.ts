@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import API from "../../services/apiClient";
+import { useToast } from "../../context/ToastContext";
 
 export default function useSaleManager() {
+  const { showToast } = useToast();
   const [sales, setSales] = useState([]);
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -66,7 +68,7 @@ export default function useSaleManager() {
         title: type === 'category' ? "Selected Categories" : "Selected Products"
       });
     } catch (error) {
-      alert("Could not load details");
+      showToast("Could not load details", "error");
     }
   };
 
@@ -74,10 +76,10 @@ export default function useSaleManager() {
     if (!window.confirm("Are you sure you want to delete this item?")) return;
     try {
       await API.delete(`/sales/admin/${id}`);
-      alert("Deleted successfully!");
+      showToast("Deleted successfully!", "success");
       fetchInitialData();
     } catch (error) {
-      alert("Delete failed: " + (error.response?.data?.message || error.message));
+      showToast("Delete failed: " + (error.response?.data?.message || error.message), "error");
     }
   };
 
@@ -115,10 +117,10 @@ export default function useSaleManager() {
     try {
       if (editingId) {
         await API.put(`/sales/admin/${editingId}`, payload);
-        alert("Updated Successfully!");
+        showToast("Updated Successfully!", "success");
       } else {
         await API.post("/sales/admin", payload);
-        alert("Created Successfully!");
+        showToast("Created Successfully!", "success");
       }
       // Reset form
       setEditingId(null);
@@ -128,7 +130,7 @@ export default function useSaleManager() {
       setSelectedProductIds([]);
       fetchInitialData();
     } catch (error) {
-      alert("Error: " + error.message);
+      showToast("Error: " + error.message, "error");
     }
   };
 

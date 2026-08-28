@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import API from "../../services/apiClient"; // Adjust path as needed
+import { useToast } from "../../context/ToastContext";
 
 export default function useVoucherManager() {
+  const { showToast } = useToast();
   const [vouchers, setVouchers] = useState([]);
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -66,10 +68,10 @@ export default function useVoucherManager() {
     if (!window.confirm("Are you sure you want to delete this voucher?")) return;
     try {
       await API.delete(`/admin/vouchers/${id}`);
-      alert("Deleted successfully!");
+      showToast("Deleted successfully!", "success");
       fetchInitialData();
     } catch (error) {
-      alert("Delete failed: " + (error.response?.data?.message || error.message));
+      showToast("Delete failed: " + (error.response?.data?.message || error.message), "error");
     }
   };
 
@@ -129,10 +131,10 @@ export default function useVoucherManager() {
     try {
       if (editingId) {
         await API.put(`/admin/vouchers/${editingId}`, payload);
-        alert("Voucher updated successfully! ✅");
+        showToast("Voucher updated successfully! ✅", "success");
       } else {
         await API.post("/admin/vouchers", payload);
-        alert("Create voucher successfully! 🎉");
+        showToast("Create voucher successfully! 🎉", "success");
       }
       setEditingId(null);
       setFormData({
@@ -144,7 +146,7 @@ export default function useVoucherManager() {
       setSelectedProductIds([]);
       fetchInitialData();
     } catch (error) {
-      alert("Error: " + error.message);
+      showToast("Error: " + error.message, "error");
     }
   };
 

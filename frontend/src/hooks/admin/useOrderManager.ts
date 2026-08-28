@@ -1,12 +1,25 @@
-// @ts-nocheck
 import { useState, useEffect, useCallback, useMemo } from "react";
 import API from "../../services/apiClient";
+import { useToast } from "../../context/ToastContext";
 
 // ==========================================
 // CONSTANTS (Declared outside to prevent re-creation on every render)
 // ==========================================
 
 const BASE_URL = import.meta.env.VITE_API_URL;
+
+export const PAYMENT_OPTIONS = ["Unpaid", "Paid", "Refunded"];
+
+export const STATUS_OPTIONS = [
+  "Pending",
+  "Confirmed",
+  "Shipping",
+  "Delivered",
+  "Cancelled",
+  "Return Requested",
+  "Return Rejected",
+  "Return Approved",
+];
 
 const ORDER_STATUS_COLORS = {
   Pending: "#ffc107",
@@ -35,9 +48,9 @@ const PAYMENT_STATUS_COLORS = {
  */
 export default function useOrderManager() {
   // --- STATE MANAGEMENT ---
+  const { showToast } = useToast();
   const [orders, setOrders] = useState([]);
   const [selectedOrder, setSelectedOrder] = useState(null);
-  const [toast, setToast] = useState(null);
   const [confirmAction, setConfirmAction] = useState(false);
   const [filterStatus, setFilterStatus] = useState("All");
 
@@ -45,10 +58,6 @@ export default function useOrderManager() {
 
   const getToken = useCallback(() => {
     return localStorage.getItem("token") || localStorage.getItem("adminToken");
-  }, []);
-
-  const showToast = useCallback((message, type = "success") => {
-    setToast({ message, type });
   }, []);
 
   const formatCurrency = useCallback((amount) => {
@@ -77,10 +86,11 @@ export default function useOrderManager() {
       const ordersData = res.data.data || res.data;
       
       const sortedOrders = (Array.isArray(ordersData) ? ordersData : []).sort(
-        (a, b) => new Date(b.created_at) - new Date(a.created_at)
+        (a: { created_at: string }, b: { created_at: string }) =>
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       );
       setOrders(sortedOrders);
-    } catch (error) {
+    } catch (error: unknown) {
       showToast("Error loading orders", "error");
     }
   }, [getToken, showToast]);
@@ -111,8 +121,9 @@ export default function useOrderManager() {
       }
 
       showToast("Order status updated successfully!");
-    } catch (err) {
-      showToast(err.response?.data?.message || err.message, "error");
+    } catch (err: unknown) {
+      const axErr = err as { response?: { data?: { message?: string } }; message?: string };
+      showToast(axErr.response?.data?.message || axErr.message || "Error", "error");
     }
   };
 
@@ -140,7 +151,7 @@ export default function useOrderManager() {
       }
 
       showToast(`Payment status updated to ${newStatus}!`);
-    } catch (err) {
+    } catch (err: unknown) {
       console.error(err);
       showToast("Error updating payment", "error");
     }
@@ -156,7 +167,8 @@ export default function useOrderManager() {
 
     const token = getToken();
     if (!token) {
-      return alert("Error: Authentication token not found!");
+      showToast("Error: Authentication token not found!", "error");
+      return;
     }
 
     try {
@@ -177,7 +189,7 @@ export default function useOrderManager() {
       } else {
         showToast(data.message || "Failed to approve return", "error");
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error(error);
       showToast("Server connection error", "error");
     }
@@ -189,11 +201,15 @@ export default function useOrderManager() {
   const handleRejectReturn = async (orderId) => {
     const reason = window.prompt("Enter reason for rejection:");
     if (reason === null) return;
-    if (reason.trim() === "") return alert("Please provide a reason!");
+    if (reason.trim() === "") {
+      showToast("Please provide a reason!", "warning");
+      return;
+    }
 
     const token = getToken();
     if (!token) {
-      return alert("Error: Authentication token not found!");
+      showToast("Error: Authentication token not found!", "error");
+      return;
     }
 
     try {
@@ -214,7 +230,7 @@ export default function useOrderManager() {
         const data = await response.json();
         showToast(data.message || "Failed to reject return", "error");
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error(error);
       showToast("Server connection error", "error");
     }
@@ -232,8 +248,6 @@ export default function useOrderManager() {
   // --- EXPOSE API TO COMPONENT ---
   return {
     orders: filteredOrders,
-    toast,
-    setToast,
     selectedOrder,
     setSelectedOrder,
     confirmAction,

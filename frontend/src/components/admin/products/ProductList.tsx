@@ -1,6 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { getImageUrl } from "../../../utils/imageUtils";
+import EmptyState from "../../common/EmptyState";
 
 export default function ProductList({
   products,
@@ -70,12 +71,12 @@ export default function ProductList({
       {/* Product Grid Area */}
       <div className="bg-gray-50/80 p-6 md:p-8 rounded-[2rem] border border-gray-100 shadow-inner flex-1 min-h-[500px]">
         {products.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full text-center py-12">
-            <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center mb-4 shadow-sm border border-gray-100">
-              <i className="fa-solid fa-box-open text-gray-300 text-3xl"></i>
-            </div>
-            <h4 className="text-gray-800 font-bold text-lg mb-1">No Products Found</h4>
-            <p className="text-gray-500 text-sm max-w-sm">Try adjusting your filters or search term.</p>
+          <div className="flex items-center justify-center h-full min-h-[400px]">
+            <EmptyState 
+              title="No Products Found"
+              subtitle="Try adjusting your filters or search term."
+              icon="fa-box-open"
+            />
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">

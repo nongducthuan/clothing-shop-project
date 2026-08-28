@@ -5,9 +5,11 @@ import SaleTargetSelection from "../../components/admin/sales/SaleTargetSelectio
 import SaleTable from "../../components/admin/sales/SaleTable";
 import SaleDetailModal from "../../components/admin/sales/SaleDetailModal";
 import PageHeader from "../../components/admin/layout/PageHeader";
+import PageLoader from "../../components/common/PageLoader";
 
 export default function SaleManager() {
   const {
+    isLoading,
     sales,
     products,
     categories,
@@ -32,12 +34,16 @@ export default function SaleManager() {
   } = useSaleManager();
 
   return (
-    <div className="container mx-auto px-4 py-8 lg:px-8 max-w-7xl flex-1 font-sans">
+    <div className="container mx-auto px-4 py-8 lg:px-8 max-w-7xl flex-1 font-sans flex flex-col">
       <div className="flex justify-start mb-8">
         <PageHeader title="Sale Management" colorClass="bg-blue-500" />
       </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      {isLoading ? (
+        <PageLoader />
+      ) : (
+        <>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* Left Column: Form Settings (40%) */}
           <div className="lg:col-span-5">
             <SaleForm
@@ -81,6 +87,8 @@ export default function SaleManager() {
           detailModal={detailModal}
           onClose={() => setDetailModal({ ...detailModal, isOpen: false })}
         />
+        </>
+      )}
     </div>
   );
 }

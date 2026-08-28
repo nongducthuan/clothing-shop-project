@@ -1,5 +1,6 @@
 import React from "react";
 import { getImageUrl } from "../../../utils/imageUtils";
+import EmptyState from "../../common/EmptyState";
 
 export default function CategoryList({
   categories,
@@ -131,10 +132,11 @@ export default function CategoryList({
               {filteredCategories.length === 0 && (
                 <tr>
                   <td colSpan={4} className="p-12 text-center">
-                    <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-3">
-                      <i className="fa-solid fa-folder-open text-gray-300 text-2xl"></i>
-                    </div>
-                    <p className="text-gray-500 font-medium">No categories found in this section.</p>
+                    <EmptyState 
+                      title="No Categories Found"
+                      subtitle="No categories found in this section."
+                      icon="fa-folder-open"
+                    />
                   </td>
                 </tr>
               )}

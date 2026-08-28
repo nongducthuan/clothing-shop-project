@@ -1,10 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
 import API from "../../services/apiClient.js";
+import { useToast } from "../../context/ToastContext";
 
 /**
  * Custom hook to manage Banner business logic: fetching, uploading, saving, and deleting.
  */
 export function useBannerManager() {
+  const { showToast } = useToast();
   const token = localStorage.getItem("token");
 
   // State management
@@ -52,7 +54,7 @@ export function useBannerManager() {
       });
       setForm((prev) => ({ ...prev, imageUrl: res.data.url }));
     } catch (err) {
-      alert("Image upload failed");
+      showToast("Image upload failed", "error");
     } finally {
       setIsUploading(false);
     }
@@ -74,9 +76,9 @@ export function useBannerManager() {
 
       resetForm();
       fetchBanners();
-      alert("Banner saved successfully!");
+      showToast("Banner saved successfully!", "success");
     } catch (err) {
-      alert("Failed to save banner!");
+      showToast("Failed to save banner!", "error");
     }
   };
 
@@ -90,8 +92,9 @@ export function useBannerManager() {
         headers: { Authorization: `Bearer ${token}` },
       });
       fetchBanners();
+      showToast("Banner deleted.", "success");
     } catch (err) {
-      alert("Delete failed!");
+      showToast("Delete failed!", "error");
     }
   };
 

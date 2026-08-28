@@ -1,9 +1,9 @@
-import Toast from "../../components/customer/layout/Toast.jsx";
 import OrderTable from "../../components/admin/orders/OrderTable.jsx";
 import OrderCard from "../../components/admin/orders/OrderCard.jsx";
 import OrderDetailsModal from "../../components/admin/orders/OrderDetailsModal.jsx";
 import useOrderManager from "../../hooks/admin/useOrderManager";
 import useOrderFilters from "../../hooks/admin/useOrderFilters";
+import EmptyState from "../../components/common/EmptyState";
 
 // --- SUB-COMPONENTS ---
 const PageHeader = () => (
@@ -21,8 +21,6 @@ const PageHeader = () => (
 export default function OrderManager() {
   const {
     orders,
-    toast,
-    setToast,
     selectedOrder,
     setSelectedOrder,
     formatCurrency,
@@ -44,23 +42,18 @@ export default function OrderManager() {
   return (
     <div className="container mx-auto px-4 py-8 lg:px-8 max-w-7xl flex-1">
 
-      {/* Toast Notifications */}
-      {toast && <Toast {...toast} onClose={() => setToast(null)} />}
-
       <PageHeader />
 
       {/* Main Content Area */}
       <div className="bg-gray-50/80 p-4 md:p-8 rounded-[2rem] border border-gray-100 shadow-inner min-h-[500px]">
         {orders.length === 0 ? (
-          /* Global Empty State (Chỉ hiện khi DB hoàn toàn chưa có đơn hàng nào) */
-          <div className="flex flex-col items-center justify-center h-full text-center p-12 bg-white rounded-[2rem] border border-gray-100 shadow-sm">
-            <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-4 border border-gray-100 shadow-inner">
-              <i className="fa-solid fa-box-open text-gray-300 text-3xl"></i>
-            </div>
-            <h4 className="text-gray-800 font-bold text-lg mb-1">System is Empty</h4>
-            <p className="text-gray-500 text-sm max-w-sm">
-              There are no orders in the system yet. Wait for customers to make purchases.
-            </p>
+          /* Global Empty State */
+          <div className="flex items-center justify-center h-full min-h-[400px]">
+            <EmptyState 
+              title="System is Empty"
+              subtitle="There are no orders in the system yet. Wait for customers to make purchases."
+              icon="fa-box-open"
+            />
           </div>
         ) : (
           <>

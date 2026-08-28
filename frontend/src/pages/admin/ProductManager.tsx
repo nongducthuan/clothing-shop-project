@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import useProductManager from "../../hooks/admin/useProductManager";
 import ProductForm from "../../components/admin/products/ProductForm";
 import ProductList from "../../components/admin/products/ProductList";
-import Toast from "../../components/customer/layout/Toast";
 
 // --- SUB-COMPONENTS ---
 
@@ -49,15 +48,6 @@ export default function ProductManager() {
 
   return (
     <div className="container mx-auto px-4 py-8 lg:px-8 max-w-7xl flex-1">
-
-      {/* Toast Notification */}
-      {state.toast && (
-        <Toast
-          message={state.toast.message}
-          type={state.toast.type}
-          onClose={() => actions.setToast(null)}
-        />
-      )}
 
       {/* Header & Navigation */}
       <PageHeader

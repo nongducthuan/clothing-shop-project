@@ -83,7 +83,7 @@ export default function Register() {
             <div className="pt-6">
               <button
                 type="submit"
-                disabled={isLoading || success}
+                disabled={isLoading || !!success}
                 className="w-full py-4 bg-slate-900 text-white rounded-full font-medium text-base hover:bg-slate-800 transition-colors disabled:opacity-70 disabled:cursor-not-allowed shadow-md"
               >
                 {isLoading ? "Processing..." : "Sign Up"}

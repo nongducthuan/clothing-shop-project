@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import API from "../../services/apiClient";
+import { useToast } from "../../context/ToastContext";
 
 export default function usePromotionManager() {
+  const { showToast } = useToast();
   const initialFormState = {
     name: "",
     description: "",
@@ -70,7 +72,7 @@ export default function usePromotionManager() {
     e.preventDefault();
 
     if (!formData.buy_product_id || !formData.gift_product_id) {
-      alert("Please select both a Buy Product and a Gift Product.");
+      showToast("Please select both a Buy Product and a Gift Product.", "warning");
       return;
     }
 
@@ -82,17 +84,17 @@ export default function usePromotionManager() {
 
       if (editingId) {
         await API.put(`/admin/promotions/${editingId}`, payload);
-        alert("Promotion updated successfully!");
+        showToast("Promotion updated successfully!", "success");
       } else {
         await API.post("/admin/promotions", payload);
-        alert("Promotion created successfully!");
+        showToast("Promotion created successfully!", "success");
       }
 
       await fetchInitialData();
       handleResetForm();
     } catch (error) {
       console.error("Error saving promotion:", error);
-      alert("Failed to save promotion. Please check console.");
+      showToast("Failed to save promotion. Please check console.", "error");
     } finally {
       setIsLoading(false);
     }
@@ -118,9 +120,10 @@ export default function usePromotionManager() {
       await API.delete(`/admin/promotions/${id}`);
       setPromotions((prev) => prev.filter((p) => p.id !== id));
       if (editingId === id) handleResetForm();
+      showToast("Promotion deleted.", "success");
     } catch (error) {
       console.error("Error deleting promotion:", error);
-      alert("Failed to delete promotion.");
+      showToast("Failed to delete promotion.", "error");
     }
   };
 

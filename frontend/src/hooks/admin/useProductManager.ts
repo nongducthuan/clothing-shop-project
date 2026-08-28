@@ -1,11 +1,15 @@
-// @ts-nocheck
 import { useState, useEffect, useMemo, useCallback } from "react";
+import { useToast } from "../../context/ToastContext";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
+interface ApiOptions extends RequestInit {
+  headers?: Record<string, string>;
+}
+
 // Internal API Wrapper (Kept exact logic from original file)
 const API = {
-  get: async (endpoint, options = {}) => {
+  get: async (endpoint: string, options: ApiOptions = {}) => {
     const res = await fetch(`${API_URL}${endpoint}`, {
       ...options,
       method: "GET",
@@ -14,9 +18,9 @@ const API = {
     if (!res.ok) throw new Error("API Error");
     return { data: await res.json() };
   },
-  post: async (endpoint, body, options = {}) => {
+  post: async (endpoint: string, body: any, options: ApiOptions = {}) => {
     const isFormData = body instanceof FormData;
-    const headers = { ...options.headers };
+    const headers: Record<string, string> = { ...options.headers };
     if (!isFormData) headers["Content-Type"] = "application/json";
 
     const res = await fetch(`${API_URL}${endpoint}`, {
@@ -28,7 +32,7 @@ const API = {
     if (!res.ok) throw new Error("API Error");
     return { data: await res.json() };
   },
-  put: async (endpoint, body, options = {}) => {
+  put: async (endpoint: string, body: any, options: ApiOptions = {}) => {
     const res = await fetch(`${API_URL}${endpoint}`, {
       ...options,
       method: "PUT",
@@ -38,7 +42,7 @@ const API = {
     if (!res.ok) throw new Error("API Error");
     return { data: await res.json() };
   },
-  delete: async (endpoint, options = {}) => {
+  delete: async (endpoint: string, options: ApiOptions = {}) => {
     const res = await fetch(`${API_URL}${endpoint}`, {
       ...options,
       method: "DELETE",
@@ -51,12 +55,12 @@ const API = {
 
 export default function useProductManager() {
   const token = localStorage.getItem("token");
+  const { showToast } = useToast();
 
   // --- State ---
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [uploading, setUploading] = useState(false);
-  const [toast, setToast] = useState(null);
 
   const [filterGender, setFilterGender] = useState("all");
   const [filterCategory, setFilterCategory] = useState("all");
@@ -75,10 +79,6 @@ export default function useProductManager() {
   const [mobileFormOpen, setMobileFormOpen] = useState(false);
 
   // --- Helpers ---
-  const showToast = useCallback((message, type = "success") => {
-    setToast({ message, type });
-  }, []);
-
   const resetForm = useCallback(() => {
     setEditingId(null);
     setForm({ name: "", description: "", price: "", image_url: "", gender: "unisex", category_id: "" });
@@ -94,7 +94,7 @@ export default function useProductManager() {
       ]);
       setProducts(Array.isArray(prodRes.data) ? prodRes.data : []);
       setCategories(Array.isArray(catRes.data) ? catRes.data : catRes.data?.data || []);
-    } catch (err) {
+    } catch (err: unknown) {
       console.error("Data Load Error:", err);
       showToast("Failed to load data", "error");
     }
@@ -131,11 +131,15 @@ export default function useProductManager() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const cleanName = form.name.trim();
-    if (!cleanName || !form.price || !form.category_id) return showToast("Required fields missing", "error");
+    if (!cleanName || !form.price || !form.category_id) {
+      showToast("Required fields missing", "error");
+      return;
+    }
 
-    const categoryObj = categories.find((c) => String(c.id) === String(form.category_id));
+    const categoryObj = categories.find((c: { id: number | string; gender: string }) => String(c.id) === String(form.category_id));
     if (categoryObj && categoryObj.gender !== form.gender) {
-      return showToast("Gender mismatch with category!", "error");
+      showToast("Gender mismatch with category!", "error");
+      return;
     }
 
     const payload = { ...form, name: cleanName, description: form.description.trim() };
@@ -149,7 +153,7 @@ export default function useProductManager() {
       resetForm();
       window.dispatchEvent(new Event("categories-updated"));
       await fetchData();
-    } catch (err) {
+    } catch (err: unknown) {
       showToast("Save failed", "error");
     }
   };
@@ -172,7 +176,7 @@ export default function useProductManager() {
     if (!window.confirm("Delete this product?")) return;
     try {
       await API.delete(`/admin/products/${id}`, { headers: { Authorization: `Bearer ${token}` } });
-      setProducts((prev) => prev.filter((p) => p.id !== id));
+      setProducts((prev: { id: number }[]) => prev.filter((p) => p.id !== id));
       showToast("Product deleted");
     } catch {
       showToast("Delete failed", "error");
@@ -227,7 +231,6 @@ export default function useProductManager() {
       categories,
       uniqueCategoriesForFilter,
       uploading,
-      toast,
       filterGender,
       filterCategory,
       searchTerm,
@@ -236,7 +239,6 @@ export default function useProductManager() {
       mobileFormOpen
     },
     actions: {
-      setToast,
       setFilterGender,
       setFilterCategory,
       setSearchTerm,

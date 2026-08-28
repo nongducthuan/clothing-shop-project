@@ -11,7 +11,23 @@ const GENDER_CONFIG = {
 const formatCurrency = (amount) => Number(amount).toLocaleString("en-US") + " VND";
 
 
-export default function ProductCard({ product, promotion }) {
+interface ProductCardProps {
+  product: {
+    id: number | string;
+    name: string;
+    description?: string;
+    price: number;
+    sale_percent?: number;
+    gender?: 'male' | 'female' | 'unisex';
+    image_url?: string;
+  };
+  promotion?: {
+    buy_quantity: number;
+    gift_quantity: number;
+  } | null;
+}
+
+export default function ProductCard({ product, promotion }: ProductCardProps) {
   const navigate = useNavigate();
 
   const isSale = product.sale_percent > 0;

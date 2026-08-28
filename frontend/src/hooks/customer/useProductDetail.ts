@@ -1,9 +1,51 @@
-// @ts-nocheck
-import { useState, useEffect, useContext, useMemo } from "react";
+import { useState, useEffect, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { CartContext } from "../../context/CartContext.jsx";
 import API from "../../services/apiClient.js";
 import { getImageUrl, PLACEHOLDER_IMG } from "../../utils/imageUtils";
+
+// --- TYPE DEFINITIONS ---
+interface ProductSize {
+  id: number;
+  size: string;
+  stock: number;
+}
+
+interface ProductColor {
+  id: number;
+  color_name: string;
+  image_url: string;
+  sizes?: ProductSize[];
+}
+
+interface Product {
+  id: number;
+  name: string;
+  description?: string;
+  price: number;
+  image_url?: string;
+  category_id: number;
+  sale_percent?: number;
+  colors?: ProductColor[];
+}
+
+interface Voucher {
+  id: number;
+  code: string;
+  discount_percent: number;
+  [key: string]: unknown;
+}
+
+interface Promotion {
+  id: number;
+  buy_product_id: number;
+  gift_product_id: number;
+  buy_quantity: number;
+  gift_quantity: number;
+  [key: string]: unknown;
+}
+
+type AxiosError = { response?: { data?: { message?: string } }; message?: string };
 
 export function useProductDetail() {
   const { id } = useParams();
@@ -11,18 +53,19 @@ export function useProductDetail() {
   const { addToCart } = useContext(CartContext);
 
   // --- STATE ---
-  const [product, setProduct] = useState(null);
-  const [selectedColor, setSelectedColor] = useState(null);
-  const [selectedSize, setSelectedSize] = useState(null);
-  const [mainImage, setMainImage] = useState("");
-  const [quantity, setQuantity] = useState(1);
-  const [error, setError] = useState(null);
+  const [product, setProduct] = useState<Product | null>(null);
+  const [selectedColor, setSelectedColor] = useState<ProductColor | null>(null);
+  const [selectedSize, setSelectedSize] = useState<ProductSize | null>(null);
+  const [mainImage, setMainImage] = useState<string>("");
+  const [quantity, setQuantity] = useState<number>(1);
+  const [error, setError] = useState<string | null>(null);
 
-  const [activeVoucher, setActiveVoucher] = useState(null);
-  const [activePromotion, setActivePromotion] = useState(null);
-  const [giftProduct, setGiftProduct] = useState(null);
+  const [activeVoucher, setActiveVoucher] = useState<Voucher | null>(null);
+  const [activePromotion, setActivePromotion] = useState<Promotion | null>(null);
+  const [giftProduct, setGiftProduct] = useState<Product | null>(null);
 
-  const user = JSON.parse(localStorage.getItem("user"));
+  const userStr = localStorage.getItem("user");
+  const user = userStr ? (JSON.parse(userStr) as { id: number }) : null;
   const currentUserId = user ? user.id : null;
 
   // --- EFFECTS ---
@@ -42,20 +85,20 @@ export function useProductDetail() {
             setActiveVoucher(voucherList[0]);
           }
         })
-        .catch((err) => console.error("Voucher error:", err));
+        .catch((err: unknown) => console.error("Voucher error:", err));
     }
 
     API.get("/promotions")
-      .then((res) => {
-        const promoList = res.data?.data || res.data || [];
+      .then((res: { data: any }) => {
+        const promoList = (res.data?.data || res.data || []) as Promotion[];
         const matchedPromo = promoList.find(
-          (p) => String(p.buy_product_id) === String(product?.id)
+          (p: Promotion) => String(p.buy_product_id) === String(product?.id)
         );
 
         if (matchedPromo) {
           setActivePromotion(matchedPromo);
           API.get(`/products/${matchedPromo.gift_product_id}`)
-            .then((giftRes) => {
+            .then((giftRes: { data: any }) => {
               const gift = giftRes.data?.data || giftRes.data;
               setGiftProduct(gift);
             })
@@ -104,7 +147,7 @@ export function useProductDetail() {
           setMainImage(data.image_url);
         }
       })
-      .catch((err) => setError(err.message));
+      .catch((err: unknown) => setError((err as Error).message));
   }, [id, currentUserId]);
 
   // Handle Color Change
@@ -126,8 +169,8 @@ export function useProductDetail() {
   }, [selectedColor]);
 
   // --- DERIVED VARIABLES ---
-  const isSale = product?.sale_percent > 0;
-  const salePrice = isSale ? product.price * (1 - product.sale_percent / 100) : product?.price;
+  const isSale = (product?.sale_percent ?? 0) > 0;
+  const salePrice = isSale && product ? product.price * (1 - (product.sale_percent ?? 0) / 100) : product?.price ?? 0;
   const isVoucherValidForProduct = activeVoucher !== null && activeVoucher !== undefined;
   const isProductIncomplete = !product?.colors || product?.colors.length === 0;
   const currentStock = selectedSize ? selectedSize.stock : 0;

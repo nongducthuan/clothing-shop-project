@@ -1,4 +1,5 @@
 import React from "react";
+import EmptyState from "../../common/EmptyState";
 
 export default function SaleTable({ sales, onShowDetail, onDelete, onEdit }) {
   const formatDate = (dateString) => {
@@ -66,7 +67,13 @@ export default function SaleTable({ sales, onShowDetail, onDelete, onEdit }) {
               </tr>
             )) : (
               <tr>
-                <td colSpan={5} className="text-center py-12 text-gray-400 italic font-light">No active sales found.</td>
+                <td colSpan={5} className="py-12">
+                  <EmptyState 
+                    title="No Active Sales" 
+                    subtitle="There are no active sale campaigns right now."
+                    icon="fa-percent"
+                  />
+                </td>
               </tr>
             )}
           </tbody>

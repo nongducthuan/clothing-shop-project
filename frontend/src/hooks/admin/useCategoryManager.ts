@@ -1,11 +1,13 @@
 import { useState, useEffect, useCallback } from "react";
 import API from "../../services/apiClient";
+import { useToast } from "../../context/ToastContext";
 
 /**
  * Custom hook to manage category-related operations including fetching,
  * recommendations, and CRUD actions.
  */
 export function useCategoryManager() {
+  const { showToast } = useToast();
   const token = localStorage.getItem("token");
   const authConfig = { headers: { Authorization: `Bearer ${token}` } };
 
@@ -77,9 +79,9 @@ export function useCategoryManager() {
       await fetchCategories();
       // Sync other components if needed
       window.dispatchEvent(new Event("categories-updated"));
-      alert(`Category ${editingId ? "updated" : "added"} successfully!`);
+      showToast(`Category ${editingId ? "updated" : "added"} successfully!`, "success");
     } catch (err) {
-      alert(`Error: ${err.response?.data?.message || err.message}`);
+      showToast(`Error: ${err.response?.data?.message || err.message}`, "error");
     } finally {
       setLoading(false);
     }
@@ -119,9 +121,9 @@ export function useCategoryManager() {
     try {
       await API.delete(`/admin/categories/${id}`, authConfig);
       await fetchCategories();
-      alert("Category deleted successfully!");
+      showToast("Category deleted successfully!", "success");
     } catch (err) {
-      alert("Cannot delete category containing products.");
+      showToast("Cannot delete category containing products.", "error");
     }
   };
 

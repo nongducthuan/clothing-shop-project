@@ -1,17 +1,62 @@
-// @ts-nocheck
 import React, { useRef } from "react";
 
-export default function PromotionForm({ state, actions, helpers }) {
+interface PromotionFormData {
+  name: string;
+  description: string;
+  buy_product_id: number | string | null;
+  gift_product_id: number | string | null;
+  buy_quantity: number | string;
+  gift_quantity: number | string;
+  start_date: string;
+  end_date: string;
+  max_gift_per_order: number | string;
+  total_gift_limit: number | string;
+  priority: number | string;
+  is_stackable: boolean;
+}
+
+interface PromotionProduct {
+  id: number;
+  name: string;
+  category_id: number;
+  gender?: string;
+}
+
+interface PromotionFormProps {
+  state: {
+    formData: PromotionFormData;
+    isLoading: boolean;
+    editingId: number | null;
+    products: PromotionProduct[];
+    searchBuyTerm: string;
+    searchGetTerm: string;
+  };
+  actions: {
+    handleInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    handleSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
+    handleResetForm: () => void;
+    setSearchBuyTerm: (v: string) => void;
+    setSearchGetTerm: (v: string) => void;
+    setFormData: React.Dispatch<React.SetStateAction<any>>;
+  };
+  helpers: {
+    getCategoryName: (id: number) => string;
+    getProductStock: (p: PromotionProduct) => number;
+    getGenderStyle: (gender: string) => string;
+  };
+}
+
+export default function PromotionForm({ state, actions, helpers }: PromotionFormProps) {
   const { formData, isLoading, editingId, products, searchBuyTerm, searchGetTerm } = state;
   const { handleInputChange, handleSubmit, handleResetForm, setSearchBuyTerm, setSearchGetTerm, setFormData } = actions;
   const { getCategoryName, getProductStock, getGenderStyle } = helpers;
 
-  const startDateRef = useRef(null);
-  const endDateRef = useRef(null);
+  const startDateRef = useRef<HTMLInputElement>(null);
+  const endDateRef = useRef<HTMLInputElement>(null);
 
-  const handleWheel = (e) => e.target.blur();
+  const handleWheel = (e: React.WheelEvent<HTMLInputElement>) => (e.target as HTMLInputElement).blur();
 
-  const renderProductSelector = (type) => {
+  const renderProductSelector = (type: "buy" | "get") => {
     const isBuyType = type === "buy";
     const currentSearchTerm = isBuyType ? searchBuyTerm : searchGetTerm;
     const setSearch = isBuyType ? setSearchBuyTerm : setSearchGetTerm;
@@ -39,7 +84,7 @@ export default function PromotionForm({ state, actions, helpers }) {
             type="text"
             placeholder="Search product name, category..."
             className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-xs focus:ring-2 focus:ring-[color] focus:border-[color] transition-all outline-none"
-            style={{ "--tw-ring-color": isBuyType ? "#6366f1" : "#a855f7" }}
+            style={{ "--tw-ring-color": isBuyType ? "#6366f1" : "#a855f7" } as React.CSSProperties}
             value={currentSearchTerm}
             onChange={(e) => setSearch(e.target.value)}
           />

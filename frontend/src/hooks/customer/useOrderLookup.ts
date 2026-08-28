@@ -1,8 +1,11 @@
-// @ts-nocheck
 import { useState } from "react";
 import API from "../../services/apiClient";
+import { useToast } from "../../context/ToastContext";
+
+type AxiosErr = { response?: { data?: { message?: string } } };
 
 export function useOrderLookup() {
+  const { showToast } = useToast();
   const [step, setStep] = useState(1);
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
@@ -10,7 +13,14 @@ export function useOrderLookup() {
   const [loading, setLoading] = useState(false);
   const [expandedOrder, setExpandedOrder] = useState(null);
   const [selectedOrder, setSelectedOrder] = useState(null);
-  const [returnForm, setReturnForm] = useState({
+  const [returnForm, setReturnForm] = useState<{
+    reason_code: string;
+    description: string;
+    bank_name: string;
+    bank_acc: string;
+    bank_owner: string;
+    images?: File[];
+  }>({
     reason_code: "",
     description: "",
     bank_name: "",
@@ -21,21 +31,21 @@ export function useOrderLookup() {
   /**
    * Expands or collapses the item details for a specific order.
    */
-  const toggleOrder = (orderId) => {
+  const toggleOrder = (orderId: number | string) => {
     setExpandedOrder(expandedOrder === orderId ? null : orderId);
   };
 
   /**
    * Triggers the OTP sending process to the user's email.
    */
-  const handleSendOtp = async (e) => {
+  const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
       await API.post("/orders/send-otp", { email });
       setStep(2);
-    } catch (err) {
-      alert("Error sending OTP");
+    } catch (err: unknown) {
+      showToast("Error sending OTP", "error");
     } finally {
       setLoading(false);
     }
@@ -44,15 +54,15 @@ export function useOrderLookup() {
   /**
    * Verifies the OTP and retrieves the list of orders if valid.
    */
-  const handleVerifyOtp = async (e) => {
+  const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
       const res = await API.post("/orders/verify-otp", { email, code: otp });
       setOrders(res.data.orders);
       setStep(3);
-    } catch (err) {
-      alert("Incorrect or expired OTP code");
+    } catch (err: unknown) {
+      showToast("Incorrect or expired OTP code", "error");
     } finally {
       setLoading(false);
     }
@@ -61,15 +71,16 @@ export function useOrderLookup() {
   /**
    * Initiates repayment for pending MoMo orders.
    */
-  const handleRepay = async (order) => {
+  const handleRepay = async (order: { id: number | string }) => {
     setLoading(true);
     try {
       const res = await API.post(`/orders/${order.id}/repay`, { email });
       if (res.data.payUrl) {
         window.location.href = res.data.payUrl;
       }
-    } catch (err) {
-      alert(err.response?.data?.message || "Error initiating payment");
+    } catch (err: unknown) {
+      const axErr = err as AxiosErr;
+      showToast(axErr.response?.data?.message || "Error initiating payment", "error");
     } finally {
       setLoading(false);
     }
@@ -78,7 +89,7 @@ export function useOrderLookup() {
   /**
    * Opens the return form for a specific order.
    */
-  const openReturnForm = (order) => {
+  const openReturnForm = (order: { id: number | string }) => {
     setSelectedOrder(order);
     setStep(4);
   };
@@ -86,7 +97,7 @@ export function useOrderLookup() {
   /**
    * Submits the return request with attached images and bank info.
    */
-  const handleReturnSubmit = async (e) => {
+  const handleReturnSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
@@ -138,7 +149,7 @@ export function useOrderLookup() {
       );
 
       // 7. Reset form and show success message
-      alert("Return request submitted successfully!");
+      showToast("Return request submitted successfully!", "success");
       setStep(3); // Return to order list
       setSelectedOrder(null);
       setReturnForm({
@@ -150,9 +161,10 @@ export function useOrderLookup() {
         images: [] // Reset image array
       });
 
-    } catch (err) {
+    } catch (err: unknown) {
+      const axErr = err as AxiosErr;
       console.error("Error submitting return request:", err);
-      alert(err.response?.data?.message || "Error submitting return request");
+      showToast(axErr.response?.data?.message || "Error submitting return request", "error");
     } finally {
       setLoading(false);
     }
@@ -161,7 +173,7 @@ export function useOrderLookup() {
   /**
    * Formats a number into Vietnamese Dong currency format.
    */
-  const formatCurrency = (val) => Number(val).toLocaleString("vi-VN") + "đ";
+  const formatCurrency = (val: number | string) => Number(val).toLocaleString("vi-VN") + "đ";
 
   // Reset function to go back to the very beginning
   const resetLookup = () => {

@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { CartProvider } from "./context/CartContext.tsx";
 import { AuthProvider } from "./context/AuthContext.tsx";
 import { AIChatProvider } from "./context/AIChatContext.tsx";
+import { ToastProvider } from "./context/ToastContext.tsx";
 
 // Components
 import ProtectedRoute from "./components/auth/ProtectedRoute.tsx";
@@ -40,10 +41,11 @@ import PromotionManager from "./pages/admin/PromotionManager.tsx";
 
 function App() {
   return (
-    <AuthProvider>
-      <CartProvider>
-        <AIChatProvider>
-          <BrowserRouter>
+    <ToastProvider>
+      <AuthProvider>
+        <CartProvider>
+          <AIChatProvider>
+            <BrowserRouter>
             <div className="flex flex-col min-h-screen">
               <Navbar />
 
@@ -171,6 +173,7 @@ function App() {
         </AIChatProvider>
       </CartProvider>
     </AuthProvider>
+    </ToastProvider>
   );
 }
 

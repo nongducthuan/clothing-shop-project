@@ -5,9 +5,11 @@ import VoucherTargetSelection from "../../components/admin/vouchers/VoucherTarge
 import VoucherTable from "../../components/admin/vouchers/VoucherTable";
 import VoucherDetailModal from "../../components/admin/vouchers/VoucherDetailModal";
 import PageHeader from "../../components/admin/layout/PageHeader";
+import PageLoader from "../../components/common/PageLoader";
 
 export default function VoucherManager() {
   const {
+    isLoading,
     vouchers,
     products,
     categories,
@@ -32,12 +34,16 @@ export default function VoucherManager() {
   } = useVoucherManager();
 
   return (
-    <div className="container mx-auto px-4 py-8 lg:px-8 max-w-7xl flex-1 font-sans">
+    <div className="container mx-auto px-4 py-8 lg:px-8 max-w-7xl flex-1 font-sans flex flex-col">
       <div className="flex justify-start mb-8">
         <PageHeader title="Voucher Management" colorClass="bg-indigo-500" />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      {isLoading ? (
+        <PageLoader />
+      ) : (
+        <>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Left Column: Form Settings (40%) */}
         <div className="lg:col-span-5">
           <VoucherForm
@@ -81,6 +87,8 @@ export default function VoucherManager() {
         detailModal={detailModal}
         onClose={() => setDetailModal({ ...detailModal, isOpen: false })}
       />
+      </>
+      )}
     </div>
   );
 }

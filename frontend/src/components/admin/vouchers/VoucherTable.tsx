@@ -1,4 +1,5 @@
 import React from "react";
+import EmptyState from "../../common/EmptyState";
 
 export default function VoucherTable({ vouchers, onShowDetail, onDelete, onEdit }) {
   const formatDate = (dateString) => {
@@ -85,8 +86,12 @@ export default function VoucherTable({ vouchers, onShowDetail, onDelete, onEdit 
               ))
             ) : (
               <tr>
-                <td colSpan={6} className="text-center py-12 text-gray-400 italic font-light">
-                  Voucher list is currently empty.
+                <td colSpan={6} className="py-12">
+                  <EmptyState 
+                    title="No Vouchers Found"
+                    subtitle="There are currently no vouchers available in the system."
+                    icon="fa-ticket"
+                  />
                 </td>
               </tr>
             )}
