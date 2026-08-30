@@ -21,29 +21,64 @@ export default function MembershipInfoTab({ state, actions, helpers }) {
         </div>
 
         <div className="w-full mt-10 space-y-6 text-left">
+          {/* Update Profile (Phone) */}
           <div>
             <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-2 mb-2 block">
               Phone Number
             </label>
-            <input
-              type="text"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              className="w-full px-5 py-4 bg-white border border-slate-200 rounded-2xl focus:ring-2 focus:ring-slate-900 outline-none transition-all text-sm"
-              placeholder="Enter phone number"
-            />
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                className="w-full px-4 py-3.5 bg-white border border-slate-200 rounded-2xl focus:ring-2 focus:ring-slate-900 outline-none transition-all text-sm"
+                placeholder="Enter phone number"
+              />
+              <button 
+                onClick={actions.updateProfile}
+                className="px-6 py-3.5 bg-slate-900 text-white font-medium text-sm rounded-2xl hover:bg-slate-800 transition-colors shadow-sm whitespace-nowrap"
+              >
+                Update
+              </button>
+            </div>
           </div>
-          <button 
-            onClick={actions.updateProfile}
-            className="w-full py-4 bg-slate-900 text-white font-medium text-sm rounded-full hover:bg-slate-800 transition-colors shadow-sm"
-          >
-            Update Profile
-          </button>
+
+          <hr className="border-slate-100 my-6" />
+
+          {/* Change Password */}
+          <div>
+             <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-2 mb-4 block">
+              Change Password
+            </label>
+            <div className="space-y-3">
+              <input
+                type="password"
+                value={state.currentPassword}
+                onChange={(e) => actions.setCurrentPassword(e.target.value)}
+                className="w-full px-4 py-3.5 bg-white border border-slate-200 rounded-2xl focus:ring-2 focus:ring-slate-900 outline-none transition-all text-sm"
+                placeholder="Current Password"
+              />
+              <input
+                type="password"
+                value={state.newPassword}
+                onChange={(e) => actions.setNewPassword(e.target.value)}
+                className="w-full px-4 py-3.5 bg-white border border-slate-200 rounded-2xl focus:ring-2 focus:ring-slate-900 outline-none transition-all text-sm"
+                placeholder="New Password (min 6 chars)"
+              />
+              <button 
+                onClick={actions.changePassword}
+                disabled={state.isChangingPassword}
+                className="w-full py-4 mt-2 bg-slate-900 text-white font-medium text-sm rounded-2xl hover:bg-slate-800 transition-colors shadow-sm disabled:opacity-50"
+              >
+                {state.isChangingPassword ? "Changing..." : "Change Password"}
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Membership Tier Card */}
-      <div className="bg-slate-50 rounded-[2rem] p-8 sm:p-12 border border-slate-100 flex flex-col justify-between">
+      <div className="bg-slate-50 rounded-[2rem] p-8 sm:p-12 border border-slate-100 flex flex-col h-full">
         <div>
           <div className="flex justify-between items-start mb-8">
             <div>

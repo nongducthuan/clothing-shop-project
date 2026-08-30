@@ -109,7 +109,7 @@ export default function Report() {
               <Chart
                 chartType="ColumnChart"
                 width="100%" height="300px"
-                data={weeklyChartData}
+                data={weeklyChartData.length > 1 ? weeklyChartData : [["Day", "Revenue", "Profit"], ["No Data", 0, 0]]}
                 options={{
                   title: "Daily Performance Trends",
                   titleTextStyle: { color: '#334155', fontSize: 14, bold: true },
@@ -145,7 +145,7 @@ export default function Report() {
               <Chart
                 chartType="PieChart"
                 width="100%" height="250px"
-                data={statusPieData}
+                data={statusPieData.length > 1 ? statusPieData : [["Status", "Quantity"], ["No Data", 1]]}
                 options={{
                   colors: (orderStatus || []).map(r => STATUS_COLORS[r.status] || "#cbd5e1"),
                   pieHole: 0.5,
@@ -159,7 +159,7 @@ export default function Report() {
               <Chart
                 chartType="PieChart"
                 width="100%" height="250px"
-                data={returnApprovalData.length > 0 ? returnApprovalData : [["None", 1]]}
+                data={returnApprovalData.length > 1 ? returnApprovalData : [["Status", "Quantity"], ["No Data", 1]]}
                 options={{
                   colors: (returnStatuses || []).map(r => STATUS_COLORS[r.status] || "#fb923c"),
                   pieHole: 0.5,
@@ -173,7 +173,7 @@ export default function Report() {
               <Chart
                 chartType="PieChart"
                 width="100%" height="250px"
-                data={reasonData.length > 0 ? reasonData : [["None", 1]]}
+                data={reasonData.length > 1 ? reasonData : [["Reason", "Quantity"], ["No Data", 1]]}
                 options={{
                   colors: ["#94a3b8", "#ef4444", "#f59e0b", "#3b82f6"],
                   pieHole: 0.5,
@@ -189,7 +189,7 @@ export default function Report() {
             <Chart
               chartType="LineChart"
               width="100%" height="350px"
-              data={yearlyTrendData}
+              data={yearlyTrendData.length > 1 ? yearlyTrendData : [["Month", "Revenue", "Profit"], ["No Data", 0, 0]]}
               options={{
                 title: "12-Month Continuous Growth Trend",
                 titleTextStyle: { color: '#334155', fontSize: 16, bold: true },

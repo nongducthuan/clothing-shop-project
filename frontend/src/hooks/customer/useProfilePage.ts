@@ -71,16 +71,19 @@ export function useProfilePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, navigate]);
 
+  // Dùng ref hoặc state riêng để track việc đã fetch, tránh gọi liên tục nếu user chưa có đơn hàng nào
+  const [hasFetchedOrders, setHasFetchedOrders] = useState(false);
+
   useEffect(() => {
-    if (user && activeTab === "orders" && orders.length === 0) {
+    if (user && activeTab === "orders" && !hasFetchedOrders) {
       fetchOrders();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTab, user]);
+  }, [activeTab, user, hasFetchedOrders]);
 
   // --- Handlers & API Calls ---
   const fetchOrders = async () => {
     setLoadingOrders(true);
+    setHasFetchedOrders(true);
     try {
       const token = localStorage.getItem("token");
       const response = await API.get("/orders", {
@@ -180,15 +183,50 @@ export function useProfilePage() {
     }
   };
 
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+
+  const changePassword = async () => {
+    if (!currentPassword || !newPassword) {
+      showToast("Please enter both current and new password.", "warning");
+      return;
+    }
+    if (newPassword.length < 6) {
+      showToast("New password must be at least 6 characters.", "warning");
+      return;
+    }
+
+    setIsChangingPassword(true);
+    try {
+      const token = localStorage.getItem("token");
+      await API.put(
+        "/auth/password",
+        { currentPassword, newPassword },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      showToast("Password changed successfully!", "success");
+      setCurrentPassword("");
+      setNewPassword("");
+    } catch (error) {
+      console.error("Change password error:", error);
+      showToast(error.response?.data?.message || "Failed to change password.", "error");
+    } finally {
+      setIsChangingPassword(false);
+    }
+  };
+
   return {
     state: {
       user, tier, phone, activeTab, orders, loadingOrders, selectedOrder,
-      showReturnModal, returnOrderId, returnData, currentConfig, totalSpent, safeProgress
+      showReturnModal, returnOrderId, returnData, currentConfig, totalSpent, safeProgress,
+      currentPassword, newPassword, isChangingPassword
     },
     actions: {
       setActiveTab, setPhone, logout, setSelectedOrder,
       handleMoMoPayment, handleOpenReturnModal, setShowReturnModal,
-      handleSubmitReturn, handleReturnDataChange, updateProfile
+      handleSubmitReturn, handleReturnDataChange, updateProfile,
+      setCurrentPassword, setNewPassword, changePassword
     },
     helpers: {
       formatCurrency, getImgUrl

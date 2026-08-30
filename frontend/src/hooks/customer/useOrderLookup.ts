@@ -42,7 +42,7 @@ export function useOrderLookup() {
     e.preventDefault();
     setLoading(true);
     try {
-      await API.post("/orders/send-otp", { email });
+      await API.post("/orders/otp/send", { email });
       setStep(2);
     } catch (err: unknown) {
       showToast("Error sending OTP", "error");
@@ -58,7 +58,7 @@ export function useOrderLookup() {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await API.post("/orders/verify-otp", { email, code: otp });
+      const res = await API.post("/orders/otp/verify", { email, code: otp });
       setOrders(res.data.orders);
       setStep(3);
     } catch (err: unknown) {

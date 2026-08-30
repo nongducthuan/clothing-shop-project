@@ -41,7 +41,7 @@ export function useDashboardStats() {
   useEffect(() => {
     const fetchStats = async () => {
       const token = localStorage.getItem("token");
-      const headers = { Authorization: `Bearer ${token}` };
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
       try {
         // Fetch all required data concurrently
