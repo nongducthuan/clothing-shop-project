@@ -14,7 +14,7 @@ const PageHeader = ({ navigate, setMobileFormOpen, mobileFormOpen }) => (
   <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
     <div className="inline-flex items-center gap-3 px-6 py-2.5 bg-white border border-gray-100 rounded-full shadow-sm">
       <div className="w-2.5 h-2.5 rounded-full bg-violet-500 animate-pulse"></div>
-      <h2 className="font-bold uppercase text-gray-700 tracking-wider text-sm">
+      <h2 className="font-bold uppercase text-gray-700 tracking-wider text-sm m-0 leading-none">
         Product Management
       </h2>
     </div>

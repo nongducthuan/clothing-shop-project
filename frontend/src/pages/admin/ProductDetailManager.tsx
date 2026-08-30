@@ -45,7 +45,7 @@ export default function ProductDetailManager() {
         {/* Pill UI Title */}
         <div className="inline-flex items-center gap-3 bg-white px-6 py-3.5 rounded-full shadow-sm border border-gray-100 overflow-hidden">
           <div className="w-3 h-3 flex-shrink-0 bg-indigo-500 rounded-full animate-pulse"></div>
-          <h2 className="font-bold uppercase text-gray-700 tracking-wider text-sm">
+          <h2 className="font-bold uppercase text-gray-700 tracking-wider text-sm m-0 leading-none">
             Inventory: <span className="text-indigo-500">{product.name}</span>
           </h2>
         </div>

@@ -12,7 +12,7 @@ export default function OrderDetailsModal({ order, onClose, formatCurrency }) {
 
         {/* Header */}
         <div className="flex justify-between items-center p-6 border-b border-gray-100 bg-gray-50/50">
-          <h4 className="text-xl font-extrabold text-gray-800 flex items-center gap-3">
+          <h4 className="text-xl font-extrabold text-gray-800 flex items-center gap-3 m-0 leading-none">
             <div className="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm">
               <i className="fa-solid fa-receipt"></i>
             </div>
@@ -53,7 +53,7 @@ export default function OrderDetailsModal({ order, onClose, formatCurrency }) {
 const ReturnInfoSection = ({ order }) => {
   return (
     <div className="bg-orange-50/80 p-3 md:p-5 rounded-[1.5rem] border border-orange-100 text-sm shadow-inner">
-      <h5 className="font-bold text-orange-800 mb-4 uppercase text-xs tracking-wider flex items-center gap-2">
+      <h5 className="font-bold text-orange-800 mb-4 uppercase text-xs tracking-wider flex items-center gap-2 m-0 leading-none">
         <i className="fa-solid fa-rotate-left text-orange-500 text-base"></i> Return Request Details
       </h5>
 
@@ -107,7 +107,7 @@ const ReturnInfoSection = ({ order }) => {
 const DeliveryInfoSection = ({ order }) => {
   return (
     <div className="bg-blue-50/50 p-3 md:p-5 rounded-[1.5rem] border border-blue-100/50 text-sm">
-      <h5 className="font-bold text-blue-800 mb-4 uppercase text-xs tracking-wider flex items-center gap-2">
+      <h5 className="font-bold text-blue-800 mb-4 uppercase text-xs tracking-wider flex items-center gap-2 m-0 leading-none">
         <i className="fa-solid fa-truck-fast text-blue-500 text-base"></i> Delivery Details
       </h5>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-6 bg-white p-4 md:p-5 rounded-2xl border border-blue-50 shadow-sm">
@@ -147,7 +147,7 @@ const DeliveryInfoSection = ({ order }) => {
 const OrderItemsList = ({ items, formatCurrency }) => {
   return (
     <div>
-      <h5 className="font-bold text-gray-800 mb-4 text-xs uppercase tracking-wider flex items-center gap-2">
+      <h5 className="font-bold text-gray-800 mb-4 text-xs uppercase tracking-wider flex items-center gap-2 m-0 leading-none">
         <i className="fa-solid fa-basket-shopping text-gray-400 text-base"></i> Ordered Products ({items?.length || 0})
       </h5>
       <div className="space-y-3">

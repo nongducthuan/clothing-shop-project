@@ -156,7 +156,7 @@ export default function PromotionForm({ state, actions, helpers }: PromotionForm
 
       <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
         <div className="bg-gradient-to-r from-indigo-500 to-purple-500 p-6 px-8 flex justify-between items-center">
-          <h2 className="text-xl font-bold text-white flex items-center gap-2">
+          <h2 className="text-xl font-bold text-white flex items-center gap-2 m-0 leading-none">
             <i className="fa-solid fa-gift text-indigo-100"></i>
             {editingId ? "Update Promotion" : "Create New Promotion"}
           </h2>
@@ -196,7 +196,7 @@ export default function PromotionForm({ state, actions, helpers }: PromotionForm
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="p-6 bg-indigo-50/50 rounded-3xl border border-indigo-100">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-base font-bold text-indigo-800 flex items-center gap-2">
+                <h3 className="text-base font-bold text-indigo-800 flex items-center gap-2 m-0 leading-none">
                   <span className="bg-indigo-200 text-indigo-800 w-6 h-6 rounded-full flex items-center justify-center text-xs">1</span>
                   Customer Buys
                 </h3>
@@ -219,7 +219,7 @@ export default function PromotionForm({ state, actions, helpers }: PromotionForm
 
             <div className="p-6 bg-purple-50/50 rounded-3xl border border-purple-100">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-base font-bold text-purple-800 flex items-center gap-2">
+                <h3 className="text-base font-bold text-purple-800 flex items-center gap-2 m-0 leading-none">
                   <span className="bg-purple-200 text-purple-800 w-6 h-6 rounded-full flex items-center justify-center text-xs">2</span>
                   Customer Gets (Gift)
                 </h3>

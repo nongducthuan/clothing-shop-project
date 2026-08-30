@@ -27,7 +27,7 @@ export default function ColorSection({
 
       {/* Đổi h-[800px] thành h-fit để tránh khoảng trắng thừa */}
       <div className="lg:col-span-4 bg-white p-6 md:p-8 shadow-sm rounded-[2rem] border border-gray-100 flex flex-col h-fit">
-        <h4 className="font-extrabold text-lg text-slate-800 mb-6 flex items-center gap-3">
+        <h4 className="font-extrabold text-lg text-slate-800 mb-6 flex items-center gap-3 m-0 leading-none">
           <div className="w-8 h-8 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center text-sm">
             1
           </div>
@@ -94,7 +94,7 @@ export default function ColorSection({
 
         {/* Add New Color Form */}
         <div className="bg-slate-50 p-5 rounded-[1.5rem] border border-gray-100">
-          <h5 className="font-bold text-xs uppercase tracking-widest text-slate-500 mb-4 flex items-center gap-2">
+          <h5 className="font-bold text-xs uppercase tracking-widest text-slate-500 mb-4 flex items-center gap-2 m-0 leading-none">
             <i className="fa-solid fa-plus-circle text-indigo-400"></i> Add Variant
           </h5>
 

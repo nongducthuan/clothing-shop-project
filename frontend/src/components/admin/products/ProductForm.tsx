@@ -32,7 +32,7 @@ export default function ProductForm({
 
       <div className={`lg:col-span-4 ${mobileFormOpen ? "block" : "hidden lg:block"}`}>
         <div className="bg-white p-6 md:p-8 rounded-[2rem] border border-gray-100 shadow-sm lg:sticky lg:top-24 transition-all duration-300">
-          <h3 className="text-xl font-extrabold mb-6 text-gray-800 flex items-center gap-3">
+          <h3 className="text-xl font-extrabold mb-6 text-gray-800 flex items-center gap-3 m-0 leading-none">
             {editingId ? (
               <><i className="fa-solid fa-pen-to-square text-violet-500"></i> Edit Product</>
             ) : (

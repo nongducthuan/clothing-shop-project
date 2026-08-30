@@ -56,7 +56,7 @@ export default function Cart() {
             {/* FREE GIFTS SECTION */}
             {state.earnedGifts.length > 0 && (
               <div className="mt-16 pt-8">
-                <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-6 flex items-center gap-3">
+                <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-6 flex items-center gap-3 m-0 leading-none">
                   <i className="fa-solid fa-gift text-slate-400"></i>
                   Complimentary Gifts
                 </h3>

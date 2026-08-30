@@ -34,7 +34,7 @@ export default function SizeSection({
       <div className="lg:col-span-8 bg-white p-5 md:p-8 shadow-sm rounded-[2rem] border border-gray-100 flex flex-col h-fit">
 
         {/* Header Title */}
-        <h4 className="font-extrabold text-base md:text-lg text-slate-800 flex items-center gap-3 pb-3 border-b border-gray-50">
+        <h4 className="font-extrabold text-base md:text-lg text-slate-800 flex items-center gap-3 pb-3 border-b border-gray-50 m-0 leading-none">
           <div className="w-8 h-8 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center text-sm flex-shrink-0">
             2
           </div>
@@ -108,7 +108,7 @@ export default function SizeSection({
 
         {/* Add Size Form */}
         <div className="bg-slate-50 p-4 md:p-5 rounded-[1.5rem] border border-gray-200 shadow-sm mt-auto">
-          <h5 className="font-bold text-xs uppercase tracking-widest text-slate-500 mb-3 flex items-center gap-2">
+          <h5 className="font-bold text-xs uppercase tracking-widest text-slate-500 mb-3 flex items-center gap-2 m-0 leading-none">
             <i className="fa-solid fa-layer-group text-indigo-400"></i> Add Stock Inventory
           </h5>
           <div className="flex flex-col sm:flex-row gap-3 items-end">

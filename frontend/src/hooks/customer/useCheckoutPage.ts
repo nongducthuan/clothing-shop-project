@@ -12,20 +12,21 @@ const useGeolocation = () => {
 
   const getAddressFromCoords = async (lat, lon) => {
     try {
-      const token = import.meta.env.VITE_LOCATIONIQ_TOKEN;
       const response = await fetch(
-        `https://us1.locationiq.com/v1/reverse.php?key=${token}&lat=${lat}&lon=${lon}&format=json&accept-language=en`
+        `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=vi`,
+        { headers: { "Accept-Language": "vi", "User-Agent": "ClothingShopApp/1.0" } }
       );
 
-      if (response.status === 429) throw new Error("Too many requests");
+      if (response.status === 429) throw new Error("Too many requests. Please try again later.");
       if (!response.ok) throw new Error("Location API Error");
 
       const data = await response.json();
       const addr = data.address || {};
       const parts = [
-        addr.suburb || addr.quarter || addr.village,
+        addr.house_number && addr.road ? `${addr.house_number} ${addr.road}` : addr.road,
+        addr.suburb || addr.quarter || addr.village || addr.neighbourhood,
         addr.district || addr.county || addr.city_district,
-        addr.city || addr.state || addr.province,
+        addr.city || addr.town || addr.state || addr.province,
       ];
 
       return parts.filter(Boolean).join(", ");

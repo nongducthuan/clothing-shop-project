@@ -15,7 +15,7 @@ const PageHeader = ({ navigate }) => (
     {/* Pill Badge Title */}
     <div className="inline-flex items-center gap-3 px-6 py-2.5 bg-white border border-gray-100 rounded-full shadow-sm">
       <div className="w-2.5 h-2.5 rounded-full bg-fuchsia-500 animate-pulse"></div>
-      <h2 className="font-bold uppercase text-gray-700 tracking-wider text-sm">
+      <h2 className="font-bold uppercase text-gray-700 tracking-wider text-sm m-0 leading-none">
         Category Management
       </h2>
     </div>

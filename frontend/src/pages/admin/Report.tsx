@@ -76,7 +76,7 @@ export default function Report() {
           <section>
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-50 rounded-full mb-6 border border-indigo-100">
               <i className="fa-solid fa-calendar-week text-indigo-500 text-xs"></i>
-              <h3 className="text-[10px] font-black text-indigo-800 uppercase tracking-widest">7-Day Overview</h3>
+              <h3 className="text-[10px] font-black text-indigo-800 uppercase tracking-widest m-0 leading-none">7-Day Overview</h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <StatCard title="Orders" value={summary?.weeklyOrders ?? 0} color="text-indigo-600" />
@@ -89,7 +89,7 @@ export default function Report() {
           <section>
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-purple-50 rounded-full mb-6 border border-purple-100">
               <i className="fa-solid fa-calendar-days text-purple-500 text-xs"></i>
-              <h3 className="text-[10px] font-black text-purple-800 uppercase tracking-widest">30-Day Overview</h3>
+              <h3 className="text-[10px] font-black text-purple-800 uppercase tracking-widest m-0 leading-none">30-Day Overview</h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <StatCard title="Orders" value={summary?.monthlyOrders ?? 0} color="text-emerald-600" />
@@ -122,26 +122,24 @@ export default function Report() {
               />
             </div>
 
-            <div className="bg-white p-6 md:p-8 shadow-sm rounded-[2rem] border border-gray-100 flex flex-col justify-center overflow-hidden">
+            <ChartCard title="Revenue by Category">
               <Chart
                 chartType="PieChart"
                 width="100%" height="300px"
                 data={categoryRevenueData.length > 1 ? categoryRevenueData : [["N/A", "N/A"], ["No Data", 1]]}
                 options={{
-                  title: "Revenue by Category",
-                  titleTextStyle: { color: '#334155', fontSize: 14, bold: true },
                   pieHole: 0.4,
                   colors: ["#8b5cf6", "#ec4899", "#3b82f6", "#10b981", "#f59e0b"],
                   legend: { position: "bottom", textStyle: { color: '#64748b' } },
                   chartArea: { width: '90%', height: '75%' }
                 }}
               />
-            </div>
+            </ChartCard>
           </div>
 
           {/* Hàng 2: Order Status & Return Status & Return Reason */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <ChartCard title="📦 Order Lifecycle">
+            <ChartCard title="Order Lifecycle">
               <Chart
                 chartType="PieChart"
                 width="100%" height="250px"
@@ -155,7 +153,7 @@ export default function Report() {
               />
             </ChartCard>
 
-            <ChartCard title="⚖️ Return Approval">
+            <ChartCard title="Return Approval">
               <Chart
                 chartType="PieChart"
                 width="100%" height="250px"
@@ -169,7 +167,7 @@ export default function Report() {
               />
             </ChartCard>
 
-            <ChartCard title="⚠️ Return Reasons">
+            <ChartCard title="Return Reasons">
               <Chart
                 chartType="PieChart"
                 width="100%" height="250px"

@@ -27,6 +27,22 @@ async function main() {
   console.log('Bắt đầu seed...');
 
   // ============================================================
+  // 0. CLEANUP — xoá dữ liệu cũ theo thứ tự phụ thuộc ngược
+  // ============================================================
+  await prisma.userProductInteraction.deleteMany();
+  await prisma.returnRequest.deleteMany();
+  await prisma.orderItem.deleteMany();
+  await prisma.order.deleteMany();
+  await prisma.productSize.deleteMany();
+  await prisma.productColor.deleteMany();
+  await prisma.product.deleteMany();
+  await prisma.category.deleteMany();
+  await prisma.banner.deleteMany();
+  await prisma.user.deleteMany();
+  await prisma.membership.deleteMany();
+  console.log('✔ Cleaned up existing data');
+
+  // ============================================================
   // 1. MEMBERSHIPS
   // ============================================================
   await prisma.membership.createMany({

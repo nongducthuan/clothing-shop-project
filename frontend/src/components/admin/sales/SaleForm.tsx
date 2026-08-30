@@ -18,7 +18,7 @@ export default function SaleForm({ formData, setFormData, onSubmit, editingId, o
 
       <div className="bg-white rounded-3xl shadow-xl shadow-gray-200/50 border border-gray-100 h-full flex flex-col overflow-hidden">
         <div className="bg-gradient-to-r from-blue-500 to-indigo-600 p-4 shrink-0 flex justify-between items-center">
-          <h2 className="text-sm font-bold text-white flex items-center gap-2 uppercase tracking-wider">
+          <h2 className="text-sm font-bold text-white flex items-center gap-2 uppercase tracking-wider m-0 leading-none">
             <i className="fa-solid fa-tags text-blue-100"></i>
             {editingId ? "Edit Sale" : "Sale Details"}
           </h2>

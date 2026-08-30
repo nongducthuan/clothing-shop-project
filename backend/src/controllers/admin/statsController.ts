@@ -30,25 +30,30 @@ export const getAdminStats = async (req: Request, res: Response): Promise<void> 
 
         const revenue7DaysSql = `
             SELECT 
-                DATE(o.created_at) AS full_date,
-                CASE DAYOFWEEK(o.created_at)
-                    WHEN 1 THEN CONCAT('CN (', DATE_FORMAT(o.created_at, '%d/%m'), ')') 
-                    WHEN 2 THEN CONCAT('T2 (', DATE_FORMAT(o.created_at, '%d/%m'), ')') 
-                    WHEN 3 THEN CONCAT('T3 (', DATE_FORMAT(o.created_at, '%d/%m'), ')')
-                    WHEN 4 THEN CONCAT('T4 (', DATE_FORMAT(o.created_at, '%d/%m'), ')')
-                    WHEN 5 THEN CONCAT('T5 (', DATE_FORMAT(o.created_at, '%d/%m'), ')')
-                    WHEN 6 THEN CONCAT('T6 (', DATE_FORMAT(o.created_at, '%d/%m'), ')')
-                    WHEN 7 THEN CONCAT('T7 (', DATE_FORMAT(o.created_at, '%d/%m'), ')')
+                d.full_date,
+                CASE DAYOFWEEK(d.full_date)
+                    WHEN 1 THEN CONCAT('CN (', DATE_FORMAT(d.full_date, '%d/%m'), ')') 
+                    WHEN 2 THEN CONCAT('T2 (', DATE_FORMAT(d.full_date, '%d/%m'), ')') 
+                    WHEN 3 THEN CONCAT('T3 (', DATE_FORMAT(d.full_date, '%d/%m'), ')')
+                    WHEN 4 THEN CONCAT('T4 (', DATE_FORMAT(d.full_date, '%d/%m'), ')')
+                    WHEN 5 THEN CONCAT('T5 (', DATE_FORMAT(d.full_date, '%d/%m'), ')')
+                    WHEN 6 THEN CONCAT('T6 (', DATE_FORMAT(d.full_date, '%d/%m'), ')')
+                    WHEN 7 THEN CONCAT('T7 (', DATE_FORMAT(d.full_date, '%d/%m'), ')')
                 END AS day,
-                SUM(oi.quantity * oi.price) AS revenue,
-                SUM(oi.quantity * (oi.price - p.import_price)) AS profit
-            FROM orders o
-            JOIN order_items oi ON o.id = oi.order_id
-            JOIN products p ON oi.product_id = p.id
-            WHERE o.created_at BETWEEN DATE_SUB(CURDATE(), INTERVAL 6 DAY) AND NOW()
-              AND o.status = 'Delivered'
-            GROUP BY full_date, day
-            ORDER BY full_date ASC
+                IFNULL(SUM(oi.quantity * oi.price), 0) AS revenue,
+                IFNULL(SUM(oi.quantity * (oi.price - p.import_price)), 0) AS profit
+            FROM (
+                SELECT DATE_SUB(CURDATE(), INTERVAL seq DAY) AS full_date
+                FROM (
+                    SELECT 0 AS seq UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 
+                    UNION SELECT 4 UNION SELECT 5 UNION SELECT 6
+                ) AS sequences
+            ) AS d
+            LEFT JOIN orders o ON DATE(o.created_at) = d.full_date AND o.status = 'Delivered'
+            LEFT JOIN order_items oi ON o.id = oi.order_id
+            LEFT JOIN products p ON oi.product_id = p.id
+            GROUP BY d.full_date, day
+            ORDER BY d.full_date ASC
         `;
         const revenue7Days: any[] = await prisma.$queryRawUnsafe(revenue7DaysSql);
 

@@ -14,7 +14,7 @@ export default function CategoryForm({
 }) {
   return (
     <div className="flex flex-col h-full">
-      <h3 className="text-xl font-extrabold mb-6 text-gray-800 flex items-center gap-3">
+      <h3 className="text-xl font-extrabold mb-6 text-gray-800 flex items-center gap-3 m-0 leading-none">
         {editingId ? (
           <><i className="fa-solid fa-pen-to-square text-violet-500"></i> Edit Category</>
         ) : (

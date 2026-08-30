@@ -42,7 +42,7 @@ export default function OrderTable({
 
         {/* TABS */}
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-          <h3 className="font-extrabold text-gray-800 text-xl flex items-center gap-3">
+          <h3 className="font-extrabold text-gray-800 text-xl flex items-center gap-3 m-0 leading-none">
             <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center">
               <i className="fa-solid fa-table-list"></i>
             </div>
@@ -212,7 +212,7 @@ export default function OrderTable({
                               <div className="bg-white p-6 md:p-8 rounded-[2rem] shadow-sm border border-gray-100 flex flex-col gap-8">
 
                                 {/* Header Details */}
-                                <h4 className="text-xl font-extrabold text-gray-800 flex items-center gap-3 border-b border-gray-50 pb-4">
+                                <h4 className="text-xl font-extrabold text-gray-800 flex items-center gap-3 border-b border-gray-50 pb-4 m-0 leading-none">
                                   <div className="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm">
                                     <i className="fa-solid fa-receipt"></i>
                                   </div>
@@ -262,7 +262,7 @@ export default function OrderTable({
 const ReturnInfoSection = ({ order }) => {
   return (
     <div className="bg-orange-50/80 p-6 rounded-[1.5rem] border border-orange-100 text-sm shadow-inner">
-      <h5 className="font-bold text-orange-800 mb-5 uppercase text-xs tracking-wider flex items-center gap-2">
+      <h5 className="font-bold text-orange-800 mb-5 uppercase text-xs tracking-wider flex items-center gap-2 m-0 leading-none">
         <i className="fa-solid fa-rotate-left text-orange-500 text-base"></i> Return Request Details
       </h5>
 
@@ -321,7 +321,7 @@ const ReturnInfoSection = ({ order }) => {
 const DeliveryInfoSection = ({ order }) => {
   return (
     <div className="bg-blue-50/50 p-6 rounded-[1.5rem] border border-blue-100/50 text-sm h-full flex flex-col">
-      <h5 className="font-bold text-blue-800 mb-5 uppercase text-xs tracking-wider flex items-center gap-2">
+      <h5 className="font-bold text-blue-800 mb-5 uppercase text-xs tracking-wider flex items-center gap-2 m-0 leading-none">
         <i className="fa-solid fa-truck-fast text-blue-500 text-base"></i> Delivery Details
       </h5>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-5 gap-x-6 bg-white p-6 rounded-2xl border border-blue-50 shadow-sm flex-1">
@@ -361,7 +361,7 @@ const DeliveryInfoSection = ({ order }) => {
 const OrderItemsList = ({ items, formatCurrency }) => {
   return (
     <div className="bg-gray-50/50 p-6 rounded-[1.5rem] border border-gray-100 h-full flex flex-col">
-      <h5 className="font-bold text-gray-800 mb-5 text-xs uppercase tracking-wider flex items-center gap-2">
+      <h5 className="font-bold text-gray-800 mb-5 text-xs uppercase tracking-wider flex items-center gap-2 m-0 leading-none">
         <i className="fa-solid fa-basket-shopping text-gray-400 text-base"></i> Ordered Products ({items?.length || 0})
       </h5>
       <div className="space-y-3 flex-1 overflow-y-auto custom-scrollbar pr-2 max-h-[350px]">

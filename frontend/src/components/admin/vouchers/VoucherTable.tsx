@@ -10,7 +10,7 @@ export default function VoucherTable({ vouchers, onShowDetail, onDelete, onEdit 
 
   return (
     <div className="mt-8 bg-white rounded-3xl shadow-sm p-6 border border-gray-100">
-      <h3 className="text-lg font-bold mb-4 text-gray-800 flex items-center gap-2">
+      <h3 className="text-lg font-bold mb-4 text-gray-800 flex items-center gap-2 m-0 leading-none">
         <div className="w-2 h-6 bg-indigo-600 rounded-full"></div>
         Voucher Inventory
       </h3>
