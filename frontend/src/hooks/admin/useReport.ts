@@ -29,7 +29,8 @@ export function useReport() {
   }
 
   // Lấy dữ liệu từ Backend
-  const summary = stats.summary || stats || {};
+  // Backend trả summary fields trực tiếp trong stats (không phải stats.summary)
+  const summary = stats;
   const { revenue7Days, orderStatus, revenueMonths, categoryStats, returnStatuses, returnReasons } = stats;
 
   // Xử lý dữ liệu cho các biểu đồ
@@ -42,7 +43,7 @@ export function useReport() {
     ["Status", "Quantity"],
     ...(orderStatus || [])
       .filter(r => ["Pending", "Confirmed", "Shipping", "Delivered", "Cancelled"].includes(r.status))
-      .map(r => [r.status, r.quantity])
+      .map(r => [r.status, Number(r.quantity)])
   ];
 
   const yearlyTrendData = [
@@ -57,7 +58,7 @@ export function useReport() {
 
   const returnApprovalData = [
     ["Status", "Quantity"],
-    ...(returnStatuses || []).map(r => [r.status, r.quantity])
+    ...(returnStatuses || []).map(r => [r.status, Number(r.quantity)])
   ];
 
   const reasonData = [

@@ -162,6 +162,7 @@ export const getMe = async (req: Request, res: Response): Promise<void> => {
         name: true,
         email: true,
         phone: true,
+        role: true,
         total_spent: true,
         membership_id: true,
         membership: {

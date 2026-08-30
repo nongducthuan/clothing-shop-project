@@ -35,7 +35,7 @@ export function useDashboardStats() {
     banners: 0,
     activeSales: 0,
     activeVouchers: 0,
-    activePromotion: 0,
+    activePromotions: 0,
   });
 
   useEffect(() => {
@@ -83,7 +83,7 @@ export function useDashboardStats() {
           banners: banners.length,
           activeSales: activeSalesCount,
           activeVouchers: activeVouchersCount,
-          activePromotion: activePromotionsCount,
+          activePromotions: activePromotionsCount,
         });
       } catch (error: unknown) {
         console.error("Failed to fetch dashboard stats", error);
