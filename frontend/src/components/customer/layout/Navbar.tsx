@@ -408,9 +408,9 @@ export default function Navbar() {
   return (
     <>
       <nav className="bg-white/95 backdrop-blur-md shadow-xs border-b border-gray-100 fixed top-0 left-0 right-0 z-50 h-16">
-        <div className="container mx-auto px-4 flex gap-4 lg:gap-8 justify-between items-center h-full">
+        <div className="container mx-auto px-4 flex gap-4 lg:gap-8 items-center h-full">
           {/* Logo */}
-          <div className="flex-shrink-0">
+          <div className="flex-1">
             <NavLink
               to="/"
               className="font-black text-violet-700 tracking-tighter text-xl md:text-2xl whitespace-nowrap drop-shadow-xs no-underline"
@@ -423,7 +423,7 @@ export default function Navbar() {
           <DesktopNav menuData={menuData} navigate={navigate} />
 
           {/* Icons & Actions */}
-          <div className="flex items-center gap-4 sm:gap-5">
+          <div className="flex-1 flex items-center justify-end gap-4 sm:gap-5">
             {/* Policy Icon */}
             <div
               className="cursor-pointer relative group hidden sm:block p-1.5"

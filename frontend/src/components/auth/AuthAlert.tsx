@@ -10,8 +10,8 @@ export default function AuthAlert({ type = "error", message }) {
 
   return (
     <div className={`flex items-center gap-3 p-4 mb-6 border rounded-2xl animate-in fade-in duration-300 ${bgClass}`}>
-      <i className={`fa-solid ${iconClass} ${textClass} text-lg`}></i>
-      <p className={`text-sm font-medium ${textClass}`}>{message}</p>
+      <i className={`fa-solid ${iconClass} ${textClass} text-lg flex-shrink-0`}></i>
+      <p className={`text-sm font-medium ${textClass} m-0 leading-snug`}>{message}</p>
     </div>
   );
 }
