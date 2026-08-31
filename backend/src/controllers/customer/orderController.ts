@@ -36,7 +36,11 @@ export const sendOtpController = async (req: Request, res: Response): Promise<vo
             });
         });
 
-        sendEmail(email, "Your OTP Code", `Your verification code is: ${code}`);
+        const emailResult = await sendEmail(email, "Your OTP Code", `Your verification code is: ${code}`);
+        if (!emailResult.success) {
+            res.status(500).json({ message: "Failed to send OTP email: " + emailResult.error });
+            return;
+        }
         res.json({ message: "OTP sent to your email successfully" });
     } catch (err) {
         console.error("Send OTP Error:", err);
