@@ -54,7 +54,13 @@ const useGeolocation = () => {
         // Fallback to IP Geolocation if GPS is denied
         try {
           const ipRes = await fetch("https://ipapi.co/json/");
+          if (!ipRes.ok) {
+            throw new Error("IP Geolocation service failed");
+          }
           const ipData = await ipRes.json();
+          if (!ipData || typeof ipData.latitude !== "number" || typeof ipData.longitude !== "number") {
+            throw new Error("Invalid IP Geolocation data");
+          }
           const address = await getAddressFromCoords(ipData.latitude, ipData.longitude);
           onSuccess(address);
         } catch {
