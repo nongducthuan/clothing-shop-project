@@ -29,6 +29,23 @@ export function authenticateToken(req: Request, res: Response, next: NextFunctio
   });
 }
 
+export function optionalAuthenticateToken(req: Request, res: Response, next: NextFunction): void {
+  const SECRET = process.env.JWT_SECRET as string;
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+  
+  if (!token || token === 'null') {
+    return next();
+  }
+
+  jwt.verify(token, SECRET, (err, decoded) => {
+    if (!err && decoded) {
+      req.user = decoded as JwtPayload;
+    }
+    next();
+  });
+}
+
 export function requireAdmin(req: Request, res: Response, next: NextFunction): void {
   if (req.user?.role !== 'admin') {
     res.status(403).json({ message: 'Admin only' });

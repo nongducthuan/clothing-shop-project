@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { authenticateToken } from '../../middleware/authMiddleware';
+import { authenticateToken, optionalAuthenticateToken } from '../../middleware/authMiddleware';
 
 // Import customer Controllers
 import * as authController from '../../controllers/customer/authController';
@@ -43,7 +43,7 @@ router.get('/memberships', membershipController.getMemberships);
 // --- Orders ---
 router.post('/orders/otp/send', orderController.sendOtpController);
 router.post('/orders/otp/verify', orderController.verifyOtpAndGetOrders);
-router.post('/orders', orderController.createOrderController); // Note: might use req.user if auth token present
+router.post('/orders', optionalAuthenticateToken, orderController.createOrderController); // Note: might use req.user if auth token present
 router.get('/orders', authenticateToken, orderController.getOrders);
 router.put('/orders/status', authenticateToken, orderController.changeOrderStatus);
 router.post('/orders/:id/repay', orderController.repayMoMoController);
