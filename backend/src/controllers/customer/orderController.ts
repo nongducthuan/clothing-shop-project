@@ -146,7 +146,7 @@ async function getMomoPayUrl(orderId: string, amountInput: number | string, orde
     const requestId = `${orderId}_${Date.now()}`;
     const momoOrderId = requestId;
     const redirectUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/profile`;
-    const ipnUrl = `${process.env.NGROK_URL}/orders/momo-callback`;
+    const ipnUrl = `${process.env.BACKEND_URL}/orders/momo-callback`;
     const requestType = "payWithATM";
     const extraData = "";
 
@@ -433,6 +433,7 @@ export const getOrders = async (req: Request, res: Response): Promise<void> => {
             where: { user_id: userId },
             orderBy: { created_at: 'desc' },
             include: {
+                return_request: { select: { id: true, status: true } },
                 items: {
                     include: {
                         product: { select: { name: true, image_url: true } },
@@ -444,13 +445,27 @@ export const getOrders = async (req: Request, res: Response): Promise<void> => {
         });
 
         const formattedOrders = orders.map(order => ({
-            ...order,
+            id: order.id,
+            name: order.name,
+            email: order.email,
+            phone: order.phone,
+            address: order.address,
+            total_price: Number(order.total_price),
+            status: order.status,
+            payment_method: order.payment_method,
+            payment_status: order.payment_status,
+            created_at: order.created_at,
+            return_request: order.return_request ?? null,
             items: order.items.map(item => ({
-                ...item,
-                product_name: item.product?.name,
-                image_url: item.product?.image_url,
-                color_name: item.color?.color_name,
-                size: item.size?.size
+                id: item.id,
+                product_id: item.product_id,
+                quantity: item.quantity,
+                price: Number(item.price),
+                is_gift: item.is_gift,
+                product_name: item.product?.name ?? null,
+                image_url: item.product?.image_url ?? null,
+                color: item.color?.color_name ?? null,
+                size: item.size?.size ?? null,
             }))
         }));
 
@@ -466,18 +481,27 @@ export const getOrders = async (req: Request, res: Response): Promise<void> => {
 // Fix 3: Customer chỉ được cancel đơn của chính mình, khi đang Pending/Confirmed
 export const changeOrderStatus = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { order_id, new_status } = req.body;
-        const userId = req.user?.id;
+        const { order_id, new_status, email } = req.body;
 
-        if (!userId) {
-            res.status(401).json({ message: "Unauthorized" });
+        const order = await prisma.order.findUnique({ where: { id: Number(order_id) } });
+        if (!order) {
+            res.status(404).json({ message: "Order not found." });
             return;
         }
 
-        const order = await prisma.order.findUnique({ where: { id: Number(order_id) } });
-        if (!order || order.user_id !== userId) {
-            res.status(403).json({ message: "Forbidden: This order does not belong to you." });
-            return;
+        // Kiểm tra ownership: 
+        // - Nếu đơn có user_id (member order) -> phải có JWT và khớp user_id
+        // - Nếu đơn không có user_id (guest order) -> phải có email và khớp email
+        if (order.user_id) {
+            if (!req.user || req.user.id !== order.user_id) {
+                res.status(403).json({ message: "Forbidden: This order does not belong to you." });
+                return;
+            }
+        } else {
+            if (!email || order.email !== email) {
+                res.status(403).json({ message: "Forbidden: Email does not match the guest order." });
+                return;
+            }
         }
 
         // Customer chỉ được Cancel, và chỉ khi đơn chưa ship
@@ -611,18 +635,23 @@ export const submitReturnRequest = async (req: Request, res: Response): Promise<
             : [];
 
         await prisma.$transaction(async (tx) => {
-            // Fix 5: Nếu có JWT, ưu tiên verify bằng user_id; nếu guest thì verify bằng email
-            const where: any = { id: orderId, status: 'Delivered', payment_status: 'Paid' };
-            if (req.user) {
-                where.user_id = req.user.id;
-            } else {
-                if (!email) throw new Error("Email is required for guest orders.");
-                where.email = email;
+            // Lấy order ra trước, kiểm tra status
+            const order = await tx.order.findFirst({ 
+                where: { id: orderId, status: 'Delivered', payment_status: 'Paid' } 
+            });
+            if (!order) {
+                throw new Error("The order is invalid, not delivered, or unpaid.");
             }
 
-            const order = await tx.order.findFirst({ where });
-            if (!order) {
-                throw new Error("The order is invalid, not delivered, unpaid, or you don't have permission.");
+            // Fix 5: Kiểm tra ownership (hỗ trợ cả trường hợp user đã đăng nhập nhưng return đơn guest)
+            if (order.user_id) {
+                if (!req.user || req.user.id !== order.user_id) {
+                    throw new Error("Forbidden: This order belongs to another member.");
+                }
+            } else {
+                if (!email || order.email !== email) {
+                    throw new Error("Forbidden: Email is required and must match the guest order.");
+                }
             }
 
             const existing = await tx.returnRequest.findUnique({ where: { order_id: orderId } });
