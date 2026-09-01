@@ -146,8 +146,8 @@ export function useProfilePage() {
     }
 
     try {
-      const response = await API.put(
-        `/orders/${returnOrderId}/return-request`,
+      const response = await API.post(
+        `/orders/${returnOrderId}/return`,
         formData,
         { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
       );

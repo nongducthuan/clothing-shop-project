@@ -491,16 +491,15 @@ export const changeOrderStatus = async (req: Request, res: Response): Promise<vo
             return;
         }
 
-        // Kiểm tra ownership: 
-        // - Nếu đơn có user_id (member order) -> phải có JWT và khớp user_id
-        // - Nếu đơn không có user_id (guest order) -> phải có email và khớp email
+        // Kiểm tra ownership (cho phép Admin bypass): 
+        const isAdmin = req.user?.role === 'admin';
         if (order.user_id) {
-            if (!req.user || req.user.id !== order.user_id) {
+            if (!isAdmin && (!req.user || req.user.id !== order.user_id)) {
                 res.status(403).json({ message: "Forbidden: This order does not belong to you." });
                 return;
             }
         } else {
-            if (!email || order.email !== email) {
+            if (!isAdmin && (!email || order.email !== email)) {
                 res.status(403).json({ message: "Forbidden: Email does not match the guest order." });
                 return;
             }
@@ -582,16 +581,17 @@ export const repayMoMoController = async (req: Request, res: Response): Promise<
             return;
         }
 
-        // Kiểm tra ownership đúng cách
+        // Kiểm tra ownership đúng cách (Cho phép Admin bypass)
+        const isAdmin = req.user?.role === 'admin';
         if (order.user_id) {
-            // Đơn hàng của member → phải có JWT và khớp user_id
-            if (!req.user || req.user.id !== order.user_id) {
+            // Đơn hàng của member → phải có JWT và khớp user_id (hoặc là Admin)
+            if (!isAdmin && (!req.user || req.user.id !== order.user_id)) {
                 res.status(403).json({ message: "Forbidden: You do not have permission to pay for this order." });
                 return;
             }
         } else {
-            // Đơn hàng của guest → phải cung cấp email khớp
-            if (!email || order.email !== email) {
+            // Đơn hàng của guest → phải cung cấp email khớp (hoặc là Admin)
+            if (!isAdmin && (!email || order.email !== email)) {
                 res.status(403).json({ message: "Forbidden: Email does not match the order." });
                 return;
             }
@@ -645,13 +645,14 @@ export const submitReturnRequest = async (req: Request, res: Response): Promise<
                 throw new Error("The order is invalid, not delivered, or unpaid.");
             }
 
-            // Fix 5: Kiểm tra ownership (hỗ trợ cả trường hợp user đã đăng nhập nhưng return đơn guest)
+            // Fix 5: Kiểm tra ownership (hỗ trợ cả trường hợp user đã đăng nhập nhưng return đơn guest, và cho phép Admin)
+            const isAdmin = req.user?.role === 'admin';
             if (order.user_id) {
-                if (!req.user || req.user.id !== order.user_id) {
+                if (!isAdmin && (!req.user || req.user.id !== order.user_id)) {
                     throw new Error("Forbidden: This order belongs to another member.");
                 }
             } else {
-                if (!email || order.email !== email) {
+                if (!isAdmin && (!email || order.email !== email)) {
                     throw new Error("Forbidden: Email is required and must match the guest order.");
                 }
             }
