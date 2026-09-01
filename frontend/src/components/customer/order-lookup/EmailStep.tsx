@@ -6,7 +6,9 @@ export default function EmailStep({ email, setEmail, onSubmit, loading }) {
       <div>
         <label className="block text-sm font-semibold text-gray-600 mb-2">Purchasing Email</label>
         <div className="relative">
-          <span className="absolute left-3 top-3 text-gray-400"><i className="fa-solid fa-at"></i></span>
+          <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+            <i className="fa-solid fa-envelope"></i>
+          </span>
           <input
             type="email"
             required

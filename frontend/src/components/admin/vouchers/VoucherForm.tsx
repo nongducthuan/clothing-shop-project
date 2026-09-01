@@ -34,7 +34,7 @@ export default function VoucherForm({ formData, setFormData, onSubmit, editingId
       `}</style>
 
       <div className="bg-white rounded-3xl shadow-xl shadow-gray-200/50 border border-gray-100 overflow-hidden h-full flex flex-col">
-        <div className="bg-gradient-to-r from-indigo-500 to-purple-500 p-4 shrink-0 flex justify-between items-center">
+        <div className="bg-gradient-to-r from-indigo-500 to-indigo-700 p-4 shrink-0 flex justify-between items-center">
           <h2 className="text-sm font-bold text-white flex items-center gap-2 uppercase tracking-wider m-0 leading-none">
             <i className="fa-solid fa-ticket text-indigo-100"></i>
             {editingId ? "Edit Voucher" : "Voucher Details"}
@@ -149,7 +149,7 @@ export default function VoucherForm({ formData, setFormData, onSubmit, editingId
             )}
             <button
               type="submit"
-              className="flex-1 py-3 bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white rounded-xl font-bold text-xs tracking-wider hover:scale-[1.01] transition-all shadow-md shadow-indigo-200 uppercase"
+              className="flex-1 py-3 bg-gradient-to-r from-indigo-500 to-indigo-700 hover:from-indigo-600 hover:to-indigo-800 text-white rounded-xl font-bold text-xs tracking-wider hover:scale-[1.01] transition-all shadow-md shadow-indigo-200 uppercase"
             >
               {editingId ? "Update Voucher" : "Create Voucher"}
             </button>

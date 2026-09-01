@@ -20,17 +20,29 @@ export default function OrdersStep({
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="font-bold text-gray-800">Order #{order.id}</span>
-                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${order.status === 'Delivered' ? 'bg-green-100 text-green-600' : 'bg-orange-100 text-orange-600'}`}>
+                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${
+                      order.status === 'Delivered' ? 'bg-green-100 text-green-600' : 
+                      order.status === 'Cancelled' ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600'
+                    }`}>
                       {order.status}
                     </span>
                   </div>
                   <p className="text-xs text-gray-400 mt-1">
-                    {new Date(order.created_at).toLocaleDateString('vi-VN')} - {order.payment_method}
+                    {new Date(order.created_at).toLocaleDateString('vi-VN')} • <span className="capitalize">{order.payment_method}</span>
                   </p>
                 </div>
-                <div className="text-right">
-                  <p className="font-bold text-violet-600">{formatCurrency(order.total_price)}</p>
-                  <i className={`fa-solid fa-chevron-${expandedOrder === order.id ? 'up' : 'down'} text-xs text-gray-400`}></i>
+                <div className="text-right flex flex-col items-end gap-1">
+                  <div className="flex items-center gap-2">
+                    <p className="font-bold text-violet-600">{formatCurrency(order.total_price)}</p>
+                    <i className={`fa-solid fa-chevron-${expandedOrder === order.id ? 'up' : 'down'} text-xs text-gray-400`}></i>
+                  </div>
+                  <span className={`text-[9px] px-2 py-0.5 rounded-md font-bold uppercase tracking-wider ${
+                    order.payment_status === 'Paid'
+                      ? 'bg-emerald-100 text-emerald-700 border border-emerald-200'
+                      : 'bg-rose-100 text-rose-600 border border-rose-200'
+                  }`}>
+                    {order.payment_status || 'Unpaid'}
+                  </span>
                 </div>
               </div>
 

@@ -10,7 +10,7 @@ export default function PromotionList({ state, actions, helpers }) {
     <div>
       <div className="flex items-center justify-between mb-4 px-2">
         <h2 className="text-xl font-bold text-slate-800">Campaigns List</h2>
-        <span className="px-3 py-1 bg-indigo-100 text-indigo-700 text-xs font-bold rounded-full shadow-sm">
+        <span className="px-3 py-1 bg-purple-100 text-purple-700 text-xs font-bold rounded-full shadow-sm">
           {filteredPromotions.length} total
         </span>
       </div>
@@ -19,7 +19,7 @@ export default function PromotionList({ state, actions, helpers }) {
         <input
           type="text"
           placeholder="Search campaigns..."
-          className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-full text-sm focus:ring-2 focus:ring-indigo-500 transition-all shadow-sm outline-none"
+          className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-full text-sm focus:ring-2 focus:ring-purple-500 transition-all shadow-sm outline-none"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />

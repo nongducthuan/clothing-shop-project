@@ -86,7 +86,7 @@ export default function SaleForm({ formData, setFormData, onSubmit, editingId, o
                 CANCEL
               </button>
             )}
-            <button type="submit" className="flex-1 py-3 bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white rounded-xl font-bold text-xs tracking-wider hover:scale-[1.01] transition-all shadow-md shadow-indigo-200 uppercase">
+            <button type="submit" className="flex-1 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white rounded-xl font-bold text-xs tracking-wider hover:scale-[1.01] transition-all shadow-md shadow-blue-200 uppercase">
               {editingId ? "UPDATE SALE" : "ACTIVATE SALE"}
             </button>
           </div>

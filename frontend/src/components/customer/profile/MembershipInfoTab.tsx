@@ -101,7 +101,7 @@ export default function MembershipInfoTab({ state, actions, helpers }) {
           </div>
 
           <div className="bg-white p-6 rounded-2xl border border-slate-100 mb-8">
-            <div className="flex justify-between items-center mb-4 border-b border-slate-50 pb-4">
+            <div className="flex justify-between items-center mb-4 border-b border-slate-200 pb-4">
               <p className="text-sm font-medium text-slate-500">Total Spending</p>
               <p className="text-lg font-medium text-slate-900">{formatCurrency(totalSpent)}</p>
             </div>

@@ -155,9 +155,9 @@ export default function PromotionForm({ state, actions, helpers }: PromotionForm
       `}</style>
 
       <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
-        <div className="bg-gradient-to-r from-indigo-500 to-purple-500 p-6 px-8 flex justify-between items-center">
+        <div className="bg-gradient-to-r from-purple-500 to-pink-500 p-6 px-8 flex justify-between items-center">
           <h2 className="text-xl font-bold text-white flex items-center gap-2 m-0 leading-none">
-            <i className="fa-solid fa-gift text-indigo-100"></i>
+            <i className="fa-solid fa-gift text-purple-100"></i>
             {editingId ? "Update Promotion" : "Create New Promotion"}
           </h2>
         </div>
@@ -336,7 +336,7 @@ export default function PromotionForm({ state, actions, helpers }: PromotionForm
                   Cancel
                 </button>
               )}
-              <button type="submit" disabled={isLoading} className="w-full md:w-auto px-8 py-3 bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white font-bold rounded-xl shadow-md transition-all whitespace-nowrap uppercase tracking-wider text-xs">
+              <button type="submit" disabled={isLoading} className="w-full md:w-auto px-8 py-3 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold rounded-xl shadow-md shadow-purple-200 transition-all whitespace-nowrap uppercase tracking-wider text-xs">
                 {isLoading ? "Saving..." : editingId ? "Update Promotion" : "Create Promotion"}
               </button>
             </div>
