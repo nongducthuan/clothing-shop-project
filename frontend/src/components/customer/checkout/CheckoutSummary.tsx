@@ -30,6 +30,15 @@ export function CheckoutSummary({ state, helpers }) {
         {/* Gifts List */}
         {earnedGifts.map((gift, idx) => {
           const detail = giftDetails[gift.giftProductId];
+          let variantText = "";
+          if (detail && detail.colors && detail.colors.length > 0) {
+            const c = detail.colors[0];
+            const s = c?.sizes?.find(sz => sz.stock > 0) || c?.sizes?.[0];
+            if (c && s) {
+              variantText = `${c.color_name} / ${s.size}`;
+            }
+          }
+
           return (
             <div key={`gift-${idx}`} className="flex gap-4 items-center bg-white p-3 rounded-2xl border border-slate-100">
               <div className="w-16 h-20 bg-slate-50 rounded-xl overflow-hidden flex-shrink-0 border border-slate-100 relative">
@@ -40,8 +49,9 @@ export function CheckoutSummary({ state, helpers }) {
               </div>
               <div className="flex-1">
                 <h4 className="text-sm font-medium text-slate-900 line-clamp-1">{detail?.name || "Loading gift..."}</h4>
-                <span className="inline-block bg-rose-50 text-rose-600 text-[10px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider mt-1">
-                  {gift.promoName}
+                {variantText && <p className="text-xs text-slate-500 mt-0.5">{variantText}</p>}
+                <span className="inline-flex items-center gap-1 bg-rose-50 text-rose-600 text-[10px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider mt-1">
+                  <i className="fa-solid fa-gift text-rose-500"></i> Free Gift ({gift.promoName})
                 </span>
                 <p className="text-sm font-medium text-slate-900 mt-1">Free</p>
               </div>

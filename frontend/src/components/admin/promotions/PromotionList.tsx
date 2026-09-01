@@ -23,7 +23,7 @@ export default function PromotionList({ state, actions, helpers }) {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
-        <i className="fa-solid fa-magnifying-glass text-slate-400 absolute left-4 top-3.5"></i>
+        <i className="fa-solid fa-magnifying-glass text-slate-400 absolute left-4 top-1/2 -translate-y-1/2"></i>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

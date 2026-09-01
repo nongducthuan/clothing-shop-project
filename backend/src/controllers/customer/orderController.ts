@@ -122,6 +122,7 @@ export const verifyOtpAndGetOrders = async (req: Request, res: Response): Promis
                 product_name: item.product?.name ?? null,
                 image_url: item.product?.image_url ?? null,
                 color: item.color?.color_name ?? null,
+                color_name: item.color?.color_name ?? null,
                 size: item.size?.size ?? null,
             }))
         }));
@@ -467,6 +468,7 @@ export const getOrders = async (req: Request, res: Response): Promise<void> => {
                 product_name: item.product?.name ?? null,
                 image_url: item.product?.image_url ?? null,
                 color: item.color?.color_name ?? null,
+                color_name: item.color?.color_name ?? null,
                 size: item.size?.size ?? null,
             }))
         }));

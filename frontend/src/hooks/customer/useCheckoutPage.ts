@@ -154,15 +154,30 @@ export function useCheckoutPage() {
           price: p.price,
           is_gift: false
         })),
-        ...earnedGifts.map(gift => ({
-          product_id: gift.giftProductId,
-          color_id: null,
-          size_id: null,
-          quantity: gift.quantity,
-          price: 0,
-          is_gift: true,
-          promotion_id: gift.promoId
-        }))
+        ...earnedGifts.map(gift => {
+          const detail = giftDetails[gift.giftProductId];
+          let firstColorId = null;
+          let firstSizeId = null;
+          if (detail && detail.colors && detail.colors.length > 0) {
+            for (const c of detail.colors) {
+              const availableSize = c.sizes?.find(s => s.stock > 0);
+              if (availableSize) {
+                firstColorId = c.id;
+                firstSizeId = availableSize.id;
+                break;
+              }
+            }
+          }
+          return {
+            product_id: gift.giftProductId,
+            color_id: firstColorId,
+            size_id: firstSizeId,
+            quantity: gift.quantity,
+            price: 0,
+            is_gift: true,
+            promotion_id: gift.promoId
+          };
+        })
       ];
 
       const orderData = {

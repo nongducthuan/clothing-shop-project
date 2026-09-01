@@ -61,7 +61,7 @@ export default function useSaleManager() {
 
   const handleShowDetail = async (id, type) => {
     try {
-      const response = await API.get(`/sales/admin/${id}/details?type=${type}`);
+      const response = await API.get(`/admin/sales/${id}/details?type=${type}`);
       setDetailModal({
         isOpen: true,
         data: response.data.details || [],
@@ -75,7 +75,7 @@ export default function useSaleManager() {
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this item?")) return;
     try {
-      await API.delete(`/sales/admin/${id}`);
+      await API.delete(`/admin/sales/${id}`);
       showToast("Deleted successfully!", "success");
       fetchInitialData();
     } catch (error) {
@@ -116,10 +116,10 @@ export default function useSaleManager() {
 
     try {
       if (editingId) {
-        await API.put(`/sales/admin/${editingId}`, payload);
+        await API.put(`/admin/sales/${editingId}`, payload);
         showToast("Updated Successfully!", "success");
       } else {
-        await API.post("/sales/admin", payload);
+        await API.post("/admin/sales", payload);
         showToast("Created Successfully!", "success");
       }
       // Reset form

@@ -9,11 +9,11 @@ export default function VoucherBanner({ voucher, categoryName }) {
 
   const remainingUses = voucher.usage_limit ? voucher.usage_limit - voucher.used_count : null;
   const isRunningOut = remainingUses !== null && remainingUses <= 5;
-  const formatCurrency = (amount) => new Intl.NumberFormat("vi-VN").format(amount) + " VND";
+  const formatCurrency = (amount) => new Intl.NumberFormat("vi-VN").format(amount) + "đ";
 
   const handleCopyCode = () => {
     navigator.clipboard.writeText(voucher.code);
-    setToastMessage("Copied to clipboard: " + voucher.code);
+    setToastMessage("Code copied: " + voucher.code);
   };
 
   return (
@@ -25,42 +25,55 @@ export default function VoucherBanner({ voucher, categoryName }) {
           onClose={() => setToastMessage(null)}
         />
       )}
-      <div className="mb-12 flex flex-col md:flex-row items-center justify-between bg-slate-50 border border-slate-200 p-6 rounded-3xl transition-all">
-      <div className="flex items-center gap-4 mb-4 md:mb-0">
-        <div className="w-12 h-12 bg-white rounded-full shadow-sm flex items-center justify-center text-xl flex-shrink-0">
-          {voucher.apply_scope === "all" ? "✨" : "🎟️"}
-        </div>
-        <div>
-          <p className="text-base font-medium text-slate-900">
-            {voucher.apply_scope === "all" ? "Site-wide Offer: " : `Special Offer for ${categoryName}: `}
-            Get {Number.parseFloat(voucher.discount_percent)}% OFF
-          </p>
-          <div className="flex flex-wrap items-center gap-2 mt-2">
-            <span className="text-xs text-slate-500">Code: <b className="text-slate-900 font-mono text-sm">{voucher.code}</b></span>
-            <span className="text-slate-300">|</span>
-            {voucher.min_order_value > 0 && (
-              <span className="text-xs text-slate-500">Min Spend: <b className="text-slate-900">{formatCurrency(voucher.min_order_value)}</b></span>
-            )}
-            {voucher.max_discount_amount > 0 && (
-              <>
-                <span className="text-slate-300">|</span>
-                <span className="text-xs text-slate-500">Max Discount: <b className="text-slate-900">{formatCurrency(voucher.max_discount_amount)}</b></span>
-              </>
-            )}
+      <div className="w-full mb-8 p-5 sm:px-8 sm:py-5 bg-rose-50 border border-rose-100 rounded-2xl sm:rounded-3xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition-all shadow-sm">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+          <div className="hidden sm:flex w-11 h-11 bg-white rounded-2xl border border-rose-100 items-center justify-center text-rose-500 text-lg shadow-sm flex-shrink-0">
+            <i className="fa-solid fa-ticket"></i>
           </div>
-          <p className={`text-xs font-medium mt-2 ${isRunningOut ? "text-rose-500 animate-pulse" : "text-slate-400"}`}>
-            {isRunningOut ? `🔥 Hurry! Only ${remainingUses} left!` : remainingUses ? `${remainingUses} uses remaining` : "Unlimited uses"}
-          </p>
+          <div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-sm sm:text-base font-bold text-slate-900">
+                {voucher.apply_scope === "all" ? "Site-wide" : categoryName} — Get {Number.parseFloat(voucher.discount_percent)}% OFF
+              </span>
+              <span className="font-mono font-bold text-rose-600 bg-white px-2.5 py-0.5 rounded-lg border border-rose-200 text-xs shadow-sm">
+                {voucher.code}
+              </span>
+            </div>
+            <div className="flex flex-wrap items-center gap-3 mt-1.5 text-xs text-slate-500 font-medium">
+              {voucher.min_order_value > 0 && (
+                <span>Min spend: <b className="text-slate-800">{formatCurrency(voucher.min_order_value)}</b></span>
+              )}
+              {voucher.max_discount_amount > 0 && (
+                <>
+                  <span className="text-slate-300">•</span>
+                  <span>Max discount: <b className="text-slate-800">{formatCurrency(voucher.max_discount_amount)}</b></span>
+                </>
+              )}
+              {remainingUses !== null && (
+                <>
+                  <span className="text-slate-300">•</span>
+                  <span className={`font-bold inline-flex items-center ${isRunningOut ? "text-rose-500 animate-pulse" : "text-slate-500"}`}>
+                    {isRunningOut ? (
+                      <>
+                        <i className="fa-solid fa-fire text-rose-500 mr-1"></i>
+                        Only {remainingUses} left!
+                      </>
+                    ) : `${remainingUses} uses left`}
+                  </span>
+                </>
+              )}
+            </div>
+          </div>
         </div>
-      </div>
 
-      <button
-        onClick={handleCopyCode}
-        className="w-full md:w-auto bg-slate-900 text-white text-sm font-medium py-3 px-8 rounded-full hover:bg-slate-800 transition-colors active:scale-95 whitespace-nowrap"
-      >
-        Copy Code
-      </button>
-    </div>
+        <button
+          onClick={handleCopyCode}
+          className="w-full sm:w-auto bg-slate-900 text-white text-xs sm:text-sm font-bold py-3 px-7 rounded-full hover:bg-slate-800 transition-all active:scale-95 whitespace-nowrap shadow-sm self-stretch sm:self-center"
+        >
+          Copy Code
+        </button>
+      </div>
     </>
   );
 }
+

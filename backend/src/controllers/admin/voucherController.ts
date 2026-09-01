@@ -47,6 +47,57 @@ export const createVoucherAdmin = async (req: Request, res: Response): Promise<v
   }
 };
 
+export const updateVoucherAdmin = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const { productIds, categoryIds, code, description, discount_percent, max_discount_amount, min_order_value, usage_limit, start_date, end_date, apply_scope } = req.body;
+
+    await prisma.$transaction(async (tx) => {
+      await tx.voucher.update({
+        where: { id: Number(id) },
+        data: {
+          code,
+          description: description || null,
+          discount_percent: discount_percent ? Number(discount_percent) : null,
+          max_discount_amount: max_discount_amount ? Number(max_discount_amount) : null,
+          min_order_value: Number(min_order_value) || 0,
+          usage_limit: usage_limit ? Number(usage_limit) : null,
+          start_date: start_date ? new Date(start_date) : null,
+          end_date: end_date ? new Date(end_date) : null,
+          apply_scope: apply_scope as any,
+        }
+      });
+
+      // Xoá relations cũ rồi tạo lại
+      await tx.voucherCategory.deleteMany({ where: { voucher_id: Number(id) } });
+      await tx.productVoucher.deleteMany({ where: { voucher_id: Number(id) } });
+
+      if (apply_scope === 'category' && categoryIds && categoryIds.length > 0) {
+        await tx.voucherCategory.createMany({
+          data: categoryIds.map((catId: number) => ({
+            voucher_id: Number(id),
+            category_id: Number(catId)
+          }))
+        });
+      }
+
+      if (apply_scope === 'product' && productIds && productIds.length > 0) {
+        await tx.productVoucher.createMany({
+          data: productIds.map((pId: number) => ({
+            voucher_id: Number(id),
+            product_id: Number(pId)
+          }))
+        });
+      }
+    });
+
+    res.json({ success: true, message: "Voucher updated successfully!" });
+  } catch (error: any) {
+    console.error("UPDATE VOUCHER ERROR:", error.message);
+    res.status(500).json({ success: false, message: "Server error updating voucher" });
+  }
+};
+
 export const getAllVouchersAdmin = async (req: Request, res: Response): Promise<void> => {
   try {
     const vouchers = await prisma.voucher.findMany({

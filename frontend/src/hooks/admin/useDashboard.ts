@@ -64,9 +64,9 @@ export function useDashboardStats() {
         const vouchers = extractData(results[5]);
         const promotions = extractData(results[6]);
 
-        // Select status = 1
-        const activeSalesCount = sales.filter(s => s.status === 1).length;
-        const activeVouchersCount = vouchers.filter(v => v.status === 1).length;
+        // Select status = true (boolean from DB)
+        const activeSalesCount = sales.filter(s => s.status === true).length;
+        const activeVouchersCount = vouchers.filter(v => v.status === true).length;
         const activePromotionsCount = promotions.filter(p => p.status === 'active').length;
 
         // Calculate total stock from all products

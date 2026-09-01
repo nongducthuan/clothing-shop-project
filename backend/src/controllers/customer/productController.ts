@@ -300,7 +300,18 @@ export const getRecommendations = async (req: Request, res: Response): Promise<v
             finalProducts = [...finalProducts, ...randomProducts];
         }
 
-        res.json(finalProducts);
+        // Calculate sale_percent for recommended products
+        const activeSales = await getActiveSalesCache();
+        const productsWithSales = finalProducts.map(p => {
+            const sale_percent = calculateSalePercent(p, activeSales);
+            return {
+                ...p,
+                price: Number(p.price),
+                sale_percent
+            };
+        });
+
+        res.json(productsWithSales);
     } catch (err) {
         console.error("❌ Error getRecommendations:", err);
         res.status(500).json({ message: "Server error" });

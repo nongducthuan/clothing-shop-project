@@ -43,6 +43,53 @@ export const createSaleAdmin = async (req: Request, res: Response): Promise<void
   }
 };
 
+export const updateSaleAdmin = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const { name, discount_percent, productIds, categoryIds, start_date, end_date, apply_scope } = req.body;
+
+    await prisma.$transaction(async (tx) => {
+      await tx.sale.update({
+        where: { id: Number(id) },
+        data: {
+          name,
+          discount_percent: Number(discount_percent),
+          apply_scope: apply_scope as any,
+          start_date: new Date(start_date),
+          end_date: new Date(end_date),
+        }
+      });
+
+      // Xoá relations cũ rồi tạo lại
+      await tx.saleCategory.deleteMany({ where: { sale_id: Number(id) } });
+      await tx.productSale.deleteMany({ where: { sale_id: Number(id) } });
+
+      if (apply_scope === 'category' && categoryIds && categoryIds.length > 0) {
+        await tx.saleCategory.createMany({
+          data: categoryIds.map((catId: number) => ({
+            sale_id: Number(id),
+            category_id: Number(catId)
+          }))
+        });
+      }
+
+      if (apply_scope === 'product' && productIds && productIds.length > 0) {
+        await tx.productSale.createMany({
+          data: productIds.map((pId: number) => ({
+            sale_id: Number(id),
+            product_id: Number(pId)
+          }))
+        });
+      }
+    });
+
+    res.json({ success: true, message: "Sale updated successfully!" });
+  } catch (error: any) {
+    console.error("UPDATE SALE ERROR:", error.message);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 export const getAllSalesAdmin = async (req: Request, res: Response): Promise<void> => {
   try {
     const sales = await prisma.sale.findMany({

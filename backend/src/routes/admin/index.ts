@@ -68,6 +68,7 @@ router.delete('/promotions/:id', promotionController.deletePromotion);
 // --- Sales ---
 router.get('/sales', saleController.getAllSalesAdmin);
 router.post('/sales', saleController.createSaleAdmin);
+router.put('/sales/:id', saleController.updateSaleAdmin);
 router.put('/sales/:id/status', saleController.toggleSaleStatus);
 router.delete('/sales/:id', saleController.removeSale);
 router.get('/sales/:id/details', saleController.getSaleDetailsAdmin);
@@ -75,6 +76,7 @@ router.get('/sales/:id/details', saleController.getSaleDetailsAdmin);
 // --- Vouchers ---
 router.get('/vouchers', voucherController.getAllVouchersAdmin);
 router.post('/vouchers', voucherController.createVoucherAdmin);
+router.put('/vouchers/:id', voucherController.updateVoucherAdmin);
 router.put('/vouchers/:id/status', voucherController.toggleVoucherStatus);
 router.delete('/vouchers/:id', voucherController.removeVoucher);
 router.get('/vouchers/:id/details', voucherController.getVoucherDetails);

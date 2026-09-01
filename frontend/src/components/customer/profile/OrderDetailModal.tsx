@@ -81,10 +81,10 @@ export default function OrderDetailModal({ order, onClose, helpers }) {
                     {/* Badge thuộc tính: Tự động xuống dòng gọn gàng nếu màn hình cực nhỏ */}
                     <div className="flex flex-wrap items-center gap-1.5 mt-1.5 text-[11px] font-medium text-slate-500">
                       <span className="bg-white border border-slate-200/80 px-1.5 py-0.5 rounded text-slate-600">
-                        {item.color_name || "N/A"}
+                        {item.color_name || item.color || "N/A"}
                       </span>
                       <span className="bg-white border border-slate-200/80 px-1.5 py-0.5 rounded text-slate-600">
-                        Size: {item.size || "N/A"}
+                        Size: {item.size || item.size_name || "N/A"}
                       </span>
                       <span className="text-slate-400 font-normal ml-0.5">
                         x{item.quantity}

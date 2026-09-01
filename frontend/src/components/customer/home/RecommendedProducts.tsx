@@ -21,29 +21,40 @@ const SkeletonCard = () => (
 
 const RecommendedProducts = ({ userId }) => {
   const [products, setProducts] = useState([]);
+  const [activePromotions, setActivePromotions] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const targetUserId = userId || 'guest';
     setLoading(true);
 
-    API.get(`/products/recommendations/${targetUserId}`)
-      .then((res) => {
-        // Safely handle response data structure
-        const data = res.data;
-        const list = Array.isArray(data) ? data : (data.products || []);
-        setProducts(list);
-      })
-      .catch((err) => {
-        console.error("Error fetching recommendations:", err);
-        setProducts([]);
+    Promise.allSettled([
+      API.get(`/products/recommendations/${targetUserId}`),
+      API.get("/promotions")
+    ])
+      .then(([recRes, promoRes]) => {
+        if (recRes.status === "fulfilled") {
+          const data = recRes.value.data;
+          const list = Array.isArray(data) ? data : (data.products || []);
+          setProducts(list);
+        } else {
+          setProducts([]);
+        }
+
+        if (promoRes.status === "fulfilled") {
+          const promoData = promoRes.value.data?.data || promoRes.value.data || [];
+          setActivePromotions(Array.isArray(promoData) ? promoData : []);
+        }
       })
       .finally(() => {
         setLoading(false);
-        // Refresh AOS animations after DOM updates to ensure scroll effects work
         setTimeout(() => AOS.refresh(), 100);
       });
   }, [userId]);
+
+  const getPromotionForProduct = (productId) => {
+    return activePromotions.find((promo) => String(promo.buy_product_id) === String(productId));
+  };
 
   // Show section unconditionally (fallback products will be fetched if guest/new user)
   return (
@@ -60,7 +71,13 @@ const RecommendedProducts = ({ userId }) => {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
         {loading
           ? Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />) // Show 4 skeleton placeholders
-          : products.map((p) => <ProductCard key={p.id} product={p} />)       // Show actual products
+          : products.map((p) => (
+              <ProductCard
+                key={p.id}
+                product={p}
+                promotion={getPromotionForProduct(p.id)}
+              />
+            ))       // Show actual products with promotion badge if any
         }
       </div>
     </section>
