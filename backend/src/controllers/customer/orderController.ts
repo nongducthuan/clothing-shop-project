@@ -146,7 +146,9 @@ async function getMomoPayUrl(orderId: string, amountInput: number | string, orde
     const requestId = `${orderId}_${Date.now()}`;
     const momoOrderId = requestId;
     const redirectUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/profile`;
-    const ipnUrl = `${process.env.BACKEND_URL}/orders/momo-callback`;
+    // Ensure we handle BACKEND_URL whether it has a trailing slash or includes /api already
+    const baseUrl = process.env.BACKEND_URL?.replace(/\/+$/, '').replace(/\/api$/, '') || 'http://localhost:5000';
+    const ipnUrl = `${baseUrl}/api/orders/momo-callback`;
     const requestType = "payWithATM";
     const extraData = "";
 
