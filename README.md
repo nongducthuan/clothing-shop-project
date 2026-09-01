@@ -55,9 +55,6 @@ Tham khảo mẫu tại [backend/.env.example](file:///c:/Users/HP/Documents/Git
 | `MOMO_SECRET_KEY` | Secret Key tạo chữ ký điện tử HMAC-SHA256 MoMo | `your_secret_key` |
 | `EMAIL_USER` | Email người gửi (đã verify trên Brevo Senders) | `your-email@gmail.com` |
 | `BREVO_API_KEY` | API Key kết nối Brevo HTTP API gửi OTP | `your_brevo_api_key` |
-| `GOOGLE_CLIENT_ID` | Client ID Đăng nhập bằng Google (Google OAuth) | `your_google_client_id.apps.googleusercontent.com` |
-| `GOOGLE_CLIENT_SECRET` | Client Secret Đăng nhập bằng Google | `your_google_client_secret` |
-| `GOOGLE_CALLBACK_URL` | URL Callback xử lý Google OAuth | `http://localhost:5000/api/auth/google/callback` |
 | `GOOGLE_API_KEY` | API Key Google Gemini AI (dùng cho Chatbot / AI) | `your_google_gemini_api_key` |
 | `PYTHON_PATH` | Đường dẫn file `python.exe` của môi trường venv | `D:\path\to\venv\Scripts\python.exe` |
 
