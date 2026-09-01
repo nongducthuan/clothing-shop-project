@@ -38,7 +38,7 @@ export default function OrdersStep({
                 <div className="bg-gray-50 p-4 border-t border-gray-100 space-y-3 animate-fadeIn">
                   {order.items?.map((item, idx) => (
                     <div key={idx} className="flex gap-3 items-center">
-                      <img src={getImageUrl(item.image || item.image_url)} alt={item.product_name} className="w-12 h-12 object-cover rounded-md border" onError={(e) => { (e.target as HTMLImageElement).src = getImageUrl(null) }} />
+                      <img src={getImageUrl(item.image_url)} alt={item.product_name} className="w-12 h-12 object-cover rounded-md border" onError={(e) => { (e.target as HTMLImageElement).src = getImageUrl(null) }} />
                       <div className="flex-1">
                         <h4 className="text-sm font-medium text-gray-800 leading-tight">{item.product_name}</h4>
                         <p className="text-[11px] text-gray-500">Variant: {item.color}, {item.size} | Qty: x{item.quantity}</p>
@@ -68,7 +68,7 @@ export default function OrdersStep({
                         )}
                       </button>
                     )}
-                    {order.status === 'Delivered' && !order.return_id && (
+                    {order.status === 'Delivered' && !order.return_request && (
                       <button
                         onClick={() => openReturnForm(order)}
                         className="w-full mt-4 bg-orange-50 text-orange-600 border border-orange-200 py-2 rounded-lg text-sm font-bold hover:bg-orange-100 transition"
@@ -76,7 +76,7 @@ export default function OrdersStep({
                         <i className="fa-solid fa-rotate-left mr-2"></i> Request Return
                       </button>
                     )}
-                    {(order.return_id || order.status === 'Return Requested') && (
+                    {order.return_request && (
                       <div className="mt-4 p-2 bg-orange-50 text-orange-600 text-center rounded-lg text-xs font-bold">
                         Return request is being processed
                       </div>

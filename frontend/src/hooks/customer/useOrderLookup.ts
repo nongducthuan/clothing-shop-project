@@ -140,8 +140,8 @@ export function useOrderLookup() {
           if (order.id === selectedOrder.id) {
             return {
               ...order,
-              status: 'Return Requested', // Change status to hide button
-              return_id: 'pending_guest_req' // Assign dummy ID to show processing message
+              status: 'Return Requested',
+              return_request: { id: 'pending' } // optimistic: show "processing" message
             };
           }
           return order;

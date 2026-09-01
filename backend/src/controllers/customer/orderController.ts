@@ -90,6 +90,7 @@ export const verifyOtpAndGetOrders = async (req: Request, res: Response): Promis
             where: { email },
             orderBy: { created_at: 'desc' },
             include: {
+                return_request: { select: { id: true, status: true } },
                 items: {
                     include: {
                         product: { select: { name: true, image_url: true } },
@@ -101,13 +102,27 @@ export const verifyOtpAndGetOrders = async (req: Request, res: Response): Promis
         });
 
         const formattedOrders = orders.map(order => ({
-            ...order,
+            id: order.id,
+            email: order.email,
+            name: order.name,
+            phone: order.phone,
+            address: order.address,
+            total_price: Number(order.total_price),
+            status: order.status,
+            payment_method: order.payment_method,
+            payment_status: order.payment_status,
+            created_at: order.created_at,
+            return_request: order.return_request ?? null,
             items: order.items.map(item => ({
-                ...item,
-                product_name: item.product?.name,
-                image: item.product?.image_url,
-                color_name: item.color?.color_name,
-                size: item.size?.size
+                id: item.id,
+                product_id: item.product_id,
+                quantity: item.quantity,
+                price: Number(item.price),
+                is_gift: item.is_gift,
+                product_name: item.product?.name ?? null,
+                image_url: item.product?.image_url ?? null,
+                color: item.color?.color_name ?? null,
+                size: item.size?.size ?? null,
             }))
         }));
 
@@ -132,7 +147,7 @@ async function getMomoPayUrl(orderId: string, amountInput: number | string, orde
     const momoOrderId = requestId;
     const redirectUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/profile`;
     const ipnUrl = `${process.env.NGROK_URL}/orders/momo-callback`;
-    const requestType = "captureWallet";
+    const requestType = "payWithATM";
     const extraData = "";
 
     const rawSignature = `accessKey=${accessKey}&amount=${amountString}&extraData=${extraData}&ipnUrl=${ipnUrl}&orderId=${momoOrderId}&orderInfo=${orderInfo}&partnerCode=${partnerCode}&redirectUrl=${redirectUrl}&requestId=${requestId}&requestType=${requestType}`;
