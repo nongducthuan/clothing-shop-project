@@ -87,7 +87,9 @@ export default function MembershipInfoTab({ state, actions, helpers }) {
                   Current Tier
                 </p>
                 <div className="flex items-center gap-2.5">
-                  <i className={`fa-solid ${currentConfig.icon} ${currentConfig.color} text-xl`}></i>
+                  <div className={`w-10 h-10 rounded-full ${currentConfig.bg} flex items-center justify-center shrink-0`}>
+                    <i className={`fa-solid ${currentConfig.icon} ${currentConfig.color} text-lg`}></i>
+                  </div>
                   <span className="text-2xl font-bold text-slate-900">{tier}</span>
                 </div>
               </div>
