@@ -22,65 +22,67 @@ export default function VoucherBanner({ voucher, categoryName }) {
   return (
     <>
       {toastMessage && (
-        <Toast
-          message={toastMessage}
-          type="success"
-          onClose={() => setToastMessage(null)}
-        />
+        <Toast message={toastMessage} type="success" onClose={() => setToastMessage(null)} />
       )}
-      <div className="w-full mb-8 p-4 sm:p-5 bg-gradient-to-r from-rose-50/90 via-pink-50/80 to-rose-50/90 border border-rose-200/90 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 transition-all shadow-xs hover:shadow-md">
-        {/* Left: Soft Ticket Icon & Main Info */}
-        <div className="flex items-center gap-3.5 w-full sm:w-auto">
-          <div className="w-10 h-10 rounded-xl bg-rose-500/10 text-rose-600 flex items-center justify-center flex-shrink-0 text-lg">
-            <i className="fa-solid fa-ticket-simple"></i>
+      <div className="w-full mb-8 bg-rose-50 border border-rose-200 rounded-2xl flex items-stretch">
+        {/* Left: main info */}
+        <div className="flex-1 px-5 py-4">
+          <div className="flex items-baseline gap-2 flex-wrap">
+            <span className="text-2xl font-bold text-rose-700">
+              {Number.parseFloat(voucher.discount_percent)}% off
+            </span>
+            <span className="font-mono text-xs font-bold text-rose-700 bg-white border border-dashed border-rose-300 px-2.5 py-1 rounded-md">
+              {voucher.code}
+            </span>
           </div>
-          <div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-sm sm:text-base font-extrabold text-slate-900">
-                {voucher.apply_scope === "all" ? "Site-wide" : categoryName} — Get {Number.parseFloat(voucher.discount_percent)}% OFF
-              </span>
-              <span className="font-mono text-xs font-bold bg-white text-rose-600 border border-dashed border-rose-300 px-2.5 py-0.5 rounded-lg shadow-2xs">
-                {voucher.code}
-              </span>
-            </div>
-            <div className="flex flex-wrap items-center gap-2.5 mt-1.5 text-xs text-slate-500 font-medium">
-              {voucher.min_order_value > 0 && (
-                <span>Min spend: <b className="text-slate-800">{formatCurrency(voucher.min_order_value)}</b></span>
-              )}
-              {voucher.max_discount_amount > 0 && (
-                <>
-                  <span className="text-slate-300">•</span>
-                  <span>Max discount: <b className="text-slate-800">{formatCurrency(voucher.max_discount_amount)}</b></span>
-                </>
-              )}
-              {remainingUses !== null && (
-                <>
-                  <span className="text-slate-300">•</span>
-                  <span className={`font-bold inline-flex items-center gap-1 ${isRunningOut ? "text-rose-500 animate-pulse" : "text-slate-500"}`}>
-                    <i className="fa-solid fa-fire text-rose-500 text-xs"></i>
-                    Only {remainingUses} left!
-                  </span>
-                </>
-              )}
-            </div>
+          <p className="text-xs text-slate-500 mt-1">
+            {voucher.apply_scope === "all" ? "Valid for all products" : `Valid for ${categoryName}`}
+          </p>
+
+          <div className="flex flex-wrap gap-5 mt-3">
+            {voucher.min_order_value > 0 && (
+              <div>
+                <p className="text-[11px] text-slate-400">Min spend</p>
+                <p className="text-sm text-slate-800 font-medium">{formatCurrency(voucher.min_order_value)}</p>
+              </div>
+            )}
+            {voucher.max_discount_amount > 0 && (
+              <div>
+                <p className="text-[11px] text-slate-400">Max discount</p>
+                <p className="text-sm text-slate-800 font-medium">{formatCurrency(voucher.max_discount_amount)}</p>
+              </div>
+            )}
+            {remainingUses !== null && (
+              <div>
+                <p className="text-[11px] text-slate-400">Remaining</p>
+                <p className={`text-sm font-bold ${isRunningOut ? "text-rose-600 animate-pulse" : "text-slate-800"}`}>
+                  {remainingUses} left
+                </p>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Right: Dashed divider & Copy Code button */}
-        <div className="flex sm:flex-col items-center justify-between w-full sm:w-auto pt-3 sm:pt-0 border-t sm:border-t-0 sm:border-l border-dashed border-rose-200 sm:pl-5 gap-3">
+        {/* Ticket notch divider */}
+        <div className="relative w-0 hidden sm:block">
+          <div className="absolute -top-[9px] -left-[9px] w-[18px] h-[18px] rounded-full bg-white" />
+          <div className="absolute -bottom-[9px] -left-[9px] w-[18px] h-[18px] rounded-full bg-white" />
+          <div className="absolute top-[9px] bottom-[9px] left-0 border-l border-dashed border-rose-300" />
+        </div>
+
+        {/* Right: copy button */}
+        <div className="w-full sm:w-[130px] flex items-center justify-center px-4 py-4 border-t sm:border-t-0 border-dashed border-rose-300 sm:border-0">
           <button
             onClick={handleCopyCode}
-            className={`w-full sm:w-auto text-xs sm:text-sm font-bold py-2.5 px-6 rounded-xl transition-all active:scale-95 whitespace-nowrap shadow-xs ${
-              isCopied
-                ? "bg-emerald-600 text-white"
-                : "bg-slate-900 text-white hover:bg-slate-800"
+            className={`w-full h-10 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all active:scale-95 ${
+              isCopied ? "bg-emerald-600 text-white" : "bg-slate-900 text-white hover:bg-slate-800"
             }`}
           >
-            {isCopied ? "Copied! ✓" : "Copy Code"}
+            <i className="fa-solid fa-copy text-xs"></i>
+            {isCopied ? "Copied!" : "Copy code"}
           </button>
         </div>
       </div>
     </>
   );
 }
-
