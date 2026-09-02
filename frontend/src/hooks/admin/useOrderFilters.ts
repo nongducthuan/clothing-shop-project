@@ -15,12 +15,13 @@ export default function useOrderFilters(orders) {
 
   const displayedOrders = useMemo(() => {
     return orders.filter((order) => {
+      const normStatus = order.status?.replace(/_/g, " ");
       if (activeTab === "Standard") {
-        if (RETURN_STATUSES.includes(order.status)) return false;
-        return filterStandard === "All" || order.status === filterStandard;
+        if (RETURN_STATUSES.includes(normStatus)) return false;
+        return filterStandard === "All" || normStatus === filterStandard || order.status === filterStandard;
       } else {
-        if (!RETURN_STATUSES.includes(order.status)) return false;
-        return filterReturn === "All" || order.status === filterReturn;
+        if (!RETURN_STATUSES.includes(normStatus)) return false;
+        return filterReturn === "All" || normStatus === filterReturn || order.status === filterReturn;
       }
     });
   }, [orders, activeTab, filterStandard, filterReturn]);

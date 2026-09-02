@@ -6,6 +6,12 @@ import https from 'https';
 import crypto from 'crypto';
 import { changeOrderStatusLogic } from '../admin/orderController';
 
+const ENUM_TO_DISPLAY_STATUS: Record<string, string> = {
+    "Return_Requested": "Return Requested",
+    "Return_Rejected":  "Return Rejected",
+    "Return_Approved":  "Return Approved",
+};
+
 // ─── OTP ──────────────────────────────────────────────────────────────────────
 
 export const sendOtpController = async (req: Request, res: Response): Promise<void> => {
@@ -94,7 +100,7 @@ export const verifyOtpAndGetOrders = async (req: Request, res: Response): Promis
                 items: {
                     include: {
                         product: { select: { name: true, image_url: true } },
-                        color: { select: { color_name: true } },
+                        color: { select: { color_name: true, image_url: true } },
                         size: { select: { size: true } }
                     }
                 }
@@ -108,7 +114,7 @@ export const verifyOtpAndGetOrders = async (req: Request, res: Response): Promis
             phone: order.phone,
             address: order.address,
             total_price: Number(order.total_price),
-            status: order.status,
+            status: ENUM_TO_DISPLAY_STATUS[order.status] || order.status,
             payment_method: order.payment_method,
             payment_status: order.payment_status,
             created_at: order.created_at,
@@ -120,7 +126,7 @@ export const verifyOtpAndGetOrders = async (req: Request, res: Response): Promis
                 price: Number(item.price),
                 is_gift: item.is_gift,
                 product_name: item.product?.name ?? null,
-                image_url: item.product?.image_url ?? null,
+                image_url: item.color?.image_url || item.product?.image_url || null,
                 color: item.color?.color_name ?? null,
                 color_name: item.color?.color_name ?? null,
                 size: item.size?.size ?? null,
@@ -440,7 +446,7 @@ export const getOrders = async (req: Request, res: Response): Promise<void> => {
                 items: {
                     include: {
                         product: { select: { name: true, image_url: true } },
-                        color: { select: { color_name: true } },
+                        color: { select: { color_name: true, image_url: true } },
                         size: { select: { size: true } }
                     }
                 }
@@ -454,7 +460,7 @@ export const getOrders = async (req: Request, res: Response): Promise<void> => {
             phone: order.phone,
             address: order.address,
             total_price: Number(order.total_price),
-            status: order.status,
+            status: ENUM_TO_DISPLAY_STATUS[order.status] || order.status,
             payment_method: order.payment_method,
             payment_status: order.payment_status,
             created_at: order.created_at,
@@ -466,7 +472,7 @@ export const getOrders = async (req: Request, res: Response): Promise<void> => {
                 price: Number(item.price),
                 is_gift: item.is_gift,
                 product_name: item.product?.name ?? null,
-                image_url: item.product?.image_url ?? null,
+                image_url: item.color?.image_url || item.product?.image_url || null,
                 color: item.color?.color_name ?? null,
                 color_name: item.color?.color_name ?? null,
                 size: item.size?.size ?? null,

@@ -21,7 +21,7 @@ export function CheckoutSummary({ state, helpers }) {
             </div>
             <div className="flex-1">
               <h4 className="text-sm font-medium text-slate-900 line-clamp-1">{item.name}</h4>
-              <p className="text-xs text-slate-500 mt-0.5">{item.color} / {item.size}</p>
+              <p className="text-xs text-slate-500 mt-0.5">Color: {item.color} | Size: {item.size}</p>
               <p className="text-sm font-medium text-slate-900 mt-1">{formatPrice(item.price)}</p>
             </div>
           </div>
@@ -31,18 +31,32 @@ export function CheckoutSummary({ state, helpers }) {
         {earnedGifts.map((gift, idx) => {
           const detail = giftDetails[gift.giftProductId];
           let variantText = "";
+          let colorImageUrl = detail?.image_url;
           if (detail && detail.colors && detail.colors.length > 0) {
-            const c = detail.colors[0];
-            const s = c?.sizes?.find(sz => sz.stock > 0) || c?.sizes?.[0];
-            if (c && s) {
-              variantText = `${c.color_name} / ${s.size}`;
+            let chosenColor = null;
+            let chosenSize = null;
+            for (const c of detail.colors) {
+              const s = c.sizes?.find(sz => sz.stock > 0);
+              if (s) {
+                chosenColor = c;
+                chosenSize = s;
+                break;
+              }
+            }
+            if (!chosenColor) {
+              chosenColor = detail.colors[0];
+              chosenSize = chosenColor?.sizes?.[0];
+            }
+            if (chosenColor && chosenSize) {
+              variantText = `Color: ${chosenColor.color_name} | Size: ${chosenSize.size}`;
+              colorImageUrl = chosenColor.image_url || detail.image_url;
             }
           }
 
           return (
             <div key={`gift-${idx}`} className="flex gap-4 items-center bg-white p-3 rounded-2xl border border-slate-100">
               <div className="w-16 h-20 bg-slate-50 rounded-xl overflow-hidden flex-shrink-0 border border-slate-100 relative">
-                <img src={detail ? getImageUrl(detail) : ""} className="w-full h-full object-cover" alt="gift" />
+                <img src={colorImageUrl ? getImageUrl(colorImageUrl) : ""} className="w-full h-full object-cover" alt="gift" />
                 <span className="absolute top-0 right-0 bg-rose-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-bl-lg">
                   {gift.quantity}
                 </span>

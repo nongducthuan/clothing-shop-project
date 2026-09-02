@@ -6,18 +6,32 @@ export default function GiftItem({ gift, detail, helpers }) {
   }
 
   let variantText = "";
+  let colorImageUrl = detail?.image_url;
   if (detail && detail.colors && detail.colors.length > 0) {
-    const c = detail.colors[0];
-    const s = c?.sizes?.find(sz => sz.stock > 0) || c?.sizes?.[0];
-    if (c && s) {
-      variantText = `${c.color_name} / ${s.size}`;
+    let chosenColor = null;
+    let chosenSize = null;
+    for (const c of detail.colors) {
+      const s = c.sizes?.find(sz => sz.stock > 0);
+      if (s) {
+        chosenColor = c;
+        chosenSize = s;
+        break;
+      }
+    }
+    if (!chosenColor) {
+      chosenColor = detail.colors[0];
+      chosenSize = chosenColor?.sizes?.[0];
+    }
+    if (chosenColor && chosenSize) {
+      variantText = `Color: ${chosenColor.color_name} | Size: ${chosenSize.size}`;
+      colorImageUrl = chosenColor.image_url || detail.image_url;
     }
   }
 
   return (
     <div className="bg-slate-50 p-4 rounded-2xl flex items-center gap-4 relative overflow-hidden group">
       <div className="w-20 h-24 flex-shrink-0 rounded-xl overflow-hidden bg-white shadow-sm">
-        <img src={getImageUrl(detail.image_url)} alt={detail.name} className="w-full h-full object-cover" />
+        <img src={getImageUrl(colorImageUrl)} alt={detail.name} className="w-full h-full object-cover" />
       </div>
 
       <div className="flex-grow z-10">

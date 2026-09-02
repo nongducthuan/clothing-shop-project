@@ -51,50 +51,102 @@ export default function OrderDetailsModal({ order, onClose, formatCurrency }) {
 // ==========================================
 
 const ReturnInfoSection = ({ order }) => {
+  const bankInfo = order.refund_bank_info;
+
   return (
-    <div className="bg-orange-50/80 p-3 md:p-5 rounded-[1.5rem] border border-orange-100 text-sm shadow-inner">
-      <h5 className="font-bold text-orange-800 mb-4 uppercase text-xs tracking-wider flex items-center gap-2 m-0 leading-none">
-        <i className="fa-solid fa-rotate-left text-orange-500 text-base"></i> Return Request Details
-      </h5>
+    <div className="bg-gradient-to-r from-amber-50/60 via-orange-50/40 to-amber-50/60 p-4 sm:p-5 rounded-[1.5rem] border border-amber-200/60 text-sm shadow-sm space-y-4">
+      <div className="flex items-center justify-between">
+        <h5 className="font-extrabold text-amber-900 text-xs uppercase tracking-wider flex items-center gap-2 m-0 leading-none">
+          <span className="w-6 h-6 rounded-full bg-amber-100/80 text-amber-700 flex items-center justify-center text-[10px] shadow-xs">
+            <i className="fa-solid fa-rotate-left"></i>
+          </span>
+          Return Request Details
+        </h5>
+        <span className="text-[9px] font-extrabold uppercase tracking-widest bg-amber-200/60 text-amber-800 px-2 py-0.5 rounded-full border border-amber-300/40">
+          Action Required
+        </span>
+      </div>
 
-      <div className="space-y-4">
-        <div className="bg-white p-4 rounded-2xl border border-orange-100 shadow-sm">
-          <p className="font-bold text-gray-400 text-[10px] uppercase tracking-wider mb-1">Reason Code</p>
-          <p className="text-sm text-gray-800 font-extrabold mb-3">{order.reason_code || "Not specified"}</p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {/* Lý do trả hàng */}
+        <div className="bg-white p-4 rounded-2xl border border-amber-100/80 shadow-sm flex flex-col justify-between space-y-3">
+          <div>
+            <span className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-1">
+              Reason for Return
+            </span>
+            <span className="inline-block bg-slate-100 text-slate-800 text-xs font-extrabold px-2.5 py-1 rounded-lg border border-slate-200/60">
+              {order.reason_code || "Not specified"}
+            </span>
+          </div>
 
-          <p className="font-bold text-gray-400 text-[10px] uppercase tracking-wider mb-1">Detailed Note</p>
-          <p className="text-sm text-gray-600 italic bg-gray-50 p-3 rounded-xl border border-gray-100">"{order.description || "No description provided"}"</p>
+          <div>
+            <span className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-1">
+              Customer Note
+            </span>
+            <div className="bg-slate-50/80 border border-slate-200/60 rounded-xl p-3 text-xs text-slate-600 italic leading-relaxed min-h-[45px] flex items-center">
+              "{order.description || "No description provided."}"
+            </div>
+          </div>
         </div>
 
-        <div className="bg-gradient-to-br from-blue-600 to-blue-800 p-3 md:p-5 rounded-2xl text-white shadow-md relative overflow-hidden">
-          <div className="absolute -right-6 -top-6 text-white/10 text-8xl">
+        {/* Thẻ Ngân hàng ATM Cao Cấp */}
+        <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 text-white p-4.5 rounded-2xl shadow-lg relative overflow-hidden flex flex-col justify-between min-h-[140px] border border-slate-700/50">
+          <div className="absolute -right-5 -bottom-5 text-white/5 text-7xl pointer-events-none">
             <i className="fa-solid fa-building-columns"></i>
           </div>
-          <p className="text-[10px] uppercase opacity-80 mb-2 font-bold tracking-widest relative z-10">Refund Bank Account</p>
-          {order.refund_bank_info ? (
-            <div className="relative z-10">
-              <p className="font-extrabold text-xl mb-1">{order.refund_bank_info.name}</p>
-              <p className="text-2xl font-mono tracking-[0.2em]">{order.refund_bank_info.acc}</p>
-              <p className="text-xs uppercase mt-2 text-blue-200 font-bold">{order.refund_bank_info.owner}</p>
+
+          <div className="flex justify-between items-center relative z-10">
+            <span className="text-[9px] uppercase font-bold text-slate-400 tracking-widest flex items-center gap-1.5">
+              <i className="fa-solid fa-credit-card text-indigo-400"></i> Refund Account
+            </span>
+            <i className="fa-solid fa-wifi text-slate-500 text-[10px] rotate-90"></i>
+          </div>
+
+          {bankInfo ? (
+            <div className="relative z-10 my-1 space-y-0.5">
+              <p className="text-[10px] uppercase font-semibold text-slate-400 tracking-wider">
+                {bankInfo.name || bankInfo.bankName || "Bank Account"}
+              </p>
+              <p className="text-lg font-mono font-bold tracking-[0.18em] text-indigo-200 drop-shadow-sm">
+                {bankInfo.acc || bankInfo.bankNumber || "•••• •••• ••••"}
+              </p>
             </div>
-          ) : <p className="text-xs italic relative z-10">Missing bank information</p>}
+          ) : (
+            <p className="text-xs italic text-slate-400 relative z-10 my-auto">Missing bank account details</p>
+          )}
+
+          <div className="relative z-10 pt-1.5 border-t border-white/10 flex justify-between items-center text-xs">
+            <span className="font-bold text-slate-200 uppercase tracking-wider truncate max-w-[70%]" title={bankInfo?.owner}>
+              {bankInfo?.owner || "N/A"}
+            </span>
+            <span className="text-[8px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-full font-mono uppercase tracking-wider">
+              Verified
+            </span>
+          </div>
         </div>
       </div>
 
+      {/* Hình ảnh bằng chứng */}
       {order.return_images && order.return_images.length > 0 && (
-        <div className="mt-5">
-          <p className="text-[10px] font-bold text-orange-600/80 uppercase mb-2 tracking-wider">Evidence Images</p>
-          <div className="flex flex-wrap gap-3">
+        <div className="pt-2.5 border-t border-amber-200/60">
+          <span className="block text-[10px] font-extrabold text-amber-900/70 uppercase mb-2 tracking-wider">
+            Evidence Attachments ({order.return_images.length})
+          </span>
+          <div className="flex flex-wrap gap-2.5">
             {order.return_images.map((img, idx) => {
               const fullImgUrl = getImageUrl(img);
               return (
-                <img
-                  key={idx}
-                  src={fullImgUrl}
-                  alt={`Evidence ${idx + 1}`}
-                  className="w-20 h-20 object-cover rounded-xl border-2 border-white shadow-sm cursor-pointer hover:scale-105 transition-transform"
-                  onClick={() => window.open(fullImgUrl, '_blank')}
-                />
+                <div key={idx} className="relative group">
+                  <img
+                    src={fullImgUrl}
+                    alt={`Evidence ${idx + 1}`}
+                    className="w-16 h-16 object-cover rounded-xl border-2 border-white shadow-md cursor-pointer hover:scale-105 transition-transform duration-300"
+                    onClick={() => window.open(fullImgUrl, '_blank')}
+                  />
+                  <div className="absolute inset-0 bg-black/20 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+                    <i className="fa-solid fa-magnifying-glass-plus text-white text-xs"></i>
+                  </div>
+                </div>
               );
             })}
           </div>

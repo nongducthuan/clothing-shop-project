@@ -117,8 +117,10 @@ export function useCheckoutPage() {
   const voucherDiscount = appliedVoucher ? Number(appliedVoucher.discount_amount) : 0;
   const finalTotal = Math.max(0, subtotal - membershipDiscount - voucherDiscount);
 
-  const resolveItemImage = (item) => {
-    const rawUrl = item.color_image || item.image_url;
+  const resolveItemImage = (itemOrPath) => {
+    if (!itemOrPath) return getImageUrl(null);
+    if (typeof itemOrPath === 'string') return getImageUrl(itemOrPath);
+    const rawUrl = itemOrPath.color_image || itemOrPath.image_url;
     return getImageUrl(rawUrl);
   };
 

@@ -28,8 +28,11 @@ const ORDER_STATUS_COLORS = {
   Delivered: "#28a745",
   Cancelled: "#dc3545",
   "Return Requested": "#fd7e14",
+  "Return_Requested": "#fd7e14",
   "Return Rejected": "#6c757d",
+  "Return_Rejected": "#6c757d",
   "Return Approved": "#6f42c1",
+  "Return_Approved": "#6f42c1",
 };
 
 const PAYMENT_STATUS_COLORS = {

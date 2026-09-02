@@ -124,7 +124,7 @@ export default function OrderTable({
               ) : (
                 /* HIỂN THỊ DANH SÁCH ĐƠN HÀNG */
                 displayedOrders.map((order) => {
-                  const isReturnLocked = order.status === 'Return Requested';
+                  const isReturnLocked = ["Return Requested", "Return_Requested"].includes(order.status);
                   const isExpanded = expandedOrderId === order.id;
 
                   return (
@@ -220,7 +220,7 @@ export default function OrderTable({
                                 </h4>
 
                                 {/* Return Info (Nếu có) */}
-                                {["Return Requested", "Return Approved", "Return Rejected"].includes(order.status) && (
+                                {["Return Requested", "Return_Requested", "Return Approved", "Return_Approved", "Return Rejected", "Return_Rejected"].includes(order.status) && (
                                   <ReturnInfoSection order={order} />
                                 )}
 
@@ -260,55 +260,102 @@ export default function OrderTable({
 // ==========================================
 
 const ReturnInfoSection = ({ order }) => {
+  const bankInfo = order.refund_bank_info;
+
   return (
-    <div className="bg-orange-50/80 p-6 rounded-[1.5rem] border border-orange-100 text-sm shadow-inner">
-      <h5 className="font-bold text-orange-800 mb-5 uppercase text-xs tracking-wider flex items-center gap-2 m-0 leading-none">
-        <i className="fa-solid fa-rotate-left text-orange-500 text-base"></i> Return Request Details
-      </h5>
+    <div className="bg-gradient-to-r from-amber-50/60 via-orange-50/40 to-amber-50/60 p-5 sm:p-6 rounded-[1.75rem] border border-amber-200/60 text-sm shadow-sm space-y-5">
+      <div className="flex items-center justify-between">
+        <h5 className="font-extrabold text-amber-900 text-xs uppercase tracking-wider flex items-center gap-2 m-0 leading-none">
+          <span className="w-7 h-7 rounded-full bg-amber-100/80 text-amber-700 flex items-center justify-center text-xs shadow-xs">
+            <i className="fa-solid fa-rotate-left"></i>
+          </span>
+          Return Request Details
+        </h5>
+        <span className="text-[10px] font-extrabold uppercase tracking-widest bg-amber-200/60 text-amber-800 px-2.5 py-1 rounded-full border border-amber-300/40">
+          Action Required
+        </span>
+      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {/* Lý do trả hàng */}
-        <div className="bg-white p-5 rounded-2xl border border-orange-100 shadow-sm">
-          <p className="font-bold text-gray-400 text-[10px] uppercase tracking-wider mb-1">Reason Code</p>
-          <p className="text-base text-gray-800 font-extrabold mb-4">{order.reason_code || "Not specified"}</p>
+        <div className="bg-white p-5 rounded-2xl border border-amber-100/80 shadow-sm flex flex-col justify-between space-y-4">
+          <div>
+            <span className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-1">
+              Reason for Return
+            </span>
+            <span className="inline-block bg-slate-100 text-slate-800 text-xs font-extrabold px-3 py-1 rounded-lg border border-slate-200/60">
+              {order.reason_code || "Not specified"}
+            </span>
+          </div>
 
-          <p className="font-bold text-gray-400 text-[10px] uppercase tracking-wider mb-1">Detailed Note</p>
-          <p className="text-sm text-gray-600 italic bg-gray-50 p-4 rounded-xl border border-gray-100 leading-relaxed">
-            "{order.description || "No description provided"}"
-          </p>
+          <div>
+            <span className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-1">
+              Customer Note
+            </span>
+            <div className="bg-slate-50/80 border border-slate-200/60 rounded-xl p-3.5 text-xs text-slate-600 italic leading-relaxed min-h-[50px] flex items-center">
+              "{order.description || "No additional description provided."}"
+            </div>
+          </div>
         </div>
 
-        {/* Thông tin Ngân hàng */}
-        <div className="bg-gradient-to-br from-blue-600 to-blue-800 p-6 rounded-2xl text-white shadow-md relative overflow-hidden flex flex-col justify-center">
-          <div className="absolute -right-6 -top-6 text-white/10 text-8xl">
+        {/* Thẻ Ngân hàng ATM Cao Cấp */}
+        <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 text-white p-5 rounded-2xl shadow-lg relative overflow-hidden flex flex-col justify-between min-h-[150px] border border-slate-700/50">
+          <div className="absolute -right-5 -bottom-5 text-white/5 text-8xl pointer-events-none">
             <i className="fa-solid fa-building-columns"></i>
           </div>
-          <p className="text-[10px] uppercase opacity-80 mb-3 font-bold tracking-widest relative z-10">Refund Bank Account</p>
-          {order.refund_bank_info ? (
-            <div className="relative z-10">
-              <p className="font-extrabold text-2xl mb-1">{order.refund_bank_info.name}</p>
-              <p className="text-3xl font-mono tracking-[0.2em] mb-2 drop-shadow-md">{order.refund_bank_info.acc}</p>
-              <p className="text-sm uppercase text-blue-200 font-bold tracking-wider">{order.refund_bank_info.owner}</p>
+
+          <div className="flex justify-between items-center relative z-10">
+            <span className="text-[9px] uppercase font-bold text-slate-400 tracking-widest flex items-center gap-1.5">
+              <i className="fa-solid fa-credit-card text-indigo-400"></i> Refund Destination Account
+            </span>
+            <i className="fa-solid fa-wifi text-slate-500 text-xs rotate-90"></i>
+          </div>
+
+          {bankInfo ? (
+            <div className="relative z-10 my-2 space-y-1">
+              <p className="text-[10px] uppercase font-semibold text-slate-400 tracking-wider">
+                {bankInfo.name || bankInfo.bankName || "Bank Account"}
+              </p>
+              <p className="text-xl font-mono font-bold tracking-[0.18em] text-indigo-200 drop-shadow-sm">
+                {bankInfo.acc || bankInfo.bankNumber || "•••• •••• ••••"}
+              </p>
             </div>
-          ) : <p className="text-sm italic relative z-10 opacity-80">Missing bank information</p>}
+          ) : (
+            <p className="text-xs italic text-slate-400 relative z-10 my-auto">Missing bank account details</p>
+          )}
+
+          <div className="relative z-10 pt-2 border-t border-white/10 flex justify-between items-center text-xs">
+            <span className="font-bold text-slate-200 uppercase tracking-wider truncate max-w-[70%]" title={bankInfo?.owner}>
+              {bankInfo?.owner || "N/A"}
+            </span>
+            <span className="text-[9px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-full font-mono uppercase tracking-wider">
+              Verified
+            </span>
+          </div>
         </div>
       </div>
 
       {/* Hình ảnh bằng chứng */}
       {order.return_images && order.return_images.length > 0 && (
-        <div className="mt-6 pt-6 border-t border-orange-200/50">
-          <p className="text-[10px] font-bold text-orange-600/80 uppercase mb-3 tracking-wider">Evidence Images</p>
-          <div className="flex flex-wrap gap-4">
+        <div className="pt-3 border-t border-amber-200/60">
+          <span className="block text-[10px] font-extrabold text-amber-900/70 uppercase mb-2.5 tracking-wider">
+            Evidence Attachments ({order.return_images.length})
+          </span>
+          <div className="flex flex-wrap gap-3">
             {order.return_images.map((img, idx) => {
               const fullImgUrl = getImageUrl(img);
               return (
-                <img
-                  key={idx}
-                  src={fullImgUrl}
-                  alt={`Evidence ${idx + 1}`}
-                  className="w-24 h-24 object-cover rounded-xl border-2 border-white shadow-md cursor-pointer hover:scale-110 transition-transform duration-300"
-                  onClick={() => window.open(fullImgUrl, '_blank')}
-                />
+                <div key={idx} className="relative group">
+                  <img
+                    src={fullImgUrl}
+                    alt={`Evidence ${idx + 1}`}
+                    className="w-20 h-20 object-cover rounded-xl border-2 border-white shadow-md cursor-pointer hover:scale-105 transition-transform duration-300"
+                    onClick={() => window.open(fullImgUrl, '_blank')}
+                  />
+                  <div className="absolute inset-0 bg-black/20 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+                    <i className="fa-solid fa-magnifying-glass-plus text-white text-xs"></i>
+                  </div>
+                </div>
               );
             })}
           </div>

@@ -21,7 +21,7 @@ export const getOrders = async (req: Request, res: Response): Promise<void> => {
                     items: {
                         include: {
                             product: { select: { name: true, image_url: true } },
-                            color: { select: { color_name: true } },
+                            color: { select: { color_name: true, image_url: true } },
                             size: { select: { size: true } }
                         }
                     }
@@ -53,13 +53,14 @@ export const getOrders = async (req: Request, res: Response): Promise<void> => {
             const items = order.items.map(item => ({
                 ...item,
                 product_name: item.product?.name,
-                image_url: item.product?.image_url,
+                image_url: item.color?.image_url || item.product?.image_url,
                 color_name: item.color?.color_name,
                 size: item.size?.size
             }));
 
             return {
                 ...order,
+                status: ENUM_TO_DISPLAY_STATUS[order.status] || order.status,
                 user_name: order.user?.name || order.name,
                 user_email: order.user?.email || order.email,
                 reason_code: rr?.reason_code,
@@ -102,8 +103,24 @@ export const confirmPayment = async (req: Request, res: Response): Promise<void>
     }
 };
 
+const ENUM_TO_DISPLAY_STATUS: Record<string, string> = {
+    "Return_Requested": "Return Requested",
+    "Return_Rejected":  "Return Rejected",
+    "Return_Approved":  "Return Approved",
+};
+
+// Map display names (with spaces, as sent by frontend) → Prisma enum names (with underscores)
+const STATUS_DISPLAY_TO_ENUM: Record<string, string> = {
+    "Return Requested": "Return_Requested",
+    "Return Rejected":  "Return_Rejected",
+    "Return Approved":  "Return_Approved",
+};
+
 // Complex status change handling inventory and revenue
 export const changeOrderStatusLogic = async (orderId: number, newStatus: string) => {
+    // Normalize: "Return Requested" → "Return_Requested" etc.
+    const normalizedStatus = STATUS_DISPLAY_TO_ENUM[newStatus] ?? newStatus;
+
     return await prisma.$transaction(async (tx) => {
         const order = await tx.order.findUnique({
             where: { id: orderId },
@@ -120,7 +137,7 @@ export const changeOrderStatusLogic = async (orderId: number, newStatus: string)
         const inactiveSet = new Set(["Cancelled", "Return_Approved"]);
 
         const oldIsInactive = inactiveSet.has(oldStatus);
-        const newIsInactive = inactiveSet.has(newStatus as any);
+        const newIsInactive = inactiveSet.has(normalizedStatus as any);
 
         if (oldIsInactive !== newIsInactive) {
             for (const item of order.items) {
@@ -151,14 +168,14 @@ export const changeOrderStatusLogic = async (orderId: number, newStatus: string)
         let orderCountChange = 0;
         let deliveredAtUpdate: Date | null = null;
 
-        if (oldStatus !== "Delivered" && newStatus === "Delivered") {
+        if (oldStatus !== "Delivered" && normalizedStatus === "Delivered") {
             revenueChange = totalPrice;
             orderCountChange = 1;
             deliveredAtUpdate = new Date(); // Fix 7: ghi lại thời điểm giao hàng
-        } else if ((newStatus === "Return_Approved" || newStatus === "Cancelled") && oldStatus === "Delivered") {
+        } else if ((normalizedStatus === "Return_Approved" || normalizedStatus === "Cancelled") && oldStatus === "Delivered") {
             revenueChange = -totalPrice;
             orderCountChange = -1;
-        } else if (oldStatus === "Delivered" && newStatus !== "Delivered") {
+        } else if (oldStatus === "Delivered" && normalizedStatus !== "Delivered") {
             revenueChange = -totalPrice;
             orderCountChange = -1;
         }
@@ -192,7 +209,7 @@ export const changeOrderStatusLogic = async (orderId: number, newStatus: string)
             // - Khi status → Delivered: dùng ngày hôm nay
             // - Khi cancel/return từ Delivered: dùng delivered_at của đơn (ngày gốc)
             let revenueDate: Date;
-            if (newStatus === "Delivered") {
+            if (normalizedStatus === "Delivered") {
                 revenueDate = new Date();
             } else if (order.delivered_at) {
                 revenueDate = new Date(order.delivered_at);
@@ -225,7 +242,7 @@ export const changeOrderStatusLogic = async (orderId: number, newStatus: string)
         }
 
         // 3. Update Order
-        const updateData: any = { status: newStatus as any };
+        const updateData: any = { status: normalizedStatus as any };
         if (deliveredAtUpdate) updateData.delivered_at = deliveredAtUpdate; // Fix 7
 
         await tx.order.update({
@@ -255,10 +272,23 @@ export const approveReturn = async (req: Request, res: Response): Promise<void> 
     const orderId = Number(req.params.id);
     try {
         await prisma.$transaction(async (tx) => {
-            await tx.returnRequest.update({
-                where: { order_id: orderId },
-                data: { status: 'Approved', admin_response: 'Refunded' }
-            });
+            const existing = await tx.returnRequest.findUnique({ where: { order_id: orderId } });
+            if (existing) {
+                await tx.returnRequest.update({
+                    where: { order_id: orderId },
+                    data: { status: 'Approved', admin_response: 'Approved' }
+                });
+            } else {
+                await tx.returnRequest.create({
+                    data: {
+                        order_id: orderId,
+                        reason_code: 'Admin Approval',
+                        description: 'Manually approved by admin',
+                        status: 'Approved',
+                        admin_response: 'Approved'
+                    }
+                });
+            }
         });
         await changeOrderStatusLogic(orderId, 'Return_Approved');
         res.status(200).json({ message: "Return request approved successfully!" });
@@ -273,10 +303,23 @@ export const rejectReturn = async (req: Request, res: Response): Promise<void> =
     const { adminNote } = req.body;
     try {
         await prisma.$transaction(async (tx) => {
-            await tx.returnRequest.update({
-                where: { order_id: orderId },
-                data: { status: 'Rejected', admin_response: adminNote }
-            });
+            const existing = await tx.returnRequest.findUnique({ where: { order_id: orderId } });
+            if (existing) {
+                await tx.returnRequest.update({
+                    where: { order_id: orderId },
+                    data: { status: 'Rejected', admin_response: adminNote }
+                });
+            } else {
+                await tx.returnRequest.create({
+                    data: {
+                        order_id: orderId,
+                        reason_code: 'Admin Rejection',
+                        description: 'Manually rejected by admin',
+                        status: 'Rejected',
+                        admin_response: adminNote || 'Rejected by admin'
+                    }
+                });
+            }
         });
         await changeOrderStatusLogic(orderId, 'Return_Rejected');
         res.status(200).json({ message: "Return request rejected successfully." });
