@@ -185,15 +185,20 @@ export function useProfilePage() {
 
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [isChangingPassword, setIsChangingPassword] = useState(false);
 
   const changePassword = async () => {
-    if (!currentPassword || !newPassword) {
-      showToast("Please enter both current and new password.", "warning");
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      showToast("Please fill in all password fields.", "warning");
       return;
     }
     if (newPassword.length < 6) {
       showToast("New password must be at least 6 characters.", "warning");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      showToast("New password and confirm password do not match.", "warning");
       return;
     }
 
@@ -208,6 +213,7 @@ export function useProfilePage() {
       showToast("Password changed successfully!", "success");
       setCurrentPassword("");
       setNewPassword("");
+      setConfirmPassword("");
     } catch (error) {
       console.error("Change password error:", error);
       showToast(error.response?.data?.message || "Failed to change password.", "error");
@@ -220,13 +226,13 @@ export function useProfilePage() {
     state: {
       user, tier, phone, activeTab, orders, loadingOrders, selectedOrder,
       showReturnModal, returnOrderId, returnData, currentConfig, totalSpent, safeProgress,
-      currentPassword, newPassword, isChangingPassword
+      currentPassword, newPassword, confirmPassword, isChangingPassword
     },
     actions: {
       setActiveTab, setPhone, logout, setSelectedOrder,
       handleMoMoPayment, handleOpenReturnModal, setShowReturnModal,
       handleSubmitReturn, handleReturnDataChange, updateProfile,
-      setCurrentPassword, setNewPassword, changePassword
+      setCurrentPassword, setNewPassword, setConfirmPassword, changePassword
     },
     helpers: {
       formatCurrency, getImgUrl

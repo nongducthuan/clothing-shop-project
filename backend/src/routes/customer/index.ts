@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { authenticateToken, optionalAuthenticateToken } from '../../middleware/authMiddleware';
+import { upload } from '../../middleware/uploadMiddleware';
 
 // Import customer Controllers
 import * as authController from '../../controllers/customer/authController';
@@ -47,7 +48,7 @@ router.post('/orders', optionalAuthenticateToken, orderController.createOrderCon
 router.get('/orders', authenticateToken, orderController.getOrders);
 router.put('/orders/status', optionalAuthenticateToken, orderController.changeOrderStatus);
 router.post('/orders/:id/repay', optionalAuthenticateToken, orderController.repayMoMoController);
-router.post('/orders/:id/return', optionalAuthenticateToken, orderController.submitReturnRequest);
+router.post('/orders/:id/return', optionalAuthenticateToken, upload.array('images'), orderController.submitReturnRequest);
 
 // MoMo Webhook (does not need /api prefix usually, but we'll include it or keep it as is, frontend config needs to match MoMo's setting)
 router.post('/orders/momo-callback', orderController.momoCallback);

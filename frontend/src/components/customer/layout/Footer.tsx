@@ -1,8 +1,10 @@
-import React from "react";
+import React, { useContext } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { AuthContext } from "../../../context/AuthContext";
 
 export default function Footer() {
   const location = useLocation();
+  const { user } = useContext(AuthContext);
 
   // Hide footer on admin pages and auth pages
   if (location.pathname.startsWith("/admin") || location.pathname === "/login" || location.pathname === "/register") {
@@ -41,7 +43,13 @@ export default function Footer() {
             <ul className="flex flex-col items-start space-y-3.5 text-sm p-0 m-0 list-none text-left w-full">
               <li><Link to="/" className="text-slate-400 hover:text-violet-400 transition-colors no-underline">Home</Link></li>
               <li><Link to="/sales-policy" className="text-slate-400 hover:text-violet-400 transition-colors no-underline text-nowrap">Sales Policy</Link></li>
-              <li><Link to="/order" className="text-slate-400 hover:text-violet-400 transition-colors no-underline text-nowrap">Order Tracking</Link></li>
+              <li>
+                {user ? (
+                  <Link to="/profile?tab=orders" className="text-slate-400 hover:text-violet-400 transition-colors no-underline text-nowrap">My Orders</Link>
+                ) : (
+                  <Link to="/order" className="text-slate-400 hover:text-violet-400 transition-colors no-underline text-nowrap">Order Tracking</Link>
+                )}
+              </li>
               <li><Link to="/search" className="text-slate-400 hover:text-violet-400 transition-colors no-underline text-nowrap">Search Products</Link></li>
             </ul>
           </div>

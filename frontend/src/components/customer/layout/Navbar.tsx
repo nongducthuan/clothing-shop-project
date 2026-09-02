@@ -291,7 +291,7 @@ const MobileMenu = ({ isOpen, onClose, user, menuData, navigate, onLogout }) => 
           </div>
 
           {/* Essential Quick Links (Mobile accessible!) */}
-          <div className="grid grid-cols-2 gap-3 mb-6">
+          <div className={`grid ${!user ? "grid-cols-2" : "grid-cols-1"} gap-3 mb-6`}>
             <button
               onClick={() => handleNav("/sales-policy")}
               className="flex items-center gap-2 px-2.5 py-3 bg-slate-50 border border-slate-100 rounded-xl text-slate-700 font-semibold text-[13px] hover:bg-violet-50 hover:text-violet-700 transition-all text-left"
@@ -302,15 +302,17 @@ const MobileMenu = ({ isOpen, onClose, user, menuData, navigate, onLogout }) => 
               <span className="whitespace-normal leading-tight">Sales Policy</span>
             </button>
 
-            <button
-              onClick={() => handleNav("/order")}
-              className="flex items-center gap-2 px-2.5 py-3 bg-slate-50 border border-slate-100 rounded-xl text-slate-700 font-semibold text-[13px] hover:bg-violet-50 hover:text-violet-700 transition-all text-left"
-            >
-              <div className="w-7 h-7 rounded-lg bg-sky-100 text-sky-600 flex items-center justify-center shrink-0">
-                <i className="fa-solid fa-truck-fast text-xs"></i>
-              </div>
-              <span className="whitespace-normal leading-tight">Track Order</span>
-            </button>
+            {!user && (
+              <button
+                onClick={() => handleNav("/order")}
+                className="flex items-center gap-2 px-2.5 py-3 bg-slate-50 border border-slate-100 rounded-xl text-slate-700 font-semibold text-[13px] hover:bg-violet-50 hover:text-violet-700 transition-all text-left"
+              >
+                <div className="w-7 h-7 rounded-lg bg-sky-100 text-sky-600 flex items-center justify-center shrink-0">
+                  <i className="fa-solid fa-truck-fast text-xs"></i>
+                </div>
+                <span className="whitespace-normal leading-tight">Track Order</span>
+              </button>
+            )}
           </div>
 
           {/* Categories Accordion */}
