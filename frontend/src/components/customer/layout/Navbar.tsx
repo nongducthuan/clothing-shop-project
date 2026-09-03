@@ -256,19 +256,19 @@ const MobileMenu = ({ isOpen, onClose, user, menuData, navigate, onLogout }) => 
       <div className="fixed top-16 left-0 right-0 bottom-0 bg-white z-40 overflow-y-auto p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] md:hidden animate-fadeIn flex flex-col justify-between">
         <div>
           {/* User Info Mobile */}
-          <div className="mb-6 border-b border-gray-100 pb-4">
+          <div className="mb-3.5">
             {user ? (
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-violet-100 text-violet-700 rounded-full flex items-center justify-center font-bold text-xl shadow-sm">
+              <div
+                className="flex items-center gap-3.5 p-3.5 bg-slate-50 border border-slate-100 rounded-2xl cursor-pointer hover:bg-violet-50/60 hover:border-violet-200 transition-all shadow-xs"
+                onClick={() => handleNav("/profile")}
+              >
+                <div className="w-11 h-11 bg-violet-600 text-white rounded-full flex items-center justify-center font-bold text-lg shadow-sm shrink-0">
                   {user.name.charAt(0).toUpperCase()}
                 </div>
-                <div>
-                  <p className="font-bold text-gray-800 text-lg leading-tight">{user.name}</p>
-                  <p
-                    className="text-sm text-violet-600 cursor-pointer hover:underline font-medium mt-0.5"
-                    onClick={() => handleNav("/profile")}
-                  >
-                    View profile & orders →
+                <div className="flex-1 min-w-0 flex flex-col justify-center">
+                  <p className="font-bold text-gray-900 text-base leading-snug truncate">{user.name}</p>
+                  <p className="text-xs text-violet-600 font-semibold mt-0.5 flex items-center gap-1">
+                    View profile & orders <i className="fa-solid fa-arrow-right text-[10px]"></i>
                   </p>
                 </div>
               </div>
@@ -291,35 +291,42 @@ const MobileMenu = ({ isOpen, onClose, user, menuData, navigate, onLogout }) => 
           </div>
 
           {/* Essential Quick Links (Mobile accessible!) */}
-          <div className={`grid ${!user ? "grid-cols-2" : "grid-cols-1"} gap-3 mb-6`}>
+          <div className="grid grid-cols-2 gap-2.5 mb-3.5">
             <button
               onClick={() => handleNav("/sales-policy")}
-              className="flex items-center gap-2 px-2.5 py-3 bg-slate-50 border border-slate-100 rounded-xl text-slate-700 font-semibold text-[13px] hover:bg-violet-50 hover:text-violet-700 transition-all text-left"
+              className="flex items-center gap-2 px-2.5 py-2.5 bg-slate-50 border border-slate-100 rounded-xl text-slate-700 font-semibold text-xs hover:bg-violet-50 hover:text-violet-700 transition-all text-left"
             >
               <div className="w-7 h-7 rounded-lg bg-violet-100 text-violet-600 flex items-center justify-center shrink-0">
                 <i className="fa-solid fa-shield-halved text-xs"></i>
               </div>
-              <span className="whitespace-normal leading-tight">Sales Policy</span>
+              <span className="whitespace-nowrap leading-tight">Sales Policy</span>
             </button>
 
-            {!user && (
+            {user ? (
+              <button
+                onClick={() => handleNav("/profile?tab=orders")}
+                className="flex items-center gap-2 px-2.5 py-2.5 bg-slate-50 border border-slate-100 rounded-xl text-slate-700 font-semibold text-xs hover:bg-violet-50 hover:text-violet-700 transition-all text-left"
+              >
+                <div className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
+                  <i className="fa-solid fa-box-archive text-xs"></i>
+                </div>
+                <span className="whitespace-nowrap leading-tight">My Orders</span>
+              </button>
+            ) : (
               <button
                 onClick={() => handleNav("/order")}
-                className="flex items-center gap-2 px-2.5 py-3 bg-slate-50 border border-slate-100 rounded-xl text-slate-700 font-semibold text-[13px] hover:bg-violet-50 hover:text-violet-700 transition-all text-left"
+                className="flex items-center gap-2 px-2.5 py-2.5 bg-slate-50 border border-slate-100 rounded-xl text-slate-700 font-semibold text-xs hover:bg-violet-50 hover:text-violet-700 transition-all text-left"
               >
                 <div className="w-7 h-7 rounded-lg bg-sky-100 text-sky-600 flex items-center justify-center shrink-0">
                   <i className="fa-solid fa-truck-fast text-xs"></i>
                 </div>
-                <span className="whitespace-normal leading-tight">Track Order</span>
+                <span className="whitespace-nowrap leading-tight">Track Order</span>
               </button>
             )}
           </div>
 
           {/* Categories Accordion */}
           <div className="space-y-3">
-            <div className="text-xs font-bold uppercase tracking-wider text-slate-400 px-1 mb-1">
-              Categories
-            </div>
             {GENDERS.map((gender) => (
               <div key={gender} className="bg-gray-50 rounded-2xl overflow-hidden border border-slate-100">
                 <button
@@ -435,8 +442,16 @@ export default function Navbar() {
               <i className="fa-solid fa-shield-halved text-xl text-gray-600 hover:text-violet-600 transition-colors"></i>
             </div>
 
-            {/* Order Lookup (Guest only) */}
-            {!user && (
+            {/* Order Shortcut */}
+            {user ? (
+              <div
+                className="cursor-pointer relative group hidden sm:block p-1.5"
+                onClick={() => navigate("/profile?tab=orders")}
+                title="My Orders"
+              >
+                <i className="fa-solid fa-box-archive text-xl text-gray-600 hover:text-violet-600 transition-colors"></i>
+              </div>
+            ) : (
               <div
                 className="cursor-pointer relative group hidden sm:block p-1.5"
                 onClick={() => navigate("/order")}

@@ -20,7 +20,7 @@ export function useReport() {
   }, []);
 
   const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'VND' }).format(amount || 0);
+    return new Intl.NumberFormat('vi-VN').format(amount || 0) + 'đ';
   };
 
   // Nếu đang loading hoặc lỗi thì chưa cần map data

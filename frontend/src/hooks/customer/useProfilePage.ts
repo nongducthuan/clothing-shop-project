@@ -1,6 +1,6 @@
 import { useState, useEffect, useContext, useMemo } from "react";
 import { AuthContext } from "../../context/AuthContext.jsx";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import API from "../../services/apiClient.js";
 import { getImageUrl } from "../../utils/imageUtils";
 import { useToast } from "../../context/ToastContext";
@@ -26,9 +26,14 @@ export function useProfilePage() {
   const { showToast } = useToast();
   const { user, logout, tier, refreshUser } = useContext(AuthContext);
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   // --- State Management ---
-  const [activeTab, setActiveTab] = useState("info");
+  const activeTab = searchParams.get("tab") === "orders" ? "orders" : "info";
+  const setActiveTab = (tab: string) => {
+    setSearchParams({ tab });
+  };
+
   const [orders, setOrders] = useState([]);
   const [loadingOrders, setLoadingOrders] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
@@ -56,9 +61,7 @@ export function useProfilePage() {
 
     refreshUser();
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const paymentResult = urlParams.get("resultCode");
-
+    const paymentResult = searchParams.get("resultCode");
     if (paymentResult) {
       if (paymentResult === "0") {
         showToast("🎉 Order paid successfully! Thank you.", "success");
@@ -66,7 +69,9 @@ export function useProfilePage() {
       } else {
         showToast("❌ Payment failed or was cancelled.", "error");
       }
-      window.history.replaceState({}, document.title, "/profile");
+      const newParams = new URLSearchParams(searchParams);
+      newParams.delete("resultCode");
+      setSearchParams(newParams);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, navigate]);
@@ -164,7 +169,7 @@ export function useProfilePage() {
   };
 
   const handleReturnDataChange = (field, value) => setReturnData((prev) => ({ ...prev, [field]: value }));
-  const formatCurrency = (val) => Number(val).toLocaleString("en-US") + " VND";
+  const formatCurrency = (val) => Number(val).toLocaleString("vi-VN") + "đ";
   const getImgUrl = (path) => getImageUrl(path);
 
   const updateProfile = async () => {

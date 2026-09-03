@@ -1,5 +1,6 @@
 import React from "react";
 import { getImageUrl } from "../../../utils/imageUtils";
+import { PaymentBadge } from "../../common/PaymentBadge";
 
 export default function OrdersStep({
   orders, expandedOrder, toggleOrder, formatCurrency,
@@ -27,9 +28,11 @@ export default function OrdersStep({
                       {order.status}
                     </span>
                   </div>
-                  <p className="text-xs text-gray-400 mt-1">
-                    {new Date(order.created_at).toLocaleDateString('vi-VN')} • <span className="capitalize">{order.payment_method}</span>
-                  </p>
+                  <div className="flex items-center gap-1.5 mt-1">
+                    <span className="text-xs text-gray-400">{new Date(order.created_at).toLocaleDateString('vi-VN')}</span>
+                    <span className="text-gray-300">•</span>
+                    <PaymentBadge method={order.payment_method} badgeStyle={true} />
+                  </div>
                 </div>
                 <div className="text-right flex flex-col items-end gap-1">
                   <div className="flex items-center gap-2">

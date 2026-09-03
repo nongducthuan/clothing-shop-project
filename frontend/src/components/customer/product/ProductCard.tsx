@@ -8,7 +8,7 @@ const GENDER_CONFIG = {
   unisex: { label: "Unisex", colorClass: "bg-emerald-50 text-emerald-600 border-emerald-100" },
 };
 
-const formatCurrency = (amount) => Number(amount).toLocaleString("en-US") + " VND";
+const formatCurrency = (amount: number) => Number(amount).toLocaleString("vi-VN") + "đ";
 
 
 interface ProductCardProps {

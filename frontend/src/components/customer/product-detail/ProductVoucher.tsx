@@ -32,7 +32,64 @@ export default function ProductVoucher({ state, helpers }) {
       {toastMessage && (
         <Toast message={toastMessage} type="success" onClose={() => setToastMessage(null)} />
       )}
-      <div className="w-full mb-6 bg-rose-50 border border-rose-200 rounded-2xl flex items-stretch">
+
+      {/* Mobile layout — vertical ticket style */}
+      <div className="sm:hidden w-full mb-6 bg-rose-50 border border-rose-200 rounded-2xl">
+        {/* Top: info */}
+        <div className="px-4 pt-4 pb-3">
+          <div className="flex items-center gap-2">
+            <span className="text-xl font-bold text-rose-700 leading-none">
+              {Number.parseFloat(activeVoucher.discount_percent)}% off
+            </span>
+            <span className="font-mono text-[11px] font-bold text-rose-600 bg-white border border-dashed border-rose-300 px-2 py-0.5 rounded-md tracking-wide leading-none">
+              {activeVoucher.code}
+            </span>
+          </div>
+          <p className="text-[11px] text-slate-500 mt-1.5">{scopeLabel}</p>
+          {(activeVoucher.min_order_value > 0 || activeVoucher.max_discount_amount > 0 || remainingUses !== null) && (
+            <div className="flex items-center justify-between gap-1.5 mt-2.5 pt-1.5 border-t border-rose-200/50">
+              {activeVoucher.min_order_value > 0 && (
+                <span className="text-[11px] text-slate-500">
+                  Min: <span className="font-semibold text-slate-700">{formatPrice(Math.floor(activeVoucher.min_order_value))}đ</span>
+                </span>
+              )}
+              {activeVoucher.max_discount_amount > 0 && (
+                <span className="text-[11px] text-slate-500">
+                  Max: <span className="font-semibold text-slate-700">{formatPrice(Math.floor(activeVoucher.max_discount_amount))}đ</span>
+                </span>
+              )}
+              {remainingUses !== null && (
+                <span className={`text-[11px] font-bold ${isRunningOut ? "text-rose-600 animate-pulse" : "text-slate-600"}`}>
+                  {remainingUses} left
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Horizontal ticket notch divider */}
+        <div className="relative h-0">
+          <div className="absolute -left-[9px] top-0 w-[18px] h-[18px] rounded-full bg-white" />
+          <div className="absolute -right-[9px] top-0 w-[18px] h-[18px] rounded-full bg-white" />
+          <div className="absolute left-[9px] right-[9px] top-[9px] border-t border-dashed border-rose-300" />
+        </div>
+
+        {/* Bottom: copy button */}
+        <div className="px-4 pt-4 pb-3 flex items-center justify-center">
+          <button
+            onClick={handleCopy}
+            className={`w-full h-10 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all active:scale-95 ${
+              isCopied ? "bg-emerald-600 text-white shadow-sm" : "bg-slate-900 text-white hover:bg-slate-800"
+            }`}
+          >
+            <i className={`fa-solid ${isCopied ? "fa-check text-xs" : "fa-copy text-xs"}`}></i>
+            {isCopied ? "Copied!" : "Copy code"}
+          </button>
+        </div>
+      </div>
+
+      {/* Desktop layout — ticket style */}
+      <div className="hidden sm:flex w-full mb-6 bg-rose-50 border border-rose-200 rounded-2xl items-stretch">
         {/* Left: main info */}
         <div className="flex-1 px-5 py-4">
           <div className="flex items-baseline gap-2 flex-wrap">
@@ -44,7 +101,6 @@ export default function ProductVoucher({ state, helpers }) {
             </span>
           </div>
           <p className="text-xs text-slate-500 mt-1">{scopeLabel}</p>
-
           <div className="flex flex-wrap gap-5 mt-3">
             {activeVoucher.min_order_value > 0 && (
               <div>
@@ -70,21 +126,21 @@ export default function ProductVoucher({ state, helpers }) {
         </div>
 
         {/* Ticket notch divider */}
-        <div className="relative w-0 hidden sm:block">
+        <div className="relative w-0">
           <div className="absolute -top-[9px] -left-[9px] w-[18px] h-[18px] rounded-full bg-white" />
           <div className="absolute -bottom-[9px] -left-[9px] w-[18px] h-[18px] rounded-full bg-white" />
           <div className="absolute top-[9px] bottom-[9px] left-0 border-l border-dashed border-rose-300" />
         </div>
 
         {/* Right: copy button */}
-        <div className="w-full sm:w-[130px] flex items-center justify-center px-4 py-4 border-t sm:border-t-0 border-dashed border-rose-300 sm:border-0">
+        <div className="w-[145px] flex items-center justify-center px-4 py-4 shrink-0">
           <button
             onClick={handleCopy}
-            className={`w-full h-10 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all active:scale-95 ${
-              isCopied ? "bg-emerald-600 text-white" : "bg-slate-900 text-white hover:bg-slate-800"
+            className={`w-full h-10 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all active:scale-95 ${
+              isCopied ? "bg-emerald-600 text-white shadow-sm" : "bg-slate-900 text-white hover:bg-slate-800"
             }`}
           >
-            <i className="fa-solid fa-copy text-xs"></i>
+            <i className={`fa-solid ${isCopied ? "fa-check text-xs" : "fa-copy text-xs"}`}></i>
             {isCopied ? "Copied!" : "Copy code"}
           </button>
         </div>

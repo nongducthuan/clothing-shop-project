@@ -1,5 +1,6 @@
 import React from "react";
 import { ModernStatusBadge, PaymentStatusBadge } from "./OrderBadges";
+import { PaymentBadge } from "../../common/PaymentBadge";
 
 export default function OrderDetailModal({ order, onClose, helpers }) {
   if (!order) return null;
@@ -116,9 +117,7 @@ export default function OrderDetailModal({ order, onClose, helpers }) {
 
             <div className="flex justify-between items-center gap-3 border-t border-slate-200/60 pt-2.5 sm:pt-3">
               <span className="text-slate-500 shrink-0">Payment Method</span>
-              <span className="font-medium text-slate-900 capitalize text-right">
-                {order.payment_method}
-              </span>
+              <PaymentBadge method={order.payment_method} badgeStyle={true} />
             </div>
 
             <div className="flex justify-between items-center gap-3 border-t border-slate-200/60 pt-2.5 sm:pt-3">

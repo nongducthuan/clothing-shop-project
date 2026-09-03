@@ -70,6 +70,7 @@ export default function useProductManager() {
   const [form, setForm] = useState({
     name: "",
     description: "",
+    import_price: "",
     price: "",
     image_url: "",
     gender: "unisex",
@@ -81,7 +82,7 @@ export default function useProductManager() {
   // --- Helpers ---
   const resetForm = useCallback(() => {
     setEditingId(null);
-    setForm({ name: "", description: "", price: "", image_url: "", gender: "unisex", category_id: "" });
+    setForm({ name: "", description: "", import_price: "", price: "", image_url: "", gender: "unisex", category_id: "" });
     setMobileFormOpen(false);
   }, []);
 
@@ -142,7 +143,13 @@ export default function useProductManager() {
       return;
     }
 
-    const payload = { ...form, name: cleanName, description: form.description.trim() };
+    const payload = {
+      ...form,
+      name: cleanName,
+      description: form.description.trim(),
+      import_price: form.import_price ? +form.import_price : 0,
+      price: +form.price
+    };
 
     try {
       const endpoint = editingId ? `/admin/products/${editingId}` : "/admin/products";
@@ -162,6 +169,7 @@ export default function useProductManager() {
     setForm({
       name: p.name,
       description: p.description || "",
+      import_price: p.import_price || "",
       price: p.price,
       image_url: p.image_url || "",
       gender: p.gender,

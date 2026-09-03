@@ -1,5 +1,6 @@
 import React from "react";
 import { ModernStatusBadge, PaymentStatusBadge } from "./OrderBadges";
+import { PaymentBadge } from "../../common/PaymentBadge";
 
 export default function OrderListTab({ state, actions, helpers }) {
   const { orders, loadingOrders } = state;
@@ -57,29 +58,22 @@ export default function OrderListTab({ state, actions, helpers }) {
               </div>
 
               {/* Payment & Total Block */}
-              <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100/80 mb-4 flex justify-between items-stretch gap-2">
-
-                {/* Cột trái: Badge & Phương thức thanh toán */}
-                <div className="flex flex-col justify-between">
-                  <div className="mb-1">
-                    <PaymentStatusBadge status={order.payment_status} />
-                  </div>
-                  <p className="text-xs text-slate-500 font-medium capitalize pl-0.5">
-                    {order.payment_method}
-                  </p>
-                </div>
-
-                {/* Cột phải: Total & Giá tiền (đã rút gọn) */}
-                <div className="flex flex-col justify-between text-right shrink-0">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">
+              <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100/80 mb-4 space-y-2.5">
+                {/* Hàng 1: Trạng thái thanh toán (Trái) & Chữ TOTAL (Phải) */}
+                <div className="flex justify-between items-center">
+                  <PaymentStatusBadge status={order.payment_status} />
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                     Total
                   </span>
-                  <p className="text-base font-bold text-slate-900 whitespace-nowrap leading-none">
-                    {/* Sửa trong hàm formatCurrency hoặc thay trực tiếp bằng .replace */}
-                    {formatCurrency(order.total_price).replace("VND", "đ")}
-                  </p>
                 </div>
 
+                {/* Hàng 2: Phương thức COD/Momo (Trái) & Giá tiền (Phải) */}
+                <div className="flex justify-between items-center">
+                  <PaymentBadge method={order.payment_method} badgeStyle={true} />
+                  <p className="text-base font-bold text-slate-900 leading-none">
+                    {formatCurrency(order.total_price)}
+                  </p>
+                </div>
               </div>
 
               {/* Notice Return */}

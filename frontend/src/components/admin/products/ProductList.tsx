@@ -123,9 +123,8 @@ export default function ProductList({
                       <div className="flex flex-col gap-1 flex-1 min-w-0">
                         <div className="flex items-baseline gap-1 text-red-600 leading-none">
                           <span className="font-black text-lg">
-                            {Number(p.price).toLocaleString()}
+                            {Number(p.price).toLocaleString()}đ
                           </span>
-                          <span className="font-bold text-[10px] uppercase">VND</span>
                         </div>
                         <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-1">
                           <div className="flex items-center gap-1 text-[10px] text-gray-500 whitespace-nowrap">

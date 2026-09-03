@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { getImageUrl } from "../../../utils/imageUtils";
+import { PaymentBadge } from "../../common/PaymentBadge";
 
 import { PAYMENT_OPTIONS, STATUS_OPTIONS } from "../../../hooks/admin/useOrderManager";
 
@@ -262,23 +263,43 @@ export default function OrderTable({
 const ReturnInfoSection = ({ order }) => {
   const bankInfo = order.refund_bank_info;
 
+  const getReturnBadge = (status: string) => {
+    if (status === "Return Approved") {
+      return (
+        <span className="text-[10px] font-extrabold uppercase tracking-widest bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-full border border-emerald-300/40 whitespace-nowrap inline-flex items-center shrink-0">
+          Approved
+        </span>
+      );
+    }
+    if (status === "Return Rejected") {
+      return (
+        <span className="text-[10px] font-extrabold uppercase tracking-widest bg-rose-100 text-rose-800 px-2.5 py-1 rounded-full border border-rose-300/40 whitespace-nowrap inline-flex items-center shrink-0">
+          Rejected
+        </span>
+      );
+    }
+    return (
+      <span className="text-[10px] font-extrabold uppercase tracking-widest bg-amber-200/60 text-amber-800 px-2.5 py-1 rounded-full border border-amber-300/40 whitespace-nowrap inline-flex items-center shrink-0">
+        Action Required
+      </span>
+    );
+  };
+
   return (
-    <div className="bg-gradient-to-r from-amber-50/60 via-orange-50/40 to-amber-50/60 p-5 sm:p-6 rounded-[1.75rem] border border-amber-200/60 text-sm shadow-sm space-y-5">
-      <div className="flex items-center justify-between">
-        <h5 className="font-extrabold text-amber-900 text-xs uppercase tracking-wider flex items-center gap-2 m-0 leading-none">
-          <span className="w-7 h-7 rounded-full bg-amber-100/80 text-amber-700 flex items-center justify-center text-xs shadow-xs">
+    <div className="bg-gradient-to-r from-amber-50/60 via-orange-50/40 to-amber-50/60 p-5 sm:p-6 rounded-[1.75rem] border border-amber-200/60 text-sm shadow-sm space-y-4">
+      <div className="flex items-center justify-between gap-2 flex-wrap">
+        <h5 className="font-extrabold text-amber-900 text-[11px] sm:text-xs uppercase tracking-wider flex items-center gap-2 m-0 leading-none whitespace-nowrap">
+          <span className="w-7 h-7 rounded-full bg-amber-100/80 text-amber-700 flex items-center justify-center text-xs shadow-xs shrink-0">
             <i className="fa-solid fa-rotate-left"></i>
           </span>
           Return Request Details
         </h5>
-        <span className="text-[10px] font-extrabold uppercase tracking-widest bg-amber-200/60 text-amber-800 px-2.5 py-1 rounded-full border border-amber-300/40">
-          Action Required
-        </span>
+        {getReturnBadge(order.status)}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Lý do trả hàng */}
-        <div className="bg-white p-5 rounded-2xl border border-amber-100/80 shadow-sm flex flex-col justify-between space-y-4">
+        <div className="bg-white p-5 rounded-2xl shadow-sm flex flex-col justify-between space-y-4">
           <div>
             <span className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-1">
               Reason for Return
@@ -292,15 +313,15 @@ const ReturnInfoSection = ({ order }) => {
             <span className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-1">
               Customer Note
             </span>
-            <div className="bg-slate-50/80 border border-slate-200/60 rounded-xl p-3.5 text-xs text-slate-600 italic leading-relaxed min-h-[50px] flex items-center">
+            <div className="bg-slate-50 rounded-xl p-3.5 text-xs text-slate-600 italic leading-relaxed min-h-[50px] flex items-center">
               "{order.description || "No additional description provided."}"
             </div>
           </div>
         </div>
 
-        {/* Thẻ Ngân hàng ATM Cao Cấp */}
-        <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 text-white p-5 rounded-2xl shadow-lg relative overflow-hidden flex flex-col justify-between min-h-[150px] border border-slate-700/50">
-          <div className="absolute -right-5 -bottom-5 text-white/5 text-8xl pointer-events-none">
+        {/* Thẻ Ngân hàng ATM */}
+        <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 text-white p-4 rounded-2xl shadow-lg relative overflow-hidden flex flex-col gap-2">
+          <div className="absolute -right-4 -bottom-4 text-white/5 text-8xl pointer-events-none">
             <i className="fa-solid fa-building-columns"></i>
           </div>
 
@@ -312,16 +333,16 @@ const ReturnInfoSection = ({ order }) => {
           </div>
 
           {bankInfo ? (
-            <div className="relative z-10 my-2 space-y-1">
+            <div className="relative z-10 space-y-0.5">
               <p className="text-[10px] uppercase font-semibold text-slate-400 tracking-wider">
                 {bankInfo.name || bankInfo.bankName || "Bank Account"}
               </p>
-              <p className="text-xl font-mono font-bold tracking-[0.18em] text-indigo-200 drop-shadow-sm">
+              <p className="text-base font-mono font-bold tracking-[0.15em] text-indigo-200 drop-shadow-sm">
                 {bankInfo.acc || bankInfo.bankNumber || "•••• •••• ••••"}
               </p>
             </div>
           ) : (
-            <p className="text-xs italic text-slate-400 relative z-10 my-auto">Missing bank account details</p>
+            <p className="text-xs italic text-slate-400 relative z-10">Missing bank account details</p>
           )}
 
           <div className="relative z-10 pt-2 border-t border-white/10 flex justify-between items-center text-xs">
@@ -390,15 +411,18 @@ const DeliveryInfoSection = ({ order }) => {
         </div>
         <div>
           <span className="block text-[10px] uppercase font-bold text-gray-400 mb-1 tracking-wider">Payment Method</span>
-          {order.payment_status === "Paid" ? (
-            <span className="text-green-600 font-extrabold bg-green-50 px-3 py-1.5 rounded-full inline-flex items-center gap-1.5 text-xs border border-green-100">
-              <i className="fa-solid fa-check-circle"></i> Paid ({order.payment_method === "momo" ? "MoMo" : "COD"})
-            </span>
-          ) : (
-            <span className="text-orange-600 font-extrabold bg-orange-50 px-3 py-1.5 rounded-full inline-flex items-center gap-1.5 text-xs border border-orange-100">
-              <i className="fa-solid fa-clock"></i> Awaiting ({order.payment_method === "momo" ? "MoMo" : "COD"})
-            </span>
-          )}
+          <div className="flex items-center gap-2">
+            <PaymentBadge method={order.payment_method} badgeStyle={true} />
+            {order.payment_status === "Paid" ? (
+              <span className="text-green-600 font-extrabold bg-green-50 px-2.5 py-1 rounded-full inline-flex items-center gap-1 text-[11px] border border-green-100">
+                <i className="fa-solid fa-check-circle"></i> Paid
+              </span>
+            ) : (
+              <span className="text-orange-600 font-extrabold bg-orange-50 px-2.5 py-1 rounded-full inline-flex items-center gap-1 text-[11px] border border-orange-100">
+                <i className="fa-solid fa-clock"></i> Awaiting
+              </span>
+            )}
+          </div>
         </div>
       </div>
     </div>

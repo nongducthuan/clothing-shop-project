@@ -32,7 +32,7 @@ export default function ProductForm({
 
       <div className={`lg:col-span-4 ${mobileFormOpen ? "block" : "hidden lg:block"}`}>
         <div className="bg-white p-6 md:p-8 rounded-[2rem] border border-gray-100 shadow-sm lg:sticky lg:top-24 transition-all duration-300">
-          <h3 className="text-xl font-extrabold mb-6 text-gray-800 flex items-center gap-3 m-0 leading-none">
+          <h3 className="text-xl font-extrabold mb-6 text-gray-800 flex items-center gap-3 leading-none">
             {editingId ? (
               <><i className="fa-solid fa-pen-to-square text-violet-500"></i> Edit Product</>
             ) : (
@@ -53,25 +53,40 @@ export default function ProductForm({
               />
             </div>
 
+            {/* Prices Row: Cost Price & Selling Price */}
             <div className="grid grid-cols-2 gap-4">
-              {/* Price Input - Đã thêm onWheel và no-spinner */}
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2 ml-1">Price</label>
+                <label className="block text-sm font-bold text-gray-700 mb-2 ml-1">Cost Price (đ)</label>
                 <input
                   type="number"
-                  onWheel={handleWheel} // Ngăn chặn lăn chuột
+                  onWheel={handleWheel}
+                  className="w-full px-4 py-3 bg-gray-50 border-transparent focus:bg-white focus:border-violet-500 focus:ring-4 focus:ring-violet-500/10 rounded-2xl transition-all duration-300 outline-none text-gray-800 font-medium no-spinner"
+                  value={form.import_price || ""}
+                  onChange={(e) => setForm({ ...form, import_price: e.target.value === "" ? "" : +e.target.value })}
+                  placeholder="e.g. 100000"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2 ml-1">Selling Price (đ)</label>
+                <input
+                  type="number"
+                  onWheel={handleWheel}
                   className="w-full px-4 py-3 bg-gray-50 border-transparent focus:bg-white focus:border-violet-500 focus:ring-4 focus:ring-violet-500/10 rounded-2xl transition-all duration-300 outline-none text-gray-800 font-medium no-spinner"
                   value={form.price}
-                  onChange={(e) => setForm({ ...form, price: +e.target.value })}
-                  placeholder="0"
+                  onChange={(e) => setForm({ ...form, price: e.target.value === "" ? "" : +e.target.value })}
+                  placeholder="e.g. 150000"
                   required
                 />
               </div>
-              {/* Gender Select */}
+            </div>
+
+            {/* Gender & Category Row */}
+            <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-2 ml-1">Gender</label>
                 <select
-                  className="w-full px-4 py-3 bg-gray-50 border-transparent focus:bg-white focus:border-violet-500 focus:ring-4 focus:ring-violet-500/10 rounded-2xl transition-all duration-300 outline-none text-gray-800 font-medium appearance-none cursor-pointer"
+                  className="w-full px-3.5 py-3 bg-gray-50 border-transparent focus:bg-white focus:border-violet-500 focus:ring-4 focus:ring-violet-500/10 rounded-2xl transition-all duration-300 outline-none text-gray-800 font-medium appearance-none cursor-pointer text-sm"
                   value={form.gender}
                   onChange={(e) => setForm({ ...form, gender: e.target.value, category_id: "" })}
                 >
@@ -80,26 +95,25 @@ export default function ProductForm({
                   <option value="female">Female</option>
                 </select>
               </div>
-            </div>
 
-            {/* Category Select */}
-            <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2 ml-1">Category</label>
-              <select
-                className="w-full px-4 py-3 bg-gray-50 border-transparent focus:bg-white focus:border-violet-500 focus:ring-4 focus:ring-violet-500/10 rounded-2xl transition-all duration-300 outline-none text-gray-800 font-medium appearance-none cursor-pointer"
-                value={form.category_id}
-                onChange={(e) => setForm({ ...form, category_id: e.target.value })}
-                required
-              >
-                <option value="">-- Select Category --</option>
-                {categories
-                  .filter((c) => c.gender === form.gender)
-                  .map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name}
-                    </option>
-                  ))}
-              </select>
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2 ml-1">Category</label>
+                <select
+                  className="w-full px-3.5 py-3 bg-gray-50 border-transparent focus:bg-white focus:border-violet-500 focus:ring-4 focus:ring-violet-500/10 rounded-2xl transition-all duration-300 outline-none text-gray-800 font-medium appearance-none cursor-pointer text-sm"
+                  value={form.category_id}
+                  onChange={(e) => setForm({ ...form, category_id: e.target.value })}
+                  required
+                >
+                  <option value="">Select Category</option>
+                  {categories
+                    .filter((c) => c.gender === form.gender)
+                    .map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.name}
+                      </option>
+                    ))}
+                </select>
+              </div>
             </div>
 
             {/* Image Upload */}

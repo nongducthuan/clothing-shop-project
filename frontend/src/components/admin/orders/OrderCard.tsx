@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { PaymentBadge } from "../../common/PaymentBadge";
 
 import { PAYMENT_OPTIONS, STATUS_OPTIONS } from "../../../hooks/admin/useOrderManager";
 
@@ -90,9 +91,7 @@ export default function OrderCard({
                     {new Date(order.created_at).toLocaleString("en-GB")}
                   </p>
                 </div>
-                <span className="text-[10px] uppercase tracking-wider px-3 py-1.5 rounded-full bg-gray-50 text-gray-600 font-bold border border-gray-100 shadow-sm">
-                  {order.payment_method === "momo" ? "💳 MoMo" : "💵 COD"}
-                </span>
+                <PaymentBadge method={order.payment_method} badgeStyle={true} />
               </div>
 
               {/* Customer Info */}
