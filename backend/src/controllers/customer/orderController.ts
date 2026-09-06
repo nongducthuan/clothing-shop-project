@@ -5,6 +5,8 @@ import { recordInteraction } from '../../services/interactionService';
 import https from 'https';
 import crypto from 'crypto';
 import { changeOrderStatusLogic } from '../admin/orderController';
+import { generateVnPayUrl, verifyVnPayReturn } from '../../utils/vnpayService';
+import { getMomoPayUrl, verifyMomoSignature } from '../../utils/momoService';
 
 const ENUM_TO_DISPLAY_STATUS: Record<string, string> = {
     "Return_Requested": "Return Requested",
@@ -140,60 +142,6 @@ export const verifyOtpAndGetOrders = async (req: Request, res: Response): Promis
         res.status(500).json({ message: "System error while fetching orders" });
     }
 };
-
-// ─── MoMo ─────────────────────────────────────────────────────────────────────
-
-async function getMomoPayUrl(orderId: string, amountInput: number | string, orderInfo: string): Promise<any> {
-    const partnerCode = process.env.MOMO_PARTNER_CODE || '';
-    const accessKey = process.env.MOMO_ACCESS_KEY || '';
-    const secretKey = process.env.MOMO_SECRET_KEY || '';
-
-    const amountNumber = Math.round(Number(amountInput));
-    const amountString = amountNumber.toString();
-    const requestId = `${orderId}_${Date.now()}`;
-    const momoOrderId = requestId;
-    const redirectUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/profile`;
-    // Ensure we handle BACKEND_URL whether it has a trailing slash or includes /api already
-    const baseUrl = process.env.BACKEND_URL?.replace(/\/+$/, '').replace(/\/api$/, '') || 'http://localhost:5000';
-    const ipnUrl = `${baseUrl}/api/orders/momo-callback`;
-    const requestType = "payWithATM";
-    const extraData = "";
-
-    const rawSignature = `accessKey=${accessKey}&amount=${amountString}&extraData=${extraData}&ipnUrl=${ipnUrl}&orderId=${momoOrderId}&orderInfo=${orderInfo}&partnerCode=${partnerCode}&redirectUrl=${redirectUrl}&requestId=${requestId}&requestType=${requestType}`;
-    const signature = crypto.createHmac('sha256', secretKey).update(rawSignature).digest('hex');
-
-    const requestBody = JSON.stringify({
-        partnerCode, accessKey, requestId, amount: amountNumber,
-        orderId: momoOrderId, orderInfo, redirectUrl, ipnUrl,
-        extraData, requestType, signature, lang: 'en'
-    });
-
-    return new Promise((resolve, reject) => {
-        const options = {
-            hostname: 'test-payment.momo.vn',
-            port: 443,
-            path: '/v2/gateway/api/create',
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Content-Length': Buffer.byteLength(requestBody)
-            }
-        };
-
-        const req = https.request(options, res => {
-            let data = '';
-            res.on('data', chunk => data += chunk);
-            res.on('end', () => {
-                try { resolve(JSON.parse(data)); }
-                catch (e) { resolve({ errorCode: -1, message: "Error parsing MoMo response" }); }
-            });
-        });
-
-        req.on('error', e => reject(e));
-        req.write(requestBody);
-        req.end();
-    });
-}
 
 // ─── ORDER CREATION ───────────────────────────────────────────────────────────
 
@@ -420,6 +368,27 @@ export const createOrderController = async (req: Request, res: Response): Promis
             }
         }
 
+        if (payment_method === "vnpay") {
+            try {
+                const clientIp = (req.headers['x-forwarded-for'] as string) || req.socket.remoteAddress || '127.0.0.1';
+                const vnpayUrl = generateVnPayUrl({
+                    orderId: orderId.toString(),
+                    amount: finalTotal,
+                    orderInfo: `Thanh toan don hang #${orderId}`,
+                    ipAddr: clientIp,
+                });
+                res.status(201).json({ message: "Redirecting to VNPay", orderId, payUrl: vnpayUrl });
+                return;
+            } catch (vnpError: any) {
+                console.error("VNPay API Error:", vnpError);
+                res.status(201).json({
+                    message: "Order created but VNPay payment link failed. Please retry payment in your profile.",
+                    orderId, payUrl: null
+                });
+                return;
+            }
+        }
+
         res.status(201).json({ message: "Order placed successfully (COD)", orderId, total: finalTotal, payUrl: null });
 
     } catch (error: any) {
@@ -537,17 +506,10 @@ export const changeOrderStatus = async (req: Request, res: Response): Promise<vo
 // Fix 2: Verify HMAC signature từ MoMo trước khi xử lý
 export const momoCallback = async (req: Request, res: Response): Promise<void> => {
     try {
-        const {
-            partnerCode, orderId, requestId, amount, orderInfo,
-            orderType, transId, resultCode, message, payType,
-            responseTime, extraData, signature
-        } = req.body;
+        const { orderId, resultCode } = req.body;
+        const isValid = verifyMomoSignature(req.body);
 
-        const secretKey = process.env.MOMO_SECRET_KEY || '';
-        const rawSignature = `accessKey=${process.env.MOMO_ACCESS_KEY}&amount=${amount}&extraData=${extraData}&message=${message}&orderId=${orderId}&orderInfo=${orderInfo}&orderType=${orderType}&partnerCode=${partnerCode}&payType=${payType}&requestId=${requestId}&responseTime=${responseTime}&resultCode=${resultCode}&transId=${transId}`;
-        const expectedSignature = crypto.createHmac('sha256', secretKey).update(rawSignature).digest('hex');
-
-        if (signature !== expectedSignature) {
+        if (!isValid) {
             console.warn(`MoMo IPN: Invalid signature for orderId=${orderId}`);
             res.status(400).json({ message: "Invalid signature" });
             return;
@@ -575,7 +537,88 @@ export const momoCallback = async (req: Request, res: Response): Promise<void> =
     }
 };
 
-// ─── REPAY MOMO ───────────────────────────────────────────────────────────────
+// ─── VNPAY CALLBACK & IPN ───────────────────────────────────────────────────
+
+export const vnpayIpn = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const vnpParams = req.query;
+        const verifyResult = verifyVnPayReturn(vnpParams);
+
+        if (!verifyResult.isValidSignature) {
+            console.warn(`VNPay IPN: Invalid signature for TxnRef=${verifyResult.vnp_TxnRef}`);
+            res.status(200).json({ RspCode: '97', Message: 'Invalid Checksum' });
+            return;
+        }
+
+        const realOrderId = Number(verifyResult.vnp_TxnRef.split('_')[0]);
+        const order = await prisma.order.findUnique({ where: { id: realOrderId } });
+
+        if (!order) {
+            res.status(200).json({ RspCode: '01', Message: 'Order not found' });
+            return;
+        }
+
+        if (order.payment_status === 'Paid') {
+            res.status(200).json({ RspCode: '02', Message: 'Order already confirmed' });
+            return;
+        }
+
+        if (verifyResult.responseCode === '00') {
+            await prisma.order.update({
+                where: { id: realOrderId },
+                data: { payment_status: 'Paid' }
+            });
+
+            try {
+                await changeOrderStatusLogic(realOrderId, 'Confirmed');
+            } catch (orderError: any) {
+                console.error("Order Status Update Error (VNPay IPN):", orderError.message);
+            }
+            res.status(200).json({ RspCode: '00', Message: 'Confirm Success' });
+        } else {
+            res.status(200).json({ RspCode: '00', Message: 'Confirm Success' });
+        }
+    } catch (error: any) {
+        console.error("FULL VNPAY IPN ERROR LOG:", error);
+        res.status(200).json({ RspCode: '99', Message: 'Unknown error' });
+    }
+};
+
+export const vnpayReturn = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const vnpParams = req.query;
+        const verifyResult = verifyVnPayReturn(vnpParams);
+
+        if (!verifyResult.isValidSignature) {
+            res.status(400).json({ success: false, message: "Invalid signature" });
+            return;
+        }
+
+        const realOrderId = Number(verifyResult.vnp_TxnRef.split('_')[0]);
+
+        if (verifyResult.responseCode === '00') {
+            const order = await prisma.order.findUnique({ where: { id: realOrderId } });
+            if (order && order.payment_status !== 'Paid') {
+                await prisma.order.update({
+                    where: { id: realOrderId },
+                    data: { payment_status: 'Paid' }
+                });
+                try {
+                    await changeOrderStatusLogic(realOrderId, 'Confirmed');
+                } catch (e) {
+                    console.error("Error updating order status in VNPay Return:", e);
+                }
+            }
+            res.json({ success: true, orderId: realOrderId, message: "Payment successful" });
+        } else {
+            res.json({ success: false, orderId: realOrderId, message: "Payment failed or cancelled", responseCode: verifyResult.responseCode });
+        }
+    } catch (error: any) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// ─── REPAY MOMO / VNPAY ───────────────────────────────────────────────────────
 
 // Fix 4: Sửa auth logic – không cho bypass JWT bằng email
 export const repayMoMoController = async (req: Request, res: Response): Promise<void> => {
@@ -605,17 +648,33 @@ export const repayMoMoController = async (req: Request, res: Response): Promise<
             }
         }
 
-        if (order.payment_method !== 'momo' || order.payment_status === 'Paid') {
-            res.status(400).json({ message: "This order cannot be repaid or is already paid." });
+        if (order.payment_status === 'Paid') {
+            res.status(400).json({ message: "This order is already paid." });
             return;
         }
 
-        const momoOrderId = `REPAY_${order.id}_${Date.now()}`;
-        const momoResponse = await getMomoPayUrl(momoOrderId, Number(order.total_price), `Retry payment for order #${order.id}`);
+        if (order.payment_method === 'momo') {
+            const momoOrderId = `REPAY_${order.id}_${Date.now()}`;
+            const momoResponse = await getMomoPayUrl(momoOrderId, Number(order.total_price), `Retry payment for order #${order.id}`);
+            res.json({ payUrl: momoResponse.payUrl });
+            return;
+        }
 
-        res.json({ payUrl: momoResponse.payUrl });
+        if (order.payment_method === 'vnpay') {
+            const clientIp = (req.headers['x-forwarded-for'] as string) || req.socket.remoteAddress || '127.0.0.1';
+            const vnpayUrl = generateVnPayUrl({
+                orderId: `${order.id}_${Date.now()}`,
+                amount: Number(order.total_price),
+                orderInfo: `Retry payment for order #${order.id}`,
+                ipAddr: clientIp,
+            });
+            res.json({ payUrl: vnpayUrl });
+            return;
+        }
+
+        res.status(400).json({ message: "Repayment is not supported for this payment method." });
     } catch (error) {
-        console.error("MOMO_REPAY_ERROR:", error);
+        console.error("REPAY_ERROR:", error);
         res.status(500).json({ message: "Internal Server Error during repayment" });
     }
 };

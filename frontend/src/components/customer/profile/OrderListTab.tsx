@@ -93,12 +93,12 @@ export default function OrderListTab({ state, actions, helpers }) {
                 Details
               </button>
 
-              {order.payment_method === "momo" && order.payment_status === "Unpaid" && order.status !== "Cancelled" && (
+              {(order.payment_method === "momo" || order.payment_method === "vnpay") && order.payment_status === "Unpaid" && order.status !== "Cancelled" && (
                 <button
                   onClick={(e) => { e.stopPropagation(); handleMoMoPayment(order); }}
-                  className="flex-1 py-2.5 bg-pink-600 hover:bg-pink-700 text-white rounded-xl font-semibold text-xs sm:text-sm transition-colors shadow-sm shadow-pink-200"
+                  className={`flex-1 py-2.5 ${order.payment_method === 'vnpay' ? 'bg-blue-600 hover:bg-blue-700 shadow-blue-200' : 'bg-pink-600 hover:bg-pink-700 shadow-pink-200'} text-white rounded-xl font-semibold text-xs sm:text-sm transition-colors shadow-sm`}
                 >
-                  Pay MoMo
+                  {order.payment_method === 'vnpay' ? 'Pay VNPay' : 'Pay MoMo'}
                 </button>
               )}
 

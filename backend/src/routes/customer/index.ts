@@ -50,8 +50,11 @@ router.put('/orders/status', optionalAuthenticateToken, orderController.changeOr
 router.post('/orders/:id/repay', optionalAuthenticateToken, orderController.repayMoMoController);
 router.post('/orders/:id/return', optionalAuthenticateToken, upload.array('images'), orderController.submitReturnRequest);
 
-// MoMo Webhook (does not need /api prefix usually, but we'll include it or keep it as is, frontend config needs to match MoMo's setting)
+// MoMo & VNPay Webhooks & Callbacks
 router.post('/orders/momo-callback', orderController.momoCallback);
+router.get('/orders/vnpay-ipn', orderController.vnpayIpn);
+router.post('/orders/vnpay-ipn', orderController.vnpayIpn);
+router.get('/orders/vnpay-return', orderController.vnpayReturn);
 
 // --- Products ---
 router.get('/products', productController.getProducts);

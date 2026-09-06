@@ -25,6 +25,7 @@ import ProductDetail from "./pages/customer/ProductDetail.tsx";
 import Category from "./pages/customer/Category.tsx";
 import Profile from "./pages/customer/Profile.tsx";
 import SalesPolicy from "./pages/customer/SalesPolicy.tsx";
+import PaymentReturn from "./pages/customer/PaymentReturn.tsx";
 
 // Pages - Admin
 import Dashboard from "./pages/admin/Dashboard.tsx";
@@ -62,6 +63,7 @@ function App() {
                   <Route path="/login" element={<Login />} />
                   <Route path="/register" element={<Register />} />
                   <Route path="/sales-policy" element={<SalesPolicy />} />
+                  <Route path="/payment-return" element={<PaymentReturn />} />
 
                   {/* --- PROTECTED USER ROUTES --- */}
                   <Route

@@ -14,6 +14,16 @@ export function MoMoIcon({ className = "w-4 h-4" }: { className?: string }) {
   );
 }
 
+export function VnPayIcon({ className = "w-4 h-4" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="100" height="100" rx="22" fill="#005BAA" />
+      <path d="M22 30L38 70H48L32 30H22Z" fill="#ED1C24" />
+      <path d="M42 30L58 70H68L80 30H70L62 58L52 30H42Z" fill="white" />
+    </svg>
+  );
+}
+
 export function CodIcon({ className = "w-4 h-4" }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -39,23 +49,27 @@ export function PaymentBadge({
   className = "",
   badgeStyle = false,
 }: PaymentBadgeProps) {
-  const isMomo = method?.toLowerCase() === "momo";
-  const label = isMomo ? "MoMo" : "COD";
+  const m = method?.toLowerCase();
+  const isMomo = m === "momo";
+  const isVnPay = m === "vnpay";
+  const label = isVnPay ? "VNPay" : isMomo ? "MoMo" : "COD";
+
+  const getIcon = (sizeClass: string) => {
+    if (isVnPay) return <VnPayIcon className={sizeClass} />;
+    if (isMomo) return <MoMoIcon className={sizeClass} />;
+    return <CodIcon className={sizeClass} />;
+  };
 
   if (badgeStyle) {
+    const badgeColor = isVnPay
+      ? "bg-blue-50 text-blue-700 border-blue-200/60"
+      : isMomo
+      ? "bg-fuchsia-50 text-fuchsia-700 border-fuchsia-200/60"
+      : "bg-emerald-50 text-emerald-700 border-emerald-200/60";
+
     return (
-      <span
-        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border ${
-          isMomo
-            ? "bg-fuchsia-50 text-fuchsia-700 border-fuchsia-200/60"
-            : "bg-emerald-50 text-emerald-700 border-emerald-200/60"
-        } ${className}`}
-      >
-        {isMomo ? (
-          <MoMoIcon className="w-3.5 h-3.5 shrink-0" />
-        ) : (
-          <CodIcon className="w-3.5 h-3.5 shrink-0" />
-        )}
+      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border ${badgeColor} ${className}`}>
+        {getIcon("w-3.5 h-3.5 shrink-0")}
         {showText && <span>{label}</span>}
       </span>
     );
@@ -63,11 +77,7 @@ export function PaymentBadge({
 
   return (
     <span className={`inline-flex items-center gap-1.5 font-medium ${className}`}>
-      {isMomo ? (
-        <MoMoIcon className="w-4 h-4 shrink-0" />
-      ) : (
-        <CodIcon className="w-4 h-4 shrink-0" />
-      )}
+      {getIcon("w-4 h-4 shrink-0")}
       {showText && <span>{label}</span>}
     </span>
   );

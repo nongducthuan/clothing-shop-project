@@ -10,7 +10,7 @@ Website thương mại điện tử chuyên bán quần áo và thời trang, t�
 - **Xem & Tìm kiếm sản phẩm**: Lọc theo danh mục, khuyến mãi, danh sách sản phẩm nổi bật.
 - **Tự động định vị & Nhập địa chỉ (Nominatim API)**: Tích hợp OpenStreetMap Nominatim API tự động lấy địa chỉ giao hàng chính xác qua GPS hoặc định vị IP.
 - **Giỏ hàng & Đặt hàng**: Thêm/xóa sản phẩm vào giỏ hàng, áp dụng Voucher giảm giá và tiến hành đặt hàng.
-- **Thanh toán trực tuyến MoMo ATM / QR**: Tích hợp cổng thanh toán MoMo (hỗ trợ ATM / QR Code / ViMoMo) bên cạnh phương thức COD truyền thống.
+- **Thanh toán trực tuyến đa kênh (MoMo / VNPay)**: Tích hợp cổng thanh toán MoMo và Cổng **VNPay-QR / ATM / Mobile Banking** bên cạnh phương thức COD truyền thống.
 - **Tra cứu đơn hàng & Gửi mã OTP (Brevo API)**: Gửi mã xác nhận OTP tức thì qua Email thông qua dịch vụ Brevo HTTP API để tra cứu đơn hàng nhanh chóng mà không cần đăng nhập.
 - **Tài khoản & Đăng nhập đa phương thức**: Đăng nhập qua tài khoản hệ thống (JWT Auth) hoặc Google OAuth 2.0, hỗ trợ tích điểm hạng thành viên (Membership).
 - **Gợi ý sản phẩm thông minh (AI / Machine Learning)**: Gợi ý các sản phẩm phù hợp theo hành vi và lịch sử tương tác của người dùng (chạy trên môi trường Python).
@@ -30,7 +30,7 @@ Website thương mại điện tử chuyên bán quần áo và thời trang, t�
 - **Backend**: Node.js, TypeScript, Express.js, Prisma ORM, MySQL/MariaDB, JSON Web Token (JWT), `bcryptjs`, Multer.
 - **Dịch vụ tích hợp & AI**:
   - **Brevo API (Sendinblue)**: Gửi email giao dịch / mã OTP xác thực.
-  - **Cổng thanh toán MoMo**: Xử lý thanh toán qua MoMo ATM / QR Code.
+  - **Cổng thanh toán MoMo & VNPay**: Xử lý thanh toán trực tuyến qua MoMo và VNPay-QR (Mobile Banking / NCB Sandbox).
   - **Google OAuth 2.0 & Gemini AI**: Đăng nhập bằng Google và Trợ lý tư vấn AI Chatbot.
   - **OpenStreetMap Nominatim**: Định vị vị trí và tự động chuyển đổi tọa độ GPS thành địa chỉ giao hàng.
   - **Python (Recommender System)**: Thuật toán gợi ý sản phẩm cá nhân hóa.
@@ -47,12 +47,16 @@ Tham khảo mẫu tại [backend/.env.example](file:///c:/Users/HP/Documents/Git
 | --- | --- | --- |
 | `PORT` | Cổng chạy server Backend | `5000` |
 | `FRONTEND_URL` | Địa chỉ URL của Frontend | `http://localhost:5173` |
-| `BACKEND_URL` | URL public Backend (dùng cho MoMo IPN Callback / Webhook) | `https://your-ngrok-url.ngrok-free.app/api` |
+| `BACKEND_URL` | URL public Backend (dùng cho Webhook IPN Callback) | `https://your-ngrok-url.ngrok-free.app/api` |
 | `DATABASE_URL` | Chuỗi kết nối CSDL MySQL / MariaDB qua Prisma ORM | `mysql://username:password@localhost:3306/shopdb` |
 | `JWT_SECRET` | Khóa bí mật dùng để mã hóa & xác thực JWT | `your_super_secret_jwt_key` |
 | `MOMO_PARTNER_CODE` | Partner Code do MoMo cấp (Test Sandbox) | `your_partner_code` |
 | `MOMO_ACCESS_KEY` | Access Key kết nối cổng thanh toán MoMo | `your_access_key` |
 | `MOMO_SECRET_KEY` | Secret Key tạo chữ ký điện tử HMAC-SHA256 MoMo | `your_secret_key` |
+| `VNP_TMNCODE` | Terminal ID do VNPay cấp (Sandbox) | `your_vnp_tmncode` |
+| `VNP_HASHSECRET` | Secret Key tạo chữ ký HMAC-SHA512 VNPay | `your_vnp_hashsecret` |
+| `VNP_URL` | URL cổng thanh toán VNPay Sandbox | `https://sandbox.vnpayment.vn/paymentv2/vpcpay.html` |
+| `VNP_RETURNURL` | URL nhận kết quả thanh toán trên Frontend | `http://localhost:5173/payment-return` |
 | `EMAIL_USER` | Email người gửi (đã verify trên Brevo Senders) | `your-email@gmail.com` |
 | `BREVO_API_KEY` | API Key kết nối Brevo HTTP API gửi OTP | `your_brevo_api_key` |
 | `GOOGLE_API_KEY` | API Key Google Gemini AI (dùng cho Chatbot / AI) | `your_google_gemini_api_key` |

@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import bcrypt from 'bcryptjs';
 import { PrismaMariaDb } from '@prisma/adapter-mariadb';
 import { PrismaClient, Gender, UserRole, SizeEnum, InteractionType, ReturnStatus, OrderStatus } from '../src/generated/prisma/client';
 
@@ -72,18 +73,32 @@ async function main() {
     { id: 12, name: 'Phan An K', email: 'ank@example.com' },
   ];
 
+  const defaultUserPassword = await bcrypt.hash('password123', 10);
   for (const u of usersData) {
     await prisma.user.create({
       data: {
         id: u.id,
         name: u.name,
         email: u.email,
-        password: 'password123',
+        password: defaultUserPassword,
         role: UserRole.customer,
       },
     });
   }
-  console.log('✔ Users');
+  console.log('✔ Customer Users');
+
+  // Admin User
+  const hashedAdminPassword = await bcrypt.hash('123456', 10);
+  await prisma.user.create({
+    data: {
+      name: 'Admin',
+      email: 'admin@shop.com',
+      phone: '0123456789',
+      password: hashedAdminPassword,
+      role: UserRole.admin,
+    },
+  });
+  console.log('✔ Admin User');
 
   // ============================================================
   // 3. CATEGORIES

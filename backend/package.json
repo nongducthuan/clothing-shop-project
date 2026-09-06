@@ -5,11 +5,14 @@
     "scripts": {
         "start": "tsx src/index.ts",
         "dev": "tsx watch src/index.ts",
+        "seed": "tsx prisma/seed.ts",
+        "seed:admin": "tsx prisma/seedAdmin.ts",
         "postinstall": "prisma generate"
     },
     "dependencies": {
         "@prisma/adapter-mariadb": "^7.9.1",
         "@prisma/client": "^7.9.1",
+        "@types/qs": "^6.15.1",
         "bcrypt": "^6.0.0",
         "bcryptjs": "^3.0.2",
         "cors": "^2.8.5",
@@ -22,6 +25,7 @@
         "mysql2": "^3.23.1",
         "node-cache": "^5.1.2",
         "nodemailer": "^8.0.7",
+        "qs": "^6.16.0",
         "tsx": "^4.23.1",
         "typescript": "^7.0.2"
     },
