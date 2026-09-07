@@ -376,6 +376,7 @@ export const createOrderController = async (req: Request, res: Response): Promis
                     amount: finalTotal,
                     orderInfo: `Thanh toan don hang #${orderId}`,
                     ipAddr: clientIp,
+                    bankCode: 'VNBANK',
                 });
                 res.status(201).json({ message: "Redirecting to VNPay", orderId, payUrl: vnpayUrl });
                 return;
@@ -618,13 +619,12 @@ export const vnpayReturn = async (req: Request, res: Response): Promise<void> =>
     }
 };
 
-// ─── REPAY MOMO / VNPAY ───────────────────────────────────────────────────────
+// ─── REPAY / CHANGE PAYMENT METHOD ───────────────────────────────────────────
 
-// Fix 4: Sửa auth logic – không cho bypass JWT bằng email
 export const repayMoMoController = async (req: Request, res: Response): Promise<void> => {
     try {
         const { id } = req.params;
-        const { email } = req.body;
+        const { email, new_payment_method } = req.body;
 
         const order = await prisma.order.findUnique({ where: { id: Number(id) } });
         if (!order) {
@@ -635,13 +635,11 @@ export const repayMoMoController = async (req: Request, res: Response): Promise<
         // Kiểm tra ownership đúng cách (Cho phép Admin bypass)
         const isAdmin = req.user?.role === 'admin';
         if (order.user_id) {
-            // Đơn hàng của member → phải có JWT và khớp user_id (hoặc là Admin)
             if (!isAdmin && (!req.user || req.user.id !== order.user_id)) {
                 res.status(403).json({ message: "Forbidden: You do not have permission to pay for this order." });
                 return;
             }
         } else {
-            // Đơn hàng của guest → phải cung cấp email khớp (hoặc là Admin)
             if (!isAdmin && (!email || order.email !== email)) {
                 res.status(403).json({ message: "Forbidden: Email does not match the order." });
                 return;
@@ -653,22 +651,52 @@ export const repayMoMoController = async (req: Request, res: Response): Promise<
             return;
         }
 
-        if (order.payment_method === 'momo') {
-            const momoOrderId = `REPAY_${order.id}_${Date.now()}`;
-            const momoResponse = await getMomoPayUrl(momoOrderId, Number(order.total_price), `Retry payment for order #${order.id}`);
-            res.json({ payUrl: momoResponse.payUrl });
+        if (order.status === 'Cancelled') {
+            res.status(400).json({ message: "Cannot change payment method or pay for a cancelled order." });
             return;
         }
 
-        if (order.payment_method === 'vnpay') {
+        const targetMethod = (new_payment_method || order.payment_method).toLowerCase();
+        const allowedMethods = ['momo', 'vnpay', 'cod'];
+        if (!allowedMethods.includes(targetMethod)) {
+            res.status(400).json({ message: "Invalid payment method selected." });
+            return;
+        }
+
+        // Cập nhật phương thức thanh toán mới nếu có sự thay đổi
+        if (targetMethod !== order.payment_method) {
+            await prisma.order.update({
+                where: { id: order.id },
+                data: { payment_method: targetMethod }
+            });
+        }
+
+        if (targetMethod === 'momo') {
+            const momoOrderId = `REPAY_${order.id}_${Date.now()}`;
+            const momoResponse = await getMomoPayUrl(momoOrderId, Number(order.total_price), `Retry payment for order #${order.id}`);
+            res.json({ payUrl: momoResponse.payUrl, payment_method: 'momo' });
+            return;
+        }
+
+        if (targetMethod === 'vnpay') {
             const clientIp = (req.headers['x-forwarded-for'] as string) || req.socket.remoteAddress || '127.0.0.1';
             const vnpayUrl = generateVnPayUrl({
                 orderId: `${order.id}_${Date.now()}`,
                 amount: Number(order.total_price),
                 orderInfo: `Retry payment for order #${order.id}`,
                 ipAddr: clientIp,
+                bankCode: 'VNBANK',
             });
-            res.json({ payUrl: vnpayUrl });
+            res.json({ payUrl: vnpayUrl, payment_method: 'vnpay' });
+            return;
+        }
+
+        if (targetMethod === 'cod') {
+            res.json({ 
+                message: "Switched to Cash on Delivery (COD) successfully.", 
+                payUrl: null, 
+                payment_method: 'cod' 
+            });
             return;
         }
 

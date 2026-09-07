@@ -7,6 +7,7 @@ import MembershipInfoTab from "../../components/customer/profile/MembershipInfoT
 import OrderListTab from "../../components/customer/profile/OrderListTab";
 import OrderDetailModal from "../../components/customer/profile/OrderDetailModal";
 import ReturnRequestModal from "../../components/customer/profile/ReturnRequestModal";
+import ChangePaymentModal from "../../components/customer/common/ChangePaymentModal";
 
 export default function Profile() {
   const { state, actions, helpers } = useProfilePage();
@@ -48,12 +49,21 @@ export default function Profile() {
       <OrderDetailModal
         order={state.selectedOrder}
         onClose={() => actions.setSelectedOrder(null)}
+        onOpenPaymentModal={actions.handleOpenPaymentModal}
         helpers={helpers}
       />
 
       <ReturnRequestModal
         state={state}
         actions={actions}
+      />
+
+      <ChangePaymentModal
+        isOpen={!!state.paymentModalOrder}
+        order={state.paymentModalOrder}
+        onClose={actions.handleClosePaymentModal}
+        onConfirm={(newMethod) => actions.handleRepay(state.paymentModalOrder, newMethod)}
+        loading={state.repayLoading}
       />
 
     </div>

@@ -44,6 +44,10 @@ export function useProfilePage() {
   const [returnOrderId, setReturnOrderId] = useState(null);
   const [returnData, setReturnData] = useState(INITIAL_RETURN_DATA);
 
+  // Change Payment Modal State
+  const [paymentModalOrder, setPaymentModalOrder] = useState(null);
+  const [repayLoading, setRepayLoading] = useState(false);
+
   // --- Derived Variables ---
   const currentConfig = TIER_CONFIG[tier] || TIER_CONFIG.Normal;
   const totalSpent = Number(user?.total_spent || 0);
@@ -102,21 +106,36 @@ export function useProfilePage() {
     }
   };
 
-  const handleMoMoPayment = async (order) => {
+  const handleOpenPaymentModal = (order: any) => {
+    setPaymentModalOrder(order);
+  };
+
+  const handleClosePaymentModal = () => {
+    setPaymentModalOrder(null);
+  };
+
+  const handleRepay = async (order: any, newMethod?: string) => {
+    setRepayLoading(true);
     try {
       const token = localStorage.getItem("token");
       const response = await API.post(
         `/orders/${order.id}/repay`,
-        { email: order.email },
+        { email: order.email, new_payment_method: newMethod || order.payment_method },
         { headers: token ? { Authorization: `Bearer ${token}` } : {} }
       );
 
       if (response.data?.payUrl) {
         window.location.href = response.data.payUrl;
+      } else {
+        showToast(response.data?.message || "Payment method updated successfully!", "success");
+        setPaymentModalOrder(null);
+        fetchOrders();
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Repay error:", error);
-      showToast(error.response?.data?.message || "Unable to create payment link right now.", "error");
+      showToast(error.response?.data?.message || "Unable to process payment request right now.", "error");
+    } finally {
+      setRepayLoading(false);
     }
   };
 
@@ -231,11 +250,13 @@ export function useProfilePage() {
     state: {
       user, tier, phone, activeTab, orders, loadingOrders, selectedOrder,
       showReturnModal, returnOrderId, returnData, currentConfig, totalSpent, safeProgress,
-      currentPassword, newPassword, confirmPassword, isChangingPassword
+      currentPassword, newPassword, confirmPassword, isChangingPassword,
+      paymentModalOrder, repayLoading
     },
     actions: {
       setActiveTab, setPhone, logout, setSelectedOrder,
-      handleMoMoPayment, handleOpenReturnModal, setShowReturnModal,
+      handleOpenPaymentModal, handleClosePaymentModal, handleRepay,
+      handleOpenReturnModal, setShowReturnModal,
       handleSubmitReturn, handleReturnDataChange, updateProfile,
       setCurrentPassword, setNewPassword, setConfirmPassword, changePassword
     },

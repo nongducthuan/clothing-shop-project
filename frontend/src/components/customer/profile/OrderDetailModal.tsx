@@ -2,7 +2,7 @@ import React from "react";
 import { ModernStatusBadge, PaymentStatusBadge } from "./OrderBadges";
 import { PaymentBadge } from "../../common/PaymentBadge";
 
-export default function OrderDetailModal({ order, onClose, helpers }) {
+export default function OrderDetailModal({ order, onClose, onOpenPaymentModal, helpers }) {
   if (!order) return null;
   const { formatCurrency, getImgUrl } = helpers;
 
@@ -79,7 +79,7 @@ export default function OrderDetailModal({ order, onClose, helpers }) {
                       {item.product_name}
                     </h4>
                     
-                    {/* Badge thuộc tính: Tự động xuống dòng gọn gàng nếu màn hình cực nhỏ */}
+                    {/* Badge thuộc tính */}
                     <div className="flex flex-wrap items-center gap-1.5 mt-1.5 text-[11px] font-medium text-slate-500">
                       <span className="bg-white border border-slate-200/80 px-1.5 py-0.5 rounded text-slate-600">
                         {item.color_name || item.color || "N/A"}
@@ -87,17 +87,17 @@ export default function OrderDetailModal({ order, onClose, helpers }) {
                       <span className="bg-white border border-slate-200/80 px-1.5 py-0.5 rounded text-slate-600">
                         Size: {item.size || item.size_name || "N/A"}
                       </span>
-                      <span className="text-slate-400 font-normal ml-0.5">
-                        x{item.quantity}
-                      </span>
                     </div>
                   </div>
 
-                  {/* Giá tiền */}
-                  <div className="text-right shrink-0">
+                  {/* Giá tiền & Số lượng */}
+                  <div className="text-right shrink-0 flex flex-col items-end justify-center">
                     <p className="font-semibold text-slate-900 text-xs sm:text-sm whitespace-nowrap">
                       {formatCurrency(item.price)}
                     </p>
+                    <span className="text-[11px] font-medium text-slate-400 mt-1">
+                      x{item.quantity}
+                    </span>
                   </div>
                 </div>
               );
@@ -127,6 +127,18 @@ export default function OrderDetailModal({ order, onClose, helpers }) {
               </span>
             </div>
           </div>
+
+          {order.payment_status === "Unpaid" && order.status !== "Cancelled" && onOpenPaymentModal && (
+            <button
+              onClick={() => {
+                onClose();
+                onOpenPaymentModal(order);
+              }}
+              className="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-semibold text-xs sm:text-sm transition-colors shadow-md text-center"
+            >
+              Pay / Change Payment Method
+            </button>
+          )}
 
         </div>
       </div>

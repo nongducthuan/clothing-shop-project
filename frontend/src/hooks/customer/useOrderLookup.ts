@@ -13,6 +13,7 @@ export function useOrderLookup() {
   const [loading, setLoading] = useState(false);
   const [expandedOrder, setExpandedOrder] = useState(null);
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [paymentModalOrder, setPaymentModalOrder] = useState<any>(null);
   const [returnForm, setReturnForm] = useState<{
     reason_code: string;
     description: string;
@@ -68,15 +69,33 @@ export function useOrderLookup() {
     }
   };
 
+  const handleOpenPaymentModal = (order: any) => {
+    setPaymentModalOrder(order);
+  };
+
+  const handleClosePaymentModal = () => {
+    setPaymentModalOrder(null);
+  };
+
   /**
-   * Initiates repayment for pending MoMo orders.
+   * Initiates repayment / payment method change for pending orders.
    */
-  const handleRepay = async (order: { id: number | string }) => {
+  const handleRepay = async (order: { id: number | string; email?: string; payment_method?: string }, newMethod?: string) => {
     setLoading(true);
     try {
-      const res = await API.post(`/orders/${order.id}/repay`, { email });
+      const res = await API.post(`/orders/${order.id}/repay`, {
+        email: order.email || email,
+        new_payment_method: newMethod || order.payment_method
+      });
       if (res.data.payUrl) {
         window.location.href = res.data.payUrl;
+      } else {
+        showToast(res.data.message || "Payment method updated successfully!", "success");
+        setPaymentModalOrder(null);
+        if (email && otp) {
+          const refreshRes = await API.post("/orders/otp/verify", { email, code: otp });
+          if (refreshRes.data?.orders) setOrders(refreshRes.data.orders);
+        }
       }
     } catch (err: unknown) {
       const axErr = err as AxiosErr;
@@ -185,11 +204,11 @@ export function useOrderLookup() {
 
   return {
     state: {
-      step, email, otp, orders, loading, expandedOrder, selectedOrder, returnForm
+      step, email, otp, orders, loading, expandedOrder, selectedOrder, returnForm, paymentModalOrder
     },
     actions: {
       setStep, setEmail, setOtp, setReturnForm,
-      toggleOrder, handleSendOtp, handleVerifyOtp, handleRepay, openReturnForm, handleReturnSubmit, resetLookup
+      toggleOrder, handleSendOtp, handleVerifyOtp, handleOpenPaymentModal, handleClosePaymentModal, handleRepay, openReturnForm, handleReturnSubmit, resetLookup
     },
     helpers: {
       formatCurrency

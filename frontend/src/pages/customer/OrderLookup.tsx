@@ -5,6 +5,7 @@ import EmailStep from "../../components/customer/order-lookup/EmailStep";
 import OtpStep from "../../components/customer/order-lookup/OtpStep";
 import OrdersStep from "../../components/customer/order-lookup/OrdersStep";
 import ReturnFormStep from "../../components/customer/order-lookup/ReturnFormStep";
+import ChangePaymentModal from "../../components/customer/common/ChangePaymentModal";
 
 export default function GuestOrderTracking() {
   const { state, actions, helpers } = useOrderLookup();
@@ -46,6 +47,7 @@ export default function GuestOrderTracking() {
               toggleOrder={actions.toggleOrder}
               formatCurrency={helpers.formatCurrency}
               handleRepay={actions.handleRepay}
+              handleOpenPaymentModal={actions.handleOpenPaymentModal}
               loading={state.loading}
               openReturnForm={actions.openReturnForm}
               onReset={actions.resetLookup}
@@ -66,6 +68,14 @@ export default function GuestOrderTracking() {
           )}
         </div>
       </div>
+
+      <ChangePaymentModal
+        isOpen={!!state.paymentModalOrder}
+        order={state.paymentModalOrder}
+        onClose={actions.handleClosePaymentModal}
+        onConfirm={(newMethod) => actions.handleRepay(state.paymentModalOrder, newMethod)}
+        loading={state.loading}
+      />
     </div>
   );
 }

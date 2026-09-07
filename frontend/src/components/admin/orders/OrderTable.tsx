@@ -147,12 +147,12 @@ export default function OrderTable({
                         </td>
 
                         <td className="p-4 whitespace-nowrap text-center">
-                          <div className="relative inline-block w-full max-w-[130px]">
+                          <div className="relative inline-block w-full max-w-[160px]">
                             <select
                               value={order.payment_status || "Unpaid"}
                               onChange={(e) => handlePaymentStatus(order.id, e.target.value)}
                               disabled={isReturnLocked}
-                              className="w-full text-xs font-bold text-white py-2 pl-3 pr-8 rounded-full cursor-pointer outline-none focus:ring-4 focus:ring-blue-500/20 disabled:opacity-60 appearance-none text-left shadow-sm transition-all"
+                              className="w-full text-xs font-bold text-white py-2 pl-3.5 pr-8 rounded-full cursor-pointer outline-none focus:ring-4 focus:ring-blue-500/20 disabled:opacity-60 appearance-none text-left shadow-sm transition-all"
                               style={{ backgroundColor: getPaymentStatusColor(order.payment_status) }}
                             >
                               {PAYMENT_OPTIONS.map((status) => (
@@ -164,12 +164,12 @@ export default function OrderTable({
                         </td>
 
                         <td className="p-4 whitespace-nowrap text-center">
-                          <div className="relative inline-block w-full max-w-[130px]">
+                          <div className="relative inline-block w-full max-w-[160px]">
                             <select
                               value={order.status}
                               onChange={(e) => handleOrderStatus(order.id, e.target.value)}
                               disabled={isReturnLocked}
-                              className="w-full text-xs font-bold text-white py-2 pl-3 pr-8 rounded-full cursor-pointer outline-none focus:ring-4 focus:ring-blue-500/20 disabled:opacity-60 appearance-none text-left shadow-sm transition-all"
+                              className="w-full text-xs font-bold text-white py-2 pl-3.5 pr-8 rounded-full cursor-pointer outline-none focus:ring-4 focus:ring-blue-500/20 disabled:opacity-60 appearance-none text-left shadow-sm transition-all"
                               style={{ backgroundColor: getOrderStatusColor(order.status) }}
                             >
                               {STATUS_OPTIONS.map((status) => (

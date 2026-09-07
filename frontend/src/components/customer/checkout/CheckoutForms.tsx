@@ -47,15 +47,15 @@ export function PaymentSection({ currentMethod, onChange }) {
       <h3 className="text-xl font-medium text-slate-900 mb-4">Payment Method</h3>
       <div className="grid grid-cols-1 gap-4">
         <PaymentOption
-          id="cod" label="Cash on Delivery (COD)" sub="Pay when you receive the package"
+          id="cod" label="Cash on Delivery (COD)" sub="Pay with cash upon receiving your package"
           icon="fa-box" current={currentMethod} onChange={onChange}
         />
         <PaymentOption
-          id="momo" label="MoMo E-Wallet" sub="Fast & Secure online payment via MoMo"
+          id="momo" label="MoMo (Domestic ATM Card)" sub="Pay via Domestic ATM Card or MoMo Wallet"
           icon="fa-wallet" current={currentMethod} onChange={onChange}
         />
         <PaymentOption
-          id="vnpay" label="VNPay Gateway (ATM / Internet Banking)" sub="Pay via ATM card or Internet Banking"
+          id="vnpay" label="VNPay (Domestic ATM Card)" sub="Pay via Domestic ATM Card or Internet Banking"
           icon="fa-credit-card" current={currentMethod} onChange={onChange}
         />
       </div>

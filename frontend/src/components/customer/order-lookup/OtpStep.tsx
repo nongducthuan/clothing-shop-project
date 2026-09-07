@@ -8,11 +8,12 @@ export default function OtpStep({ otp, setOtp, onSubmit, loading, onBack }) {
         <input
           type="text"
           required
-          className="w-2/3 mx-auto block text-center text-3xl tracking-[0.5em] font-bold border-b-2 border-gray-300 focus:border-violet-600 outline-none py-2 text-violet-800"
+          autoFocus
+          className="w-full max-w-[260px] mx-auto block text-center text-2xl sm:text-3xl tracking-[0.25em] font-mono font-bold border-b-2 border-gray-300 focus:border-violet-600 outline-none py-2 text-violet-800"
           value={otp}
           onChange={(e) => setOtp(e.target.value.replace(/[^0-9]/g, ''))}
           maxLength={6}
-          placeholder="------"
+          placeholder="••••••"
         />
       </div>
       <button

@@ -101,6 +101,7 @@ export const updateVoucherAdmin = async (req: Request, res: Response): Promise<v
 export const getAllVouchersAdmin = async (req: Request, res: Response): Promise<void> => {
   try {
     const vouchers = await prisma.voucher.findMany({
+      where: { status: true },
       orderBy: { created_at: 'desc' }
     });
     res.json({ success: true, data: vouchers });

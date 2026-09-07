@@ -33,14 +33,17 @@ export function CheckoutSummary({ state, helpers }) {
           let variantText = "";
           let colorImageUrl = detail?.image_url;
           if (detail && detail.colors && detail.colors.length > 0) {
-            let chosenColor = null;
-            let chosenSize = null;
-            for (const c of detail.colors) {
-              const s = c.sizes?.find(sz => sz.stock > 0);
-              if (s) {
-                chosenColor = c;
-                chosenSize = s;
-                break;
+            let chosenColor = detail.colors.find(c => c.id === gift.color_id);
+            let chosenSize = chosenColor?.sizes?.find(s => s.id === gift.size_id);
+
+            if (!chosenColor) {
+              for (const c of detail.colors) {
+                const s = c.sizes?.find(sz => sz.stock > 0);
+                if (s) {
+                  chosenColor = c;
+                  chosenSize = s;
+                  break;
+                }
               }
             }
             if (!chosenColor) {

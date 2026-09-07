@@ -158,22 +158,23 @@ export function useCheckoutPage() {
         })),
         ...earnedGifts.map(gift => {
           const detail = giftDetails[gift.giftProductId];
-          let firstColorId = null;
-          let firstSizeId = null;
-          if (detail && detail.colors && detail.colors.length > 0) {
+          let chosenColorId = gift.color_id || null;
+          let chosenSizeId = gift.size_id || null;
+
+          if ((!chosenColorId || !chosenSizeId) && detail && detail.colors && detail.colors.length > 0) {
             for (const c of detail.colors) {
               const availableSize = c.sizes?.find(s => s.stock > 0);
               if (availableSize) {
-                firstColorId = c.id;
-                firstSizeId = availableSize.id;
+                if (!chosenColorId) chosenColorId = c.id;
+                if (!chosenSizeId) chosenSizeId = availableSize.id;
                 break;
               }
             }
           }
           return {
             product_id: gift.giftProductId,
-            color_id: firstColorId,
-            size_id: firstSizeId,
+            color_id: chosenColorId,
+            size_id: chosenSizeId,
             quantity: gift.quantity,
             price: 0,
             is_gift: true,

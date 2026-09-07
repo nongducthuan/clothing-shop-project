@@ -67,6 +67,7 @@ export default function Cart() {
                       gift={gift}
                       detail={state.giftProductsDetails[gift.giftProductId]}
                       helpers={helpers}
+                      onSelectVariant={actions.handleSelectGiftVariant}
                     />
                   ))}
                 </div>

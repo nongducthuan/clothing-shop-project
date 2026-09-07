@@ -24,8 +24,8 @@ export function ModernStatusBadge({ status }) {
 export function PaymentStatusBadge({ status }) {
   const isPaid = status === "Paid";
   return (
-    <span className={`px-2.5 py-1 text-[10px] font-bold rounded-md border uppercase tracking-widest ${
-      isPaid ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-slate-50 text-slate-500 border-slate-200"
+    <span className={`px-2.5 py-1 text-[10px] font-bold rounded-full border uppercase tracking-wider ${
+      isPaid ? "bg-emerald-50 text-emerald-600 border-emerald-200/60" : "bg-rose-50 text-rose-600 border-rose-200/60"
     }`}>
       {status}
     </span>

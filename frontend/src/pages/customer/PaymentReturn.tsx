@@ -2,11 +2,14 @@ import React, { useEffect, useState } from "react";
 import { useSearchParams, useNavigate, Link } from "react-router-dom";
 import API from "../../services/apiClient";
 import PaymentBadge from "../../components/common/PaymentBadge";
+import ChangePaymentModal from "../../components/customer/common/ChangePaymentModal";
 
 export default function PaymentReturn() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
+  const [showChangeModal, setShowChangeModal] = useState(false);
+  const [repayLoading, setRepayLoading] = useState(false);
   const [status, setStatus] = useState<{
     success: boolean;
     orderId?: string | number;
@@ -53,6 +56,31 @@ export default function PaymentReturn() {
 
     verifyPayment();
   }, [searchParams]);
+
+  const handleRepayConfirm = async (newMethod: string) => {
+    if (!status.orderId) return;
+    setRepayLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await API.post(
+        `/orders/${status.orderId}/repay`,
+        { new_payment_method: newMethod },
+        { headers: token ? { Authorization: `Bearer ${token}` } : {} }
+      );
+
+      if (res.data?.payUrl) {
+        window.location.href = res.data.payUrl;
+      } else {
+        alert(res.data?.message || "Payment method updated successfully!");
+        setShowChangeModal(false);
+        navigate("/profile?tab=orders");
+      }
+    } catch (e: any) {
+      alert(e.response?.data?.message || "Unable to change payment method right now.");
+    } finally {
+      setRepayLoading(false);
+    }
+  };
 
   const responseCode = searchParams.get("vnp_ResponseCode");
   const txnRef = searchParams.get("vnp_TxnRef") || status.orderId;
@@ -134,24 +162,10 @@ export default function PaymentReturn() {
             <div className="flex flex-col gap-3">
               {status.orderId && (
                 <button
-                  onClick={async () => {
-                    try {
-                      const token = localStorage.getItem("token");
-                      const res = await API.post(
-                        `/orders/${status.orderId}/repay`,
-                        {},
-                        { headers: token ? { Authorization: `Bearer ${token}` } : {} }
-                      );
-                      if (res.data?.payUrl) {
-                        window.location.href = res.data.payUrl;
-                      }
-                    } catch (e: any) {
-                      alert(e.response?.data?.message || "Unable to create payment link right now.");
-                    }
-                  }}
-                  className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-2xl transition-all shadow-md flex items-center justify-center gap-2"
+                  onClick={() => setShowChangeModal(true)}
+                  className="w-full py-3.5 bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-2xl transition-all shadow-md text-center"
                 >
-                  <i className="fa-solid fa-rotate-right"></i> Retry VNPay Payment
+                  Pay / Change Payment Method
                 </button>
               )}
               <Link
@@ -164,6 +178,16 @@ export default function PaymentReturn() {
           </div>
         )}
       </div>
+
+      {status.orderId && (
+        <ChangePaymentModal
+          isOpen={showChangeModal}
+          order={{ id: status.orderId, payment_method: "vnpay" }}
+          onClose={() => setShowChangeModal(false)}
+          onConfirm={handleRepayConfirm}
+          loading={repayLoading}
+        />
+      )}
     </div>
   );
 }

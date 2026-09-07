@@ -93,6 +93,7 @@ export const updateSaleAdmin = async (req: Request, res: Response): Promise<void
 export const getAllSalesAdmin = async (req: Request, res: Response): Promise<void> => {
   try {
     const sales = await prisma.sale.findMany({
+      where: { status: true },
       orderBy: { created_at: 'desc' }
     });
     res.json({ success: true, data: sales });

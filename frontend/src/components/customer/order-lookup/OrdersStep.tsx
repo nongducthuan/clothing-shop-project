@@ -4,7 +4,7 @@ import { PaymentBadge } from "../../common/PaymentBadge";
 
 export default function OrdersStep({
   orders, expandedOrder, toggleOrder, formatCurrency,
-  handleRepay, loading, openReturnForm, onReset
+  handleRepay, handleOpenPaymentModal, loading, openReturnForm, onReset
 }) {
   return (
     <div className="space-y-4">
@@ -70,18 +70,16 @@ export default function OrdersStep({
                       <span>Phone Number:</span>
                       <span className="text-gray-700 font-medium">{order.phone}</span>
                     </div>
-                    {order.payment_status === 'Unpaid' && order.status !== 'Cancelled' && (order.payment_method === 'momo' || order.payment_method === 'vnpay') && (
+                    {order.payment_status === 'Unpaid' && order.status !== 'Cancelled' && (
                       <button
-                        onClick={() => handleRepay(order)}
+                        onClick={() => handleOpenPaymentModal(order)}
                         disabled={loading}
-                        className={`w-full mt-4 text-white py-2 rounded-lg text-sm font-bold transition flex items-center justify-center gap-2 ${
-                          order.payment_method === 'vnpay' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-[#ae2070] hover:bg-[#8e1a5c]'
-                        }`}
+                        className="w-full mt-4 bg-slate-900 hover:bg-slate-800 text-white py-2.5 rounded-lg text-sm font-bold transition flex items-center justify-center gap-2"
                       >
                         {loading ? (
                           <i className="fa-solid fa-circle-notch fa-spin"></i>
                         ) : (
-                          <>Pay with {order.payment_method === 'vnpay' ? 'VNPay' : 'MoMo'}</>
+                          <>Pay / Change Payment Method</>
                         )}
                       </button>
                     )}
