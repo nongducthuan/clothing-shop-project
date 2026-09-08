@@ -10,14 +10,16 @@ import ChangePaymentModal from "../../components/customer/common/ChangePaymentMo
 export default function GuestOrderTracking() {
   const { state, actions, helpers } = useOrderLookup();
 
+  const isWideStep = state.step === 3 || state.step === 4;
+
   return (
-    <div className="flex-1 flex items-center justify-center p-4 py-12">
-      <div className="bg-white w-full max-w-lg rounded-2xl shadow-xl overflow-hidden">
+    <div className="flex-1 flex items-center justify-center px-3 sm:px-6 py-6 sm:py-12">
+      <div className={`bg-white w-full rounded-2xl shadow-xl overflow-hidden transition-all duration-300 ${isWideStep ? 'max-w-3xl' : 'max-w-md'}`}>
 
         {/* CARD HEADER */}
         <OrderLookupHeader step={state.step} email={state.email} />
 
-        <div className="p-8">
+        <div className="p-4 sm:p-6 md:p-8">
           {/* STEP 1: EMAIL ENTRY */}
           {state.step === 1 && (
             <EmailStep

@@ -146,12 +146,7 @@ export function useOrderLookup() {
       }
 
       // 5. Send API request with FormData
-      // Must add "multipart/form-data" header for file uploads
-      await API.put(`/orders/${selectedOrder.id}/return-request`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      await API.post(`/orders/${selectedOrder.id}/return`, formData);
 
       // 6. Update UI (Hide the Return button)
       setOrders(prevOrders =>
