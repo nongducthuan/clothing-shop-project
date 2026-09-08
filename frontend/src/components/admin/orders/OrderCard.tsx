@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { AlertTriangle, Check, X } from "lucide-react";
 import { PaymentBadge } from "../../common/PaymentBadge";
 
 import { PAYMENT_OPTIONS, STATUS_OPTIONS } from "../../../hooks/admin/useOrderManager";
@@ -103,21 +104,21 @@ export default function OrderCard({
               {/* Return Action Section */}
               {isReturnLocked && (
                 <div className="p-3.5 bg-orange-50 rounded-xl border border-orange-100">
-                  <p className="text-[10px] font-bold text-orange-600 uppercase mb-2.5 text-center tracking-wider">
-                    ⚠ Return Action Required
+                  <p className="text-[10px] font-bold text-orange-600 uppercase mb-2.5 text-center tracking-wider flex items-center justify-center gap-1">
+                    <AlertTriangle size={14} /> Return Action Required
                   </p>
                   <div className="flex gap-2.5">
                     <button
                       onClick={() => handleApproveReturn(order.id)}
-                      className="flex-1 bg-green-500 text-white py-2.5 rounded-full text-[10px] font-bold uppercase tracking-wider hover:bg-green-600 shadow-sm transition-colors"
+                      className="flex-1 bg-green-500 text-white py-2.5 rounded-full text-[10px] font-bold uppercase tracking-wider hover:bg-green-600 shadow-sm transition-colors flex items-center justify-center gap-1"
                     >
-                      ✓ Approve
+                      <Check size={12} /> Approve
                     </button>
                     <button
                       onClick={() => handleRejectReturn(order.id)}
-                      className="flex-1 bg-red-500 text-white py-2.5 rounded-full text-[10px] font-bold uppercase tracking-wider hover:bg-red-600 shadow-sm transition-colors"
+                      className="flex-1 bg-red-500 text-white py-2.5 rounded-full text-[10px] font-bold uppercase tracking-wider hover:bg-red-600 shadow-sm transition-colors flex items-center justify-center gap-1"
                     >
-                      ✕ Reject
+                      <X size={12} /> Reject
                     </button>
                   </div>
                 </div>

@@ -4,6 +4,8 @@ import { ShippingSection, GuestContactSection, PaymentSection } from "../../comp
 import { CheckoutSummary } from "../../components/customer/checkout/CheckoutSummary";
 import { EmptyCheckout } from "../../components/customer/checkout/EmptyCheckout";
 
+import { CheckCircle, AlertCircle } from "lucide-react";
+
 export default function Checkout() {
   const { state, actions, helpers } = useCheckoutPage();
 
@@ -53,8 +55,9 @@ export default function Checkout() {
               </button>
 
               {state.statusMessage && (
-                <div className={`mt-4 p-4 rounded-2xl text-sm font-medium text-center ${state.statusMessage.includes("✅") ? "bg-emerald-50 text-emerald-700" : "bg-rose-50 text-rose-700"}`}>
-                  {state.statusMessage}
+                <div className={`mt-4 p-4 rounded-2xl text-sm font-medium flex items-center justify-center gap-2 ${state.isStatusSuccess ? "bg-emerald-50 text-emerald-700" : "bg-rose-50 text-rose-700"}`}>
+                  {state.isStatusSuccess ? <CheckCircle size={18} /> : <AlertCircle size={18} />}
+                  <span>{state.statusMessage}</span>
                 </div>
               )}
             </div>

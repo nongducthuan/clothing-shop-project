@@ -10,6 +10,7 @@ export function useSalesPolicy() {
   };
 
   const handleContactSupport = () => {
+    // Try Zalo first; fallback is email (visible in PolicyFooter)
     window.open("https://zalo.me/0123456789", "_blank");
   };
 

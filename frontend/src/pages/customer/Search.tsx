@@ -1,5 +1,6 @@
 import React from "react";
 import { useSearch } from "../../hooks/customer/useSearch";
+import { useLanguage } from "../../context/LanguageContext";
 
 import SidebarFilters from "../../components/customer/search/SidebarFilters";
 import SearchBar from "../../components/customer/search/SearchBar";
@@ -8,14 +9,16 @@ import MobileFilterOverlay from "../../components/customer/search/MobileFilterOv
 
 export default function SearchResults() {
   const { state, refs, actions } = useSearch();
+  const { t } = useLanguage();
 
   if (state.loading) {
     return (
       <div className="flex justify-center items-center h-64 text-violet-500 font-bold">
-        Loading...
+        {t("common.loading", "Loading...")}
       </div>
     );
   }
+
 
   return (
     <div className="sr-container container mx-auto py-6 px-3 md:px-4 flex-1 flex flex-col md:flex-row gap-8">

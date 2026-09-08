@@ -3,10 +3,9 @@ import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import { CartProvider } from "./context/CartContext.tsx";
 
-// Global Styles & UI Libraries
-import "tailwindcss/tailwind.css";
-import "bootstrap/dist/css/bootstrap.min.css";
-import "bootstrap/dist/js/bootstrap.bundle.min.js";
+// Global Styles — processed by Vite + PostCSS + Tailwind
+// (phải import từ src/ để PostCSS scan đúng dark: variants)
+import "./styles/index.css";
 
 // Mount the React application
 const rootElement = document.getElementById("root");

@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import API from "../../../services/apiClient";
 import ProductCard from "../product/ProductCard";
+import SectionHeader from "./SectionHeader";
+import { useLanguage } from "../../../context/LanguageContext";
 import AOS from "aos";
 
 /**
@@ -9,13 +11,13 @@ import AOS from "aos";
  * This prevents "Layout Shift" and improves UX.
  */
 const SkeletonCard = () => (
-  <div className="bg-white rounded-2xl shadow-sm overflow-hidden p-3 animate-pulse border border-gray-100">
+  <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm overflow-hidden p-3 animate-pulse border border-gray-100 dark:border-slate-700">
     {/* Image Placeholder */}
-    <div className="bg-gray-200 h-48 w-full rounded-xl mb-3"></div>
+    <div className="bg-gray-200 dark:bg-slate-700 h-48 w-full rounded-xl mb-3"></div>
     {/* Title Placeholder */}
-    <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+    <div className="h-4 bg-gray-200 dark:bg-slate-700 rounded w-3/4 mb-2"></div>
     {/* Price Placeholder */}
-    <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+    <div className="h-4 bg-gray-200 dark:bg-slate-700 rounded w-1/2"></div>
   </div>
 );
 
@@ -23,6 +25,7 @@ const RecommendedProducts = ({ userId }) => {
   const [products, setProducts] = useState([]);
   const [activePromotions, setActivePromotions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { t } = useLanguage();
 
   useEffect(() => {
     const targetUserId = userId || 'guest';
@@ -58,14 +61,12 @@ const RecommendedProducts = ({ userId }) => {
 
   // Show section unconditionally (fallback products will be fetched if guest/new user)
   return (
-    <section className="container mx-auto px-4 my-12" data-aos="fade-up">
+    <section className="container mx-auto px-6 md:px-8 my-12" data-aos="fade-up">
       {/* Section Title */}
       <div className="text-center mb-8">
-         <h2 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-400 to-sky-400 bg-clip-text text-transparent inline-block uppercase">
-            Recommend For You
-          </h2>
-          <div className="h-1 w-24 mx-auto mt-2 bg-gradient-to-r from-blue-400 to-sky-400 rounded"></div>
+        <SectionHeader title={t("home.recommended", "Recommend For You")} />
       </div>
+
 
       {/* Product Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-6">

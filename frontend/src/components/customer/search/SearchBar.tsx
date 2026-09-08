@@ -1,8 +1,10 @@
 import React from "react";
+import { useLanguage } from "../../../context/LanguageContext";
 
 export default function SearchBar({ state, actions }) {
   const { searchInput } = state;
   const { setSearchInput, handleSearchSubmit, setShowMobileFilter } = actions;
+  const { t } = useLanguage();
 
   return (
     <div className="flex flex-col sm:flex-row gap-4 mb-8">
@@ -10,8 +12,8 @@ export default function SearchBar({ state, actions }) {
         <div className="relative w-full max-w-lg">
           <input
             type="text"
-            className="w-full bg-white pl-5 pr-14 py-3.5 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all shadow-sm"
-            placeholder="Find your favorite products..."
+            className="w-full bg-white dark:bg-slate-800 dark:text-slate-100 pl-5 pr-14 py-3.5 border border-gray-200 dark:border-slate-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all shadow-sm"
+            placeholder={t("search.placeholder", "Find your favorite products...")}
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
           />
@@ -26,10 +28,11 @@ export default function SearchBar({ state, actions }) {
 
       <button
         onClick={() => setShowMobileFilter(true)}
-        className="md:hidden px-6 py-3.5 bg-white border border-gray-200 rounded-2xl font-bold text-gray-700 flex items-center justify-center gap-2 hover:bg-gray-50 shadow-sm"
+        className="md:hidden px-6 py-3.5 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl font-bold text-gray-700 dark:text-slate-200 flex items-center justify-center gap-2 hover:bg-gray-50 dark:hover:bg-slate-700 shadow-sm"
       >
-        <i className="fa-solid fa-sliders text-violet-600"></i> Filters
+        <i className="fa-solid fa-sliders text-violet-600"></i> {t("search.filters", "Filters")}
       </button>
     </div>
   );
 }
+

@@ -68,10 +68,10 @@ export function useProfilePage() {
     const paymentResult = searchParams.get("resultCode");
     if (paymentResult) {
       if (paymentResult === "0") {
-        showToast("🎉 Order paid successfully! Thank you.", "success");
+        showToast("Order paid successfully! Thank you.", "success");
         fetchOrders(); // Refresh orders to show 'Paid' status
       } else {
-        showToast("❌ Payment failed or was cancelled.", "error");
+        showToast("Payment failed or was cancelled.", "error");
       }
       const newParams = new URLSearchParams(searchParams);
       newParams.delete("resultCode");

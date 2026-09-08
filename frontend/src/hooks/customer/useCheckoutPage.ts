@@ -155,10 +155,13 @@ export function useCheckoutPage() {
     return null;
   };
 
+  const [isStatusSuccess, setIsStatusSuccess] = useState(false);
+
   const handleSubmitOrder = async () => {
     const error = validateForm();
     if (error) {
-      setStatusMessage(`❌ ${error}`);
+      setIsStatusSuccess(false);
+      setStatusMessage(error);
       return;
     }
 
@@ -221,11 +224,13 @@ export function useCheckoutPage() {
       if (res.data.payUrl) {
         window.location.href = res.data.payUrl;
       } else {
-        setStatusMessage("✅ Order placed successfully!");
+        setIsStatusSuccess(true);
+        setStatusMessage("Order placed successfully!");
         setTimeout(() => navigate(user ? "/profile" : "/"), 2000);
       }
     } catch (err) {
-      setStatusMessage(`❌ Error: ${err.response?.data?.message || err.message}`);
+      setIsStatusSuccess(false);
+      setStatusMessage(`Error: ${err.response?.data?.message || err.message}`);
     }
   };
 
@@ -234,7 +239,7 @@ export function useCheckoutPage() {
   return {
     state: {
       cart, user, tier, discount,
-      statusMessage, shippingAddress, paymentMethod, guestInfo,
+      statusMessage, isStatusSuccess, shippingAddress, paymentMethod, guestInfo,
       appliedVoucher, earnedGifts, giftDetails,
       subtotal, membershipDiscount, voucherDiscount,
       subtotalAfterDiscount, shippingFee, isFreeShipping, finalTotal,

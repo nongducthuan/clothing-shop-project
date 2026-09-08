@@ -131,10 +131,10 @@ export default function useVoucherManager() {
     try {
       if (editingId) {
         await API.put(`/admin/vouchers/${editingId}`, payload);
-        showToast("Voucher updated successfully! ✅", "success");
+        showToast("Voucher updated successfully!", "success");
       } else {
         await API.post("/admin/vouchers", payload);
-        showToast("Create voucher successfully! 🎉", "success");
+        showToast("Voucher created successfully!", "success");
       }
       setEditingId(null);
       setFormData({

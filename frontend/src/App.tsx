@@ -1,6 +1,8 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 // Context Providers
+import { ThemeProvider } from "./context/ThemeContext.tsx";
+import { LanguageProvider } from "./context/LanguageContext.tsx";
 import { CartProvider } from "./context/CartContext.tsx";
 import { AuthProvider } from "./context/AuthContext.tsx";
 import { AIChatProvider } from "./context/AIChatContext.tsx";
@@ -42,13 +44,15 @@ import PromotionManager from "./pages/admin/PromotionManager.tsx";
 
 function App() {
   return (
-    <ToastProvider>
-      <AuthProvider>
-        <CartProvider>
-          <AIChatProvider>
-            <BrowserRouter>
-            <div className="flex flex-col min-h-screen">
-              <Navbar />
+    <ThemeProvider>
+      <LanguageProvider>
+        <ToastProvider>
+          <AuthProvider>
+            <CartProvider>
+              <AIChatProvider>
+                <BrowserRouter>
+                  <div className="flex flex-col min-h-screen bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 transition-colors duration-300">
+                    <Navbar />
 
               <main className="pt-16 flex-1 flex flex-col">
                 <Routes>
@@ -176,6 +180,8 @@ function App() {
       </CartProvider>
     </AuthProvider>
     </ToastProvider>
+    </LanguageProvider>
+    </ThemeProvider>
   );
 }
 

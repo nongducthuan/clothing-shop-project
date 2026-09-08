@@ -1,5 +1,6 @@
 // components/client/checkout/CheckoutSummary.jsx
 import React from "react";
+import { Sparkles } from "lucide-react";
 
 export function CheckoutSummary({ state, helpers }) {
   const { cart, earnedGifts, giftDetails, subtotal, membershipDiscount, tier, voucherDiscount, appliedVoucher, shippingFee, isFreeShipping, finalTotal } = state;
@@ -103,7 +104,7 @@ export function CheckoutSummary({ state, helpers }) {
             Shipping
             {isFreeShipping && (
               <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-600 text-[10px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider">
-                🎉 FREE
+                <Sparkles size={11} className="text-emerald-500" /> FREE
               </span>
             )}
           </span>

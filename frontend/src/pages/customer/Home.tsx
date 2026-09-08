@@ -12,22 +12,22 @@ export default function Home() {
 
   return (
     <div className="w-full">
-      {/* 🖼 Carousel Banner */}
+      {/* Carousel Banner */}
       <HeroCarousel banners={banners} />
 
-      {/* 🔮 Recommended Products Section */}
+      {/* Recommended Products Section */}
       <RecommendedProducts userId={currentUser ? currentUser.id : null} />
 
-      {/* 🌟 Featured Collections Section */}
+      {/* Featured Collections Section */}
       <FeaturedCollections />
 
-      {/* 👫 Men/Women Promo Banners */}
+      {/* Men/Women Promo Banners */}
       <GenderPromos />
 
-      {/* 👕 Lookbook Section */}
+      {/* Lookbook Section */}
       <Lookbook />
 
-      {/* 🎁 Offers Policy Section */}
+      {/* Offers Policy Section */}
       <Policies />
 
     </div>

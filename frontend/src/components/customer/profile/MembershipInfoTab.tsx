@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Crown } from "lucide-react";
 
 export default function MembershipInfoTab({ state, actions, helpers }) {
   const { user, phone, tier, currentConfig, totalSpent, safeProgress } = state;
@@ -136,8 +137,9 @@ export default function MembershipInfoTab({ state, actions, helpers }) {
                 </div>
               </div>
             ) : (
-              <div className="py-3 px-4 bg-slate-900 rounded-2xl text-white text-center shadow-sm">
-                <p className="font-medium text-xs sm:text-sm">🎉 You have reached the maximum tier!</p>
+              <div className="py-3 px-4 bg-slate-900 rounded-2xl text-white text-center shadow-sm flex items-center justify-center gap-1.5">
+                <Crown size={16} className="text-amber-400" />
+                <span className="font-medium text-xs sm:text-sm">You have reached the maximum tier!</span>
               </div>
             )}
           </div>

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useContext } from "react";
+import { X } from "lucide-react";
 import { AIChatContext } from "../../../context/AIChatContext";
 import AIMessage from "./AIMessage";
 
@@ -54,11 +55,11 @@ export default function AIChatWindow({ onClose }) {
           </button>
           <button
             type="button"
-            className="rounded-lg bg-white/80 px-3 py-1 text-xs font-medium text-black shadow-sm transition-colors hover:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400"
+            className="rounded-lg bg-white/80 p-1.5 text-black shadow-sm transition-colors hover:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400 flex items-center justify-center"
             onClick={onClose}
             aria-label="Đóng chat"
           >
-            ✕
+            <X size={16} />
           </button>
         </div>
       </header>
