@@ -4,6 +4,11 @@ import { CartContext } from "../../context/CartContext.jsx";
 import { AuthContext } from "../../context/AuthContext.jsx";
 import API from "../../services/apiClient.js";
 import { getImageUrl } from "../../utils/imageUtils";
+import {
+  extractProvince,
+  calculateShippingFee,
+  FREE_SHIPPING_THRESHOLD,
+} from "../../utils/shippingUtils";
 
 // --- HELPER HOOK: GEOLOCATION ---
 const useGeolocation = () => {
@@ -115,7 +120,18 @@ export function useCheckoutPage() {
 
   const membershipDiscount = user ? subtotal * (discount / 100) : 0;
   const voucherDiscount = appliedVoucher ? Number(appliedVoucher.discount_amount) : 0;
-  const finalTotal = Math.max(0, subtotal - membershipDiscount - voucherDiscount);
+  const subtotalAfterDiscount = Math.max(0, subtotal - membershipDiscount - voucherDiscount);
+
+  const shippingFee = useMemo(() => {
+    const province = extractProvince(shippingAddress);
+    const totalItemQuantity = cart.reduce((sum, item) => sum + (item.quantity ?? 1), 0);
+    return calculateShippingFee(province, totalItemQuantity, subtotalAfterDiscount);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shippingAddress, cart, subtotalAfterDiscount]);
+
+  const isFreeShipping = subtotalAfterDiscount >= FREE_SHIPPING_THRESHOLD;
+
+  const finalTotal = subtotalAfterDiscount + shippingFee;
 
   const resolveItemImage = (itemOrPath) => {
     if (!itemOrPath) return getImageUrl(null);
@@ -193,6 +209,7 @@ export function useCheckoutPage() {
         email: user?.email || guestInfo.email,
         payment_method: paymentMethod,
         items: itemsPayload,
+        shipping_fee: shippingFee,
       };
 
       const token = localStorage.getItem("token");
@@ -219,7 +236,8 @@ export function useCheckoutPage() {
       cart, user, tier, discount,
       statusMessage, shippingAddress, paymentMethod, guestInfo,
       appliedVoucher, earnedGifts, giftDetails,
-      subtotal, membershipDiscount, voucherDiscount, finalTotal,
+      subtotal, membershipDiscount, voucherDiscount,
+      subtotalAfterDiscount, shippingFee, isFreeShipping, finalTotal,
       isLocating, locationError
     },
     actions: {

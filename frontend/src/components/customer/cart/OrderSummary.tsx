@@ -31,7 +31,7 @@ export default function OrderSummary({ state, actions, helpers, onCheckout }) {
       {/* Voucher Input */}
       <div className="mb-8">
         <label className="block text-xs font-medium text-slate-500 uppercase tracking-widest mb-3">
-          Promo Code
+          Voucher Code
         </label>
         <div className="flex gap-2 min-w-0">
           <input

@@ -148,7 +148,7 @@ export const verifyOtpAndGetOrders = async (req: Request, res: Response): Promis
 export const createOrderController = async (req: Request, res: Response): Promise<void> => {
     try {
         const userId = req.user?.id || null;
-        const { address, items, phone, name, email, payment_method, voucher_id } = req.body;
+        const { address, items, phone, name, email, payment_method, voucher_id, shipping_fee: clientShippingFee } = req.body;
 
         if (!address || !items || items.length === 0) {
             res.status(400).json({ message: "Invalid order data: Address or items are missing" });
@@ -325,7 +325,15 @@ export const createOrderController = async (req: Request, res: Response): Promis
                 }
             }
 
-            // 3. Create Order
+            // 3. Apply shipping fee (validated from client)
+            const MAX_SHIPPING_FEE = 100_000;
+            const parsedShippingFee = Number(clientShippingFee) || 0;
+            if (parsedShippingFee < 0 || parsedShippingFee > MAX_SHIPPING_FEE) {
+                throw new Error(`Invalid shipping fee: must be between 0 and ${MAX_SHIPPING_FEE}.`);
+            }
+            finalTotal = Math.max(0, finalTotal + parsedShippingFee);
+
+            // 4. Create Order
             const newOrder = await tx.order.create({
                 data: {
                     user_id: userId,

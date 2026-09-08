@@ -2,7 +2,7 @@
 import React from "react";
 
 export function CheckoutSummary({ state, helpers }) {
-  const { cart, earnedGifts, giftDetails, subtotal, membershipDiscount, tier, voucherDiscount, appliedVoucher, finalTotal } = state;
+  const { cart, earnedGifts, giftDetails, subtotal, membershipDiscount, tier, voucherDiscount, appliedVoucher, shippingFee, isFreeShipping, finalTotal } = state;
   const { getImageUrl, formatPrice } = helpers;
 
   return (
@@ -99,8 +99,21 @@ export function CheckoutSummary({ state, helpers }) {
         )}
 
         <div className="flex justify-between text-slate-600 text-sm">
-          <span>Shipping</span>
-          <span className="font-medium text-slate-900">Free</span>
+          <span className="flex items-center gap-1.5">
+            Shipping
+            {isFreeShipping && (
+              <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-600 text-[10px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider">
+                🎉 FREE
+              </span>
+            )}
+          </span>
+          {isFreeShipping ? (
+            <span className="font-medium text-emerald-600">Free</span>
+          ) : shippingFee > 0 ? (
+            <span className="font-medium text-slate-900">{formatPrice(shippingFee)}</span>
+          ) : (
+            <span className="font-medium text-slate-400 text-xs italic">Enter address to calculate</span>
+          )}
         </div>
       </div>
 
