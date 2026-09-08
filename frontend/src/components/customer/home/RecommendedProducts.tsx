@@ -61,25 +61,26 @@ const RecommendedProducts = ({ userId }) => {
 
   // Show section unconditionally (fallback products will be fetched if guest/new user)
   return (
-    <section className="container mx-auto px-6 md:px-8 my-12" data-aos="fade-up">
-      {/* Section Title */}
-      <div className="text-center mb-8">
-        <SectionHeader title={t("home.recommended", "Recommend For You")} />
-      </div>
+    <section className="my-12" data-aos="fade-up">
+      <div className="max-w-[1280px] mx-auto px-4">
+        {/* Section Title */}
+        <div className="text-center mb-8">
+          <SectionHeader title={t("home.recommended", "Recommend For You")} />
+        </div>
 
-
-      {/* Product Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-        {loading
-          ? Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />) // Show 4 skeleton placeholders
-          : products.map((p) => (
-              <ProductCard
-                key={p.id}
-                product={p}
-                promotion={getPromotionForProduct(p.id)}
-              />
-            ))       // Show actual products with promotion badge if any
-        }
+        {/* Product Grid */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          {loading
+            ? Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />) // Show 4 skeleton placeholders
+            : products.map((p) => (
+                <ProductCard
+                  key={p.id}
+                  product={p}
+                  promotion={getPromotionForProduct(p.id)}
+                />
+              ))       // Show actual products with promotion badge if any
+          }
+        </div>
       </div>
     </section>
   );
