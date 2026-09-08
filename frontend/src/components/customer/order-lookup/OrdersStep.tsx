@@ -80,18 +80,6 @@ export default function OrdersStep({
                         <span className="text-gray-400 block text-[11px]">Shipping Address:</span>
                         <span className="font-semibold text-gray-800 break-words">{order.address || 'N/A'}</span>
                       </div>
-                      {order.ghtk_label && (
-                        <div className="sm:col-span-2 pt-2 border-t border-gray-100 flex flex-wrap justify-between items-center text-xs bg-emerald-50/60 p-2.5 rounded-md mt-1 gap-1">
-                          <div className="flex items-center gap-1.5">
-                            <i className="fa-solid fa-truck text-emerald-600"></i>
-                            <span className="font-bold text-gray-700">Mã vận đơn GHTK:</span>
-                            <span className="font-mono font-bold text-emerald-700">{order.ghtk_label}</span>
-                          </div>
-                          <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full">
-                            {order.ghtk_status || 'Đang vận chuyển'}
-                          </span>
-                        </div>
-                      )}
                     </div>
 
                     {order.payment_status === 'Unpaid' && order.status !== 'Cancelled' && (
