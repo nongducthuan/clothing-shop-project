@@ -174,14 +174,23 @@ const PROVINCE_ZONE_MAP: Record<string, ShippingZone> = {
 // ─── HELPER FUNCTIONS ─────────────────────────────────────────────────────────
 
 /**
- * Normalize chuỗi: lowercase + bỏ dấu + bỏ "tỉnh"/"thành phố"/"tp."
+ * Loại bỏ dấu tiếng Việt để fallback so sánh không dấu
+ */
+function removeAccents(str: string): string {
+  return str
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/g, 'd')
+    .replace(/Đ/g, 'D');
+}
+
+/**
+ * Normalize chuỗi: lowercase + Unicode NFC + bỏ "tỉnh"/"thành phố"/"tp."
  */
 function normalizeProvinceName(text: string): string {
   return text
     .toLowerCase()
-    .normalize('NFD')
-    // Không bỏ dấu — giữ nguyên tiếng Việt vì bảng dùng có dấu
-    // Chỉ trim và bỏ prefix phổ biến
+    .normalize('NFC')
     .replace(/^(tỉnh|thành phố|tp\.?)\s*/i, '')
     .trim();
 }
@@ -204,13 +213,23 @@ export function extractProvince(address: string): string {
 function getProvinceZone(province: string): ShippingZone {
   if (!province) return 'default';
   const normalized = normalizeProvinceName(province);
+  const unaccented = removeAccents(normalized);
 
-  // Match trực tiếp
+  // 1. Match trực tiếp gốc (NFC)
   if (PROVINCE_ZONE_MAP[normalized]) return PROVINCE_ZONE_MAP[normalized];
 
-  // Match một phần (để bắt "Hồ Chí Minh" trong "TP. Hồ Chí Minh")
+  // 2. Match một phần gốc (để bắt "Hồ Chí Minh" trong "TP. Hồ Chí Minh")
   for (const [key, zone] of Object.entries(PROVINCE_ZONE_MAP)) {
-    if (normalized.includes(key) || key.includes(normalized)) {
+    const keyNfc = key.normalize('NFC');
+    if (normalized.includes(keyNfc) || keyNfc.includes(normalized)) {
+      return zone;
+    }
+  }
+
+  // 3. Fallback match không dấu (cho trường hợp người dùng gõ không dấu)
+  for (const [key, zone] of Object.entries(PROVINCE_ZONE_MAP)) {
+    const keyUnaccented = removeAccents(key);
+    if (unaccented.includes(keyUnaccented) || keyUnaccented.includes(unaccented)) {
       return zone;
     }
   }

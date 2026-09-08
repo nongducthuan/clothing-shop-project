@@ -55,8 +55,11 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       const res = await API.get("/auth/me");
 
       if (res.data) {
-        // Merge old user data with new data (e.g., updated tier)
+        // If token was removed while request was in-flight, do not update user state
+        if (!localStorage.getItem("token")) return;
+
         setUser((prev) => {
+          if (!prev && !localStorage.getItem("token")) return null;
           const updatedUser = { ...prev, ...res.data } as User;
           localStorage.setItem("user", JSON.stringify(updatedUser));
           return updatedUser;

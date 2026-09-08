@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import prisma from '../../../prisma/client';
-import { Prisma } from '@prisma/client';
+import { Prisma } from '../../generated/prisma/client';
 
 export const createVoucherAdmin = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -44,6 +44,10 @@ export const createVoucherAdmin = async (req: Request, res: Response): Promise<v
     res.status(201).json({ success: true, message: "Voucher Created Successfully!" });
   } catch (error: any) {
     console.error("BACKEND ERROR:", error.message);
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+      res.status(400).json({ success: false, message: "Mã voucher (code) này đã tồn tại. Vui lòng nhập mã khác!" });
+      return;
+    }
     res.status(500).json({ success: false, message: "Server error creating voucher" });
   }
 };
@@ -95,6 +99,10 @@ export const updateVoucherAdmin = async (req: Request, res: Response): Promise<v
     res.json({ success: true, message: "Voucher updated successfully!" });
   } catch (error: any) {
     console.error("UPDATE VOUCHER ERROR:", error.message);
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+      res.status(400).json({ success: false, message: "Mã voucher (code) này đã tồn tại. Vui lòng nhập mã khác!" });
+      return;
+    }
     res.status(500).json({ success: false, message: "Server error updating voucher" });
   }
 };

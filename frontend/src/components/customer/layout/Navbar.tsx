@@ -45,7 +45,7 @@ function useCategoryData() {
 // Hook to manage delayed hover effects (Debounce)
 function useHoverDelay(delay = 200) {
   const [isOpen, setIsOpen] = useState(false);
-  const timerRef = useRef(null);
+  const timerRef = useRef<any>(null);
 
   const open = () => {
     if (timerRef.current) clearTimeout(timerRef.current);
@@ -56,11 +56,16 @@ function useHoverDelay(delay = 200) {
     timerRef.current = setTimeout(() => setIsOpen(false), delay);
   };
 
+  const closeImmediately = () => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    setIsOpen(false);
+  };
+
   const cancelClose = () => {
     if (timerRef.current) clearTimeout(timerRef.current);
   };
 
-  return { isOpen, open, close, cancelClose };
+  return { isOpen, open, close, closeImmediately, cancelClose };
 }
 
 // --- SUB-COMPONENTS ---
@@ -156,7 +161,12 @@ const DesktopNav = ({ menuData, navigate }) => {
 
 // Renders the User Icon and Dropdown (Desktop)
 const UserDropdown = ({ user, navigate, onLogout }) => {
-  const { isOpen, open, close, cancelClose } = useHoverDelay();
+  const { isOpen, open, close, closeImmediately, cancelClose } = useHoverDelay();
+
+  const handleItemClick = (action: () => void) => {
+    closeImmediately();
+    action();
+  };
 
   return (
     <div className="relative hidden md:block" onMouseEnter={open} onMouseLeave={close}>
@@ -178,20 +188,20 @@ const UserDropdown = ({ user, navigate, onLogout }) => {
               {user.role === "admin" && (
                 <div
                   className="px-4 py-2.5 hover:bg-violet-50 hover:text-violet-700 font-medium text-gray-700 cursor-pointer transition-colors flex items-center"
-                  onClick={() => navigate("/admin")}
+                  onClick={() => handleItemClick(() => navigate("/admin"))}
                 >
                   <i className="fa-solid fa-screwdriver-wrench mr-2 w-4 text-center"></i> Dashboard
                 </div>
               )}
               <div
                 className="px-4 py-2.5 hover:bg-violet-50 hover:text-violet-700 font-medium text-gray-700 cursor-pointer transition-colors flex items-center"
-                onClick={() => navigate("/profile")}
+                onClick={() => handleItemClick(() => navigate("/profile"))}
               >
                 <i className="fa-solid fa-user-circle mr-2 w-4 text-center"></i> Profile
               </div>
               <div
                 className="px-4 py-2.5 hover:bg-red-50 text-red-600 font-medium cursor-pointer transition-colors flex items-center"
-                onClick={onLogout}
+                onClick={() => handleItemClick(onLogout)}
               >
                 <i className="fa-solid fa-arrow-right-from-bracket mr-2 w-4 text-center"></i> Logout
               </div>
@@ -200,13 +210,13 @@ const UserDropdown = ({ user, navigate, onLogout }) => {
             <>
               <div
                 className="px-4 py-2.5 hover:bg-violet-50 hover:text-violet-700 font-medium text-gray-700 cursor-pointer transition-colors flex items-center"
-                onClick={() => navigate("/login")}
+                onClick={() => handleItemClick(() => navigate("/login"))}
               >
                 <i className="fa-solid fa-right-to-bracket mr-2 w-4 text-center"></i> Login
               </div>
               <div
                 className="px-4 py-2.5 hover:bg-violet-50 hover:text-violet-700 font-medium text-gray-700 cursor-pointer transition-colors flex items-center"
-                onClick={() => navigate("/register")}
+                onClick={() => handleItemClick(() => navigate("/register"))}
               >
                 <i className="fa-solid fa-user-plus mr-2 w-4 text-center"></i> Register
               </div>
