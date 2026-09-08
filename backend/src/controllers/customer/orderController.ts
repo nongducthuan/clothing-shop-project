@@ -792,38 +792,39 @@ export const submitReturnRequest = async (req: Request, res: Response): Promise<
 export const cancelReturnRequest = async (req: Request, res: Response): Promise<void> => {
     try {
         const orderId = Number(req.params.id);
-        const { email } = req.body;
+        const email = (req.body?.email || req.user?.email || "").toLowerCase();
 
         await prisma.$transaction(async (tx) => {
-            const order = await tx.order.findFirst({
-                where: { id: orderId, status: 'Return_Requested' },
+            const order = await tx.order.findUnique({
+                where: { id: orderId },
                 include: { return_request: true }
             });
 
             if (!order) {
-                throw new Error("Order not found or is not in Return Requested status.");
+                throw new Error(`Order #${orderId} not found.`);
             }
 
-            // Ownership check – same pattern as submitReturnRequest
+            const isReturnRequested = ['Return_Requested', 'Return Requested'].includes(order.status as string);
+            if (!isReturnRequested) {
+                throw new Error(`Order #${orderId} is not in Return Requested status (current status: '${order.status}').`);
+            }
+
+            // Ownership check – supports member user_id match or email match
             const isAdmin = req.user?.role === 'admin';
-            if (order.user_id) {
-                // Logged-in member order
-                if (!isAdmin && (!req.user || req.user.id !== order.user_id)) {
-                    throw new Error("Forbidden: This order belongs to another member.");
-                }
+            const matchesUserId = order.user_id && req.user?.id === order.user_id;
+            const matchesEmail = email && order.email.toLowerCase() === email;
+
+            if (!isAdmin && !matchesUserId && !matchesEmail) {
+                throw new Error("Forbidden: You do not have permission to cancel this return request.");
+            }
+
+            // Delete the return request (if exists) and revert order status to Delivered
+            if (order.return_request) {
+                await tx.returnRequest.delete({ where: { order_id: orderId } });
             } else {
-                // Guest order – verify by email
-                if (!isAdmin && (!email || order.email !== email)) {
-                    throw new Error("Forbidden: Email is required and must match the guest order.");
-                }
+                await tx.returnRequest.deleteMany({ where: { order_id: orderId } });
             }
 
-            if (!order.return_request) {
-                throw new Error("No return request found for this order.");
-            }
-
-            // Delete the return request and revert order status to Delivered
-            await tx.returnRequest.delete({ where: { order_id: orderId } });
             await tx.order.update({
                 where: { id: orderId },
                 data: { status: 'Delivered' }

@@ -82,16 +82,16 @@ export default function ReturnFormStep({
         <p className="text-[10px] text-gray-400 mt-1">Upload photos of the product condition.</p>
       </div>
 
-      <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3 pt-2">
+      <div className="flex gap-3 pt-2">
         <button
           type="button" onClick={onCancel}
-          className="w-full sm:w-1/3 px-4 py-3 border border-gray-300 rounded-lg text-gray-600 font-bold text-sm hover:bg-gray-50 transition"
+          className="flex-1 px-4 py-3 border border-gray-300 rounded-lg text-gray-600 font-bold text-sm hover:bg-gray-50 transition text-center"
         >
           Cancel
         </button>
         <button
           type="submit" disabled={loading}
-          className="w-full sm:w-2/3 px-4 py-3 bg-violet-600 text-white rounded-lg font-bold text-sm hover:bg-violet-700 transition disabled:opacity-50 flex items-center justify-center gap-2"
+          className="flex-1 px-4 py-3 bg-violet-600 text-white rounded-lg font-bold text-sm hover:bg-violet-700 transition disabled:opacity-50 flex items-center justify-center gap-2"
         >
           {loading ? (
             <>

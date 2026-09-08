@@ -93,8 +93,12 @@ export function useOrderLookup() {
         showToast(res.data.message || "Payment method updated successfully!", "success");
         setPaymentModalOrder(null);
         if (email && otp) {
-          const refreshRes = await API.post("/orders/otp/verify", { email, code: otp });
-          if (refreshRes.data?.orders) setOrders(refreshRes.data.orders);
+          try {
+            const refreshRes = await API.post("/orders/otp/verify", { email, code: otp });
+            if (refreshRes.data?.orders) setOrders(refreshRes.data.orders);
+          } catch {
+            // Ignore OTP re-verification error on background refresh
+          }
         }
       }
     } catch (err: unknown) {
@@ -194,10 +198,13 @@ export function useOrderLookup() {
         headers: token ? { Authorization: `Bearer ${token}` } : {}
       });
       showToast("Return request cancelled. Your order is back to Delivered.", "success");
-      if (email && otp) {
-        const refreshRes = await API.post("/orders/otp/verify", { email, code: otp });
-        if (refreshRes.data?.orders) setOrders(refreshRes.data.orders);
-      }
+      setOrders((prevOrders: any[]) =>
+        prevOrders.map((order) =>
+          order.id === orderId
+            ? { ...order, status: "Delivered", return_request: null }
+            : order
+        )
+      );
     } catch (err: unknown) {
       const axErr = err as AxiosErr;
       showToast(axErr.response?.data?.message || "Unable to cancel return request", "error");

@@ -195,7 +195,14 @@ export function useProfilePage() {
         headers: { Authorization: `Bearer ${token}` },
       });
       showToast("Return request cancelled. Your order is back to Delivered.", "success");
-      setHasFetchedOrders(false);
+      setOrders((prevOrders: any[]) =>
+        prevOrders.map((order) =>
+          order.id === orderId
+            ? { ...order, status: "Delivered", return_request: null }
+            : order
+        )
+      );
+      fetchOrders();
     } catch (error: any) {
       showToast(error.response?.data?.message || "Unable to cancel return request.", "error");
     }
