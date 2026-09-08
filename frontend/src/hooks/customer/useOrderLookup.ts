@@ -184,6 +184,28 @@ export function useOrderLookup() {
     }
   };
 
+  const handleCancelReturn = async (orderId: number | string) => {
+    if (!window.confirm("Are you sure you want to cancel this return request?")) return;
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      await API.delete(`/orders/${orderId}/return`, {
+        data: { email },
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      });
+      showToast("Return request cancelled. Your order is back to Delivered.", "success");
+      if (email && otp) {
+        const refreshRes = await API.post("/orders/otp/verify", { email, code: otp });
+        if (refreshRes.data?.orders) setOrders(refreshRes.data.orders);
+      }
+    } catch (err: unknown) {
+      const axErr = err as AxiosErr;
+      showToast(axErr.response?.data?.message || "Unable to cancel return request", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   /**
    * Formats a number into Vietnamese Dong currency format.
    */
@@ -203,7 +225,7 @@ export function useOrderLookup() {
     },
     actions: {
       setStep, setEmail, setOtp, setReturnForm,
-      toggleOrder, handleSendOtp, handleVerifyOtp, handleOpenPaymentModal, handleClosePaymentModal, handleRepay, openReturnForm, handleReturnSubmit, resetLookup
+      toggleOrder, handleSendOtp, handleVerifyOtp, handleOpenPaymentModal, handleClosePaymentModal, handleRepay, openReturnForm, handleReturnSubmit, handleCancelReturn, resetLookup
     },
     helpers: {
       formatCurrency

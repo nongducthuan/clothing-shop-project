@@ -52,6 +52,7 @@ export default function GuestOrderTracking() {
               handleOpenPaymentModal={actions.handleOpenPaymentModal}
               loading={state.loading}
               openReturnForm={actions.openReturnForm}
+              handleCancelReturn={actions.handleCancelReturn}
               onReset={actions.resetLookup}
             />
           )}

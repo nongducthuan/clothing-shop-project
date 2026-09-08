@@ -4,7 +4,7 @@ import { PaymentBadge } from "../../common/PaymentBadge";
 
 export default function OrdersStep({
   orders, expandedOrder, toggleOrder, formatCurrency,
-  handleRepay, handleOpenPaymentModal, loading, openReturnForm, onReset
+  handleRepay, handleOpenPaymentModal, loading, openReturnForm, handleCancelReturn, onReset
 }) {
   return (
     <div className="space-y-4">
@@ -103,9 +103,18 @@ export default function OrdersStep({
                         <i className="fa-solid fa-rotate-left"></i> Request Return
                       </button>
                     )}
-                    {order.return_request && (
-                      <div className="mt-3 p-2.5 bg-orange-50 text-orange-600 text-center rounded-lg text-xs font-bold border border-orange-100">
-                        Return request is being processed
+                    {(order.status === 'Return Requested' || order.return_request) && (
+                      <div className="mt-3 space-y-2">
+                        <div className="p-2.5 bg-orange-50 text-orange-600 text-center rounded-lg text-xs font-bold border border-orange-100 flex items-center justify-center gap-2">
+                          <i className="fa-solid fa-spinner animate-spin"></i> Return request is being processed
+                        </div>
+                        <button
+                          onClick={() => handleCancelReturn && handleCancelReturn(order.id)}
+                          disabled={loading}
+                          className="w-full bg-rose-50 text-rose-600 border border-rose-200 py-2 rounded-lg text-xs font-bold hover:bg-rose-100 transition flex items-center justify-center gap-1.5"
+                        >
+                          <i className="fa-solid fa-xmark"></i> Cancel Return Request
+                        </button>
                       </div>
                     )}
                   </div>

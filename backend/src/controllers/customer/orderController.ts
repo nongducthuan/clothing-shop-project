@@ -788,3 +788,51 @@ export const submitReturnRequest = async (req: Request, res: Response): Promise<
         res.status(500).json({ message: error.message });
     }
 };
+
+export const cancelReturnRequest = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const orderId = Number(req.params.id);
+        const { email } = req.body;
+
+        await prisma.$transaction(async (tx) => {
+            const order = await tx.order.findFirst({
+                where: { id: orderId, status: 'Return_Requested' },
+                include: { return_request: true }
+            });
+
+            if (!order) {
+                throw new Error("Order not found or is not in Return Requested status.");
+            }
+
+            // Ownership check – same pattern as submitReturnRequest
+            const isAdmin = req.user?.role === 'admin';
+            if (order.user_id) {
+                // Logged-in member order
+                if (!isAdmin && (!req.user || req.user.id !== order.user_id)) {
+                    throw new Error("Forbidden: This order belongs to another member.");
+                }
+            } else {
+                // Guest order – verify by email
+                if (!isAdmin && (!email || order.email !== email)) {
+                    throw new Error("Forbidden: Email is required and must match the guest order.");
+                }
+            }
+
+            if (!order.return_request) {
+                throw new Error("No return request found for this order.");
+            }
+
+            // Delete the return request and revert order status to Delivered
+            await tx.returnRequest.delete({ where: { order_id: orderId } });
+            await tx.order.update({
+                where: { id: orderId },
+                data: { status: 'Delivered' }
+            });
+        });
+
+        res.status(200).json({ message: "Return request cancelled successfully." });
+    } catch (error: any) {
+        console.error("ERROR_CANCEL_RETURN:", error);
+        res.status(500).json({ message: error.message });
+    }
+};

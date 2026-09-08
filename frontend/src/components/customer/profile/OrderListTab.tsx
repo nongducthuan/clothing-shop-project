@@ -4,7 +4,7 @@ import { PaymentBadge } from "../../common/PaymentBadge";
 
 export default function OrderListTab({ state, actions, helpers }) {
   const { orders, loadingOrders } = state;
-  const { setSelectedOrder, handleOpenPaymentModal, handleOpenReturnModal } = actions;
+  const { setSelectedOrder, handleOpenPaymentModal, handleOpenReturnModal, handleCancelReturn } = actions;
   const { formatCurrency } = helpers;
 
   if (loadingOrders) {
@@ -108,6 +108,15 @@ export default function OrderListTab({ state, actions, helpers }) {
                   className="flex-1 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-medium text-xs sm:text-sm transition-colors"
                 >
                   Return
+                </button>
+              )}
+
+              {order.status === "Return Requested" && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); handleCancelReturn(order.id); }}
+                  className="flex-1 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 rounded-xl font-medium text-xs sm:text-sm transition-colors"
+                >
+                  Cancel Return
                 </button>
               )}
             </div>

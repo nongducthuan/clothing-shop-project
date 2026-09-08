@@ -49,6 +49,7 @@ router.get('/orders', authenticateToken, orderController.getOrders);
 router.put('/orders/status', optionalAuthenticateToken, orderController.changeOrderStatus);
 router.post('/orders/:id/repay', optionalAuthenticateToken, orderController.repayMoMoController);
 router.post('/orders/:id/return', optionalAuthenticateToken, upload.array('images'), orderController.submitReturnRequest);
+router.delete('/orders/:id/return', optionalAuthenticateToken, orderController.cancelReturnRequest);
 
 // MoMo & VNPay Webhooks & Callbacks
 router.post('/orders/momo-callback', orderController.momoCallback);

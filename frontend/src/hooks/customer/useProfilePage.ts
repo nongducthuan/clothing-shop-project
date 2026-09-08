@@ -187,6 +187,20 @@ export function useProfilePage() {
     }
   };
 
+  const handleCancelReturn = async (orderId) => {
+    if (!window.confirm("Are you sure you want to cancel this return request?")) return;
+    try {
+      const token = localStorage.getItem("token");
+      await API.delete(`/orders/${orderId}/return`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      showToast("Return request cancelled. Your order is back to Delivered.", "success");
+      setHasFetchedOrders(false);
+    } catch (error: any) {
+      showToast(error.response?.data?.message || "Unable to cancel return request.", "error");
+    }
+  };
+
   const handleReturnDataChange = (field, value) => setReturnData((prev) => ({ ...prev, [field]: value }));
   const formatCurrency = (val) => Number(val).toLocaleString("vi-VN") + "đ";
   const getImgUrl = (path) => getImageUrl(path);
@@ -257,7 +271,7 @@ export function useProfilePage() {
       setActiveTab, setPhone, logout, setSelectedOrder,
       handleOpenPaymentModal, handleClosePaymentModal, handleRepay,
       handleOpenReturnModal, setShowReturnModal,
-      handleSubmitReturn, handleReturnDataChange, updateProfile,
+      handleSubmitReturn, handleCancelReturn, handleReturnDataChange, updateProfile,
       setCurrentPassword, setNewPassword, setConfirmPassword, changePassword
     },
     helpers: {
