@@ -1,5 +1,6 @@
 import React from "react";
 import { getImageUrl } from "../../../utils/imageUtils";
+import { useLanguage } from "../../../context/LanguageContext";
 
 export default function BannerForm({
   form,
@@ -10,45 +11,47 @@ export default function BannerForm({
   editingId,
   onCancel,
 }) {
+  const { t } = useLanguage();
+
   return (
     <div className="flex flex-col h-full">
-      <h3 className="text-xl font-extrabold mb-6 text-gray-800 flex items-center gap-3 m-0 leading-none">
+      <h3 className="text-xl font-extrabold mb-6 text-slate-800 dark:text-slate-100 flex items-center gap-3 m-0 leading-none">
         {editingId ? (
-          <><i className="fa-solid fa-pen-to-square text-violet-500"></i> Edit Banner</>
+          <><i className="fa-solid fa-pen-to-square text-violet-500 dark:text-violet-400"></i> {t("admin.edit_banner")}</>
         ) : (
-          <><i className="fa-solid fa-plus-circle text-violet-500"></i> Add New Banner</>
+          <><i className="fa-solid fa-plus-circle text-violet-500 dark:text-violet-400"></i> {t("admin.add_new_banner")}</>
         )}
       </h3>
 
       <form onSubmit={handleSubmit} className="space-y-6 flex-1 flex flex-col">
         {/* Title Input */}
         <div>
-          <label className="block text-sm font-bold text-gray-700 mb-2 ml-1">Title</label>
+          <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 ml-1">{t("admin.banner_title")}</label>
           <input
             type="text"
             required
-            className="w-full px-4 py-3 bg-gray-50 border-transparent focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 rounded-2xl transition-all duration-300 outline-none text-gray-800 font-medium"
+            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 focus:bg-white dark:focus:bg-slate-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-4 focus:ring-blue-500/10 rounded-2xl transition-all duration-300 outline-none text-slate-800 dark:text-slate-100 font-medium placeholder:text-slate-400 dark:placeholder:text-slate-500"
             value={form.title}
             onChange={(e) => setForm({ ...form, title: e.target.value })}
-            placeholder="e.g., Summer Sale 2024"
+            placeholder={t("admin.banner_title")}
           />
         </div>
 
         {/* Subtitle Input */}
         <div>
-          <label className="block text-sm font-bold text-gray-700 mb-2 ml-1">Subtitle</label>
+          <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 ml-1">{t("admin.description")}</label>
           <input
             type="text"
-            className="w-full px-4 py-3 bg-gray-50 border-transparent focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 rounded-2xl transition-all duration-300 outline-none text-gray-800 font-medium"
+            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 focus:bg-white dark:focus:bg-slate-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-4 focus:ring-blue-500/10 rounded-2xl transition-all duration-300 outline-none text-slate-800 dark:text-slate-100 font-medium placeholder:text-slate-400 dark:placeholder:text-slate-500"
             value={form.subtitle}
             onChange={(e) => setForm({ ...form, subtitle: e.target.value })}
-            placeholder="e.g., Up to 50% off on selected items"
+            placeholder={t("admin.description_placeholder")}
           />
         </div>
 
         {/* Image Upload & Preview */}
         <div>
-          <label className="block text-sm font-bold text-gray-700 mb-2 ml-1">Banner Image</label>
+          <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 ml-1">{t("admin.upload_banner_image")}</label>
 
           {/* File Input styling */}
           <div className="relative mb-3">
@@ -58,16 +61,16 @@ export default function BannerForm({
               accept="image/*"
               className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
             />
-            <div className="w-full px-4 py-3 bg-blue-50/50 border border-dashed border-blue-200 rounded-2xl flex items-center justify-center gap-2 text-violet-600 hover:bg-blue-50 transition-colors duration-300">
+            <div className="w-full px-4 py-3 bg-blue-50/50 dark:bg-blue-950/30 border border-dashed border-blue-200 dark:border-blue-800 rounded-2xl flex items-center justify-center gap-2 text-violet-600 dark:text-violet-400 hover:bg-blue-50 dark:hover:bg-blue-950/50 transition-colors duration-300">
               <i className="fa-solid fa-cloud-arrow-up"></i>
-              <span className="font-semibold text-sm">Upload Image File</span>
+              <span className="font-semibold text-sm">{t("admin.upload_banner_image")}</span>
             </div>
           </div>
 
           {/* URL Input */}
           <input
             type="text"
-            className="w-full px-4 py-3 bg-gray-50 border-transparent focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 rounded-2xl transition-all duration-300 outline-none text-gray-500 text-sm font-medium mb-3"
+            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 focus:bg-white dark:focus:bg-slate-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-4 focus:ring-blue-500/10 rounded-2xl transition-all duration-300 outline-none text-slate-500 dark:text-slate-400 text-sm font-medium mb-3 placeholder:text-slate-400 dark:placeholder:text-slate-500"
             value={form.imageUrl}
             onChange={(e) => setForm({ ...form, imageUrl: e.target.value })}
             placeholder="Or paste an image URL here..."
@@ -75,26 +78,22 @@ export default function BannerForm({
 
           {uploading && (
             <p className="text-xs font-bold text-blue-500 animate-pulse ml-1 mb-2">
-              <i className="fa-solid fa-spinner fa-spin mr-1"></i> Uploading...
+              <i className="fa-solid fa-spinner fa-spin mr-1"></i> {t("common.loading")}
             </p>
           )}
 
           {/* Image Preview */}
           {form.imageUrl ? (
-            <div className="w-full h-32 rounded-2xl overflow-hidden bg-gray-100 shadow-inner border border-gray-100 relative group mt-2">
+            <div className="w-full h-32 rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-700 shadow-inner border border-slate-200/80 dark:border-slate-600 relative group mt-2">
               <img
                 src={getImageUrl(form.imageUrl)}
                 alt="Preview"
                 className="w-full h-full object-cover"
               />
-              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                <span className="text-white font-bold text-sm tracking-wider uppercase">Preview</span>
-              </div>
             </div>
           ) : (
-             <div className="w-full h-32 rounded-2xl bg-gray-50 border border-dashed border-gray-300 flex flex-col items-center justify-center text-gray-400 mt-2">
+             <div className="w-full h-32 rounded-2xl bg-slate-50 dark:bg-slate-700/40 border border-dashed border-slate-300 dark:border-slate-600 flex flex-col items-center justify-center text-slate-400 mt-2">
                <i className="fa-solid fa-image text-2xl mb-1"></i>
-               <span className="text-xs font-medium">No image selected</span>
              </div>
           )}
         </div>
@@ -112,16 +111,16 @@ export default function BannerForm({
                   : "bg-violet-600 hover:bg-violet-700 hover:shadow-md hover:-translate-y-0.5"
             }`}
           >
-            {editingId ? "Update Banner" : "Add Banner"}
+            {editingId ? t("admin.save_changes") : t("admin.create_banner")}
           </button>
 
           {editingId && (
             <button
               type="button"
               onClick={onCancel}
-              className="px-6 py-3.5 bg-gray-100 text-gray-600 font-bold rounded-full hover:bg-gray-200 hover:text-gray-800 transition-all duration-300"
+              className="px-6 py-3.5 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold rounded-full hover:bg-slate-200 dark:hover:bg-slate-600 transition-all duration-300"
             >
-              Cancel
+              {t("common.cancel")}
             </button>
           )}
         </div>

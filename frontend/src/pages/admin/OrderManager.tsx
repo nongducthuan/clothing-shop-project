@@ -4,21 +4,26 @@ import OrderDetailsModal from "../../components/admin/orders/OrderDetailsModal.j
 import useOrderManager from "../../hooks/admin/useOrderManager";
 import useOrderFilters from "../../hooks/admin/useOrderFilters";
 import EmptyState from "../../components/common/EmptyState";
+import { useLanguage } from "../../context/LanguageContext";
 
 // --- SUB-COMPONENTS ---
-const PageHeader = () => (
-  <div className="flex justify-center md:justify-start mb-8">
-    <div className="inline-flex items-center gap-3 px-6 py-2.5 bg-white border border-gray-100 rounded-full shadow-sm">
-      <div className="w-2.5 h-2.5 rounded-full bg-blue-500 animate-pulse"></div>
-      <h2 className="font-bold uppercase text-gray-700 tracking-wider text-sm m-0 leading-none">
-        Order Management
-      </h2>
+const PageHeader = () => {
+  const { t } = useLanguage();
+  return (
+    <div className="flex justify-center md:justify-start mb-8">
+      <div className="inline-flex items-center gap-3 px-6 py-2.5 bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 rounded-full shadow-sm">
+        <div className="w-2.5 h-2.5 rounded-full bg-blue-500 animate-pulse"></div>
+        <h2 className="font-bold uppercase text-slate-700 dark:text-slate-200 tracking-wider text-sm m-0 leading-none">
+          {t("admin.order_management")}
+        </h2>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 // --- MAIN COMPONENT ---
 export default function OrderManager() {
+  const { t } = useLanguage();
   const {
     orders,
     selectedOrder,
@@ -45,13 +50,13 @@ export default function OrderManager() {
       <PageHeader />
 
       {/* Main Content Area */}
-      <div className="bg-gray-50/80 p-4 md:p-8 rounded-[2rem] border border-gray-100 shadow-inner min-h-[500px]">
+      <div className="bg-white dark:bg-slate-800 p-4 md:p-8 rounded-[2rem] border border-slate-200/80 dark:border-slate-700 shadow-sm min-h-[500px]">
         {orders.length === 0 ? (
           /* Global Empty State */
           <div className="flex items-center justify-center h-full min-h-[400px]">
             <EmptyState 
-              title="System is Empty"
-              subtitle="There are no orders in the system yet. Wait for customers to make purchases."
+              title={t("admin.system_is_empty")}
+              subtitle={t("admin.no_orders_subtitle")}
               icon="fa-box-open"
             />
           </div>

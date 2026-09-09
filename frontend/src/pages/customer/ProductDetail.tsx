@@ -13,14 +13,14 @@ export default function ProductDetail() {
   // --- ERROR STATE ---
   if (state.error) {
     return (
-      <div className="min-h-[60vh] flex flex-col items-center justify-center text-center">
-        <div className="w-16 h-16 bg-rose-50 rounded-full flex items-center justify-center mb-4">
+      <div className="min-h-[60vh] flex flex-col items-center justify-center text-center bg-white dark:bg-slate-900">
+        <div className="w-16 h-16 bg-rose-50 dark:bg-rose-950/40 rounded-full flex items-center justify-center mb-4">
           <i className="fa-solid fa-circle-exclamation text-2xl text-rose-500"></i>
         </div>
-        <h2 className="text-2xl font-medium text-slate-900 mb-6">{state.error}</h2>
+        <h2 className="text-2xl font-medium text-slate-900 dark:text-slate-100 mb-6">{state.error}</h2>
         <button
           onClick={() => actions.navigate("/")}
-          className="px-8 py-3 bg-slate-900 text-white rounded-full font-medium hover:bg-slate-800 transition-colors"
+          className="px-8 py-3 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 rounded-full font-medium hover:bg-slate-800 dark:hover:bg-white transition-colors"
         >
           Return to Homepage
         </button>
@@ -31,15 +31,15 @@ export default function ProductDetail() {
   // --- LOADING STATE ---
   if (!state.product) {
     return (
-      <div className="min-h-[70vh] flex items-center justify-center">
-        <i className="fa-solid fa-circle-notch fa-spin text-3xl text-slate-300"></i>
+      <div className="min-h-[70vh] flex items-center justify-center bg-white dark:bg-slate-900">
+        <i className="fa-solid fa-circle-notch fa-spin text-3xl text-slate-300 dark:text-slate-600"></i>
       </div>
     );
   }
 
   // --- MAIN RENDER ---
   return (
-    <div className="bg-white flex-1 pb-12 pt-6">
+    <div className="bg-white dark:bg-slate-900 flex-1 pb-12 pt-6">
       <div className="max-w-[1200px] mx-auto px-6">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-start">
 
@@ -56,11 +56,11 @@ export default function ProductDetail() {
             <ProductActions state={state} actions={actions} helpers={helpers} />
 
             {/* DESCRIPTION ACCORDION/SECTION */}
-            <div className="mt-16 border-t border-slate-100 pt-10">
-              <h3 className="text-lg font-medium text-slate-900 mb-6">
+            <div className="mt-16 border-t border-slate-100 dark:border-slate-800 pt-10">
+              <h3 className="text-lg font-medium text-slate-900 dark:text-slate-100 mb-6">
                 Product Details
               </h3>
-              <div className="prose prose-slate prose-p:text-slate-500 prose-p:leading-relaxed max-w-none text-sm whitespace-pre-line">
+              <div className="prose prose-slate prose-p:text-slate-500 dark:prose-invert dark:prose-p:text-slate-400 prose-p:leading-relaxed max-w-none text-sm whitespace-pre-line text-slate-500 dark:text-slate-400">
                 {state.product.description || "No detailed description available for this product."}
               </div>
             </div>

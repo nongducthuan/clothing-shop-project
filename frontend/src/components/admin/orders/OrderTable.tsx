@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { getImageUrl } from "../../../utils/imageUtils";
 import { PaymentBadge } from "../../common/PaymentBadge";
+import { useLanguage } from "../../../context/LanguageContext";
 
 import { PAYMENT_OPTIONS, STATUS_OPTIONS } from "../../../hooks/admin/useOrderManager";
 
@@ -15,6 +16,7 @@ export default function OrderTable({
   handleRejectReturn,
   filters // Nhận filters từ props
 }) {
+  const { t } = useLanguage();
   const {
     activeTab,
     handleTabSwitch,
@@ -39,86 +41,89 @@ export default function OrderTable({
     <div className="hidden md:flex flex-col gap-6">
 
       {/* ================= HEADER: TABS & FILTERS ================= */}
-      <div className="bg-white p-5 md:p-6 rounded-[2rem] shadow-sm border border-gray-100 flex flex-col gap-5">
+      <div className="bg-slate-50/50 dark:bg-slate-700/40 p-5 md:p-6 rounded-[2rem] shadow-xs border border-slate-200/80 dark:border-slate-700 flex flex-col gap-5">
 
         {/* TABS */}
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-          <h3 className="font-extrabold text-gray-800 text-xl flex items-center gap-3 m-0 leading-none">
-            <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center">
+          <h3 className="font-extrabold text-slate-800 dark:text-slate-100 text-xl flex items-center gap-3 m-0 leading-none">
+            <div className="w-10 h-10 bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 rounded-full flex items-center justify-center">
               <i className="fa-solid fa-table-list"></i>
             </div>
-            Orders Board
+            {t("admin.order_management")}
           </h3>
 
-          <div className="inline-flex p-1.5 bg-gray-50 border border-gray-100 rounded-full shadow-inner">
+          <div className="inline-flex p-1.5 bg-slate-100 dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 rounded-full shadow-inner">
             <button
               onClick={() => onTabSwitch("Standard")}
               className={`px-6 py-2.5 rounded-full font-bold text-sm transition-all duration-300 ease-out flex items-center gap-2 ${
                 activeTab === "Standard"
-                  ? "bg-white text-blue-600 shadow-sm scale-100"
-                  : "text-gray-500 hover:text-gray-800 hover:bg-gray-200/50 scale-95"
+                  ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm scale-100"
+                  : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 scale-95"
               }`}
             >
-              <i className="fa-solid fa-box"></i> Standard Orders
+              <i className="fa-solid fa-box"></i> {t("admin.orders")}
             </button>
             <button
               onClick={() => onTabSwitch("Returns")}
               className={`px-6 py-2.5 rounded-full font-bold text-sm transition-all duration-300 ease-out flex items-center gap-2 ${
                 activeTab === "Returns"
-                  ? "bg-white text-orange-600 shadow-sm scale-100"
-                  : "text-gray-500 hover:text-gray-800 hover:bg-gray-200/50 scale-95"
+                  ? "bg-white dark:bg-slate-800 text-orange-600 dark:text-amber-400 shadow-sm scale-100"
+                  : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 scale-95"
               }`}
             >
-              <i className="fa-solid fa-rotate-left"></i> Returns & Refunds
+              <i className="fa-solid fa-rotate-left"></i> {t("order_status.return_pending")}
             </button>
           </div>
         </div>
 
         {/* FILTERS CHO TAB HIỆN TẠI */}
-        <div className="flex flex-wrap gap-2 pt-4 border-t border-gray-50">
-          <span className="text-xs font-bold text-gray-400 uppercase tracking-wider py-2 mr-2">Filter by Status:</span>
-          {currentFilters.map((f) => (
-            <button
-              key={f}
-              onClick={() => setCurrentFilter(f)}
-              className={`px-4 py-1.5 rounded-full font-bold text-xs transition-all duration-300 ease-out ${
-                currentActiveFilter === f
-                  ? "bg-gray-800 text-white shadow-sm"
-                  : "bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-800"
-              }`}
-            >
-              {f}
-            </button>
-          ))}
+        <div className="flex flex-wrap gap-2 pt-4 border-t border-slate-200/80 dark:border-slate-700">
+          <span className="text-xs font-bold text-slate-400 dark:text-slate-400 uppercase tracking-wider py-2 mr-2">{t("search.filters")}:</span>
+          {currentFilters.map((f) => {
+            const statusKey = f === "All" || f === "all" ? "order_status.all" : `order_status.${f.toLowerCase().replace(/\s+/g, '_')}`;
+            return (
+              <button
+                key={f}
+                onClick={() => setCurrentFilter(f)}
+                className={`px-4 py-1.5 rounded-full font-bold text-xs transition-all duration-300 ease-out ${
+                  currentActiveFilter === f
+                    ? "bg-slate-800 dark:bg-slate-100 text-white dark:text-slate-900 shadow-sm"
+                    : "bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600"
+                }`}
+              >
+                {t(statusKey, f)}
+              </button>
+            );
+          })}
         </div>
       </div>
 
       {/* ================= BẢNG DỮ LIỆU CHÍNH ================= */}
-      <div className="bg-white shadow-sm border border-gray-100 rounded-[2rem] overflow-hidden">
+      <div className="bg-white dark:bg-slate-800 shadow-sm border border-slate-200/80 dark:border-slate-700 rounded-[2rem] overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
-            <thead className="bg-gray-50/50 border-b border-gray-100">
+            <thead className="bg-slate-50 dark:bg-slate-700/50 border-b border-slate-200/80 dark:border-slate-700">
               <tr>
-                <th className="p-4 pl-6 text-xs font-bold text-gray-400 uppercase tracking-wider">ID / Date</th>
-                <th className="p-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Customer</th>
-                <th className="p-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Total</th>
-                <th className="p-4 text-center text-xs font-bold text-gray-400 uppercase tracking-wider">Payment</th>
-                <th className="p-4 text-center text-xs font-bold text-gray-400 uppercase tracking-wider">Status</th>
-                <th className="p-4 pr-6 text-center text-xs font-bold text-gray-400 uppercase tracking-wider w-36">Actions</th>
+                <th className="p-4 pl-6 text-xs font-bold text-slate-400 dark:text-slate-400 uppercase tracking-wider">{t("admin.order_code")} / {t("admin.order_date")}</th>
+                <th className="p-4 text-xs font-bold text-slate-400 dark:text-slate-400 uppercase tracking-wider">{t("admin.customer")}</th>
+                <th className="p-4 text-xs font-bold text-slate-400 dark:text-slate-400 uppercase tracking-wider">{t("cart.total")}</th>
+                <th className="p-4 text-center text-xs font-bold text-slate-400 dark:text-slate-400 uppercase tracking-wider">{t("admin.payment_status")}</th>
+                <th className="p-4 text-center text-xs font-bold text-slate-400 dark:text-slate-400 uppercase tracking-wider">{t("admin.order_status")}</th>
+                <th className="p-4 pr-6 text-center text-xs font-bold text-slate-400 dark:text-slate-400 uppercase tracking-wider w-36">{t("admin.actions")}</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50">
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60">
 
               {/* NẾU KHÔNG CÓ ĐƠN HÀNG */}
               {displayedOrders.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="p-16 text-center">
-                    <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-gray-100 shadow-inner">
-                      <i className="fa-solid fa-folder-open text-gray-300 text-3xl"></i>
+                    <div className="w-20 h-20 bg-slate-50 dark:bg-slate-700/50 rounded-full flex items-center justify-center mx-auto mb-4 border border-slate-200/80 dark:border-slate-600 shadow-inner">
+                      <i className="fa-solid fa-folder-open text-slate-300 dark:text-slate-500 text-3xl"></i>
                     </div>
-                    <h4 className="font-bold text-gray-800 text-lg mb-1">No Orders Found</h4>
-                    <p className="text-gray-500 font-medium text-sm">
-                      No matching orders for <span className="font-bold text-gray-700">"{currentActiveFilter}"</span> in {activeTab}.
+                    <h4 className="font-bold text-slate-800 dark:text-slate-100 text-lg mb-1">{t("admin.system_is_empty")}</h4>
+                    <p className="text-slate-500 dark:text-slate-400 font-medium text-sm">
+                      {t("search.no_items_desc")}
                     </p>
                   </td>
                 </tr>
@@ -131,52 +136,56 @@ export default function OrderTable({
                   return (
                     <React.Fragment key={order.id}>
                       {/* --- DÒNG CHÍNH (MAIN ROW) --- */}
-                      <tr className={`transition-colors duration-200 group ${isExpanded ? "bg-blue-50/30" : "hover:bg-gray-50/50"}`}>
+                      <tr className={`transition-colors duration-200 group ${isExpanded ? "bg-blue-50/30 dark:bg-blue-950/20" : "hover:bg-slate-50/60 dark:hover:bg-slate-700/30"}`}>
                         <td className="p-4 pl-6 whitespace-nowrap">
-                          <div className="text-sm font-extrabold text-gray-800">#{order.id}</div>
-                          <div className="text-xs text-gray-500 font-medium">{new Date(order.created_at).toLocaleDateString("en-GB")}</div>
+                          <div className="text-sm font-extrabold text-slate-800 dark:text-slate-100">#{order.id}</div>
+                          <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">{new Date(order.created_at).toLocaleDateString("en-GB")}</div>
                         </td>
 
                         <td className="p-4">
-                          <div className="text-sm font-bold text-gray-800">{order.user_name || order.name}</div>
-                          <div className="text-xs text-gray-500 font-medium">{order.phone}</div>
+                          <div className="text-sm font-bold text-slate-800 dark:text-slate-100">{order.user_name || order.name}</div>
+                          <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">{order.phone}</div>
                         </td>
 
-                        <td className="p-4 whitespace-nowrap text-sm text-red-600 font-black">
+                        <td className="p-4 whitespace-nowrap text-sm text-red-600 dark:text-rose-400 font-black">
                           {formatCurrency(order.total_price)}
                         </td>
 
                         <td className="p-4 whitespace-nowrap text-center">
-                          <div className="relative inline-block w-full max-w-[160px]">
+                          <div className="relative inline-block w-[175px]">
                             <select
                               value={order.payment_status || "Unpaid"}
                               onChange={(e) => handlePaymentStatus(order.id, e.target.value)}
                               disabled={isReturnLocked}
-                              className="w-full text-xs font-bold text-white py-2 pl-3.5 pr-8 rounded-full cursor-pointer outline-none focus:ring-4 focus:ring-blue-500/20 disabled:opacity-60 appearance-none text-left shadow-sm transition-all"
+                              className="w-full text-[11px] font-bold text-white py-2 pl-3.5 pr-7 rounded-full cursor-pointer outline-none focus:ring-4 focus:ring-blue-500/20 disabled:opacity-60 appearance-none text-left shadow-sm transition-all"
                               style={{ backgroundColor: getPaymentStatusColor(order.payment_status) }}
                             >
                               {PAYMENT_OPTIONS.map((status) => (
-                                <option key={status} value={status} className="text-gray-800 bg-white">{status}</option>
+                                <option key={status} value={status} className="text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-800">
+                                  {t(`payment_status.${status.toLowerCase().replace(/\s+/g, '_')}`, status)}
+                                </option>
                               ))}
                             </select>
-                            <i className="fa-solid fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-white/80 pointer-events-none text-[10px]"></i>
+                            <i className="fa-solid fa-chevron-down absolute right-2.5 top-1/2 -translate-y-1/2 text-white/80 pointer-events-none text-[10px]"></i>
                           </div>
                         </td>
 
                         <td className="p-4 whitespace-nowrap text-center">
-                          <div className="relative inline-block w-full max-w-[160px]">
+                          <div className="relative inline-block w-[175px]">
                             <select
                               value={order.status}
                               onChange={(e) => handleOrderStatus(order.id, e.target.value)}
                               disabled={isReturnLocked}
-                              className="w-full text-xs font-bold text-white py-2 pl-3.5 pr-8 rounded-full cursor-pointer outline-none focus:ring-4 focus:ring-blue-500/20 disabled:opacity-60 appearance-none text-left shadow-sm transition-all"
+                              className="w-full text-[11px] font-bold text-white py-2 pl-3.5 pr-7 rounded-full cursor-pointer outline-none focus:ring-4 focus:ring-blue-500/20 disabled:opacity-60 appearance-none text-left shadow-sm transition-all"
                               style={{ backgroundColor: getOrderStatusColor(order.status) }}
                             >
                               {STATUS_OPTIONS.map((status) => (
-                                <option key={status} value={status} className="text-gray-800 bg-white">{status}</option>
+                                <option key={status} value={status} className="text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-800">
+                                  {t(`order_status.${status.toLowerCase().replace(/\s+/g, '_')}`, status)}
+                                </option>
                               ))}
                             </select>
-                            <i className="fa-solid fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-white/80 pointer-events-none text-[10px]"></i>
+                            <i className="fa-solid fa-chevron-down absolute right-2.5 top-1/2 -translate-y-1/2 text-white/80 pointer-events-none text-[10px]"></i>
                           </div>
                         </td>
 
@@ -184,10 +193,10 @@ export default function OrderTable({
                           <div className="flex items-center justify-center gap-2">
                             {isReturnLocked && (
                               <>
-                                <button onClick={() => handleApproveReturn(order.id)} title="Approve Return" className="w-9 h-9 flex items-center justify-center bg-green-50 text-green-600 rounded-full hover:bg-green-500 hover:text-white transition-colors shadow-sm">
+                                <button onClick={() => handleApproveReturn(order.id)} title={t("admin.approve_return")} className="w-9 h-9 flex items-center justify-center bg-green-50 dark:bg-emerald-950/50 text-green-600 dark:text-emerald-400 rounded-full hover:bg-green-500 hover:text-white dark:hover:bg-emerald-600 dark:hover:text-white transition-colors shadow-sm">
                                   <i className="fa-solid fa-check text-sm"></i>
                                 </button>
-                                <button onClick={() => handleRejectReturn(order.id)} title="Reject Return" className="w-9 h-9 flex items-center justify-center bg-red-50 text-red-600 rounded-full hover:bg-red-500 hover:text-white transition-colors shadow-sm">
+                                <button onClick={() => handleRejectReturn(order.id)} title={t("admin.reject_return")} className="w-9 h-9 flex items-center justify-center bg-red-50 dark:bg-red-950/50 text-red-600 dark:text-red-400 rounded-full hover:bg-red-500 hover:text-white dark:hover:bg-red-600 dark:hover:text-white transition-colors shadow-sm">
                                   <i className="fa-solid fa-xmark text-sm"></i>
                                 </button>
                               </>
@@ -195,10 +204,10 @@ export default function OrderTable({
                             <button
                               onClick={() => toggleExpand(order.id)}
                               className={`px-4 py-2 rounded-full font-bold text-xs transition-all duration-300 shadow-sm flex items-center gap-2 ${
-                                isExpanded ? "bg-gray-800 text-white" : "bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white"
+                                isExpanded ? "bg-slate-800 dark:bg-slate-100 text-white dark:text-slate-900" : "bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 hover:bg-blue-600 hover:text-white dark:hover:bg-blue-600 dark:hover:text-white"
                               }`}
                             >
-                              {isExpanded ? "Close" : "Details"}
+                              {isExpanded ? t("common.close") : t("admin.details")}
                               <i className={`fa-solid fa-chevron-down transition-transform duration-300 ${isExpanded ? "rotate-180" : ""}`}></i>
                             </button>
                           </div>
@@ -445,6 +454,7 @@ const OrderItemsList = ({ items, formatCurrency }) => {
 };
 
 const OrderItemCard = ({ item, formatCurrency }) => {
+  const { t, getLocalizedText } = useLanguage();
   const imageUrl = getImageUrl(item.image_url);
 
   const isGift = Boolean(item.is_gift);
@@ -464,7 +474,7 @@ const OrderItemCard = ({ item, formatCurrency }) => {
 
       <div className="flex-1 min-w-0 pr-2">
         <h4 className="text-sm font-extrabold text-gray-800 truncate mb-1">
-          {item.product_name}
+          {getLocalizedText(item, "product_name") || item.product_name}
         </h4>
 
         <p className="text-xs font-medium text-gray-500 mb-3">

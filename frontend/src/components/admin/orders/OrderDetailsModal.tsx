@@ -1,27 +1,29 @@
 import React from "react";
 import { getImageUrl } from "../../../utils/imageUtils";
 import { PaymentBadge } from "../../common/PaymentBadge";
+import { useLanguage } from "../../../context/LanguageContext";
 
 export default function OrderDetailsModal({ order, onClose, formatCurrency }) {
+  const { t } = useLanguage();
   if (!order) return null;
 
   const isReturnRequest = ["Return Requested", "Return Approved", "Return Rejected"].includes(order.status);
 
   return (
-    <div className="fixed inset-0 z-[100] flex justify-center items-center p-4 bg-gray-900/60 backdrop-blur-sm">
-      <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col animate-scaleIn relative overflow-hidden">
+    <div className="fixed inset-0 z-[100] flex justify-center items-center p-4 bg-slate-900/60 dark:bg-black/70 backdrop-blur-xs">
+      <div className="bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 rounded-[2rem] shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col animate-scaleIn relative overflow-hidden">
 
         {/* Header */}
-        <div className="flex justify-between items-center p-6 border-b border-gray-100 bg-gray-50/50">
-          <h4 className="text-xl font-extrabold text-gray-800 flex items-center gap-3 m-0 leading-none">
-            <div className="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm">
+        <div className="flex justify-between items-center p-6 border-b border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-700/30">
+          <h4 className="text-xl font-extrabold text-slate-800 dark:text-slate-100 flex items-center gap-3 m-0 leading-none">
+            <div className="w-10 h-10 bg-blue-100 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 rounded-full flex items-center justify-center text-sm">
               <i className="fa-solid fa-receipt"></i>
             </div>
-            Order #{order.id}
+            {t("admin.order_code")} #{order.id}
           </h4>
           <button
             onClick={onClose}
-            className="w-10 h-10 flex items-center justify-center bg-gray-100 text-gray-500 hover:bg-red-100 hover:text-red-500 rounded-full transition-colors outline-none"
+            className="w-10 h-10 flex items-center justify-center bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:bg-red-100 dark:hover:bg-red-950/50 hover:text-red-500 dark:hover:text-red-400 rounded-full transition-colors outline-none"
           >
             <i className="fa-solid fa-xmark text-lg"></i>
           </button>
@@ -34,9 +36,9 @@ export default function OrderDetailsModal({ order, onClose, formatCurrency }) {
           <OrderItemsList items={order.items} formatCurrency={formatCurrency} />
 
           {/* Footer Total */}
-          <div className="flex justify-between items-center pt-6 mt-2 border-t border-gray-100 bg-gray-50/50 p-6 rounded-2xl">
-            <span className="font-bold text-gray-500 uppercase tracking-widest text-sm">Grand Total</span>
-            <span className="text-xl font-black text-red-600">
+          <div className="flex justify-between items-center pt-6 mt-2 border-t border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-700/30 p-6 rounded-2xl">
+            <span className="font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest text-sm">{t("cart.total")}</span>
+            <span className="text-xl font-black text-red-600 dark:text-rose-400">
               {formatCurrency(order.total_price)}
             </span>
           </div>
@@ -52,26 +54,27 @@ export default function OrderDetailsModal({ order, onClose, formatCurrency }) {
 // ==========================================
 
 const ReturnInfoSection = ({ order }) => {
+  const { t } = useLanguage();
   const bankInfo = order.refund_bank_info;
 
   const getReturnBadge = (status: string) => {
     if (status === "Return Approved") {
       return (
         <span className="text-[9px] font-extrabold uppercase tracking-widest bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-full border border-emerald-300/40 whitespace-nowrap inline-flex items-center shrink-0">
-          Approved
+          {t("admin.return_approved_badge")}
         </span>
       );
     }
     if (status === "Return Rejected") {
       return (
         <span className="text-[9px] font-extrabold uppercase tracking-widest bg-rose-100 text-rose-800 px-2.5 py-1 rounded-full border border-rose-300/40 whitespace-nowrap inline-flex items-center shrink-0">
-          Rejected
+          {t("admin.return_rejected_badge")}
         </span>
       );
     }
     return (
       <span className="text-[9px] font-extrabold uppercase tracking-widest bg-amber-200/60 text-amber-800 px-2.5 py-1 rounded-full border border-amber-300/40 whitespace-nowrap inline-flex items-center shrink-0">
-        Action Required
+        {t("admin.return_action_required")}
       </span>
     );
   };
@@ -83,7 +86,7 @@ const ReturnInfoSection = ({ order }) => {
           <span className="w-6 h-6 rounded-full bg-amber-100/80 text-amber-700 flex items-center justify-center text-[10px] shadow-xs shrink-0">
             <i className="fa-solid fa-rotate-left"></i>
           </span>
-          Return Request Details
+          {t("admin.return_request_details")}
         </h5>
         {getReturnBadge(order.status)}
       </div>
@@ -93,19 +96,19 @@ const ReturnInfoSection = ({ order }) => {
         <div className="bg-white p-4 rounded-2xl shadow-sm flex flex-col justify-between space-y-3">
           <div>
             <span className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-1">
-              Reason for Return
+              {t("admin.return_reason")}
             </span>
             <span className="inline-block bg-slate-100 text-slate-800 text-xs font-extrabold px-2.5 py-1 rounded-lg border border-slate-200/60">
-              {order.reason_code || "Not specified"}
+              {order.reason_code || t("admin.not_specified")}
             </span>
           </div>
 
           <div>
             <span className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-1">
-              Customer Note
+              {t("admin.customer_note")}
             </span>
             <div className="bg-slate-50 rounded-xl p-3 text-xs text-slate-600 italic leading-relaxed min-h-[45px] flex items-center">
-              "{order.description || "No description provided."}"
+              "{order.description || t("admin.no_description")}"
             </div>
           </div>
         </div>
@@ -118,7 +121,7 @@ const ReturnInfoSection = ({ order }) => {
 
           <div className="flex justify-between items-center relative z-10">
             <span className="text-[9px] uppercase font-bold text-slate-400 tracking-widest flex items-center gap-1.5">
-              <i className="fa-solid fa-credit-card text-indigo-400"></i> Refund Account
+              <i className="fa-solid fa-credit-card text-indigo-400"></i> {t("admin.refund_account")}
             </span>
             <i className="fa-solid fa-wifi text-slate-500 text-[10px] rotate-90"></i>
           </div>
@@ -133,7 +136,7 @@ const ReturnInfoSection = ({ order }) => {
               </p>
             </div>
           ) : (
-            <p className="text-xs italic text-slate-400 relative z-10">Missing bank account details</p>
+            <p className="text-xs italic text-slate-400 relative z-10">{t("admin.missing_bank_info")}</p>
           )}
 
           <div className="relative z-10 pt-2 border-t border-white/10 flex justify-between items-center text-xs">
@@ -141,7 +144,7 @@ const ReturnInfoSection = ({ order }) => {
               {bankInfo?.owner || "N/A"}
             </span>
             <span className="text-[8px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-full font-mono uppercase tracking-wider">
-              Verified
+              {t("admin.verified")}
             </span>
           </div>
         </div>
@@ -151,7 +154,7 @@ const ReturnInfoSection = ({ order }) => {
       {order.return_images && order.return_images.length > 0 && (
         <div className="pt-2.5 border-t border-amber-200/60">
           <span className="block text-[10px] font-extrabold text-amber-900/70 uppercase mb-2 tracking-wider">
-            Evidence Attachments ({order.return_images.length})
+            {t("admin.evidence_attachments")} ({order.return_images.length})
           </span>
           <div className="flex flex-wrap gap-2.5">
             {order.return_images.map((img, idx) => {
@@ -160,7 +163,7 @@ const ReturnInfoSection = ({ order }) => {
                 <div key={idx} className="relative group">
                   <img
                     src={fullImgUrl}
-                    alt={`Evidence ${idx + 1}`}
+                    alt={`${t("admin.evidence_attachments")} ${idx + 1}`}
                     className="w-16 h-16 object-cover rounded-xl border-2 border-white shadow-md cursor-pointer hover:scale-105 transition-transform duration-300"
                     onClick={() => window.open(fullImgUrl, '_blank')}
                   />
@@ -178,39 +181,40 @@ const ReturnInfoSection = ({ order }) => {
 };
 
 const DeliveryInfoSection = ({ order }) => {
+  const { t } = useLanguage();
   return (
     <div className="bg-blue-50/50 p-3 md:p-5 rounded-[1.5rem] border border-blue-100/50 text-sm">
       <h5 className="font-bold text-blue-800 mb-4 uppercase text-xs tracking-wider flex items-center gap-2 m-0 leading-none">
-        <i className="fa-solid fa-truck-fast text-blue-500 text-base"></i> Delivery Details
+        <i className="fa-solid fa-truck-fast text-blue-500 text-base"></i> {t("admin.delivery_details")}
       </h5>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-6 bg-white p-4 md:p-5 rounded-2xl border border-blue-50 shadow-sm">
         <div>
-          <span className="block text-[10px] uppercase font-bold text-gray-400 mb-1 tracking-wider">Recipient</span>
+          <span className="block text-[10px] uppercase font-bold text-gray-400 mb-1 tracking-wider">{t("admin.recipient")}</span>
           <span className="font-bold text-gray-800">{order.user_name || order.name}</span>
         </div>
         <div>
-          <span className="block text-[10px] uppercase font-bold text-gray-400 mb-1 tracking-wider">Phone</span>
+          <span className="block text-[10px] uppercase font-bold text-gray-400 mb-1 tracking-wider">{t("admin.phone")}</span>
           <span className="font-bold text-gray-800">{order.phone}</span>
         </div>
         <div className="sm:col-span-2">
-          <span className="block text-[10px] uppercase font-bold text-gray-400 mb-1 tracking-wider">Address</span>
+          <span className="block text-[10px] uppercase font-bold text-gray-400 mb-1 tracking-wider">{t("admin.shipping_address")}</span>
           <span className="font-bold text-gray-800">{order.address}</span>
         </div>
         <div>
-          <span className="block text-[10px] uppercase font-bold text-gray-400 mb-1 tracking-wider">Placed On</span>
+          <span className="block text-[10px] uppercase font-bold text-gray-400 mb-1 tracking-wider">{t("admin.placed_on")}</span>
           <span className="font-bold text-gray-800">{new Date(order.created_at).toLocaleString("en-GB")}</span>
         </div>
         <div>
-          <span className="block text-[10px] uppercase font-bold text-gray-400 mb-1 tracking-wider">Payment Method</span>
+          <span className="block text-[10px] uppercase font-bold text-gray-400 mb-1 tracking-wider">{t("admin.payment_method")}</span>
           <div className="flex items-center gap-2">
             <PaymentBadge method={order.payment_method} badgeStyle={true} />
             {order.payment_status === "Paid" ? (
               <span className="text-green-600 font-extrabold bg-green-50 px-2.5 py-1 rounded-full inline-flex items-center gap-1 text-[11px]">
-                <i className="fa-solid fa-check-circle"></i> Paid
+                <i className="fa-solid fa-check-circle"></i> {t("admin.paid_badge")}
               </span>
             ) : (
               <span className="text-orange-600 font-extrabold bg-orange-50 px-2.5 py-1 rounded-full inline-flex items-center gap-1 text-[11px]">
-                <i className="fa-solid fa-clock"></i> Awaiting
+                <i className="fa-solid fa-clock"></i> {t("admin.awaiting_badge")}
               </span>
             )}
           </div>
@@ -221,10 +225,11 @@ const DeliveryInfoSection = ({ order }) => {
 };
 
 const OrderItemsList = ({ items, formatCurrency }) => {
+  const { t } = useLanguage();
   return (
     <div>
       <h5 className="font-bold text-gray-800 mb-4 text-xs uppercase tracking-wider flex items-center gap-2 m-0 leading-none">
-        <i className="fa-solid fa-basket-shopping text-gray-400 text-base"></i> Ordered Products ({items?.length || 0})
+        <i className="fa-solid fa-basket-shopping text-gray-400 text-base"></i> {t("admin.ordered_products")} ({items?.length || 0})
       </h5>
       <div className="space-y-3">
         {items?.map((item, idx) => (
@@ -236,6 +241,7 @@ const OrderItemsList = ({ items, formatCurrency }) => {
 };
 
 const OrderItemCard = ({ item, formatCurrency }) => {
+  const { t } = useLanguage();
   const imageUrl = getImageUrl(item.image_url);
 
   const isGift = Boolean(item.is_gift);
@@ -264,20 +270,20 @@ const OrderItemCard = ({ item, formatCurrency }) => {
         </h4>
 
         <p className="text-xs font-medium text-gray-500 mb-2">
-          {item.color_name && `Color: ${item.color_name}`}
+          {item.color_name && `${t("admin.color_label")}: ${item.color_name}`}
           {item.size && <span className="mx-1.5 text-gray-300">|</span>}
-          {item.size && `Size: ${item.size}`}
+          {item.size && `${t("admin.size_label")}: ${item.size}`}
         </p>
 
         <div className="flex flex-wrap justify-between items-center gap-2">
           <span className="text-[10px] bg-gray-100 px-2.5 py-1 rounded-full font-bold text-gray-600 uppercase tracking-wider">
-            Qty: {item.quantity}
+            {t("admin.qty_label")}: {item.quantity}
           </span>
 
           {isGift ? (
             <div className="flex items-center gap-2">
               <span className="bg-rose-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider shadow-sm">
-                Free Gift
+                {t("admin.free_gift")}
               </span>
               <span className="text-sm font-black text-rose-600">0 đ</span>
             </div>

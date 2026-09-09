@@ -26,6 +26,10 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    const normalMembership = await prisma.membership.findFirst({
+      where: { min_spending: 0 },
+    });
+
     const user = await prisma.user.create({
       data: {
         name,
@@ -33,7 +37,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
         phone,
         password: hashedPassword,
         role: 'customer',
-        membership_id: 1, // Default Bronze
+        membership_id: normalMembership ? normalMembership.id : 1,
       },
     });
 
@@ -102,7 +106,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
         phone: user.phone,
         role: user.role,
         total_spent: user.total_spent,
-        tier_name: user.membership?.name || 'Bronze',
+        tier_name: user.membership?.name || 'Normal',
         discount_percent: user.membership?.discount_percent || 0,
       },
       token,

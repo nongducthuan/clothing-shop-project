@@ -99,12 +99,12 @@ export default function ProductCard({ product, promotion }: ProductCardProps) {
               <span className="text-base sm:text-lg font-semibold text-rose-500">
                 {formatCurrency(salePrice)}
               </span>
-              <span className="text-xs sm:text-sm font-medium text-slate-400 line-through decoration-slate-300">
+              <span className="text-xs sm:text-sm font-medium text-slate-400 dark:text-slate-500 line-through decoration-slate-300 dark:decoration-slate-600">
                 {formatCurrency(product.price)}
               </span>
             </div>
           ) : (
-            <span className="text-base sm:text-lg font-semibold text-slate-900">
+            <span className="text-base sm:text-lg font-semibold text-slate-900 dark:text-slate-100">
               {formatCurrency(product.price)}
             </span>
           )}

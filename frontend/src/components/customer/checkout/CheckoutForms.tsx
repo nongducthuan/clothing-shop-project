@@ -4,7 +4,7 @@ export function ShippingSection({ address, setAddress, fetchLocation, isLocating
   return (
     <section className="mb-10">
       <div className="flex justify-between items-end mb-4">
-        <h3 className="text-xl font-medium text-slate-900">Shipping Address</h3>
+        <h3 className="text-xl font-medium text-slate-900 dark:text-slate-100">Shipping Address</h3>
         <button
           onClick={() => fetchLocation(setAddress)}
           disabled={isLocating}
@@ -19,7 +19,7 @@ export function ShippingSection({ address, setAddress, fetchLocation, isLocating
         value={address}
         onChange={(e) => setAddress(e.target.value)}
         placeholder="Enter your house number, street, ward, district..."
-        className="w-full bg-slate-50 border border-slate-200 px-4 py-3.5 rounded-2xl focus:ring-2 focus:ring-slate-900 focus:border-slate-900 outline-none transition-all resize-none text-slate-900 placeholder:text-slate-400 text-sm"
+        className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-4 py-3.5 rounded-2xl focus:ring-2 focus:ring-slate-900 dark:focus:ring-slate-400 focus:border-slate-900 dark:focus:border-slate-400 outline-none transition-all resize-none text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 text-sm"
       />
       {locationError && <p className="text-rose-500 text-xs mt-2 ml-1">{locationError}</p>}
     </section>
@@ -29,7 +29,7 @@ export function ShippingSection({ address, setAddress, fetchLocation, isLocating
 export function GuestContactSection({ guestInfo, onChange }) {
   return (
     <section className="mb-10">
-      <h3 className="text-xl font-medium text-slate-900 mb-4">Contact Information</h3>
+      <h3 className="text-xl font-medium text-slate-900 dark:text-slate-100 mb-4">Contact Information</h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <InputField label="Full Name" name="name" value={guestInfo.name} onChange={onChange} placeholder="John Doe" />
         <InputField label="Phone Number" name="phone" value={guestInfo.phone} onChange={onChange} placeholder="0901234567" />
@@ -44,7 +44,7 @@ export function GuestContactSection({ guestInfo, onChange }) {
 export function PaymentSection({ currentMethod, onChange }) {
   return (
     <section className="mb-10">
-      <h3 className="text-xl font-medium text-slate-900 mb-4">Payment Method</h3>
+      <h3 className="text-xl font-medium text-slate-900 dark:text-slate-100 mb-4">Payment Method</h3>
       <div className="grid grid-cols-1 gap-4">
         <PaymentOption
           id="cod" label="Cash on Delivery (COD)" sub="Pay with cash upon receiving your package"
@@ -66,11 +66,11 @@ export function PaymentSection({ currentMethod, onChange }) {
 // --- Internal Reusable Sub-components ---
 const InputField = ({ label, type = "text", ...props }) => (
   <div>
-    <label className="block text-xs font-medium text-slate-500 uppercase tracking-widest mb-2 ml-1">{label}</label>
+    <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-2 ml-1">{label}</label>
     <input
       {...props}
       type={type}
-      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-slate-900 focus:border-slate-900 outline-none transition-all text-slate-900 placeholder:text-slate-400 text-sm"
+      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl focus:ring-2 focus:ring-slate-900 dark:focus:ring-slate-400 focus:border-slate-900 dark:focus:border-slate-400 outline-none transition-all text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 text-sm"
     />
   </div>
 );
@@ -78,14 +78,14 @@ const InputField = ({ label, type = "text", ...props }) => (
 const PaymentOption = ({ id, label, sub, icon, current, onChange }) => {
   const isSelected = current === id;
   return (
-    <label onClick={() => onChange(id)} className={`flex items-center justify-between p-4 border-2 rounded-2xl cursor-pointer transition-all duration-300 ${isSelected ? "border-slate-900 bg-slate-900 text-white shadow-lg" : "border-slate-200 bg-white hover:border-slate-400"}`}>
+    <label onClick={() => onChange(id)} className={`flex items-center justify-between p-4 border-2 rounded-2xl cursor-pointer transition-all duration-300 ${isSelected ? "border-slate-900 dark:border-slate-400 bg-slate-900 dark:bg-slate-700 text-white shadow-lg" : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-slate-400 dark:hover:border-slate-500"}`}>
       <div className="flex items-center gap-4">
-        <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 ${isSelected ? "border-white" : "border-slate-300"}`}>
+        <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 ${isSelected ? "border-white" : "border-slate-300 dark:border-slate-600"}`}>
           {isSelected && <div className="w-3 h-3 bg-white rounded-full"></div>}
         </div>
         <div>
-          <span className={`block font-semibold text-base ${isSelected ? "text-white" : "text-slate-900"}`}>{label}</span>
-          <p className={`text-sm mt-0.5 ${isSelected ? "text-slate-300" : "text-slate-500"}`}>{sub}</p>
+          <span className={`block font-semibold text-base ${isSelected ? "text-white" : "text-slate-900 dark:text-slate-100"}`}>{label}</span>
+          <p className={`text-sm mt-0.5 ${isSelected ? "text-slate-300" : "text-slate-500 dark:text-slate-400"}`}>{sub}</p>
         </div>
       </div>
       <i className={`fa-solid ${icon} text-2xl opacity-80`}></i>

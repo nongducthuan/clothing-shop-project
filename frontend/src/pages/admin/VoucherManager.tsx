@@ -6,8 +6,10 @@ import VoucherTable from "../../components/admin/vouchers/VoucherTable";
 import VoucherDetailModal from "../../components/admin/vouchers/VoucherDetailModal";
 import PageHeader from "../../components/admin/layout/PageHeader";
 import PageLoader from "../../components/common/PageLoader";
+import { useLanguage } from "../../context/LanguageContext";
 
 export default function VoucherManager() {
+  const { t } = useLanguage();
   const {
     isLoading,
     vouchers,
@@ -36,7 +38,7 @@ export default function VoucherManager() {
   return (
     <div className="container mx-auto px-4 py-8 lg:px-8 max-w-7xl flex-1 font-sans flex flex-col">
       <div className="flex justify-start mb-8">
-        <PageHeader title="Voucher Management" colorClass="bg-indigo-500" />
+        <PageHeader title={t("admin.voucher_management")} colorClass="bg-indigo-500" />
       </div>
 
       {isLoading ? (

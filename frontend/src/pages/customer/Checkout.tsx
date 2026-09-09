@@ -14,12 +14,12 @@ export default function Checkout() {
   }
 
   return (
-    <div className="bg-white flex-1 pb-20">
+    <div className="bg-white dark:bg-slate-900 flex-1 pb-20">
       <div className="max-w-[1200px] mx-auto px-6 py-8">
 
         <header className="mb-8">
-          <h1 className="text-4xl sm:text-5xl font-light tracking-tight text-slate-900">Checkout</h1>
-          <p className="text-slate-500 mt-3 text-lg">Please provide your details to complete the order.</p>
+          <h1 className="text-4xl sm:text-5xl font-light tracking-tight text-slate-900 dark:text-slate-100">Checkout</h1>
+          <p className="text-slate-500 dark:text-slate-400 mt-3 text-lg">Please provide your details to complete the order.</p>
         </header>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-start">
@@ -46,16 +46,16 @@ export default function Checkout() {
               onChange={actions.setPaymentMethod}
             />
 
-            <div className="mt-12 pt-8 border-t border-slate-100">
+            <div className="mt-12 pt-8 border-t border-slate-100 dark:border-slate-800">
               <button
                 onClick={actions.handleSubmitOrder}
-                className="w-full md:w-80 md:mx-auto bg-slate-900 text-white h-12 rounded-full font-semibold text-base hover:bg-slate-800 transition-all active:scale-[0.98] shadow-md flex items-center justify-center"
+                className="w-full md:w-80 md:mx-auto bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 h-12 rounded-full font-semibold text-base hover:bg-slate-800 dark:hover:bg-white transition-all active:scale-[0.98] shadow-md flex items-center justify-center"
               >
                 Place Order
               </button>
 
               {state.statusMessage && (
-                <div className={`mt-4 p-4 rounded-2xl text-sm font-medium flex items-center justify-center gap-2 ${state.isStatusSuccess ? "bg-emerald-50 text-emerald-700" : "bg-rose-50 text-rose-700"}`}>
+                <div className={`mt-4 p-4 rounded-2xl text-sm font-medium flex items-center justify-center gap-2 ${state.isStatusSuccess ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400" : "bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400"}`}>
                   {state.isStatusSuccess ? <CheckCircle size={18} /> : <AlertCircle size={18} />}
                   <span>{state.statusMessage}</span>
                 </div>

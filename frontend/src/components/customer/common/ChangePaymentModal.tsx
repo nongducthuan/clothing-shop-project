@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useLanguage } from "../../../context/LanguageContext";
 
 interface ChangePaymentModalProps {
   isOpen: boolean;
@@ -15,6 +16,7 @@ export default function ChangePaymentModal({
   onConfirm,
   loading = false,
 }: ChangePaymentModalProps) {
+  const { t } = useLanguage();
   const [selectedMethod, setSelectedMethod] = useState<string>("momo");
 
   useEffect(() => {
@@ -59,22 +61,22 @@ export default function ChangePaymentModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 animate-in fade-in"
+      className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 animate-in fade-in"
       onClick={onClose}
     >
       <div
-        className="bg-white w-full max-w-sm sm:max-w-md rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col"
+        className="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 w-full max-w-sm sm:max-w-md rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="px-4 py-3 sm:px-5 sm:py-3.5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+        <div className="px-4 py-3 sm:px-5 sm:py-3.5 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/80">
           <div>
-            <h3 className="font-semibold text-slate-900 text-sm sm:text-base">
-              Change Payment Method
+            <h3 className="font-semibold text-slate-900 dark:text-slate-100 text-sm sm:text-base">
+              {t('order_details.change_payment_title', 'Đổi phương thức thanh toán')}
             </h3>
-            <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5">
-              Order #{order.id} • Total:{" "}
-              <span className="font-bold text-slate-900">
+            <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+              {t('order_details.title', 'Đơn hàng')} #{order.id} • {t('cart.total', 'Tổng tiền')}:{" "}
+              <span className="font-bold text-slate-900 dark:text-slate-100">
                 {Number(order.total_price).toLocaleString("vi-VN")}đ
               </span>
             </p>
@@ -82,7 +84,7 @@ export default function ChangePaymentModal({
           <button
             onClick={onClose}
             disabled={loading}
-            className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white border border-slate-200 text-slate-400 hover:text-slate-700 flex items-center justify-center transition-colors shadow-sm text-xs"
+            className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-400 dark:text-slate-300 hover:text-slate-700 dark:hover:text-slate-100 flex items-center justify-center transition-colors shadow-sm text-xs"
           >
             <i className="fa-solid fa-xmark"></i>
           </button>
@@ -90,8 +92,8 @@ export default function ChangePaymentModal({
 
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="p-4 sm:p-5 space-y-3">
-          <p className="text-[11px] sm:text-xs text-slate-500 font-medium">
-            Select how you would like to pay for this order:
+          <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium">
+            {t('order_details.select_payment_desc', 'Vui lòng chọn phương thức thanh toán cho đơn hàng:')}
           </p>
 
           <div className="space-y-2">
@@ -105,26 +107,26 @@ export default function ChangePaymentModal({
                   onClick={() => !loading && setSelectedMethod(method.id)}
                   className={`p-2.5 sm:p-3 rounded-xl border cursor-pointer transition-all flex items-center justify-between ${
                     isSelected
-                      ? method.bgColor + " " + method.activeBorder
-                      : "bg-white border-slate-200 hover:border-slate-300"
+                      ? method.bgColor + " " + method.activeBorder + " dark:bg-slate-700 dark:border-slate-400"
+                      : "bg-white dark:bg-slate-700/50 border-slate-200 dark:border-slate-600 hover:border-slate-300 dark:hover:border-slate-500"
                   }`}
                 >
                   <div className="flex items-center gap-3 flex-1 min-w-0">
-                    <div className="w-9 h-9 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-base shadow-sm shrink-0">
+                    <div className="w-9 h-9 rounded-xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-600 flex items-center justify-center text-base shadow-sm shrink-0">
                       <i className={method.icon}></i>
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="font-semibold text-xs sm:text-sm text-slate-900 leading-tight">
+                        <span className="font-semibold text-xs sm:text-sm text-slate-900 dark:text-slate-100 leading-tight">
                           {method.name}
                         </span>
                         {isCurrent && (
-                          <span className="text-[9px] bg-slate-200 text-slate-700 px-1.5 py-0.5 rounded font-medium">
-                            Current
+                          <span className="text-[9px] bg-slate-200 dark:bg-slate-600 text-slate-700 dark:text-slate-200 px-1.5 py-0.5 rounded font-medium">
+                            {t('order_details.current', 'Hiện tại')}
                           </span>
                         )}
                       </div>
-                      <p className="text-[11px] text-slate-500 mt-0.5 leading-tight">
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 leading-tight">
                         {method.description}
                       </p>
                     </div>
@@ -134,8 +136,8 @@ export default function ChangePaymentModal({
                     <div
                       className={`w-5 h-5 rounded-full border flex items-center justify-center transition-all ${
                         isSelected
-                          ? "border-slate-900 bg-slate-900 text-white"
-                          : "border-slate-300"
+                          ? "border-slate-900 dark:border-slate-100 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900"
+                          : "border-slate-300 dark:border-slate-500"
                       }`}
                     >
                       {isSelected && (
@@ -154,21 +156,21 @@ export default function ChangePaymentModal({
               type="button"
               onClick={onClose}
               disabled={loading}
-              className="flex-1 py-2 sm:py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-medium text-xs sm:text-sm transition text-center"
+              className="flex-1 py-2 sm:py-2.5 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-xl font-medium text-xs sm:text-sm transition text-center"
             >
-              Cancel
+              {t('common.cancel', 'Hủy')}
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 py-2 sm:py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-semibold text-xs sm:text-sm transition text-center shadow-md flex items-center justify-center gap-1.5"
+              className="flex-1 py-2 sm:py-2.5 bg-slate-900 dark:bg-slate-100 hover:bg-slate-800 dark:hover:bg-white text-white dark:text-slate-900 rounded-xl font-semibold text-xs sm:text-sm transition text-center shadow-md flex items-center justify-center gap-1.5"
             >
               {loading ? (
                 <>
-                  <i className="fa-solid fa-circle-notch fa-spin"></i> Processing...
+                  <i className="fa-solid fa-circle-notch fa-spin"></i> {t('common.loading', 'Đang xử lý...')}
                 </>
               ) : (
-                <>Confirm & Pay</>
+                <>{t('order_details.confirm_pay', 'Xác nhận & Thanh toán')}</>
               )}
             </button>
           </div>

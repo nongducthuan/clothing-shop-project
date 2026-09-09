@@ -6,8 +6,10 @@ import SaleTable from "../../components/admin/sales/SaleTable";
 import SaleDetailModal from "../../components/admin/sales/SaleDetailModal";
 import PageHeader from "../../components/admin/layout/PageHeader";
 import PageLoader from "../../components/common/PageLoader";
+import { useLanguage } from "../../context/LanguageContext";
 
 export default function SaleManager() {
+  const { t } = useLanguage();
   const {
     isLoading,
     sales,
@@ -36,7 +38,7 @@ export default function SaleManager() {
   return (
     <div className="container mx-auto px-4 py-8 lg:px-8 max-w-7xl flex-1 font-sans flex flex-col">
       <div className="flex justify-start mb-8">
-        <PageHeader title="Sale Management" colorClass="bg-blue-500" />
+        <PageHeader title={t("admin.sale_management")} colorClass="bg-blue-500" />
       </div>
 
       {isLoading ? (

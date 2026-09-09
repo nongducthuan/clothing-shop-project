@@ -7,23 +7,23 @@ export function CheckoutSummary({ state, helpers }) {
   const { getImageUrl, formatPrice } = helpers;
 
   return (
-    <div className="bg-slate-50 p-8 rounded-[2rem]">
-      <h3 className="text-xl font-medium text-slate-900 mb-6">Order Summary</h3>
+    <div className="bg-slate-50 dark:bg-slate-800 p-8 rounded-[2rem]">
+      <h3 className="text-xl font-medium text-slate-900 dark:text-slate-100 mb-6">Order Summary</h3>
 
       {/* Items List */}
       <div className="space-y-4 mb-8">
         {cart.map((item, idx) => (
           <div key={idx} className="flex gap-4 items-center">
-            <div className="w-16 h-20 bg-white rounded-xl overflow-hidden flex-shrink-0 border border-slate-200 relative">
+            <div className="w-16 h-20 bg-white dark:bg-slate-700 rounded-xl overflow-hidden flex-shrink-0 border border-slate-200 dark:border-slate-600 relative">
               <img src={getImageUrl(item)} className="w-full h-full object-cover" alt={item.name} />
               <span className="absolute top-0 right-0 bg-slate-900 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-bl-lg">
                 {item.quantity}
               </span>
             </div>
             <div className="flex-1">
-              <h4 className="text-sm font-medium text-slate-900 line-clamp-1">{item.name}</h4>
-              <p className="text-xs text-slate-500 mt-0.5">Color: {item.color} | Size: {item.size}</p>
-              <p className="text-sm font-medium text-slate-900 mt-1">{formatPrice(item.price)}</p>
+              <h4 className="text-sm font-medium text-slate-900 dark:text-slate-100 line-clamp-1">{item.name}</h4>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Color: {item.color} | Size: {item.size}</p>
+              <p className="text-sm font-medium text-slate-900 dark:text-slate-100 mt-1">{formatPrice(item.price)}</p>
             </div>
           </div>
         ))}
@@ -58,20 +58,20 @@ export function CheckoutSummary({ state, helpers }) {
           }
 
           return (
-            <div key={`gift-${idx}`} className="flex gap-4 items-center bg-white p-3 rounded-2xl border border-slate-100">
-              <div className="w-16 h-20 bg-slate-50 rounded-xl overflow-hidden flex-shrink-0 border border-slate-100 relative">
+            <div key={`gift-${idx}`} className="flex gap-4 items-center bg-white dark:bg-slate-700 p-3 rounded-2xl border border-slate-100 dark:border-slate-600">
+              <div className="w-16 h-20 bg-slate-50 dark:bg-slate-800 rounded-xl overflow-hidden flex-shrink-0 border border-slate-100 dark:border-slate-600 relative">
                 <img src={colorImageUrl ? getImageUrl(colorImageUrl) : ""} className="w-full h-full object-cover" alt="gift" />
                 <span className="absolute top-0 right-0 bg-rose-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-bl-lg">
                   {gift.quantity}
                 </span>
               </div>
               <div className="flex-1">
-                <h4 className="text-sm font-medium text-slate-900 line-clamp-1">{detail?.name || "Loading gift..."}</h4>
-                {variantText && <p className="text-xs text-slate-500 mt-0.5">{variantText}</p>}
-                <span className="inline-flex items-center gap-1 bg-rose-50 text-rose-600 text-[10px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider mt-1">
-                  <i className="fa-solid fa-gift text-rose-500"></i> Free Gift ({gift.promoName})
+                <h4 className="text-sm font-medium text-slate-900 dark:text-slate-100 line-clamp-1">{detail?.name || "Loading gift..."}</h4>
+                {variantText && <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{variantText}</p>}
+                <span className="inline-flex items-center gap-1 bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 text-[10px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider mt-1">
+                  <i className="fa-solid fa-gift text-rose-500 dark:text-rose-400"></i> Free Gift ({gift.promoName})
                 </span>
-                <p className="text-sm font-medium text-slate-900 mt-1">Free</p>
+                <p className="text-sm font-medium text-slate-900 dark:text-slate-100 mt-1">Free</p>
               </div>
             </div>
           );
@@ -79,48 +79,48 @@ export function CheckoutSummary({ state, helpers }) {
       </div>
 
       {/* Price Breakdown */}
-      <div className="space-y-3 border-t border-slate-200 pt-6 mb-6">
-        <div className="flex justify-between text-slate-600 text-sm">
+      <div className="space-y-3 border-t border-slate-200 dark:border-slate-700 pt-6 mb-6">
+        <div className="flex justify-between text-slate-600 dark:text-slate-400 text-sm">
           <span>Subtotal</span>
-          <span className="font-medium text-slate-900">{formatPrice(subtotal)}</span>
+          <span className="font-medium text-slate-900 dark:text-slate-100">{formatPrice(subtotal)}</span>
         </div>
 
         {membershipDiscount > 0 && (
-          <div className="flex justify-between text-slate-600 text-sm">
+          <div className="flex justify-between text-slate-600 dark:text-slate-400 text-sm">
             <span>Member ({tier})</span>
-            <span className="font-medium text-slate-900">-{formatPrice(membershipDiscount)}</span>
+            <span className="font-medium text-slate-900 dark:text-slate-100">-{formatPrice(membershipDiscount)}</span>
           </div>
         )}
 
         {voucherDiscount > 0 && (
-          <div className="flex justify-between text-slate-600 text-sm">
+          <div className="flex justify-between text-slate-600 dark:text-slate-400 text-sm">
             <span>Voucher ({appliedVoucher?.code})</span>
-            <span className="font-medium text-emerald-600">-{formatPrice(voucherDiscount)}</span>
+            <span className="font-medium text-emerald-600 dark:text-emerald-400">-{formatPrice(voucherDiscount)}</span>
           </div>
         )}
 
-        <div className="flex justify-between text-slate-600 text-sm">
+        <div className="flex justify-between text-slate-600 dark:text-slate-400 text-sm">
           <span className="flex items-center gap-1.5">
             Shipping
             {isFreeShipping && (
-              <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-600 text-[10px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider">
-                <Sparkles size={11} className="text-emerald-500" /> FREE
+              <span className="inline-flex items-center gap-1 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider">
+                <Sparkles size={11} className="text-emerald-500 dark:text-emerald-400" /> FREE
               </span>
             )}
           </span>
           {isFreeShipping ? (
-            <span className="font-medium text-emerald-600">Free</span>
+            <span className="font-medium text-emerald-600 dark:text-emerald-400">Free</span>
           ) : shippingFee > 0 ? (
-            <span className="font-medium text-slate-900">{formatPrice(shippingFee)}</span>
+            <span className="font-medium text-slate-900 dark:text-slate-100">{formatPrice(shippingFee)}</span>
           ) : (
-            <span className="font-medium text-slate-400 text-xs italic">Enter address to calculate</span>
+            <span className="font-medium text-slate-400 dark:text-slate-500 text-xs italic">Enter address to calculate</span>
           )}
         </div>
       </div>
 
-      <div className="border-t border-slate-200 pt-6 flex justify-between items-end">
-        <span className="text-base font-medium text-slate-900">Total</span>
-        <span className="text-3xl font-medium text-slate-900">{formatPrice(finalTotal)}</span>
+      <div className="border-t border-slate-200 dark:border-slate-700 pt-6 flex justify-between items-end">
+        <span className="text-base font-medium text-slate-900 dark:text-slate-100">Total</span>
+        <span className="text-3xl font-medium text-slate-900 dark:text-slate-100">{formatPrice(finalTotal)}</span>
       </div>
     </div>
   );

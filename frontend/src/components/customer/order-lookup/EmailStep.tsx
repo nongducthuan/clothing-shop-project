@@ -4,15 +4,15 @@ export default function EmailStep({ email, setEmail, onSubmit, loading }) {
   return (
     <form onSubmit={onSubmit} className="space-y-6">
       <div>
-        <label className="block text-sm font-semibold text-gray-600 mb-2">Purchasing Email</label>
+        <label className="block text-sm font-semibold text-gray-600 dark:text-slate-300 mb-2">Purchasing Email</label>
         <div className="relative">
-          <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+          <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-400 pointer-events-none">
             <i className="fa-solid fa-envelope"></i>
           </span>
           <input
             type="email"
             required
-            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none transition"
+            className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-400 focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none transition"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="example@gmail.com"

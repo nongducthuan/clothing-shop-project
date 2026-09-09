@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { useDashboardStats } from "../../hooks/admin/useDashboard";
+import { useLanguage } from "../../context/LanguageContext";
 
 // --- SUB-COMPONENTS ---
 
@@ -8,36 +9,40 @@ import { useDashboardStats } from "../../hooks/admin/useDashboard";
  * DashboardHeader Component
  * Minimal, pill-shaped title badge.
  */
-const DashboardHeader = () => (
-  <div className="flex justify-center md:justify-start mb-10">
-    <div className="inline-flex items-center gap-3 px-6 py-2.5 bg-white border border-gray-100 rounded-full shadow-sm">
-      <div className="w-2.5 h-2.5 rounded-full bg-violet-500 animate-pulse"></div>
-      <h2 className="font-bold uppercase text-gray-700 tracking-wider text-sm m-0 leading-none">
-        Admin Dashboard
-      </h2>
+const DashboardHeader = () => {
+  const { t } = useLanguage();
+  return (
+    <div className="flex justify-center md:justify-start mb-10">
+      <div className="inline-flex items-center gap-3 px-6 py-2.5 bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700/80 rounded-full shadow-sm">
+        <div className="w-2.5 h-2.5 rounded-full bg-violet-500 animate-pulse"></div>
+        <h2 className="font-bold uppercase text-gray-700 dark:text-slate-200 tracking-wider text-sm m-0 leading-none">
+          {t("admin.dashboard_title")}
+        </h2>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 /**
  * StatsPillGrid Component (THE SLIDING PILL UI)
  * Replaces the individual StatCards with a cohesive, 2D sliding segmented control.
  */
 const StatsPillGrid = ({ stats, navigate }) => {
+  const { t } = useLanguage();
   const [hoveredId, setHoveredId] = useState(null);
   const [pillStyle, setPillStyle] = useState({ left: 0, top: 0, width: 0, height: 0, opacity: 0 });
   const closeTimer = useRef(null);
 
   // Mapping the 8 stats into a structured array for rendering
   const statItems = [
-    { id: 'stock', title: 'Total Stock', value: stats.totalStock?.toLocaleString() || 0, sub: 'Available products', icon: 'fa-boxes-stacked', color: 'text-green-600', route: '/admin/products', action: 'Manage Products' },
-    { id: 'orders', title: 'New Orders', value: stats.orders || 0, sub: 'Need immediate processing', icon: 'fa-file-invoice-dollar', color: 'text-yellow-500', route: '/admin/orders', action: 'View List' },
-    { id: 'cats', title: 'Categories', value: stats.categoriesCount || 0, sub: 'Add, edit, delete', icon: 'fa-tags', color: 'text-gray-800', route: '/admin/categories', action: 'Go to' },
-    { id: 'banners', title: 'Banners', value: stats.banners || 0, sub: 'Currently displayed', icon: 'fa-panorama', color: 'text-blue-600', route: '/admin/banners', action: 'Edit' },
-    { id: 'vouchers', title: 'Active Vouchers', value: stats.activeVouchers || 0, sub: 'Coupons running', icon: 'fa-ticket-simple', color: 'text-cyan-500', route: '/admin/vouchers', action: 'Manage Vouchers' },
-    { id: 'sales', title: 'Active Sales', value: stats.activeSales || 0, sub: 'Discount campaigns', icon: 'fa-percent', color: 'text-red-500', route: '/admin/sales', action: 'Manage Sales' },
-    { id: 'promos', title: 'Active Promotions', value: stats.activePromotions || 0, sub: 'Buy X Get Y running', icon: 'fa-gift', color: 'text-violet-500', route: '/admin/promotions', action: 'Manage Promotions' },
-    { id: 'future', title: 'Coming Soon', value: '...', sub: 'Future feature', icon: 'fa-pen', color: 'text-gray-300', route: '#', action: 'Stay tuned' },
+    { id: 'stock', title: t('admin.total_stock'), value: stats.totalStock?.toLocaleString() || 0, sub: t('admin.available_products'), icon: 'fa-boxes-stacked', color: 'text-green-600 dark:text-emerald-400', route: '/admin/products', action: t('admin.manage_products') },
+    { id: 'orders', title: t('admin.new_orders'), value: stats.orders || 0, sub: t('admin.need_processing'), icon: 'fa-file-invoice-dollar', color: 'text-yellow-500 dark:text-amber-400', route: '/admin/orders', action: t('admin.view_list') },
+    { id: 'cats', title: t('admin.categories'), value: stats.categoriesCount || 0, sub: t('admin.add_edit_delete'), icon: 'fa-tags', color: 'text-gray-800 dark:text-slate-100', route: '/admin/categories', action: t('admin.go_to') },
+    { id: 'banners', title: t('admin.banners'), value: stats.banners || 0, sub: t('admin.currently_displayed'), icon: 'fa-panorama', color: 'text-blue-600 dark:text-sky-400', route: '/admin/banners', action: t('common.edit') },
+    { id: 'vouchers', title: t('admin.active_vouchers'), value: stats.activeVouchers || 0, sub: t('admin.coupons_running'), icon: 'fa-ticket-simple', color: 'text-cyan-500 dark:text-cyan-400', route: '/admin/vouchers', action: t('admin.manage_vouchers') },
+    { id: 'sales', title: t('admin.active_sales'), value: stats.activeSales || 0, sub: t('admin.discount_campaigns'), icon: 'fa-percent', color: 'text-red-500 dark:text-rose-400', route: '/admin/sales', action: t('admin.manage_sales') },
+    { id: 'promos', title: t('admin.active_promotions'), value: stats.activePromotions || 0, sub: t('admin.buy_x_get_y'), icon: 'fa-gift', color: 'text-violet-500 dark:text-violet-400', route: '/admin/promotions', action: t('admin.manage_promotions') },
+    { id: 'future', title: t('admin.coming_soon'), value: '...', sub: t('admin.future_feature'), icon: 'fa-pen', color: 'text-gray-300 dark:text-slate-600', route: '#', action: t('admin.stay_tuned') },
   ];
 
   const handleMouseEnter = (id, e) => {
@@ -65,12 +70,12 @@ const StatsPillGrid = ({ stats, navigate }) => {
 
   return (
     <div
-      className="relative bg-gray-50/80 p-3 rounded-[2rem] border border-gray-100 shadow-inner grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-10 overflow-hidden"
+      className="relative bg-slate-200/80 dark:bg-slate-800/60 p-3 rounded-[2rem] border border-gray-200/80 dark:border-slate-700/80 shadow-inner grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-10 overflow-hidden"
       onMouseLeave={handleMouseLeave}
     >
       {/* The 2D Sliding Pill Background */}
       <div
-        className="absolute bg-white rounded-3xl shadow-md border border-gray-100 transition-all duration-300 ease-out pointer-events-none z-0"
+        className="absolute bg-white dark:bg-slate-700/90 rounded-3xl shadow-md border border-gray-100 dark:border-slate-600 transition-all duration-300 ease-out pointer-events-none z-0"
         style={pillStyle}
       ></div>
 
@@ -87,20 +92,20 @@ const StatsPillGrid = ({ stats, navigate }) => {
           <i className={`fa-solid ${item.icon} text-3xl mb-4 transition-transform duration-300 ${hoveredId === item.id ? 'scale-110' : ''} ${item.color}`}></i>
 
           {/* Title & Value */}
-          <h6 className="text-gray-500 font-bold uppercase tracking-widest text-xs mb-1">
+          <h6 className="text-gray-500 dark:text-slate-400 font-bold uppercase tracking-widest text-xs mb-1">
             {item.title}
           </h6>
           <h3 className={`font-extrabold text-3xl mb-1 ${item.color}`}>
             {item.value}
           </h3>
-          <p className="text-gray-400 text-xs font-medium mb-4">
+          <p className="text-gray-500 dark:text-slate-400 text-xs font-medium mb-4">
             {item.sub}
           </p>
 
           {/* Action Footer */}
           <div className="mt-auto pt-2">
             <span className={`text-xs font-bold transition-colors duration-300 ${
-              hoveredId === item.id ? item.color : 'text-gray-400'
+              hoveredId === item.id ? item.color : 'text-gray-500 dark:text-slate-400'
             }`}>
               {item.action} {item.route !== '#' && '→'}
             </span>
@@ -115,32 +120,35 @@ const StatsPillGrid = ({ stats, navigate }) => {
  * RevenueBanner Component
  * Large, horizontal pill-shaped banner for the revenue report.
  */
-const RevenueBanner = ({ onClick }) => (
-  <div
-    onClick={onClick}
-    className="group w-full bg-white border border-gray-100 p-6 md:px-10 md:py-8 rounded-[2rem] shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 ease-out cursor-pointer mt-8 flex flex-col md:flex-row items-center justify-between gap-6"
-  >
-    <div className="flex flex-col md:flex-row items-center gap-6 text-center md:text-left">
-      <div className="w-16 h-16 rounded-full bg-cyan-50 flex items-center justify-center text-cyan-500 group-hover:scale-110 group-hover:bg-cyan-500 group-hover:text-white transition-all duration-300">
-        <i className="fa-solid fa-chart-pie text-2xl"></i>
+const RevenueBanner = ({ onClick }) => {
+  const { t } = useLanguage();
+  return (
+    <div
+      onClick={onClick}
+      className="group w-full bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 p-6 md:px-10 md:py-8 rounded-[2rem] shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 ease-out cursor-pointer mt-8 flex flex-col md:flex-row items-center justify-between gap-6"
+    >
+      <div className="flex flex-col md:flex-row items-center gap-6 text-center md:text-left">
+        <div className="w-16 h-16 rounded-full bg-cyan-50 dark:bg-cyan-950/50 flex items-center justify-center text-cyan-500 dark:text-cyan-400 group-hover:scale-110 group-hover:bg-cyan-500 group-hover:text-white transition-all duration-300">
+          <i className="fa-solid fa-chart-pie text-2xl"></i>
+        </div>
+        <div>
+          <h6 className="text-gray-400 dark:text-slate-400 uppercase font-bold tracking-widest text-xs mb-1">
+            {t("admin.revenue_report")}
+          </h6>
+          <h2 className="font-extrabold text-gray-800 dark:text-slate-100 text-2xl md:text-3xl">
+            {t("admin.view_financial_insights")}
+          </h2>
+          <p className="text-gray-500 dark:text-slate-300 text-sm mt-1 max-w-md hidden md:block">
+            {t("admin.revenue_description")}
+          </p>
+        </div>
       </div>
-      <div>
-        <h6 className="text-gray-400 uppercase font-bold tracking-widest text-xs mb-1">
-          Revenue Report
-        </h6>
-        <h2 className="font-extrabold text-gray-800 text-2xl md:text-3xl">
-          View Financial Insights
-        </h2>
-        <p className="text-gray-500 text-sm mt-1 max-w-md hidden md:block">
-          Access detailed statistics, historical data, and charts for total system revenue.
-        </p>
+      <div className="px-6 py-3 bg-cyan-50 dark:bg-cyan-950/50 text-cyan-600 dark:text-cyan-400 font-bold text-sm rounded-full group-hover:bg-cyan-500 group-hover:text-white transition-colors duration-300 whitespace-nowrap">
+        {t("admin.view_charts")} <i className="fa-solid fa-arrow-right ml-2"></i>
       </div>
     </div>
-    <div className="px-6 py-3 bg-cyan-50 text-cyan-600 font-bold text-sm rounded-full group-hover:bg-cyan-500 group-hover:text-white transition-colors duration-300 whitespace-nowrap">
-      View Charts <i className="fa-solid fa-arrow-right ml-2"></i>
-    </div>
-  </div>
-);
+  );
+};
 
 // --- MAIN COMPONENT ---
 

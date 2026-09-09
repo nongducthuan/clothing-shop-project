@@ -101,8 +101,8 @@ export const verifyOtpAndGetOrders = async (req: Request, res: Response): Promis
                 return_request: { select: { id: true, status: true } },
                 items: {
                     include: {
-                        product: { select: { name: true, image_url: true } },
-                        color: { select: { color_name: true, image_url: true } },
+                        product: { select: { name: true, name_vi: true, name_en: true, image_url: true } },
+                        color: { select: { color_name: true, color_name_vi: true, color_name_en: true, image_url: true } },
                         size: { select: { size: true } }
                     }
                 }
@@ -128,9 +128,13 @@ export const verifyOtpAndGetOrders = async (req: Request, res: Response): Promis
                 price: Number(item.price),
                 is_gift: item.is_gift,
                 product_name: item.product?.name ?? null,
+                product_name_vi: item.product?.name_vi ?? null,
+                product_name_en: item.product?.name_en ?? null,
                 image_url: item.color?.image_url || item.product?.image_url || null,
                 color: item.color?.color_name ?? null,
                 color_name: item.color?.color_name ?? null,
+                color_name_vi: item.color?.color_name_vi ?? null,
+                color_name_en: item.color?.color_name_en ?? null,
                 size: item.size?.size ?? null,
             }))
         }));
@@ -423,8 +427,8 @@ export const getOrders = async (req: Request, res: Response): Promise<void> => {
                 return_request: { select: { id: true, status: true } },
                 items: {
                     include: {
-                        product: { select: { name: true, image_url: true } },
-                        color: { select: { color_name: true, image_url: true } },
+                        product: { select: { name: true, name_vi: true, name_en: true, image_url: true } },
+                        color: { select: { color_name: true, color_name_vi: true, color_name_en: true, image_url: true } },
                         size: { select: { size: true } }
                     }
                 }
@@ -450,9 +454,13 @@ export const getOrders = async (req: Request, res: Response): Promise<void> => {
                 price: Number(item.price),
                 is_gift: item.is_gift,
                 product_name: item.product?.name ?? null,
+                product_name_vi: item.product?.name_vi ?? null,
+                product_name_en: item.product?.name_en ?? null,
                 image_url: item.color?.image_url || item.product?.image_url || null,
                 color: item.color?.color_name ?? null,
                 color_name: item.color?.color_name ?? null,
+                color_name_vi: item.color?.color_name_vi ?? null,
+                color_name_en: item.color?.color_name_en ?? null,
                 size: item.size?.size ?? null,
             }))
         }));

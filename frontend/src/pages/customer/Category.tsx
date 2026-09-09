@@ -28,7 +28,8 @@ export default function CategoryPage() {
 
   // --- Main Render ---
   return (
-    <div className="max-w-[1400px] mx-auto py-12 px-6 flex-1 bg-white">
+    <div className="w-full flex-1 bg-white dark:bg-slate-900 transition-colors">
+      <div className="max-w-[1400px] mx-auto py-12 px-6">
 
       <CategoryHeader
         categoryName={state.categoryName}
@@ -69,6 +70,7 @@ export default function CategoryPage() {
 
         </div>
       )}
+      </div>
     </div>
   );
 }

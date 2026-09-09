@@ -13,8 +13,8 @@ export default function GuestOrderTracking() {
   const isWideStep = state.step === 3 || state.step === 4;
 
   return (
-    <div className="flex-1 flex items-center justify-center px-3 sm:px-6 py-6 sm:py-12">
-      <div className={`bg-white w-full rounded-2xl shadow-xl overflow-hidden transition-all duration-300 ${isWideStep ? 'max-w-3xl' : 'max-w-md'}`}>
+    <div className="flex-1 flex items-center justify-center px-3 sm:px-6 py-6 sm:py-12 bg-white dark:bg-slate-900">
+      <div className={`bg-white dark:bg-slate-800 w-full rounded-2xl shadow-xl dark:shadow-slate-900/50 overflow-hidden transition-all duration-300 ${isWideStep ? 'max-w-3xl' : 'max-w-md'}`}>
 
         {/* CARD HEADER */}
         <OrderLookupHeader step={state.step} email={state.email} />

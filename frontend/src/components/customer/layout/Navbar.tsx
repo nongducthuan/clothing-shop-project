@@ -104,7 +104,7 @@ const DesktopNav = ({ menuData, navigate }) => {
   return (
     // The Track (Rãnh trượt)
     <div
-      className="hidden md:flex relative bg-gray-100 rounded-full p-1.5 mx-auto shadow-inner"
+      className="hidden md:flex relative bg-white/10 backdrop-blur-sm rounded-full p-1.5 mx-auto shadow-inner border border-white/10"
       onMouseLeave={handleMouseLeave}
     >
       {/* The Sliding Pill (Viên thuốc trượt) */}
@@ -121,7 +121,7 @@ const DesktopNav = ({ menuData, navigate }) => {
         >
           {/* Nav Item Text */}
           <div
-            className={`cursor-pointer uppercase font-bold text-sm tracking-wide px-6 py-2 transition-colors duration-300 ${hoveredGender === gender ? "text-white" : "text-gray-500 hover:text-gray-800"
+            className={`cursor-pointer uppercase font-bold text-sm tracking-wide px-6 py-2 transition-colors duration-300 ${hoveredGender === gender ? "text-white" : "text-white/60 hover:text-white"
               }`}
           >
             {gender.toUpperCase()}
@@ -130,7 +130,7 @@ const DesktopNav = ({ menuData, navigate }) => {
           {/* Dropdown Menu */}
           {hoveredGender === gender && (
             <div
-              className="absolute left-1/2 -translate-x-1/2 top-full mt-5 bg-white shadow-2xl border border-gray-100 rounded-2xl p-6 w-[600px] z-50 animate-fadeIn"
+              className="absolute left-1/2 -translate-x-1/2 top-full mt-5 bg-gray-900 shadow-2xl border border-gray-700 rounded-2xl p-6 w-[600px] z-50 animate-fadeIn"
               onMouseEnter={() => clearTimeout(closeTimer.current)}
               onMouseLeave={handleMouseLeave}
             >
@@ -141,14 +141,14 @@ const DesktopNav = ({ menuData, navigate }) => {
                     className="cursor-pointer group text-center"
                     onClick={() => navigate(`/category/${cat.id}?gender=${gender}`)}
                   >
-                    <div className="mx-auto w-32 aspect-square overflow-hidden rounded-xl border border-gray-100 bg-gray-50 flex items-center justify-center transition-colors group-hover:border-violet-200 group-hover:bg-violet-50">
+                    <div className="mx-auto w-32 aspect-square overflow-hidden rounded-xl border border-gray-700 bg-gray-800 flex items-center justify-center transition-colors group-hover:border-violet-500 group-hover:bg-violet-900/40">
                       <img
                         src={getImgUrl(cat.image_url || cat.preview_image)}
                         className="max-w-full max-h-full object-contain transition-transform duration-300 group-hover:scale-110 drop-shadow-sm"
                         alt={cat.name}
                       />
                     </div>
-                    <span className="block text-sm font-bold mt-3 text-gray-700 transition-colors group-hover:text-violet-700">
+                    <span className="block text-sm font-bold mt-3 text-gray-200 transition-colors group-hover:text-violet-400">
                       {cat.name}
                     </span>
                   </div>
@@ -165,6 +165,7 @@ const DesktopNav = ({ menuData, navigate }) => {
 // Renders the User Icon and Dropdown (Desktop)
 const UserDropdown = ({ user, navigate, onLogout }) => {
   const { isOpen, open, close, closeImmediately, cancelClose } = useHoverDelay();
+  const { t } = useLanguage();
 
   const handleItemClick = (action: () => void) => {
     closeImmediately();
@@ -194,32 +195,32 @@ const UserDropdown = ({ user, navigate, onLogout }) => {
                   className="px-4 py-2.5 hover:bg-violet-50 dark:hover:bg-slate-700 hover:text-violet-700 dark:hover:text-violet-400 font-medium text-gray-700 dark:text-slate-300 cursor-pointer transition-colors flex items-center"
                   onClick={() => handleItemClick(() => navigate("/admin"))}
                 >
-                  <i className="fa-solid fa-screwdriver-wrench mr-2 w-4 text-center"></i> Dashboard
+                  <i className="fa-solid fa-screwdriver-wrench mr-2 w-4 text-center"></i> {t("nav.dashboard", "Dashboard")}
                 </div>
               )}
               <div
                 className="px-4 py-2.5 hover:bg-violet-50 dark:hover:bg-slate-700 hover:text-violet-700 dark:hover:text-violet-400 font-medium text-gray-700 dark:text-slate-300 cursor-pointer transition-colors flex items-center"
                 onClick={() => handleItemClick(() => navigate("/profile"))}
               >
-                <i className="fa-solid fa-user-circle mr-2 w-4 text-center"></i> Profile
+                <i className="fa-solid fa-user-circle mr-2 w-4 text-center"></i> {t("nav.profile", "Profile")}
               </div>
               <div
                 className="px-4 py-2.5 hover:bg-violet-50 dark:hover:bg-slate-700 hover:text-violet-700 dark:hover:text-violet-400 font-medium text-gray-700 dark:text-slate-300 cursor-pointer transition-colors flex items-center"
                 onClick={() => handleItemClick(() => navigate("/profile?tab=orders"))}
               >
-                <i className="fa-solid fa-box-archive mr-2 w-4 text-center"></i> My Orders
+                <i className="fa-solid fa-box-archive mr-2 w-4 text-center"></i> {t("nav.my_orders", "My Orders")}
               </div>
               <div
                 className="px-4 py-2.5 hover:bg-violet-50 dark:hover:bg-slate-700 hover:text-violet-700 dark:hover:text-violet-400 font-medium text-gray-700 dark:text-slate-300 cursor-pointer transition-colors flex items-center"
                 onClick={() => handleItemClick(() => navigate("/sales-policy"))}
               >
-                <i className="fa-solid fa-shield-halved mr-2 w-4 text-center"></i> Sales Policy
+                <i className="fa-solid fa-shield-halved mr-2 w-4 text-center"></i> {t("nav.sales_policy", "Sales Policy")}
               </div>
               <div
                 className="px-4 py-2.5 hover:bg-red-50 dark:hover:bg-red-900/30 text-red-600 font-medium cursor-pointer transition-colors flex items-center"
                 onClick={() => handleItemClick(onLogout)}
               >
-                <i className="fa-solid fa-arrow-right-from-bracket mr-2 w-4 text-center"></i> Logout
+                <i className="fa-solid fa-arrow-right-from-bracket mr-2 w-4 text-center"></i> {t("nav.logout", "Logout")}
               </div>
             </>
           ) : (
@@ -228,26 +229,26 @@ const UserDropdown = ({ user, navigate, onLogout }) => {
                 className="px-4 py-2.5 hover:bg-violet-50 dark:hover:bg-slate-700 hover:text-violet-700 dark:hover:text-violet-400 font-medium text-gray-700 dark:text-slate-300 cursor-pointer transition-colors flex items-center"
                 onClick={() => handleItemClick(() => navigate("/sales-policy"))}
               >
-                <i className="fa-solid fa-shield-halved mr-2 w-4 text-center"></i> Sales Policy
+                <i className="fa-solid fa-shield-halved mr-2 w-4 text-center"></i> {t("nav.sales_policy", "Sales Policy")}
               </div>
               <div
                 className="px-4 py-2.5 hover:bg-violet-50 dark:hover:bg-slate-700 hover:text-violet-700 dark:hover:text-violet-400 font-medium text-gray-700 dark:text-slate-300 cursor-pointer transition-colors flex items-center"
                 onClick={() => handleItemClick(() => navigate("/order"))}
               >
-                <i className="fa-solid fa-truck-fast mr-2 w-4 text-center"></i> Track Order
+                <i className="fa-solid fa-truck-fast mr-2 w-4 text-center"></i> {t("nav.track_order", "Track Order")}
               </div>
               <div className="border-t border-gray-100 dark:border-slate-700 my-1"></div>
               <div
                 className="px-4 py-2.5 hover:bg-violet-50 dark:hover:bg-slate-700 hover:text-violet-700 dark:hover:text-violet-400 font-medium text-gray-700 dark:text-slate-300 cursor-pointer transition-colors flex items-center"
                 onClick={() => handleItemClick(() => navigate("/login"))}
               >
-                <i className="fa-solid fa-right-to-bracket mr-2 w-4 text-center"></i> Login
+                <i className="fa-solid fa-right-to-bracket mr-2 w-4 text-center"></i> {t("nav.login_link", "Login")}
               </div>
               <div
                 className="px-4 py-2.5 hover:bg-violet-50 dark:hover:bg-slate-700 hover:text-violet-700 dark:hover:text-violet-400 font-medium text-gray-700 dark:text-slate-300 cursor-pointer transition-colors flex items-center"
                 onClick={() => handleItemClick(() => navigate("/register"))}
               >
-                <i className="fa-solid fa-user-plus mr-2 w-4 text-center"></i> Register
+                <i className="fa-solid fa-user-plus mr-2 w-4 text-center"></i> {t("nav.register_link", "Register")}
               </div>
             </>
           )}

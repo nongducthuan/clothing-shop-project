@@ -34,32 +34,32 @@ export default function ProductVoucher({ state, helpers }) {
       )}
 
       {/* Mobile layout — vertical ticket style */}
-      <div className="sm:hidden w-full mb-6 bg-rose-50 border border-rose-200 rounded-2xl">
+      <div className="sm:hidden w-full mb-6 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 rounded-2xl">
         {/* Top: info */}
         <div className="px-4 pt-4 pb-3">
           <div className="flex items-center gap-2">
-            <span className="text-xl font-bold text-rose-700 leading-none">
+            <span className="text-xl font-bold text-rose-700 dark:text-rose-400 leading-none">
               {Number.parseFloat(activeVoucher.discount_percent)}% off
             </span>
-            <span className="font-mono text-[11px] font-bold text-rose-600 bg-white border border-dashed border-rose-300 px-2 py-0.5 rounded-md tracking-wide leading-none">
+            <span className="font-mono text-[11px] font-bold text-rose-600 dark:text-rose-400 bg-white dark:bg-slate-800 border border-dashed border-rose-300 dark:border-rose-700 px-2 py-0.5 rounded-md tracking-wide leading-none">
               {activeVoucher.code}
             </span>
           </div>
-          <p className="text-[11px] text-slate-500 mt-1.5">{scopeLabel}</p>
+          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1.5">{scopeLabel}</p>
           {(activeVoucher.min_order_value > 0 || activeVoucher.max_discount_amount > 0 || remainingUses !== null) && (
-            <div className="flex items-center justify-between gap-1.5 mt-2.5 pt-1.5 border-t border-rose-200/50">
+            <div className="flex items-center justify-between gap-1.5 mt-2.5 pt-1.5 border-t border-rose-200/50 dark:border-rose-900/50">
               {activeVoucher.min_order_value > 0 && (
-                <span className="text-[11px] text-slate-500">
-                  Min: <span className="font-semibold text-slate-700">{formatPrice(Math.floor(activeVoucher.min_order_value))}đ</span>
+                <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                  Min: <span className="font-semibold text-slate-700 dark:text-slate-300">{formatPrice(Math.floor(activeVoucher.min_order_value))}đ</span>
                 </span>
               )}
               {activeVoucher.max_discount_amount > 0 && (
-                <span className="text-[11px] text-slate-500">
-                  Max: <span className="font-semibold text-slate-700">{formatPrice(Math.floor(activeVoucher.max_discount_amount))}đ</span>
+                <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                  Max: <span className="font-semibold text-slate-700 dark:text-slate-300">{formatPrice(Math.floor(activeVoucher.max_discount_amount))}đ</span>
                 </span>
               )}
               {remainingUses !== null && (
-                <span className={`text-[11px] font-bold ${isRunningOut ? "text-rose-600 animate-pulse" : "text-slate-600"}`}>
+                <span className={`text-[11px] font-bold ${isRunningOut ? "text-rose-600 dark:text-rose-400 animate-pulse" : "text-slate-600 dark:text-slate-400"}`}>
                   {remainingUses} left
                 </span>
               )}
@@ -69,9 +69,9 @@ export default function ProductVoucher({ state, helpers }) {
 
         {/* Horizontal ticket notch divider */}
         <div className="relative h-0">
-          <div className="absolute -left-[9px] top-0 w-[18px] h-[18px] rounded-full bg-white" />
-          <div className="absolute -right-[9px] top-0 w-[18px] h-[18px] rounded-full bg-white" />
-          <div className="absolute left-[9px] right-[9px] top-[9px] border-t border-dashed border-rose-300" />
+          <div className="absolute -left-[9px] top-0 w-[18px] h-[18px] rounded-full bg-white dark:bg-slate-900" />
+          <div className="absolute -right-[9px] top-0 w-[18px] h-[18px] rounded-full bg-white dark:bg-slate-900" />
+          <div className="absolute left-[9px] right-[9px] top-[9px] border-t border-dashed border-rose-300 dark:border-rose-800" />
         </div>
 
         {/* Bottom: copy button */}
@@ -79,7 +79,7 @@ export default function ProductVoucher({ state, helpers }) {
           <button
             onClick={handleCopy}
             className={`w-full h-10 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all active:scale-95 ${
-              isCopied ? "bg-emerald-600 text-white shadow-sm" : "bg-slate-900 text-white hover:bg-slate-800"
+              isCopied ? "bg-emerald-600 text-white shadow-sm" : "bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-white"
             }`}
           >
             <i className={`fa-solid ${isCopied ? "fa-check text-xs" : "fa-copy text-xs"}`}></i>
@@ -89,35 +89,35 @@ export default function ProductVoucher({ state, helpers }) {
       </div>
 
       {/* Desktop layout — ticket style */}
-      <div className="hidden sm:flex w-full mb-6 bg-rose-50 border border-rose-200 rounded-2xl items-stretch">
+      <div className="hidden sm:flex w-full mb-6 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 rounded-2xl items-stretch">
         {/* Left: main info */}
         <div className="flex-1 px-5 py-4">
           <div className="flex items-baseline gap-2 flex-wrap">
-            <span className="text-2xl font-bold text-rose-700">
+            <span className="text-2xl font-bold text-rose-700 dark:text-rose-400">
               {Number.parseFloat(activeVoucher.discount_percent)}% off
             </span>
-            <span className="font-mono text-xs font-bold text-rose-700 bg-white border border-dashed border-rose-300 px-2.5 py-1 rounded-md">
+            <span className="font-mono text-xs font-bold text-rose-700 dark:text-rose-400 bg-white dark:bg-slate-800 border border-dashed border-rose-300 dark:border-rose-700 px-2.5 py-1 rounded-md">
               {activeVoucher.code}
             </span>
           </div>
-          <p className="text-xs text-slate-500 mt-1">{scopeLabel}</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{scopeLabel}</p>
           <div className="flex flex-wrap gap-5 mt-3">
             {activeVoucher.min_order_value > 0 && (
               <div>
-                <p className="text-[11px] text-slate-400">Min spend</p>
-                <p className="text-sm text-slate-800 font-medium">{formatPrice(Math.floor(activeVoucher.min_order_value))} đ</p>
+                <p className="text-[11px] text-slate-400 dark:text-slate-500">Min spend</p>
+                <p className="text-sm text-slate-800 dark:text-slate-200 font-medium">{formatPrice(Math.floor(activeVoucher.min_order_value))} đ</p>
               </div>
             )}
             {activeVoucher.max_discount_amount > 0 && (
               <div>
-                <p className="text-[11px] text-slate-400">Max discount</p>
-                <p className="text-sm text-slate-800 font-medium">{formatPrice(Math.floor(activeVoucher.max_discount_amount))} đ</p>
+                <p className="text-[11px] text-slate-400 dark:text-slate-500">Max discount</p>
+                <p className="text-sm text-slate-800 dark:text-slate-200 font-medium">{formatPrice(Math.floor(activeVoucher.max_discount_amount))} đ</p>
               </div>
             )}
             {remainingUses !== null && (
               <div>
-                <p className="text-[11px] text-slate-400">Remaining</p>
-                <p className={`text-sm font-bold ${isRunningOut ? "text-rose-600 animate-pulse" : "text-slate-800"}`}>
+                <p className="text-[11px] text-slate-400 dark:text-slate-500">Remaining</p>
+                <p className={`text-sm font-bold ${isRunningOut ? "text-rose-600 dark:text-rose-400 animate-pulse" : "text-slate-800 dark:text-slate-200"}`}>
                   {remainingUses} left
                 </p>
               </div>
@@ -127,9 +127,9 @@ export default function ProductVoucher({ state, helpers }) {
 
         {/* Ticket notch divider */}
         <div className="relative w-0">
-          <div className="absolute -top-[9px] -left-[9px] w-[18px] h-[18px] rounded-full bg-white" />
-          <div className="absolute -bottom-[9px] -left-[9px] w-[18px] h-[18px] rounded-full bg-white" />
-          <div className="absolute top-[9px] bottom-[9px] left-0 border-l border-dashed border-rose-300" />
+          <div className="absolute -top-[9px] -left-[9px] w-[18px] h-[18px] rounded-full bg-white dark:bg-slate-900" />
+          <div className="absolute -bottom-[9px] -left-[9px] w-[18px] h-[18px] rounded-full bg-white dark:bg-slate-900" />
+          <div className="absolute top-[9px] bottom-[9px] left-0 border-l border-dashed border-rose-300 dark:border-rose-800" />
         </div>
 
         {/* Right: copy button */}
@@ -137,7 +137,7 @@ export default function ProductVoucher({ state, helpers }) {
           <button
             onClick={handleCopy}
             className={`w-full h-10 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all active:scale-95 ${
-              isCopied ? "bg-emerald-600 text-white shadow-sm" : "bg-slate-900 text-white hover:bg-slate-800"
+              isCopied ? "bg-emerald-600 text-white shadow-sm" : "bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-white"
             }`}
           >
             <i className={`fa-solid ${isCopied ? "fa-check text-xs" : "fa-copy text-xs"}`}></i>

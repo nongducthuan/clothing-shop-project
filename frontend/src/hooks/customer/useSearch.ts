@@ -2,8 +2,10 @@ import { useState, useEffect, useMemo, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import API from "../../services/apiClient.js";
 import { PRICE_RANGES, GENDERS } from "../../components/customer/search/searchConstants.js";
+import { useLanguage } from "../../context/LanguageContext";
 
 export function useSearch() {
+  const { t } = useLanguage();
   // --- STATES ---
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -83,7 +85,7 @@ export function useSearch() {
   }, [products, urlQuery, urlGender, urlCategory, filterPrice, categories]);
 
   const resultDisplayText = useMemo(() => {
-    let text = "All Products";
+    let text = t("search.all_products", "All Products");
     const currentCategory = categories.find((c) => String(c.id) === String(urlCategory));
     const catName = currentCategory ? currentCategory.name : "";
 
@@ -92,7 +94,7 @@ export function useSearch() {
     else if (catName) text = catName;
 
     return text;
-  }, [urlQuery, urlCategory, categories]);
+  }, [urlQuery, urlCategory, categories, t]);
 
   // --- EFFECTS ---
   useEffect(() => {

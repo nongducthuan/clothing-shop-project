@@ -1,5 +1,7 @@
 import { Chart } from "react-google-charts";
 import { useReport } from "../../hooks/admin/useReport";
+import { useLanguage } from "../../context/LanguageContext";
+import { useTheme } from "../../context/ThemeContext";
 
 /** Bảng màu đồng bộ cho các trạng thái */
 const STATUS_COLORS = {
@@ -13,6 +15,13 @@ const STATUS_COLORS = {
 };
 
 export default function Report() {
+  const { t } = useLanguage();
+  const { isDark } = useTheme();
+
+  // Color variables for charts based on theme
+  const textColor = isDark ? '#e2e8f0' : '#334155';
+  const subTextColor = isDark ? '#94a3b8' : '#64748b';
+
   // Chỉ việc gọi hook và lấy data ra dùng
   const {
     loading,
@@ -32,10 +41,10 @@ export default function Report() {
   // Modern Loading Pill UI
   if (loading) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-slate-50">
+      <div className="flex-1 flex items-center justify-center bg-slate-50 dark:bg-slate-900">
         <div className="flex flex-col items-center gap-4">
           <i className="fa-solid fa-circle-notch fa-spin text-4xl text-indigo-500"></i>
-          <p className="font-bold text-slate-500 tracking-widest uppercase text-sm">Analyzing Data...</p>
+          <p className="font-bold text-slate-500 dark:text-slate-400 tracking-widest uppercase text-sm">{t("admin.analyzing_data")}</p>
         </div>
       </div>
     );
@@ -44,13 +53,13 @@ export default function Report() {
   // Modern Error State
   if (!stats) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-slate-50">
-        <div className="bg-white p-8 rounded-[2rem] shadow-sm border border-rose-100 flex flex-col items-center gap-4">
-          <div className="w-16 h-16 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center text-2xl mb-2">
+      <div className="flex-1 flex items-center justify-center bg-slate-50 dark:bg-slate-900">
+        <div className="bg-white dark:bg-slate-800 p-8 rounded-[2rem] shadow-sm border border-rose-100 dark:border-slate-700 flex flex-col items-center gap-4">
+          <div className="w-16 h-16 bg-rose-50 dark:bg-rose-900/30 text-rose-500 rounded-full flex items-center justify-center text-2xl mb-2">
             <i className="fa-solid fa-triangle-exclamation"></i>
           </div>
-          <h3 className="font-black text-slate-800 uppercase tracking-widest">Connection Error</h3>
-          <p className="text-sm text-slate-500">Failed to load report data.</p>
+          <h3 className="font-black text-slate-800 dark:text-slate-100 uppercase tracking-widest">{t("admin.connection_error")}</h3>
+          <p className="text-sm text-slate-500 dark:text-slate-400">{t("admin.failed_to_load_report")}</p>
         </div>
       </div>
     );
@@ -61,10 +70,10 @@ export default function Report() {
 
       {/* Pill UI Header */}
       <div className="flex items-center gap-4 mb-8">
-        <div className="inline-flex items-center gap-3 bg-white px-6 py-3.5 rounded-full shadow-sm border border-gray-100">
+        <div className="inline-flex items-center gap-3 bg-white dark:bg-slate-800 px-6 py-3.5 rounded-full shadow-sm border border-slate-200/80 dark:border-slate-700">
           <div className="w-3 h-3 flex-shrink-0 bg-indigo-500 rounded-full animate-pulse"></div>
-          <h2 className="text-sm sm:text-base font-black text-slate-700 uppercase tracking-widest m-0 leading-none">
-            Business Performance <span className="text-indigo-500">Report</span>
+          <h2 className="text-sm sm:text-base font-black text-slate-700 dark:text-slate-100 uppercase tracking-widest m-0 leading-none">
+            {t("admin.report_management")}
           </h2>
         </div>
       </div>
@@ -74,28 +83,28 @@ export default function Report() {
         {/* --- PHẦN 1: CÁC THẺ THỐNG KÊ NHANH --- */}
         <div className="space-y-8">
           <section>
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-50 rounded-full mb-6 border border-indigo-100">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-50 dark:bg-indigo-900/30 rounded-full mb-6 border border-indigo-100 dark:border-indigo-800/50">
               <i className="fa-solid fa-calendar-week text-indigo-500 text-xs"></i>
-              <h3 className="text-[10px] font-black text-indigo-800 uppercase tracking-widest m-0 leading-none">7-Day Overview</h3>
+              <h3 className="text-[10px] font-black text-indigo-800 dark:text-indigo-300 uppercase tracking-widest m-0 leading-none">Tổng quan 7 ngày</h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <StatCard title="Orders" value={summary?.weeklyOrders ?? 0} color="text-indigo-600" />
-              <StatCard title="Revenue" value={formatCurrency(summary?.weeklyRevenue ?? 0)} color="text-amber-500" />
-              <StatCard title="Profit" value={formatCurrency(summary?.weeklyProfit ?? 0)} color="text-emerald-500" />
-              <StatCard title="Units Sold" value={summary?.productsSoldWeek ?? 0} color="text-rose-500" />
+              <StatCard title="Đơn hàng" value={summary?.weeklyOrders ?? 0} color="text-indigo-600 dark:text-indigo-400" />
+              <StatCard title="Doanh thu" value={formatCurrency(summary?.weeklyRevenue ?? 0)} color="text-amber-500 dark:text-amber-400" />
+              <StatCard title="Lợi nhuận" value={formatCurrency(summary?.weeklyProfit ?? 0)} color="text-emerald-500 dark:text-emerald-400" />
+              <StatCard title="Đã bán" value={summary?.productsSoldWeek ?? 0} color="text-rose-500 dark:text-rose-400" />
             </div>
           </section>
 
           <section>
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-purple-50 rounded-full mb-6 border border-purple-100">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-purple-50 dark:bg-purple-900/30 rounded-full mb-6 border border-purple-100 dark:border-purple-800/50">
               <i className="fa-solid fa-calendar-days text-purple-500 text-xs"></i>
-              <h3 className="text-[10px] font-black text-purple-800 uppercase tracking-widest m-0 leading-none">30-Day Overview</h3>
+              <h3 className="text-[10px] font-black text-purple-800 dark:text-purple-300 uppercase tracking-widest m-0 leading-none">Tổng quan 30 ngày</h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <StatCard title="Orders" value={summary?.monthlyOrders ?? 0} color="text-emerald-600" />
-              <StatCard title="Revenue" value={formatCurrency(summary?.monthlyRevenue ?? 0)} color="text-purple-600" />
-              <StatCard title="Profit" value={formatCurrency(summary?.monthlyProfit ?? 0)} color="text-teal-600" />
-              <StatCard title="Units Sold" value={summary?.productsSoldMonth ?? 0} color="text-blue-600" />
+              <StatCard title="Đơn hàng" value={summary?.monthlyOrders ?? 0} color="text-emerald-600 dark:text-emerald-400" />
+              <StatCard title="Doanh thu" value={formatCurrency(summary?.monthlyRevenue ?? 0)} color="text-purple-600 dark:text-purple-400" />
+              <StatCard title="Lợi nhuận" value={formatCurrency(summary?.monthlyProfit ?? 0)} color="text-teal-600 dark:text-teal-400" />
+              <StatCard title="Đã bán" value={summary?.productsSoldMonth ?? 0} color="text-blue-600 dark:text-blue-400" />
             </div>
           </section>
         </div>
@@ -105,32 +114,34 @@ export default function Report() {
 
           {/* Hàng 1: Doanh thu 7 ngày & Category */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 bg-white p-6 md:p-8 shadow-sm rounded-[2rem] border border-gray-100 flex flex-col justify-center overflow-hidden">
+            <div className="lg:col-span-2 bg-white dark:bg-slate-800 p-6 md:p-8 shadow-sm rounded-[2rem] border border-slate-200/80 dark:border-slate-700 flex flex-col justify-center overflow-hidden">
               <Chart
                 chartType="ColumnChart"
                 width="100%" height="300px"
                 data={weeklyChartData.length > 1 ? weeklyChartData : [["Day", "Revenue", "Profit"], ["No Data", 0, 0]]}
                 options={{
-                  title: "Daily Performance Trends",
-                  titleTextStyle: { color: '#334155', fontSize: 14, bold: true },
+                  title: "Xu hướng hiệu suất hàng ngày",
+                  backgroundColor: "transparent",
+                  titleTextStyle: { color: textColor, fontSize: 14, bold: true },
                   series: { 0: { color: '#6366f1' }, 1: { color: '#10b981' } },
                   chartArea: { width: '85%', height: '70%' },
-                  legend: { position: "top", textStyle: { color: '#64748b' } },
-                  hAxis: { textStyle: { color: '#94a3b8' } },
-                  vAxis: { textStyle: { color: '#94a3b8' }, format: 'short' }
+                  legend: { position: "top", textStyle: { color: subTextColor } },
+                  hAxis: { textStyle: { color: subTextColor } },
+                  vAxis: { textStyle: { color: subTextColor }, format: 'short' }
                 }}
               />
             </div>
 
-            <ChartCard title="Revenue by Category">
+            <ChartCard title="Doanh thu theo danh mục">
               <Chart
                 chartType="PieChart"
                 width="100%" height="300px"
                 data={categoryRevenueData.length > 1 ? categoryRevenueData : [["N/A", "N/A"], ["No Data", 1]]}
                 options={{
+                  backgroundColor: "transparent",
                   pieHole: 0.4,
                   colors: ["#8b5cf6", "#ec4899", "#3b82f6", "#10b981", "#f59e0b"],
-                  legend: { position: "bottom", textStyle: { color: '#64748b' } },
+                  legend: { position: "bottom", textStyle: { color: subTextColor } },
                   chartArea: { width: '90%', height: '75%' }
                 }}
               />
@@ -139,43 +150,46 @@ export default function Report() {
 
           {/* Hàng 2: Order Status & Return Status & Return Reason */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <ChartCard title="Order Lifecycle">
+            <ChartCard title="Vòng đời đơn hàng">
               <Chart
                 chartType="PieChart"
                 width="100%" height="250px"
                 data={statusPieData.length > 1 ? statusPieData : [["Status", "Quantity"], ["No Data", 1]]}
                 options={{
+                  backgroundColor: "transparent",
                   colors: (orderStatus || []).map(r => STATUS_COLORS[r.status] || "#cbd5e1"),
                   pieHole: 0.5,
-                  legend: { position: "bottom", textStyle: { color: '#64748b' } },
+                  legend: { position: "bottom", textStyle: { color: subTextColor } },
                   chartArea: { width: '90%', height: '75%' }
                 }}
               />
             </ChartCard>
 
-            <ChartCard title="Return Approval">
+            <ChartCard title="Phê duyệt trả hàng">
               <Chart
                 chartType="PieChart"
                 width="100%" height="250px"
                 data={returnApprovalData.length > 1 ? returnApprovalData : [["Status", "Quantity"], ["No Data", 1]]}
                 options={{
+                  backgroundColor: "transparent",
                   colors: (returnStatuses || []).map(r => STATUS_COLORS[r.status] || "#fb923c"),
                   pieHole: 0.5,
-                  legend: { position: "bottom", textStyle: { color: '#64748b' } },
+                  legend: { position: "bottom", textStyle: { color: subTextColor } },
                   chartArea: { width: '90%', height: '75%' }
                 }}
               />
             </ChartCard>
 
-            <ChartCard title="Return Reasons">
+            <ChartCard title="Lý do trả hàng">
               <Chart
                 chartType="PieChart"
                 width="100%" height="250px"
                 data={reasonData.length > 1 ? reasonData : [["Reason", "Quantity"], ["No Data", 1]]}
                 options={{
+                  backgroundColor: "transparent",
                   colors: ["#94a3b8", "#ef4444", "#f59e0b", "#3b82f6"],
                   pieHole: 0.5,
-                  legend: { position: "bottom", textStyle: { color: '#64748b' } },
+                  legend: { position: "bottom", textStyle: { color: subTextColor } },
                   chartArea: { width: '90%', height: '75%' }
                 }}
               />
@@ -183,20 +197,21 @@ export default function Report() {
           </div>
 
           {/* Hàng 3: Biểu đồ Năm */}
-          <div className="bg-white p-6 md:p-8 shadow-sm rounded-[2rem] border border-gray-100 flex flex-col justify-center overflow-hidden">
+          <div className="bg-white dark:bg-slate-800 p-6 md:p-8 shadow-sm rounded-[2rem] border border-slate-200/80 dark:border-slate-700 flex flex-col justify-center overflow-hidden">
             <Chart
               chartType="LineChart"
               width="100%" height="350px"
               data={yearlyTrendData.length > 1 ? yearlyTrendData : [["Month", "Revenue", "Profit"], ["No Data", 0, 0]]}
               options={{
-                title: "12-Month Continuous Growth Trend",
-                titleTextStyle: { color: '#334155', fontSize: 16, bold: true },
+                title: "Xu hướng phát triển 12 tháng",
+                backgroundColor: "transparent",
+                titleTextStyle: { color: textColor, fontSize: 16, bold: true },
                 curveType: "function",
                 series: { 0: { color: '#8b5cf6', lineWidth: 4 }, 1: { color: '#14b8a6', lineWidth: 4 } },
-                legend: { position: "top", textStyle: { color: '#64748b' } },
+                legend: { position: "top", textStyle: { color: subTextColor } },
                 chartArea: { width: '90%', height: '70%' },
-                hAxis: { title: 'Months', titleTextStyle: { color: '#94a3b8', italic: false }, textStyle: { color: '#94a3b8' } },
-                vAxis: { format: 'short', textStyle: { color: '#94a3b8' } }
+                hAxis: { title: 'Tháng', titleTextStyle: { color: subTextColor, italic: false }, textStyle: { color: subTextColor } },
+                vAxis: { format: 'short', textStyle: { color: subTextColor } }
               }}
             />
           </div>
@@ -210,8 +225,8 @@ export default function Report() {
 /** Component thẻ biểu đồ con */
 function ChartCard({ title, children }) {
   return (
-    <div className="bg-white p-6 shadow-sm rounded-[2rem] border border-gray-100 flex flex-col items-center hover:border-indigo-100 transition-colors duration-300">
-      <h4 className="text-center font-bold text-slate-600 mb-4 uppercase text-[10px] tracking-widest bg-slate-50 px-4 py-2 rounded-full w-fit">
+    <div className="bg-white dark:bg-slate-800 p-6 shadow-sm rounded-[2rem] border border-slate-200/80 dark:border-slate-700 flex flex-col items-center hover:border-indigo-100 dark:hover:border-indigo-700 transition-colors duration-300">
+      <h4 className="text-center font-bold text-slate-600 dark:text-slate-300 mb-4 uppercase text-[10px] tracking-widest bg-slate-50 dark:bg-slate-700/50 px-4 py-2 rounded-full w-fit">
         {title}
       </h4>
       <div className="w-full">
@@ -224,8 +239,8 @@ function ChartCard({ title, children }) {
 /** Component thẻ thống kê */
 function StatCard({ title, value, color }) {
   return (
-    <div className="bg-white p-6 md:p-8 shadow-sm rounded-[2rem] border border-gray-100 transition-all duration-300 hover:-translate-y-1 hover:shadow-md hover:border-indigo-100 flex flex-col justify-center gap-2">
-      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{title}</p>
+    <div className="bg-white dark:bg-slate-800 p-6 md:p-8 shadow-sm rounded-[2rem] border border-slate-200/80 dark:border-slate-700 transition-all duration-300 hover:-translate-y-1 hover:shadow-md hover:border-indigo-100 dark:hover:border-indigo-700 flex flex-col justify-center gap-2">
+      <p className="text-[10px] font-bold text-slate-400 dark:text-slate-400 uppercase tracking-widest">{title}</p>
       <h3 className={`text-2xl sm:text-3xl font-black ${color} truncate`}>{value}</h3>
     </div>
   );

@@ -20,8 +20,8 @@ export const getOrders = async (req: Request, res: Response): Promise<void> => {
                     return_request: true,
                     items: {
                         include: {
-                            product: { select: { name: true, image_url: true } },
-                            color: { select: { color_name: true, image_url: true } },
+                            product: { select: { name: true, name_vi: true, name_en: true, image_url: true } },
+                            color: { select: { color_name: true, color_name_vi: true, color_name_en: true, image_url: true } },
                             size: { select: { size: true } }
                         }
                     }
@@ -53,8 +53,12 @@ export const getOrders = async (req: Request, res: Response): Promise<void> => {
             const items = order.items.map(item => ({
                 ...item,
                 product_name: item.product?.name,
+                product_name_vi: item.product?.name_vi,
+                product_name_en: item.product?.name_en,
                 image_url: item.color?.image_url || item.product?.image_url,
                 color_name: item.color?.color_name,
+                color_name_vi: item.color?.color_name_vi,
+                color_name_en: item.color?.color_name_en,
                 size: item.size?.size
             }));
 

@@ -5,9 +5,9 @@ export default function ProductSelectors({ state, actions }) {
   const { setSelectedColor, setSelectedSize } = actions;
 
   return (
-    <div className="space-y-8 mb-8 border-t border-slate-100 pt-8">
+    <div className="space-y-8 mb-8 border-t border-slate-100 dark:border-slate-800 pt-8">
 
-      {/* COLOR THUMBNAILS (Optional detailed view) */}
+      {/* COLOR THUMBNAILS */}
       {product.colors?.length > 0 && (
         <div className="flex gap-3 overflow-x-auto pb-2 custom-scrollbar">
           {product.colors.map((color) => (
@@ -15,7 +15,9 @@ export default function ProductSelectors({ state, actions }) {
               key={`thumb-${color.id}`}
               src={getImageUrl(color.image_url)}
               className={`w-16 h-20 object-cover rounded-xl cursor-pointer border-2 transition-all ${
-                selectedColor?.id === color.id ? "border-slate-900 opacity-100 shadow-md" : "border-transparent opacity-60 hover:opacity-100"
+                selectedColor?.id === color.id
+                  ? "border-slate-900 dark:border-slate-100 opacity-100 shadow-md"
+                  : "border-transparent opacity-60 hover:opacity-100"
               }`}
               onClick={() => setSelectedColor(color)}
               alt={color.color_name}
@@ -26,30 +28,32 @@ export default function ProductSelectors({ state, actions }) {
 
       {/* COLOR DOTS */}
       <div>
-        <h3 className="text-xs font-bold text-slate-900 uppercase tracking-widest mb-3">
-          Color <span className="text-slate-500 font-normal normal-case ml-2">{selectedColor?.color_name || "Not selected"}</span>
+        <h3 className="text-xs font-bold text-slate-900 dark:text-slate-100 uppercase tracking-widest mb-3">
+          Color <span className="text-slate-500 dark:text-slate-400 font-normal normal-case ml-2">{selectedColor?.color_name || "Not selected"}</span>
         </h3>
         <div className="flex items-center flex-wrap gap-3">
           {product.colors?.map((color) => (
             <button
               key={color.id}
               onClick={() => setSelectedColor(color)}
-              className={`w-10 h-10 rounded-full border border-slate-200 transition-transform focus:outline-none ${
-                selectedColor?.id === color.id ? "ring-2 ring-offset-2 ring-slate-900 scale-110" : "hover:scale-110"
+              className={`w-10 h-10 rounded-full border border-slate-200 dark:border-slate-700 transition-transform focus:outline-none ${
+                selectedColor?.id === color.id
+                  ? "ring-2 ring-offset-2 ring-slate-900 dark:ring-slate-100 dark:ring-offset-slate-900 scale-110"
+                  : "hover:scale-110"
               }`}
               style={{ backgroundColor: color.color_code }}
               title={color.color_name}
             />
           ))}
           {isProductIncomplete && (
-            <p className="text-sm text-slate-400 italic">Color information not available.</p>
+            <p className="text-sm text-slate-400 dark:text-slate-500 italic">Color information not available.</p>
           )}
         </div>
       </div>
 
       {/* SIZES */}
       <div>
-        <h3 className="text-xs font-bold text-slate-900 uppercase tracking-widest mb-3">Size</h3>
+        <h3 className="text-xs font-bold text-slate-900 dark:text-slate-100 uppercase tracking-widest mb-3">Size</h3>
         <div className="flex flex-wrap gap-3">
           {selectedColor?.sizes?.map((sizeObj) => {
             const isSelected = selectedSize?.id === sizeObj.id;
@@ -62,10 +66,10 @@ export default function ProductSelectors({ state, actions }) {
                 disabled={isOutOfStock}
                 className={`py-3 px-6 text-sm font-medium uppercase rounded-2xl transition-all ${
                   isSelected
-                    ? "bg-slate-900 text-white shadow-md"
+                    ? "bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 shadow-md"
                     : isOutOfStock
-                    ? "bg-slate-50 text-slate-300 cursor-not-allowed"
-                    : "bg-white text-slate-600 border border-slate-200 hover:border-slate-900 hover:text-slate-900"
+                    ? "bg-slate-50 dark:bg-slate-800 text-slate-300 dark:text-slate-600 cursor-not-allowed"
+                    : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-slate-900 dark:hover:border-slate-400 hover:text-slate-900 dark:hover:text-slate-100"
                 }`}
               >
                 {sizeObj.size}

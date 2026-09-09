@@ -10,7 +10,7 @@ export default function ProductMeta({ state, helpers }) {
 
   return (
     <div className="mb-8">
-      <div className="mb-3 text-xs font-bold text-slate-400 dark:text-slate-400 uppercase tracking-widest">
+      <div className="mb-3 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
         {product.category_name}
       </div>
       <h1 className="text-3xl sm:text-4xl font-medium text-slate-900 dark:text-slate-100 mb-4 leading-tight tracking-tight">
@@ -23,12 +23,12 @@ export default function ProductMeta({ state, helpers }) {
             <p className="text-2xl font-medium text-rose-500">
               {formatPrice(salePrice)} đ
             </p>
-            <p className="text-lg text-slate-400 line-through decoration-slate-300">
+            <p className="text-lg text-slate-400 dark:text-slate-500 line-through decoration-slate-300 dark:decoration-slate-600">
               {formatPrice(product.price)} đ
             </p>
           </div>
         ) : (
-          <p className="text-2xl font-medium text-slate-900">
+          <p className="text-2xl font-medium text-slate-900 dark:text-slate-100">
             {formatPrice(product.price)} đ
           </p>
         )}

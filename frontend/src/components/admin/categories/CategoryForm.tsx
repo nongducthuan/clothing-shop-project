@@ -1,5 +1,6 @@
 import React from "react";
 import { getImageUrl } from "../../../utils/imageUtils";
+import { useLanguage } from "../../../context/LanguageContext";
 
 export default function CategoryForm({
   form,
@@ -12,33 +13,35 @@ export default function CategoryForm({
   recommendNames,
   categoryImages,
 }) {
+  const { t } = useLanguage();
+
   return (
     <div className="flex flex-col h-full">
-      <h3 className="text-xl font-extrabold mb-6 text-gray-800 flex items-center gap-3 m-0 leading-none">
+      <h3 className="text-xl font-extrabold mb-6 text-slate-800 dark:text-slate-100 flex items-center gap-3 m-0 leading-none">
         {editingId ? (
-          <><i className="fa-solid fa-pen-to-square text-violet-500"></i> Edit Category</>
+          <><i className="fa-solid fa-pen-to-square text-violet-500 dark:text-violet-400"></i> {t("admin.edit_category")}</>
         ) : (
-          <><i className="fa-solid fa-plus-circle text-violet-500"></i> Add New Category</>
+          <><i className="fa-solid fa-plus-circle text-violet-500 dark:text-violet-400"></i> {t("admin.add_new_category")}</>
         )}
       </h3>
 
       <form onSubmit={handleSubmit} className="space-y-6 flex-1">
         {/* Category Name */}
         <div>
-          <label className="block text-sm font-bold text-gray-700 mb-2 ml-1">Category Name</label>
+          <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 ml-1">{t("admin.category")}</label>
           <input
             name="name"
             value={form.name}
             onChange={handleChange}
             required
-            className="w-full px-4 py-3 bg-gray-50 border-transparent focus:bg-white focus:border-violet-500 focus:ring-4 focus:ring-violet-500/10 rounded-2xl transition-all duration-300 outline-none text-gray-800 font-medium"
-            placeholder="E.g., T-Shirts"
+            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 focus:bg-white dark:focus:bg-slate-700 focus:border-violet-500 dark:focus:border-violet-400 focus:ring-4 focus:ring-violet-500/10 rounded-2xl transition-all duration-300 outline-none text-slate-800 dark:text-slate-100 font-medium placeholder:text-slate-400 dark:placeholder:text-slate-500"
+            placeholder={t("admin.category_name_placeholder")}
           />
 
           {recommendNames.length > 0 && (
-            <div className="mt-3 p-4 border border-violet-100 rounded-[1.5rem] bg-violet-50/50">
-              <p className="font-bold text-xs uppercase tracking-wider text-violet-600 mb-3 ml-1">
-                Suggested Categories
+            <div className="mt-3 p-4 border border-violet-100 dark:border-violet-900/50 rounded-[1.5rem] bg-violet-50/50 dark:bg-violet-950/30">
+              <p className="font-bold text-xs uppercase tracking-wider text-violet-600 dark:text-violet-400 mb-3 ml-1">
+                {t("admin.suggested_categories")}
               </p>
               <div className="flex flex-wrap gap-2">
                 {recommendNames.map((item, idx) => (
@@ -46,7 +49,7 @@ export default function CategoryForm({
                     key={idx}
                     type="button"
                     onClick={() => setForm((prev) => ({ ...prev, name: item.name }))}
-                    className="px-4 py-1.5 bg-white border border-violet-100 rounded-full shadow-sm hover:bg-violet-600 hover:text-white hover:border-violet-600 text-violet-700 text-sm font-semibold transition-colors duration-300"
+                    className="px-4 py-1.5 bg-white dark:bg-slate-700 border border-violet-100 dark:border-violet-800 rounded-full shadow-sm hover:bg-violet-600 hover:text-white dark:hover:bg-violet-600 text-violet-700 dark:text-violet-300 text-sm font-semibold transition-colors duration-300"
                   >
                     {item.name}
                   </button>
@@ -58,27 +61,27 @@ export default function CategoryForm({
 
         {/* Gender Selection */}
         <div>
-          <label className="block text-sm font-bold text-gray-700 mb-2 ml-1">Gender</label>
+          <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 ml-1">{t("admin.gender")}</label>
           <select
             name="gender"
             value={form.gender}
             onChange={handleChange}
             required
-            className="w-full px-4 py-3 bg-gray-50 border-transparent focus:bg-white focus:border-violet-500 focus:ring-4 focus:ring-violet-500/10 rounded-2xl transition-all duration-300 outline-none text-gray-800 font-medium appearance-none cursor-pointer"
+            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 focus:bg-white dark:focus:bg-slate-700 focus:border-violet-500 dark:focus:border-violet-400 focus:ring-4 focus:ring-violet-500/10 rounded-2xl transition-all duration-300 outline-none text-slate-800 dark:text-slate-100 font-medium appearance-none cursor-pointer"
           >
-            <option value="">-- Select Gender --</option>
-            <option value="male">Male</option>
-            <option value="female">Female</option>
-            <option value="unisex">Unisex</option>
+            <option value="">{t("admin.select_gender")}</option>
+            <option value="male">{t("gender.male")}</option>
+            <option value="female">{t("gender.female")}</option>
+            <option value="unisex">{t("gender.unisex")}</option>
           </select>
         </div>
 
         {/* Cover Image Selection */}
         <div>
-          <label className="block text-sm font-bold text-gray-700 mb-2 ml-1">Cover Image</label>
+          <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 ml-1">{t("admin.cover_image")}</label>
 
           {editingId && categoryImages.length > 0 ? (
-            <div className="grid grid-cols-4 gap-3 bg-gray-50 p-3 rounded-[1.5rem] border border-gray-100">
+            <div className="grid grid-cols-4 gap-3 bg-slate-50 dark:bg-slate-700/50 p-3 rounded-[1.5rem] border border-slate-200/80 dark:border-slate-600">
               {categoryImages.map((img, idx) => {
                 const imageSrc = img.image_url;
                 return (
@@ -110,10 +113,10 @@ export default function CategoryForm({
               })}
             </div>
           ) : (
-            <div className="px-4 py-6 bg-gray-50 rounded-[1.5rem] border border-dashed border-gray-300 text-center">
-              <i className="fa-solid fa-image text-gray-400 text-2xl mb-2"></i>
-              <p className="text-gray-500 font-medium text-sm">
-                Select a category to display related product images here.
+            <div className="px-4 py-6 bg-slate-50 dark:bg-slate-700/40 rounded-[1.5rem] border border-dashed border-slate-300 dark:border-slate-600 text-center">
+              <i className="fa-solid fa-image text-slate-400 text-2xl mb-2"></i>
+              <p className="text-slate-500 dark:text-slate-400 font-medium text-sm">
+                {t("admin.select_category_for_image")}
               </p>
             </div>
           )}
@@ -131,16 +134,16 @@ export default function CategoryForm({
             }`}
           >
             {loading ? <i className="fa-solid fa-spinner fa-spin"></i> : null}
-            {editingId ? "Save Changes" : "Create Category"}
+            {editingId ? t("admin.save_changes") : t("admin.create_category")}
           </button>
 
           {editingId && (
             <button
               type="button"
-              className="px-6 py-3.5 bg-gray-100 text-gray-600 font-bold rounded-full hover:bg-gray-200 hover:text-gray-800 transition-all duration-300"
+              className="px-6 py-3.5 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold rounded-full hover:bg-slate-200 dark:hover:bg-slate-600 transition-all duration-300"
               onClick={resetForm}
             >
-              Cancel
+              {t("common.cancel")}
             </button>
           )}
         </div>

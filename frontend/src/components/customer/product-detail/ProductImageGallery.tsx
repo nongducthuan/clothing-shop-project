@@ -5,7 +5,7 @@ export default function ProductImageGallery({ state }) {
   const PLACEHOLDER_IMG = "https://placehold.co/300x400?text=No+Image";
 
   return (
-    <div className="w-full aspect-[4/5] max-h-[560px] rounded-3xl bg-slate-50 overflow-hidden relative shadow-sm border border-slate-100 mx-auto">
+    <div className="w-full aspect-[4/5] max-h-[560px] rounded-3xl bg-slate-50 dark:bg-slate-800 overflow-hidden relative shadow-sm border border-slate-100 dark:border-slate-700 mx-auto">
       <img
         src={mainImage}
         alt={product?.name || "Product"}
@@ -23,7 +23,7 @@ export default function ProductImageGallery({ state }) {
       {/* PROMOTION BADGE */}
       {activePromotion && (
         <div className="absolute top-6 right-6 z-10">
-          <span className="bg-slate-900 text-white px-4 py-1.5 rounded-full text-xs font-bold shadow-md uppercase tracking-widest">
+          <span className="bg-slate-900/90 dark:bg-slate-100/90 text-white dark:text-slate-900 px-4 py-1.5 rounded-full text-xs font-bold shadow-md uppercase tracking-widest backdrop-blur-sm">
             BUY {activePromotion.buy_quantity} GET {activePromotion.gift_quantity}
           </span>
         </div>

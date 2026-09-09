@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { AlertTriangle, Check, X } from "lucide-react";
 import { PaymentBadge } from "../../common/PaymentBadge";
+import { useLanguage } from "../../../context/LanguageContext";
 
 import { PAYMENT_OPTIONS, STATUS_OPTIONS } from "../../../hooks/admin/useOrderManager";
 
@@ -16,6 +17,7 @@ export default function OrderCard({
   handleRejectReturn,
   filters // Nhận filters từ props
 }) {
+  const { t } = useLanguage();
   const {
     activeTab,
     handleTabSwitch,
@@ -37,7 +39,7 @@ export default function OrderCard({
             : "text-gray-500 hover:text-gray-700"
             }`}
         >
-          <i className="fa-solid fa-box text-xs"></i> Orders
+          <i className="fa-solid fa-box text-xs"></i> {t("admin.orders")}
         </button>
         <button
           onClick={() => handleTabSwitch("Returns")}
@@ -46,25 +48,28 @@ export default function OrderCard({
             : "text-gray-500 hover:text-gray-700"
             }`}
         >
-          <i className="fa-solid fa-rotate-left text-xs"></i> Returns
+          <i className="fa-solid fa-rotate-left text-xs"></i> {t("order_status.return_pending")}
         </button>
       </div>
 
       {/* === STATUS FILTER CHIPS (Scrollable horizontally) === */}
       <div className="overflow-x-auto pb-1 -mx-1 px-1">
         <div className="flex gap-2 w-max">
-          {currentFilters.map((f) => (
-            <button
-              key={f}
-              onClick={() => setCurrentFilter(f)}
-              className={`px-3.5 py-1.5 rounded-full font-bold text-xs whitespace-nowrap transition-all ${currentActiveFilter === f
-                ? "bg-gray-800 text-white shadow-sm"
-                : "bg-gray-100 text-gray-500 hover:bg-gray-200"
-                }`}
-            >
-              {f}
-            </button>
-          ))}
+          {currentFilters.map((f) => {
+            const statusKey = f === "All" || f === "all" ? "order_status.all" : `order_status.${f.toLowerCase().replace(/\s+/g, '_')}`;
+            return (
+              <button
+                key={f}
+                onClick={() => setCurrentFilter(f)}
+                className={`px-3.5 py-1.5 rounded-full font-bold text-xs whitespace-nowrap transition-all ${currentActiveFilter === f
+                  ? "bg-gray-800 text-white shadow-sm"
+                  : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                  }`}
+              >
+                {t(statusKey, f)}
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -74,8 +79,8 @@ export default function OrderCard({
           <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-3 shadow-inner">
             <i className="fa-solid fa-folder-open text-gray-300 text-2xl"></i>
           </div>
-          <p className="font-bold text-gray-700 text-base">No Orders Found</p>
-          <p className="text-xs text-gray-400 mt-1">No <span className="font-semibold">{currentActiveFilter}</span> orders</p>
+          <p className="font-bold text-gray-700 text-base">{t("admin.system_is_empty")}</p>
+          <p className="text-xs text-gray-400 mt-1">{t("search.no_items_desc")}</p>
         </div>
       ) : (
         displayedOrders.map((order) => {
@@ -98,27 +103,27 @@ export default function OrderCard({
               {/* Customer Info */}
               <div className="bg-gray-50 px-3.5 py-3 rounded-xl">
                 <p className="text-sm font-bold text-gray-800">{order.user_name || order.name}</p>
-                <p className="text-xs text-gray-400 mt-0.5">{order.phone || "No phone"}</p>
+                <p className="text-xs text-gray-400 mt-0.5">{order.phone || t("admin.no_phone")}</p>
               </div>
 
               {/* Return Action Section */}
               {isReturnLocked && (
                 <div className="p-3.5 bg-orange-50 rounded-xl border border-orange-100">
                   <p className="text-[10px] font-bold text-orange-600 uppercase mb-2.5 text-center tracking-wider flex items-center justify-center gap-1">
-                    <AlertTriangle size={14} /> Return Action Required
+                    <AlertTriangle size={14} /> {t("order_status.return_requested")}
                   </p>
                   <div className="flex gap-2.5">
                     <button
                       onClick={() => handleApproveReturn(order.id)}
                       className="flex-1 bg-green-500 text-white py-2.5 rounded-full text-[10px] font-bold uppercase tracking-wider hover:bg-green-600 shadow-sm transition-colors flex items-center justify-center gap-1"
                     >
-                      <Check size={12} /> Approve
+                      <Check size={12} /> {t("admin.approve_return")}
                     </button>
                     <button
                       onClick={() => handleRejectReturn(order.id)}
                       className="flex-1 bg-red-500 text-white py-2.5 rounded-full text-[10px] font-bold uppercase tracking-wider hover:bg-red-600 shadow-sm transition-colors flex items-center justify-center gap-1"
                     >
-                      <X size={12} /> Reject
+                      <X size={12} /> {t("admin.reject_return")}
                     </button>
                   </div>
                 </div>
@@ -141,7 +146,9 @@ export default function OrderCard({
                     style={{ backgroundColor: getPaymentStatusColor(order.payment_status) }}
                   >
                     {PAYMENT_OPTIONS.map((s) => (
-                      <option key={s} value={s} className="text-gray-800 bg-white">{s}</option>
+                      <option key={s} value={s} className="text-gray-800 bg-white">
+                        {t(`payment_status.${s.toLowerCase().replace(/\s+/g, '_')}`, s)}
+                      </option>
                     ))}
                   </select>
 
@@ -153,7 +160,9 @@ export default function OrderCard({
                     style={{ backgroundColor: getOrderStatusColor(order.status) }}
                   >
                     {STATUS_OPTIONS.map((s) => (
-                      <option key={s} value={s} className="bg-white text-gray-800 text-center">{s}</option>
+                      <option key={s} value={s} className="bg-white text-gray-800 text-center">
+                        {t(`order_status.${s.toLowerCase().replace(/\s+/g, '_')}`, s)}
+                      </option>
                     ))}
                   </select>
 
@@ -161,7 +170,7 @@ export default function OrderCard({
                     onClick={() => onViewDetails(order)}
                     className="w-full bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white py-2.5 rounded-full text-xs font-bold uppercase tracking-wider transition-colors shadow-sm inline-flex items-center justify-center"
                   >
-                    Details
+                    {t("admin.order_details")}
                   </button>
                 </div>
               </div>

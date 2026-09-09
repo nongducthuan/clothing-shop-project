@@ -38,9 +38,9 @@ export const NEW_CUSTOMER_BENEFITS = [
 ];
 
 export const VIP_BENEFITS = [
-  { en: "Spend 5 million VND total to reach Gold tier", vi: "Tích lũy 5 triệu VNĐ để đạt hạng Vàng (Gold)" },
+  { en: "Spend 5 million VND total to reach Bronze tier", vi: "Tích lũy 5 triệu VNĐ để đạt hạng Đồng (Bronze)" },
   { en: "Earn loyalty points: every 10k spent = 1 point", vi: "Tích điểm thành viên: 10k chi tiêu = 1 điểm" },
-  { en: "Lifetime 10% discount once Gold tier is reached", vi: "Chiết khấu trọn đời 10% khi đạt hạng Vàng" },
+  { en: "Up to 20% membership discount based on your tier", vi: "Chiết khấu thành viên lên đến 20% tùy theo hạng" },
   { en: "Exclusive Birthday gifts sent to your address", vi: "Quà tặng sinh nhật đặc biệt gửi tận nơi" },
   { en: "Priority access to Sales events 24h early", vi: "Quyền truy cập sớm các sự kiện Sale trước 24h" },
   { en: "Dedicated VIP customer support hotline", vi: "Hotline hỗ trợ riêng dành cho khách hàng VIP" },

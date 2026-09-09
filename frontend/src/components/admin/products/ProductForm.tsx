@@ -1,4 +1,5 @@
 import React from "react";
+import { useLanguage } from "../../../context/LanguageContext";
 
 export default function ProductForm({
   form,
@@ -11,6 +12,8 @@ export default function ProductForm({
   handleFileUpload,
   resetForm
 }) {
+  const { t } = useLanguage();
+
   // Hàm chặn sự kiện lăn chuột làm thay đổi số
   const handleWheel = (e) => {
     e.target.blur();
@@ -31,24 +34,24 @@ export default function ProductForm({
       `}</style>
 
       <div className={`lg:col-span-4 ${mobileFormOpen ? "block" : "hidden lg:block"}`}>
-        <div className="bg-white p-6 md:p-8 rounded-[2rem] border border-gray-100 shadow-sm lg:sticky lg:top-24 transition-all duration-300">
-          <h3 className="text-xl font-extrabold mb-6 text-gray-800 flex items-center gap-3 leading-none">
+        <div className="bg-white dark:bg-slate-800 p-6 md:p-8 rounded-[2rem] border border-slate-200/80 dark:border-slate-700 shadow-sm lg:sticky lg:top-24 transition-all duration-300">
+          <h3 className="text-xl font-extrabold mb-6 text-slate-800 dark:text-slate-100 flex items-center gap-3 leading-none">
             {editingId ? (
-              <><i className="fa-solid fa-pen-to-square text-violet-500"></i> Edit Product</>
+              <><i className="fa-solid fa-pen-to-square text-violet-500 dark:text-violet-400"></i> {t("admin.edit_product")}</>
             ) : (
-              <><i className="fa-solid fa-plus-circle text-violet-500"></i> Create Product</>
+              <><i className="fa-solid fa-plus-circle text-violet-500 dark:text-violet-400"></i> {t("admin.create_product")}</>
             )}
           </h3>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-5">
             {/* Name Input */}
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2 ml-1">Product Name</label>
+              <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 ml-1">{t("admin.product_name")}</label>
               <input
-                className="w-full px-4 py-3 bg-gray-50 border-transparent focus:bg-white focus:border-violet-500 focus:ring-4 focus:ring-violet-500/10 rounded-2xl transition-all duration-300 outline-none text-gray-800 font-medium"
+                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 focus:bg-white dark:focus:bg-slate-700 focus:border-violet-500 dark:focus:border-violet-400 focus:ring-4 focus:ring-violet-500/10 rounded-2xl transition-all duration-300 outline-none text-slate-800 dark:text-slate-100 font-medium placeholder:text-slate-400 dark:placeholder:text-slate-500"
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
-                placeholder="e.g., Classic White T-Shirt"
+                placeholder={t("admin.product_name")}
                 required
               />
             </div>
@@ -56,11 +59,11 @@ export default function ProductForm({
             {/* Prices Row: Cost Price & Selling Price */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2 ml-1">Cost Price (đ)</label>
+                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 ml-1">{t("admin.original_price")} (đ)</label>
                 <input
                   type="number"
                   onWheel={handleWheel}
-                  className="w-full px-4 py-3 bg-gray-50 border-transparent focus:bg-white focus:border-violet-500 focus:ring-4 focus:ring-violet-500/10 rounded-2xl transition-all duration-300 outline-none text-gray-800 font-medium no-spinner"
+                  className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 focus:bg-white dark:focus:bg-slate-700 focus:border-violet-500 dark:focus:border-violet-400 focus:ring-4 focus:ring-violet-500/10 rounded-2xl transition-all duration-300 outline-none text-slate-800 dark:text-slate-100 font-medium no-spinner placeholder:text-slate-400 dark:placeholder:text-slate-500"
                   value={form.import_price || ""}
                   onChange={(e) => setForm({ ...form, import_price: e.target.value === "" ? "" : +e.target.value })}
                   placeholder="e.g. 100000"
@@ -68,11 +71,11 @@ export default function ProductForm({
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2 ml-1">Selling Price (đ)</label>
+                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 ml-1">{t("admin.price")} (đ)</label>
                 <input
                   type="number"
                   onWheel={handleWheel}
-                  className="w-full px-4 py-3 bg-gray-50 border-transparent focus:bg-white focus:border-violet-500 focus:ring-4 focus:ring-violet-500/10 rounded-2xl transition-all duration-300 outline-none text-gray-800 font-medium no-spinner"
+                  className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 focus:bg-white dark:focus:bg-slate-700 focus:border-violet-500 dark:focus:border-violet-400 focus:ring-4 focus:ring-violet-500/10 rounded-2xl transition-all duration-300 outline-none text-slate-800 dark:text-slate-100 font-medium no-spinner placeholder:text-slate-400 dark:placeholder:text-slate-500"
                   value={form.price}
                   onChange={(e) => setForm({ ...form, price: e.target.value === "" ? "" : +e.target.value })}
                   placeholder="e.g. 150000"
@@ -84,27 +87,27 @@ export default function ProductForm({
             {/* Gender & Category Row */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2 ml-1">Gender</label>
+                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 ml-1">{t("admin.gender")}</label>
                 <select
-                  className="w-full px-3.5 py-3 bg-gray-50 border-transparent focus:bg-white focus:border-violet-500 focus:ring-4 focus:ring-violet-500/10 rounded-2xl transition-all duration-300 outline-none text-gray-800 font-medium appearance-none cursor-pointer text-sm"
+                  className="w-full px-3.5 py-3 bg-slate-50 dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 focus:bg-white dark:focus:bg-slate-700 focus:border-violet-500 dark:focus:border-violet-400 focus:ring-4 focus:ring-violet-500/10 rounded-2xl transition-all duration-300 outline-none text-slate-800 dark:text-slate-100 font-medium appearance-none cursor-pointer text-sm"
                   value={form.gender}
                   onChange={(e) => setForm({ ...form, gender: e.target.value, category_id: "" })}
                 >
-                  <option value="unisex">Unisex</option>
-                  <option value="male">Male</option>
-                  <option value="female">Female</option>
+                  <option value="unisex">{t("gender.unisex")}</option>
+                  <option value="male">{t("gender.male")}</option>
+                  <option value="female">{t("gender.female")}</option>
                 </select>
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2 ml-1">Category</label>
+                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 ml-1">{t("admin.category")}</label>
                 <select
-                  className="w-full px-3.5 py-3 bg-gray-50 border-transparent focus:bg-white focus:border-violet-500 focus:ring-4 focus:ring-violet-500/10 rounded-2xl transition-all duration-300 outline-none text-gray-800 font-medium appearance-none cursor-pointer text-sm"
+                  className="w-full px-3.5 py-3 bg-slate-50 dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 focus:bg-white dark:focus:bg-slate-700 focus:border-violet-500 dark:focus:border-violet-400 focus:ring-4 focus:ring-violet-500/10 rounded-2xl transition-all duration-300 outline-none text-slate-800 dark:text-slate-100 font-medium appearance-none cursor-pointer text-sm"
                   value={form.category_id}
                   onChange={(e) => setForm({ ...form, category_id: e.target.value })}
                   required
                 >
-                  <option value="">Select Category</option>
+                  <option value="">{t("admin.select_category")}</option>
                   {categories
                     .filter((c) => c.gender === form.gender)
                     .map((c) => (
@@ -118,7 +121,7 @@ export default function ProductForm({
 
             {/* Image Upload */}
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2 ml-1">Product Image</label>
+              <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 ml-1">{t("admin.main_image")}</label>
               <div className="relative mb-3">
                 <input
                   type="file"
@@ -126,29 +129,29 @@ export default function ProductForm({
                   accept="image/*"
                   className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                 />
-                <div className="w-full px-4 py-3 bg-violet-50/50 border border-dashed border-violet-200 rounded-2xl flex items-center justify-center gap-2 text-violet-600 hover:bg-violet-50 transition-colors duration-300">
+                <div className="w-full px-4 py-3 bg-violet-50/50 dark:bg-violet-950/30 border border-dashed border-violet-200 dark:border-violet-800 rounded-2xl flex items-center justify-center gap-2 text-violet-600 dark:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-950/50 transition-colors duration-300">
                   <i className="fa-solid fa-cloud-arrow-up"></i>
-                  <span className="font-semibold text-sm">Upload Image</span>
+                  <span className="font-semibold text-sm">{t("admin.upload_images")}</span>
                 </div>
               </div>
               <input
-                className="w-full px-4 py-3 bg-gray-50 border-transparent focus:bg-white focus:border-violet-500 focus:ring-4 focus:ring-violet-500/10 rounded-2xl transition-all duration-300 outline-none text-gray-500 text-sm font-medium mb-1"
+                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 focus:bg-white dark:focus:bg-slate-700 focus:border-violet-500 dark:focus:border-violet-400 focus:ring-4 focus:ring-violet-500/10 rounded-2xl transition-all duration-300 outline-none text-slate-500 dark:text-slate-400 text-sm font-medium mb-1"
                 value={form.image_url}
                 onChange={(e) => setForm({ ...form, image_url: e.target.value })}
                 placeholder="Or paste image URL"
               />
-              {uploading && <span className="text-xs font-bold text-violet-500 animate-pulse ml-1"><i className="fa-solid fa-spinner fa-spin mr-1"></i> Uploading...</span>}
+              {uploading && <span className="text-xs font-bold text-violet-500 animate-pulse ml-1"><i className="fa-solid fa-spinner fa-spin mr-1"></i> {t("common.loading")}</span>}
             </div>
 
             {/* Description */}
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2 ml-1">Description</label>
+              <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 ml-1">{t("admin.description")}</label>
               <textarea
-                className="w-full px-4 py-3 bg-gray-50 border-transparent focus:bg-white focus:border-violet-500 focus:ring-4 focus:ring-violet-500/10 rounded-2xl transition-all duration-300 outline-none text-gray-800 font-medium resize-none"
+                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 focus:bg-white dark:focus:bg-slate-700 focus:border-violet-500 dark:focus:border-violet-400 focus:ring-4 focus:ring-violet-500/10 rounded-2xl transition-all duration-300 outline-none text-slate-800 dark:text-slate-100 font-medium resize-none placeholder:text-slate-400 dark:placeholder:text-slate-500"
                 rows={3}
                 value={form.description}
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
-                placeholder="Product details..."
+                placeholder={t("admin.description_placeholder")}
               />
             </div>
 
@@ -165,15 +168,15 @@ export default function ProductForm({
                       : "bg-violet-600 hover:bg-violet-700 hover:-translate-y-0.5 hover:shadow-md"
                 }`}
               >
-                {editingId ? "Update Product" : "Create Product"}
+                {editingId ? t("admin.save_changes") : t("admin.create_product")}
               </button>
               {editingId && (
                 <button
                   type="button"
                   onClick={resetForm}
-                  className="px-6 py-3.5 bg-gray-100 text-gray-600 font-bold rounded-full hover:bg-gray-200 hover:text-gray-800 transition-all duration-300"
+                  className="px-6 py-3.5 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold rounded-full hover:bg-slate-200 dark:hover:bg-slate-600 transition-all duration-300"
                 >
-                  Cancel
+                  {t("common.cancel")}
                 </button>
               )}
             </div>

@@ -1,6 +1,7 @@
 import { useBannerManager } from "../../hooks/admin/useBannerManager";
 import BannerForm from "../../components/admin/banners/BannerForm";
 import BannerList from "../../components/admin/banners/BannerList";
+import { useLanguage } from "../../context/LanguageContext";
 
 // --- SUB-COMPONENTS ---
 
@@ -8,16 +9,19 @@ import BannerList from "../../components/admin/banners/BannerList";
  * PageHeader Component
  * Displays a minimal, pill-shaped title badge for consistency across the admin panel.
  */
-const PageHeader = () => (
-  <div className="flex justify-center md:justify-start mb-8">
-    <div className="inline-flex items-center gap-3 px-6 py-2.5 bg-white border border-gray-100 rounded-full shadow-sm">
-      <div className="w-2.5 h-2.5 rounded-full bg-blue-500 animate-pulse"></div>
-      <h2 className="font-bold uppercase text-gray-700 tracking-wider text-sm m-0 leading-none">
-        Banner Management
-      </h2>
+const PageHeader = () => {
+  const { t } = useLanguage();
+  return (
+    <div className="flex justify-center md:justify-start mb-8">
+      <div className="inline-flex items-center gap-3 px-6 py-2.5 bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 rounded-full shadow-sm">
+        <div className="w-2.5 h-2.5 rounded-full bg-blue-500 animate-pulse"></div>
+        <h2 className="font-bold uppercase text-slate-700 dark:text-slate-200 tracking-wider text-sm m-0 leading-none">
+          {t("admin.banner_management")}
+        </h2>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 // --- MAIN COMPONENT ---
 
@@ -42,8 +46,8 @@ export default function BannerManager() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
 
         {/* ======================== FORM SECTION ======================== */}
-        {/* Placed inside a heavily rounded white card to pop against the background */}
-        <div className="lg:col-span-4 bg-white p-6 md:p-8 rounded-[2rem] border border-gray-100 shadow-sm transition-all duration-300 hover:shadow-md lg:sticky lg:top-24 relative z-10">
+        {/* Placed inside a heavily rounded card to pop against the background */}
+        <div className="lg:col-span-4 bg-white dark:bg-slate-800 p-6 md:p-8 rounded-[2rem] border border-slate-200/80 dark:border-slate-700 shadow-sm transition-all duration-300 hover:shadow-md lg:sticky lg:top-24 relative z-10">
           <BannerForm
             form={form}
             setForm={setForm}
@@ -56,8 +60,8 @@ export default function BannerManager() {
         </div>
 
         {/* ======================== LIST SECTION ======================== */}
-        {/* Placed inside a soft gray, track-like container (similar to the pill grid) */}
-        <div className="lg:col-span-8 bg-gray-50/80 p-6 md:p-8 rounded-[2rem] border border-gray-100 shadow-inner min-h-[500px]">
+        {/* Placed inside a clean card container */}
+        <div className="lg:col-span-8 bg-white dark:bg-slate-800 p-6 md:p-8 rounded-[2rem] border border-slate-200/80 dark:border-slate-700 shadow-sm min-h-[500px]">
           <BannerList
             banners={banners}
             handleEdit={selectForEdit}
