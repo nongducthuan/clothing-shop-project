@@ -1,4 +1,5 @@
 import React from "react";
+import { useLanguage } from "../../../context/LanguageContext";
 
 export default function VoucherTargetSelection({
   applyScope,
@@ -14,6 +15,15 @@ export default function VoucherTargetSelection({
   selectedProductIds,
   toggleProduct
 }) {
+  const { getLocalizedText } = useLanguage();
+
+  const getGenderLabel = (gender) => {
+    const g = (gender || "").toLowerCase();
+    if (g === 'men' || g === 'male') return 'Nam';
+    if (g === 'women' || g === 'female') return 'Nữ';
+    return 'Unisex';
+  };
+
   const handleScopeChange = (scope) => {
     setApplyScope(scope);
     setFormData({ ...formData, apply_scope: scope });
@@ -71,7 +81,7 @@ export default function VoucherTargetSelection({
           {applyScope === "all" && (
             <div className="flex flex-col items-center justify-center h-64 border-4 border-dashed border-indigo-50 dark:border-indigo-900/40 rounded-3xl p-10 text-center">
               <i className="fa-solid fa-store text-4xl text-indigo-200 dark:text-indigo-700 mb-4"></i>
-              <h4 className="font-bold text-slate-800 dark:text-slate-100">Voucher toàn cửa hàng</h4>
+              <h4 className="font-bold text-slate-800 dark:text-slate-100">Mã giảm giá toàn cửa hàng</h4>
               <p className="text-slate-400 text-xs mt-2">Mã này áp dụng cho tất cả sản phẩm trong cửa hàng.</p>
             </div>
           )}
@@ -92,6 +102,7 @@ export default function VoucherTargetSelection({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar border border-dashed border-slate-200/80 dark:border-slate-600/60 p-2 rounded-2xl">
                 {categories.filter(cat =>
                   cat.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                  getLocalizedText(cat, "name").toLowerCase().includes(searchTerm.toLowerCase()) ||
                   (cat.gender || "").toLowerCase().includes(searchTerm.toLowerCase())
                 ).map((cat) => {
                   const isSelected = selectedCategoryIds.includes(cat.id);
@@ -105,11 +116,11 @@ export default function VoucherTargetSelection({
                     >
                       <div className="flex flex-col gap-1 overflow-hidden">
                         <span className={`text-[11px] font-black truncate ${isSelected ? 'text-indigo-700 dark:text-indigo-300' : 'text-slate-700 dark:text-slate-200'}`}>
-                          {cat.name}
+                          {getLocalizedText(cat, "name") || cat.name}
                         </span>
                         <div className="flex">
                           <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold uppercase tracking-tighter ${getGenderBadge(cat.gender)}`}>
-                            {cat.gender || 'Unisex'}
+                            {getGenderLabel(cat.gender)}
                           </span>
                         </div>
                       </div>
@@ -139,16 +150,19 @@ export default function VoucherTargetSelection({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar border border-dashed border-slate-200/80 dark:border-slate-600/60 p-2 rounded-2xl">
                 {products.filter(p => {
                   const foundCategory = categories.find(c => c.id === p.category_id);
-                  const catNameForSearch = foundCategory ? foundCategory.name : "";
+                  const catNameForSearch = foundCategory ? (getLocalizedText(foundCategory, "name") || foundCategory.name) : "";
+                  const pLocalName = getLocalizedText(p, "name") || p.name || "";
+                  const searchLower = searchTerm.toLowerCase();
                   return (
-                    p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                    catNameForSearch.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                    (p.gender || "").toLowerCase().includes(searchTerm.toLowerCase())
+                    pLocalName.toLowerCase().includes(searchLower) ||
+                    catNameForSearch.toLowerCase().includes(searchLower) ||
+                    getGenderLabel(p.gender).toLowerCase().includes(searchLower) ||
+                    (p.gender || "").toLowerCase().includes(searchLower)
                   );
                 }).map(p => {
                   const isSelected = selectedProductIds.includes(p.id);
                   const foundCategory = categories.find(c => c.id === p.category_id);
-                  const displayCatName = foundCategory ? foundCategory.name : "Không phân loại";
+                  const displayCatName = foundCategory ? (getLocalizedText(foundCategory, "name") || foundCategory.name) : "Không phân loại";
 
                   return (
                     <div
@@ -160,7 +174,7 @@ export default function VoucherTargetSelection({
                     >
                       <div className="flex flex-col gap-1 overflow-hidden">
                         <span className={`text-[11px] font-black truncate ${isSelected ? 'text-indigo-700 dark:text-indigo-300' : 'text-slate-700 dark:text-slate-200'}`}>
-                          {p.name}
+                          {getLocalizedText(p, "name") || p.name}
                         </span>
                         <div className="flex gap-1.5">
                           <span className="text-[9px] px-1.5 py-0.5 bg-slate-100 dark:bg-slate-600 text-slate-500 dark:text-slate-300 rounded font-bold uppercase tracking-tighter">
@@ -168,7 +182,7 @@ export default function VoucherTargetSelection({
                           </span>
                           {p.gender && (
                             <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold uppercase tracking-tighter ${getGenderBadge(p.gender)}`}>
-                              {p.gender}
+                              {getGenderLabel(p.gender)}
                             </span>
                           )}
                         </div>

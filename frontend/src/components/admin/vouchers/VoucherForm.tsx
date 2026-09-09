@@ -37,7 +37,7 @@ export default function VoucherForm({ formData, setFormData, onSubmit, editingId
         <div className="bg-gradient-to-r from-indigo-500 to-indigo-700 p-4 shrink-0 flex justify-between items-center">
           <h2 className="text-sm font-bold text-white flex items-center gap-2 uppercase tracking-wider m-0 leading-none">
             <i className="fa-solid fa-ticket text-indigo-100"></i>
-            {editingId ? "Edit Voucher" : "Voucher Details"}
+            {editingId ? "Chỉnh sửa mã giảm giá" : "Thông tin mã giảm giá"}
           </h2>
         </div>
 
@@ -46,7 +46,7 @@ export default function VoucherForm({ formData, setFormData, onSubmit, editingId
           <div className="grid grid-cols-2 gap-3">
             <input
               type="text"
-              placeholder="Code"
+              placeholder="Mã"
               value={formData.code}
               className="p-4 bg-slate-50 dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 rounded-2xl focus:ring-2 focus:ring-indigo-500 font-black uppercase outline-none transition-all text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
               onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
@@ -55,7 +55,7 @@ export default function VoucherForm({ formData, setFormData, onSubmit, editingId
             <div className="relative">
               <input
                 type="number"
-                placeholder="Discount Percent"
+                placeholder="Phần trăm giảm giá"
                 value={formData.discount_percent}
                 onWheel={handleWheel}
                 className="w-full p-4 bg-indigo-50/60 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/50 rounded-2xl focus:ring-2 focus:ring-indigo-500 font-bold text-indigo-600 dark:text-indigo-400 pr-8 no-spinner outline-none transition-all placeholder:text-indigo-300 dark:placeholder:text-indigo-500"
@@ -70,7 +70,7 @@ export default function VoucherForm({ formData, setFormData, onSubmit, editingId
           <div className="grid grid-cols-2 gap-3">
             <input
               type="number"
-              placeholder="Min Spend"
+              placeholder="Giá trị đơn tối thiểu"
               onWheel={handleWheel}
               className="w-full p-4 bg-slate-50 dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 rounded-xl no-spinner outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
               value={formData.min_order_value}
@@ -78,7 +78,7 @@ export default function VoucherForm({ formData, setFormData, onSubmit, editingId
             />
             <input
               type="number"
-              placeholder="Max Discount"
+              placeholder="Giảm tối đa"
               onWheel={handleWheel}
               className="w-full p-4 bg-slate-50 dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 rounded-xl no-spinner outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
               value={formData.max_discount_amount}
@@ -88,7 +88,7 @@ export default function VoucherForm({ formData, setFormData, onSubmit, editingId
 
           <input
             type="number"
-            placeholder="Usage Limit (Total coupons available)"
+            placeholder="Giới hạn sử dụng (Tổng số mã khả dụng)"
             onWheel={handleWheel}
             className="w-full p-4 bg-slate-50 dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 rounded-2xl no-spinner outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
             value={formData.usage_limit}
@@ -104,7 +104,7 @@ export default function VoucherForm({ formData, setFormData, onSubmit, editingId
               className="p-3 bg-slate-50 dark:bg-slate-700/60 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-2xl cursor-pointer transition-colors border border-slate-200/80 dark:border-slate-600 focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-500"
               onClick={() => startDateRef.current?.showPicker()}
             >
-              <label className="text-[10px] font-bold text-slate-400 dark:text-slate-400 uppercase block mb-1 cursor-pointer">Starts</label>
+              <label className="text-[10px] font-bold text-slate-400 dark:text-slate-400 uppercase block mb-1 cursor-pointer">Bắt đầu</label>
               <div className="flex items-center justify-between">
                 <input
                   ref={startDateRef}
@@ -122,7 +122,7 @@ export default function VoucherForm({ formData, setFormData, onSubmit, editingId
               className="p-3 bg-slate-50 dark:bg-slate-700/60 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-2xl cursor-pointer transition-colors border border-slate-200/80 dark:border-slate-600 focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-500"
               onClick={() => endDateRef.current?.showPicker()}
             >
-              <label className="text-[10px] font-bold text-slate-400 dark:text-slate-400 uppercase block mb-1 cursor-pointer">Ends</label>
+              <label className="text-[10px] font-bold text-slate-400 dark:text-slate-400 uppercase block mb-1 cursor-pointer">Kết thúc</label>
               <div className="flex items-center justify-between">
                 <input
                   ref={endDateRef}
@@ -144,14 +144,14 @@ export default function VoucherForm({ formData, setFormData, onSubmit, editingId
                 onClick={onCancel}
                 className="flex-1 py-3 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-xl font-bold text-xs tracking-wider uppercase transition-all"
               >
-                Cancel
+                Hủy
               </button>
             )}
             <button
               type="submit"
               className="flex-1 py-3 bg-gradient-to-r from-indigo-500 to-indigo-700 hover:from-indigo-600 hover:to-indigo-800 text-white rounded-xl font-bold text-xs tracking-wider hover:scale-[1.01] transition-all shadow-md shadow-indigo-200/50 uppercase"
             >
-              {editingId ? "Update Voucher" : "Create Voucher"}
+              {editingId ? "Cập nhật mã giảm giá" : "Tạo mã giảm giá"}
             </button>
           </div>
         </form>

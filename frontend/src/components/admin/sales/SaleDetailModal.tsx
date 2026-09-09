@@ -1,6 +1,8 @@
 import React from "react";
+import { useLanguage } from "../../../context/LanguageContext";
 
 export default function SaleDetailModal({ detailModal, onClose }) {
+  const { getLocalizedText } = useLanguage();
   if (!detailModal.isOpen) return null;
 
   return (
@@ -25,7 +27,7 @@ export default function SaleDetailModal({ detailModal, onClose }) {
               <div key={index} className="flex items-center justify-between bg-slate-50/50 border border-slate-100 p-4 rounded-2xl">
                 <div className="flex items-center gap-4">
                   <div className="w-2 h-2 bg-blue-500 rounded-full shadow-[0_0_8px_rgba(59,130,246,0.6)]"></div>
-                  <span className="text-sm font-medium text-slate-700">{item.name}</span>
+                  <span className="text-sm font-medium text-slate-700">{getLocalizedText(item, "name") || item.name}</span>
                 </div>
                 {item.gender && (
                   <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${
@@ -39,7 +41,7 @@ export default function SaleDetailModal({ detailModal, onClose }) {
               </div>
             ))}
             {detailModal.data.length === 0 && (
-              <p className="text-center text-gray-400 text-xs italic py-4">No data found.</p>
+              <p className="text-center text-gray-400 text-xs italic py-4">Không có dữ liệu.</p>
             )}
           </div>
         </div>

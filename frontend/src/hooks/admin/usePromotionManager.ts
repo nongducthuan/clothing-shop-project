@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
 import API from "../../services/apiClient";
 import { useToast } from "../../context/ToastContext";
+import { useLanguage } from "../../context/LanguageContext";
 
 export default function usePromotionManager() {
   const { showToast } = useToast();
+  const { getLocalizedText } = useLanguage();
   const initialFormState = {
     name: "",
     description: "",
@@ -140,12 +142,12 @@ export default function usePromotionManager() {
 
   const getProductName = (id) => {
     const product = products.find((p) => p.id === id);
-    return product ? product.name : `Product #${id}`;
+    return product ? (getLocalizedText(product, "name") || product.name) : `Sản phẩm #${id}`;
   };
 
   const getCategoryName = (categoryId) => {
     const category = categories.find((c) => c.id === categoryId);
-    return category ? category.name : "Uncategorized";
+    return category ? (getLocalizedText(category, "name") || category.name) : "Không phân loại";
   };
 
   const getProductStock = (product) => {

@@ -1,4 +1,5 @@
 import React, { useRef } from "react";
+import { useLanguage } from "../../../context/LanguageContext";
 
 interface PromotionFormData {
   name: string;
@@ -50,6 +51,14 @@ export default function PromotionForm({ state, actions, helpers }: PromotionForm
   const { formData, isLoading, editingId, products, searchBuyTerm, searchGetTerm } = state;
   const { handleInputChange, handleSubmit, handleResetForm, setSearchBuyTerm, setSearchGetTerm, setFormData } = actions;
   const { getCategoryName, getProductStock, getGenderStyle } = helpers;
+  const { getLocalizedText } = useLanguage();
+
+  const getGenderLabel = (gender: string): string => {
+    const g = (gender || "").toLowerCase();
+    if (g === "men" || g === "male") return "Nam";
+    if (g === "women" || g === "female") return "Nữ";
+    return "Unisex";
+  };
 
   const startDateRef = useRef<HTMLInputElement>(null);
   const endDateRef = useRef<HTMLInputElement>(null);
@@ -68,10 +77,12 @@ export default function PromotionForm({ state, actions, helpers }: PromotionForm
 
     const filteredProducts = products.filter((p) => {
       const catName = getCategoryName(p.category_id);
+      const pLocalName = getLocalizedText(p, "name") || p.name || "";
       const searchLower = currentSearchTerm.toLowerCase();
       return (
-        p.name.toLowerCase().includes(searchLower) ||
+        pLocalName.toLowerCase().includes(searchLower) ||
         catName.toLowerCase().includes(searchLower) ||
+        getGenderLabel(p.gender).toLowerCase().includes(searchLower) ||
         (p.gender || "").toLowerCase().includes(searchLower)
       );
     });
@@ -110,7 +121,7 @@ export default function PromotionForm({ state, actions, helpers }: PromotionForm
               >
                 <div className="flex flex-col gap-1.5 overflow-hidden pr-2">
                   <span className={`text-[11px] font-black truncate ${isSelected ? activeColorClasses.text : "text-slate-700 dark:text-slate-200"}`}>
-                    {p.name}
+                    {getLocalizedText(p, "name") || p.name}
                   </span>
                   <div className="flex gap-1.5 flex-wrap items-center">
                     <span className="text-[9px] px-1.5 py-0.5 bg-slate-100 dark:bg-slate-600 text-slate-500 dark:text-slate-300 rounded font-bold uppercase tracking-tighter">
@@ -118,7 +129,7 @@ export default function PromotionForm({ state, actions, helpers }: PromotionForm
                     </span>
                     {p.gender && (
                       <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold uppercase tracking-tighter ${getGenderStyle(p.gender)}`}>
-                        {p.gender}
+                        {getGenderLabel(p.gender)}
                       </span>
                     )}
                     <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold uppercase tracking-tighter ${stockAmount > 0 ? "bg-amber-100 text-amber-600" : "bg-red-100 text-red-600"}`}>
@@ -323,7 +334,7 @@ export default function PromotionForm({ state, actions, helpers }: PromotionForm
                   </div>
                   <div className="ml-3 text-sm font-semibold text-slate-700 dark:text-slate-200">
                     Cộng dồn
-                    <span className="block text-[10px] font-normal text-slate-400 dark:text-slate-400">Cho phép dùng kèm Voucher</span>
+                    <span className="block text-[10px] font-normal text-slate-400 dark:text-slate-400">Cho phép dùng kèm Mã giảm giá</span>
                   </div>
                 </label>
               </div>

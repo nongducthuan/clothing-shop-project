@@ -2,6 +2,8 @@ import React from "react";
 import EmptyState from "../../common/EmptyState";
 
 export default function SaleTable({ sales, onShowDetail, onDelete, onEdit }) {
+  const scopeLabels = { all: "Toàn bộ", category: "Danh mục", product: "Sản phẩm" };
+
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
     const date = new Date(dateString);
@@ -12,18 +14,18 @@ export default function SaleTable({ sales, onShowDetail, onDelete, onEdit }) {
     <div className="mt-8 bg-white dark:bg-slate-800 rounded-3xl shadow-sm p-6 border border-slate-200/80 dark:border-slate-700">
       <h3 className="text-lg font-bold mb-4 text-slate-800 dark:text-slate-100 flex items-center gap-2 m-0 leading-none">
         <div className="w-2 h-6 bg-blue-600 dark:bg-blue-500 rounded-full"></div>
-        Active Sales List
+        Danh sách khuyến mãi
       </h3>
 
       <div className="overflow-x-auto">
         <table className="w-full text-center border-collapse min-w-[700px]">
           <thead>
             <tr className="border-b border-slate-200/80 dark:border-slate-700 text-slate-400 dark:text-slate-400 text-sm">
-              <th className="pb-3 font-semibold px-4 uppercase tracking-wider">Campaign Name</th>
-              <th className="pb-3 font-semibold px-4 uppercase tracking-wider">Type</th>
-              <th className="pb-3 font-semibold px-4 uppercase tracking-wider">Scope</th>
-              <th className="pb-3 font-semibold px-4 uppercase tracking-wider">Duration</th>
-              <th className="pb-3 font-semibold px-4 uppercase tracking-wider">Action</th>
+              <th className="pb-3 font-semibold px-4 uppercase tracking-wider">Tên chiến dịch</th>
+              <th className="pb-3 font-semibold px-4 uppercase tracking-wider">Loại</th>
+              <th className="pb-3 font-semibold px-4 uppercase tracking-wider">Phạm vi</th>
+              <th className="pb-3 font-semibold px-4 uppercase tracking-wider">Thời gian</th>
+              <th className="pb-3 font-semibold px-4 uppercase tracking-wider">Hành động</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60">
@@ -44,7 +46,7 @@ export default function SaleTable({ sales, onShowDetail, onDelete, onEdit }) {
                         : 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/50 border-blue-100 dark:border-blue-900/50 hover:bg-blue-600 hover:text-white dark:hover:bg-blue-600 dark:hover:text-white'
                     }`}
                   >
-                    {item.apply_scope}
+                    {scopeLabels[item.apply_scope] || item.apply_scope}
                   </button>
                 </td>
                 <td className="py-4 px-4 text-xs font-medium text-slate-500 dark:text-slate-400">
@@ -55,13 +57,13 @@ export default function SaleTable({ sales, onShowDetail, onDelete, onEdit }) {
                     onClick={() => onEdit(item)}
                     className="text-blue-500 dark:text-blue-400 bg-transparent hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-950/50 px-2.5 py-1 rounded-lg transition-all text-xs font-semibold border border-transparent hover:border-blue-100 dark:hover:border-blue-900/50"
                   >
-                    Edit
+                    Sửa
                   </button>
                   <button
                     onClick={() => onDelete(item.id)}
                     className="text-rose-500 dark:text-rose-400 bg-transparent hover:text-rose-700 dark:hover:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-950/50 px-2.5 py-1 rounded-lg transition-all text-xs font-semibold border border-transparent hover:border-rose-100 dark:hover:border-rose-900/50"
                   >
-                    Delete
+                    Xóa
                   </button>
                 </td>
               </tr>
@@ -69,8 +71,8 @@ export default function SaleTable({ sales, onShowDetail, onDelete, onEdit }) {
               <tr>
                 <td colSpan={5} className="py-12">
                   <EmptyState 
-                    title="No Active Sales" 
-                    subtitle="There are no active sale campaigns right now."
+                    title="Không có khuyến mãi nào" 
+                    subtitle="Hiện không có chiến dịch khuyến mãi nào đang chạy."
                     icon="fa-percent"
                   />
                 </td>

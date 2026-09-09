@@ -86,6 +86,8 @@ export const getAdminStats = async (req: Request, res: Response): Promise<void> 
         const categoryStatsSql = `
             SELECT 
                 c.name AS category_name,
+                c.name_vi AS category_name_vi,
+                c.name_en AS category_name_en,
                 SUM(oi.quantity) AS total_sold,
                 SUM(oi.quantity * oi.price) AS total_revenue
             FROM order_items oi
@@ -93,7 +95,7 @@ export const getAdminStats = async (req: Request, res: Response): Promise<void> 
             JOIN products p ON oi.product_id = p.id
             JOIN categories c ON p.category_id = c.id
             WHERE o.status = 'Delivered' 
-            GROUP BY c.name
+            GROUP BY c.id, c.name, c.name_vi, c.name_en
             ORDER BY total_revenue DESC;
         `;
         const categoryStats: any[] = await prisma.$queryRawUnsafe(categoryStatsSql);

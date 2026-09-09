@@ -2,6 +2,8 @@ import React from "react";
 import EmptyState from "../../common/EmptyState";
 
 export default function VoucherTable({ vouchers, onShowDetail, onDelete, onEdit }) {
+  const scopeLabels = { all: "Toàn bộ", category: "Danh mục", product: "Sản phẩm" };
+
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
     const date = new Date(dateString);
@@ -12,19 +14,19 @@ export default function VoucherTable({ vouchers, onShowDetail, onDelete, onEdit 
     <div className="mt-8 bg-white dark:bg-slate-800 rounded-3xl shadow-sm p-6 border border-slate-200/80 dark:border-slate-700">
       <h3 className="text-lg font-bold mb-4 text-slate-800 dark:text-slate-100 flex items-center gap-2 m-0 leading-none">
         <div className="w-2 h-6 bg-indigo-600 dark:bg-indigo-500 rounded-full"></div>
-        Voucher Inventory
+        Danh sách mã giảm giá
       </h3>
 
       <div className="overflow-x-auto">
         <table className="w-full text-center border-collapse min-w-[800px]">
           <thead>
             <tr className="border-b border-slate-200/80 dark:border-slate-700 text-slate-400 dark:text-slate-400 text-sm">
-              <th className="pb-3 font-semibold px-4 uppercase tracking-wider">Voucher Code</th>
-              <th className="pb-3 font-semibold px-4 uppercase tracking-wider">Discount Type</th>
-              <th className="pb-3 font-semibold px-4 uppercase tracking-wider">Scope</th>
-              <th className="pb-3 font-semibold px-4 uppercase tracking-wider">Limits & Min Spend</th>
-              <th className="pb-3 font-semibold px-4 uppercase tracking-wider">Duration</th>
-              <th className="pb-3 font-semibold px-4 uppercase tracking-wider">Action</th>
+              <th className="pb-3 font-semibold px-4 uppercase tracking-wider">Mã</th>
+              <th className="pb-3 font-semibold px-4 uppercase tracking-wider">Loại giảm giá</th>
+              <th className="pb-3 font-semibold px-4 uppercase tracking-wider">Phạm vi</th>
+              <th className="pb-3 font-semibold px-4 uppercase tracking-wider">Giới hạn & Chi tiêu tối thiểu</th>
+              <th className="pb-3 font-semibold px-4 uppercase tracking-wider">Thời gian</th>
+              <th className="pb-3 font-semibold px-4 uppercase tracking-wider">Hành động</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60">
@@ -54,15 +56,15 @@ export default function VoucherTable({ vouchers, onShowDetail, onDelete, onEdit 
                           : 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50 border-indigo-100 dark:border-indigo-900/50 hover:bg-indigo-100 dark:hover:bg-indigo-900/80'
                       }`}
                     >
-                      {item.apply_scope}
+                      {scopeLabels[item.apply_scope] || item.apply_scope}
                     </button>
                   </td>
                   <td className="py-4 px-4">
                     <div className="text-xs text-slate-600 dark:text-slate-400">
-                      Min Spend: <span className="font-bold text-slate-800 dark:text-slate-200">{Number(item.min_order_value).toLocaleString()}đ</span>
+                      Chi tiêu tối thiểu: <span className="font-bold text-slate-800 dark:text-slate-200">{Number(item.min_order_value).toLocaleString()}đ</span>
                     </div>
                     <div className="text-[11px] text-pink-500 dark:text-pink-400 font-bold mt-1">
-                      {item.usage_limit === null ? "Unlimited uses" : `${item.usage_limit - (item.used_count || 0)} uses remaining`}
+                      {item.usage_limit === null ? "Không giới hạn lượt dùng" : `${item.usage_limit - (item.used_count || 0)} lượt dùng còn lại`}
                     </div>
                   </td>
                   <td className="py-4 px-4 text-xs font-medium text-slate-500 dark:text-slate-400 leading-relaxed">
@@ -73,13 +75,13 @@ export default function VoucherTable({ vouchers, onShowDetail, onDelete, onEdit 
                       onClick={() => onEdit(item)}
                       className="bg-transparent text-blue-500 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-950/50 px-2.5 py-1 rounded-lg transition-all text-xs font-semibold border border-transparent hover:border-blue-100 dark:hover:border-blue-900/50"
                     >
-                      Edit
+                      Sửa
                     </button>
                     <button
                       onClick={() => onDelete(item.id)}
                       className="bg-transparent text-rose-500 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-950/50 px-2.5 py-1 rounded-lg transition-all text-xs font-semibold border border-transparent hover:border-rose-100 dark:hover:border-rose-900/50"
                     >
-                      Delete
+                      Xóa
                     </button>
                   </td>
                 </tr>
@@ -88,8 +90,8 @@ export default function VoucherTable({ vouchers, onShowDetail, onDelete, onEdit 
               <tr>
                 <td colSpan={6} className="py-12">
                   <EmptyState 
-                    title="No Vouchers Found"
-                    subtitle="There are currently no vouchers available in the system."
+                    title="Không tìm thấy mã giảm giá"
+                    subtitle="Hiện không có mã giảm giá nào trong hệ thống."
                     icon="fa-ticket"
                   />
                 </td>

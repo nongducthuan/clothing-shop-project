@@ -20,14 +20,14 @@ export default function SaleForm({ formData, setFormData, onSubmit, editingId, o
         <div className="bg-gradient-to-r from-blue-500 to-indigo-600 p-4 shrink-0 flex justify-between items-center">
           <h2 className="text-sm font-bold text-white flex items-center gap-2 uppercase tracking-wider m-0 leading-none">
             <i className="fa-solid fa-tags text-blue-100"></i>
-            {editingId ? "Edit Sale" : "Sale Details"}
+            {editingId ? "Chỉnh sửa khuyến mãi" : "Thông tin khuyến mãi"}
           </h2>
         </div>
 
         <form onSubmit={onSubmit} className="p-6 space-y-4 flex-grow flex flex-col">
           <input
             type="text"
-            placeholder="Campaign Name"
+            placeholder="Tên chiến dịch"
             className="w-full p-4 bg-slate-50 dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 rounded-2xl focus:ring-2 focus:ring-blue-500 font-medium outline-none transition-all text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -37,7 +37,7 @@ export default function SaleForm({ formData, setFormData, onSubmit, editingId, o
           <div className="relative">
             <input
               type="number"
-              placeholder="Discount Percent"
+              placeholder="Phần trăm giảm giá"
               min="1"
               max="100"
               onWheel={handleWheel}
@@ -54,7 +54,7 @@ export default function SaleForm({ formData, setFormData, onSubmit, editingId, o
               className="p-3 bg-slate-50 dark:bg-slate-700/60 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-2xl cursor-pointer transition-colors border border-slate-200/80 dark:border-slate-600 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500"
               onClick={() => startDateRef.current?.showPicker()}
             >
-              <label className="text-[10px] font-bold text-slate-400 dark:text-slate-400 uppercase block mb-1 cursor-pointer">Starts</label>
+              <label className="text-[10px] font-bold text-slate-400 dark:text-slate-400 uppercase block mb-1 cursor-pointer">Bắt đầu</label>
               <input
                 ref={startDateRef}
                 type="datetime-local"
@@ -68,7 +68,7 @@ export default function SaleForm({ formData, setFormData, onSubmit, editingId, o
               className="p-3 bg-slate-50 dark:bg-slate-700/60 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-2xl cursor-pointer transition-colors border border-slate-200/80 dark:border-slate-600 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500"
               onClick={() => endDateRef.current?.showPicker()}
             >
-              <label className="text-[10px] font-bold text-slate-400 dark:text-slate-400 uppercase block mb-1 cursor-pointer">Ends</label>
+              <label className="text-[10px] font-bold text-slate-400 dark:text-slate-400 uppercase block mb-1 cursor-pointer">Kết thúc</label>
               <input
                 ref={endDateRef}
                 type="datetime-local"
@@ -83,11 +83,11 @@ export default function SaleForm({ formData, setFormData, onSubmit, editingId, o
           <div className="flex gap-3 mt-4">
             {editingId && (
               <button type="button" onClick={onCancel} className="flex-1 py-3 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-xl font-bold text-xs tracking-wider uppercase transition-all">
-                CANCEL
+                HỦY
               </button>
             )}
             <button type="submit" className="flex-1 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white rounded-xl font-bold text-xs tracking-wider hover:scale-[1.01] transition-all shadow-md shadow-blue-200/50 uppercase">
-              {editingId ? "UPDATE SALE" : "ACTIVATE SALE"}
+              {editingId ? "CẬP NHẬT KHUYẾN MÃI" : "TẠO KHUYẾN MÃI"}
             </button>
           </div>
         </form>

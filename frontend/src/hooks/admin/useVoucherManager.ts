@@ -65,13 +65,13 @@ export default function useVoucherManager() {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this voucher?")) return;
+    if (!window.confirm("Bạn có chắc muốn xóa mã giảm giá này?")) return;
     try {
       await API.delete(`/admin/vouchers/${id}`);
-      showToast("Deleted successfully!", "success");
+      showToast("Xóa thành công!", "success");
       fetchInitialData();
     } catch (error) {
-      showToast("Delete failed: " + (error.response?.data?.message || error.message), "error");
+      showToast("Xóa thất bại: " + (error.response?.data?.message || error.message), "error");
     }
   };
 
@@ -82,7 +82,7 @@ export default function useVoucherManager() {
       setDetailModal({
         isOpen: true,
         data: response.data.details || [],
-        title: scope === 'category' ? "Selected Categories" : "Selected Products"
+        title: scope === 'category' ? "Danh mục đã chọn" : "Sản phẩm đã chọn"
       });
     } catch (error) {
       console.error("Error fetching voucher details:", error);
@@ -131,10 +131,10 @@ export default function useVoucherManager() {
     try {
       if (editingId) {
         await API.put(`/admin/vouchers/${editingId}`, payload);
-        showToast("Voucher updated successfully!", "success");
+        showToast("Cập nhật mã giảm giá thành công!", "success");
       } else {
         await API.post("/admin/vouchers", payload);
-        showToast("Voucher created successfully!", "success");
+        showToast("Tạo mã giảm giá thành công!", "success");
       }
       setEditingId(null);
       setFormData({

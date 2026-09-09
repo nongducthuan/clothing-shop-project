@@ -65,21 +65,21 @@ export default function useSaleManager() {
       setDetailModal({
         isOpen: true,
         data: response.data.details || [],
-        title: type === 'category' ? "Selected Categories" : "Selected Products"
+        title: type === 'category' ? "Danh mục đã chọn" : "Sản phẩm đã chọn"
       });
     } catch (error) {
-      showToast("Could not load details", "error");
+      showToast("Không thể tải chi tiết", "error");
     }
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this item?")) return;
+    if (!window.confirm("Bạn có chắc muốn xóa mục này?")) return;
     try {
       await API.delete(`/admin/sales/${id}`);
-      showToast("Deleted successfully!", "success");
+      showToast("Xóa thành công!", "success");
       fetchInitialData();
     } catch (error) {
-      showToast("Delete failed: " + (error.response?.data?.message || error.message), "error");
+      showToast("Xóa thất bại: " + (error.response?.data?.message || error.message), "error");
     }
   };
 
@@ -117,10 +117,10 @@ export default function useSaleManager() {
     try {
       if (editingId) {
         await API.put(`/admin/sales/${editingId}`, payload);
-        showToast("Updated Successfully!", "success");
+        showToast("Cập nhật thành công!", "success");
       } else {
         await API.post("/admin/sales", payload);
-        showToast("Created Successfully!", "success");
+        showToast("Tạo mới thành công!", "success");
       }
       // Reset form
       setEditingId(null);

@@ -118,7 +118,7 @@ export default function Report() {
               <Chart
                 chartType="ColumnChart"
                 width="100%" height="300px"
-                data={weeklyChartData.length > 1 ? weeklyChartData : [["Day", "Revenue", "Profit"], ["No Data", 0, 0]]}
+                data={weeklyChartData.length > 1 ? weeklyChartData : [["Ngày", "Doanh thu", "Lợi nhuận"], ["Không có dữ liệu", 0, 0]]}
                 options={{
                   title: "Xu hướng hiệu suất hàng ngày",
                   backgroundColor: "transparent",
@@ -136,7 +136,7 @@ export default function Report() {
               <Chart
                 chartType="PieChart"
                 width="100%" height="300px"
-                data={categoryRevenueData.length > 1 ? categoryRevenueData : [["N/A", "N/A"], ["No Data", 1]]}
+                data={categoryRevenueData.length > 1 ? categoryRevenueData : [["Danh mục", "Doanh thu"], ["Không có dữ liệu", 1]]}
                 options={{
                   backgroundColor: "transparent",
                   pieHole: 0.4,
@@ -154,7 +154,7 @@ export default function Report() {
               <Chart
                 chartType="PieChart"
                 width="100%" height="250px"
-                data={statusPieData.length > 1 ? statusPieData : [["Status", "Quantity"], ["No Data", 1]]}
+                data={statusPieData.length > 1 ? statusPieData : [["Trạng thái", "Số lượng"], ["Không có dữ liệu", 1]]}
                 options={{
                   backgroundColor: "transparent",
                   colors: (orderStatus || []).map(r => STATUS_COLORS[r.status] || "#cbd5e1"),
@@ -169,7 +169,7 @@ export default function Report() {
               <Chart
                 chartType="PieChart"
                 width="100%" height="250px"
-                data={returnApprovalData.length > 1 ? returnApprovalData : [["Status", "Quantity"], ["No Data", 1]]}
+                data={returnApprovalData.length > 1 ? returnApprovalData : [["Trạng thái", "Số lượng"], ["Không có dữ liệu", 1]]}
                 options={{
                   backgroundColor: "transparent",
                   colors: (returnStatuses || []).map(r => STATUS_COLORS[r.status] || "#fb923c"),
@@ -184,7 +184,7 @@ export default function Report() {
               <Chart
                 chartType="PieChart"
                 width="100%" height="250px"
-                data={reasonData.length > 1 ? reasonData : [["Reason", "Quantity"], ["No Data", 1]]}
+                data={reasonData.length > 1 ? reasonData : [["Lý do", "Số lượng"], ["Không có dữ liệu", 1]]}
                 options={{
                   backgroundColor: "transparent",
                   colors: ["#94a3b8", "#ef4444", "#f59e0b", "#3b82f6"],
@@ -201,7 +201,7 @@ export default function Report() {
             <Chart
               chartType="LineChart"
               width="100%" height="350px"
-              data={yearlyTrendData.length > 1 ? yearlyTrendData : [["Month", "Revenue", "Profit"], ["No Data", 0, 0]]}
+              data={yearlyTrendData.length > 1 ? yearlyTrendData : [["Tháng", "Doanh thu", "Lợi nhuận"], ["Không có dữ liệu", 0, 0]]}
               options={{
                 title: "Xu hướng phát triển 12 tháng",
                 backgroundColor: "transparent",

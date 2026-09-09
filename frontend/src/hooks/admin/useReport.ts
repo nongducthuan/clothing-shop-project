@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import API from "../../services/apiClient";
+import { useLanguage } from "../../context/LanguageContext";
 
 export function useReport() {
+  const { getLocalizedText, t } = useLanguage();
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -33,37 +35,71 @@ export function useReport() {
   const summary = stats;
   const { revenue7Days, orderStatus, revenueMonths, categoryStats, returnStatuses, returnReasons } = stats;
 
+  // Nhãn tiếng Việt cho trạng thái đơn hàng / đổi trả
+  const orderStatusLabel = (status) => {
+    const keyMap = {
+      Pending: "order_status.pending",
+      Confirmed: "order_status.confirmed",
+      Shipping: "order_status.shipping",
+      Delivered: "order_status.delivered",
+      Cancelled: "order_status.cancelled"
+    };
+    return keyMap[status] ? t(keyMap[status], status) : status;
+  };
+
+  const returnStatusLabel = (status) => {
+    const keyMap = {
+      Pending: "order_status.return_pending",
+      Approved: "order_status.return_approved",
+      Rejected: "order_status.return_rejected"
+    };
+    return keyMap[status] ? t(keyMap[status], status) : status;
+  };
+
+  // Nhãn tiếng Việt cho lý do đổi trả
+  const reasonLabel = (reason) => {
+    if (!reason) return "Khác";
+    const reasonMap = {
+      "Damaged": "Hàng bị hỏng",
+      "Wrong item": "Giao nhầm hàng",
+      "Change mind": "Đổi ý không mua",
+      "Not as described": "Không giống mô tả",
+      "Other": "Khác"
+    };
+    return reasonMap[reason] || (reason.charAt(0).toUpperCase() + reason.slice(1));
+  };
+
   // Xử lý dữ liệu cho các biểu đồ
   const weeklyChartData = [
-    ["Day", "Revenue", "Profit"],
+    ["Ngày", "Doanh thu", "Lợi nhuận"],
     ...(revenue7Days || []).map(r => [r.day, Number(r.revenue), Number(r.profit)])
   ];
 
   const statusPieData = [
-    ["Status", "Quantity"],
+    ["Trạng thái", "Số lượng"],
     ...(orderStatus || [])
       .filter(r => ["Pending", "Confirmed", "Shipping", "Delivered", "Cancelled"].includes(r.status))
-      .map(r => [r.status, Number(r.quantity)])
+      .map(r => [orderStatusLabel(r.status), Number(r.quantity)])
   ];
 
   const yearlyTrendData = [
-    ["Month", "Revenue", "Profit"],
+    ["Tháng", "Doanh thu", "Lợi nhuận"],
     ...(revenueMonths || []).map(r => [r.month_label, Number(r.revenue), Number(r.profit)])
   ];
 
   const categoryRevenueData = [
-    ["Category", "Revenue"],
-    ...(categoryStats || []).map(r => [r.category_name, Number(r.total_revenue)])
+    ["Danh mục", "Doanh thu"],
+    ...(categoryStats || []).map(r => [getLocalizedText(r, "category_name") || r.category_name, Number(r.total_revenue)])
   ];
 
   const returnApprovalData = [
-    ["Status", "Quantity"],
-    ...(returnStatuses || []).map(r => [r.status, Number(r.quantity)])
+    ["Trạng thái", "Số lượng"],
+    ...(returnStatuses || []).map(r => [returnStatusLabel(r.status), Number(r.quantity)])
   ];
 
   const reasonData = [
-    ["Reason", "Quantity"],
-    ...(returnReasons || []).map(r => [r.reason ? r.reason.charAt(0).toUpperCase() + r.reason.slice(1) : "Other", Number(r.quantity)])
+    ["Lý do", "Số lượng"],
+    ...(returnReasons || []).map(r => [reasonLabel(r.reason), Number(r.quantity)])
   ];
 
   return {

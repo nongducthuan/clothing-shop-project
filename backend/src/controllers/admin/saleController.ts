@@ -152,13 +152,21 @@ export const getSaleDetailsAdmin = async (req: Request, res: Response): Promise<
             where: { sale_id: Number(id) },
             include: { product: true }
         });
-        details = productSales.map(ps => ({ name: ps.product.name }));
+        details = productSales.map(ps => ({
+            name: ps.product.name,
+            name_vi: ps.product.name_vi,
+            name_en: ps.product.name_en
+        }));
     } else if (type === 'category') {
         const categorySales = await prisma.saleCategory.findMany({
             where: { sale_id: Number(id) },
             include: { category: true }
         });
-        details = categorySales.map(cs => ({ name: cs.category.name }));
+        details = categorySales.map(cs => ({
+            name: cs.category.name,
+            name_vi: cs.category.name_vi,
+            name_en: cs.category.name_en
+        }));
     }
 
     res.json({ success: true, details });
