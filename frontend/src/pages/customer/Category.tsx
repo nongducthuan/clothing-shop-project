@@ -1,5 +1,6 @@
 import ProductCard from "../../components/customer/product/ProductCard";
 import { useCategoryPage } from "../../hooks/customer/useCategoryPage";
+import { useLanguage } from "../../context/LanguageContext";
 import CategoryHeader from "../../components/customer/category/CategoryHeader";
 import VoucherBanner from "../../components/customer/category/VoucherBanner";
 import PaginationControls from "../../components/customer/category/PaginationControls";
@@ -7,6 +8,7 @@ import { ProductGridSkeleton, EmptyState } from "../../components/customer/categ
 
 export default function CategoryPage() {
   const { state, actions } = useCategoryPage();
+  const { t } = useLanguage();
 
   // --- Early Returns for Critical Errors ---
   if (state.error) {
@@ -20,7 +22,7 @@ export default function CategoryPage() {
           onClick={() => window.location.reload()}
           className="px-8 py-3 bg-slate-900 rounded-full text-white font-medium hover:bg-slate-800 transition-colors"
         >
-          Reload Page
+          {t("category.reload", "Reload Page")}
         </button>
       </div>
     );
@@ -32,14 +34,14 @@ export default function CategoryPage() {
       <div className="max-w-[1400px] mx-auto py-12 px-6">
 
       <CategoryHeader
-        categoryName={state.categoryName}
+        category={state.currentCategory}
         productCount={state.products.length}
       />
 
       {state.activeVoucher && (
         <VoucherBanner
           voucher={state.activeVoucher}
-          categoryName={state.categoryName}
+          category={state.currentCategory}
         />
       )}
 

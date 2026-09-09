@@ -1,6 +1,7 @@
 import { useState, useEffect, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { CartContext } from "../../context/CartContext.jsx";
+import { useLanguage } from "../../context/LanguageContext";
 import API from "../../services/apiClient.js";
 import { getImageUrl, PLACEHOLDER_IMG } from "../../utils/imageUtils";
 
@@ -14,6 +15,8 @@ interface ProductSize {
 interface ProductColor {
   id: number;
   color_name: string;
+  color_name_vi?: string;
+  color_name_en?: string;
   image_url: string;
   sizes?: ProductSize[];
 }
@@ -21,6 +24,8 @@ interface ProductColor {
 interface Product {
   id: number;
   name: string;
+  name_vi?: string;
+  name_en?: string;
   description?: string;
   price: number;
   image_url?: string;
@@ -51,6 +56,7 @@ export function useProductDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { addToCart } = useContext(CartContext);
+  const { t } = useLanguage();
 
   // --- STATE ---
   const [product, setProduct] = useState<Product | null>(null);
@@ -177,12 +183,12 @@ export function useProductDetail() {
 
   // --- HANDLERS & HELPERS ---
   const getStockMessage = () => {
-    if (!product || !product.colors || product.colors.length === 0) return "Product is updating.";
-    if (!selectedColor) return "Please select a color";
-    if (!selectedColor.sizes || selectedColor.sizes.length === 0) return "This color is temporarily out of size";
-    if (!selectedSize) return "Please select a size";
+    if (!product || !product.colors || product.colors.length === 0) return t("product.updating", "Product is updating.");
+    if (!selectedColor) return t("product.select_color", "Please select a color");
+    if (!selectedColor.sizes || selectedColor.sizes.length === 0) return t("product.color_temp_out", "This color is temporarily out of size");
+    if (!selectedSize) return t("product.select_size", "Please select a size");
 
-    return currentStock === 0 ? "Out of stock" : `In stock: ${currentStock} items`;
+    return currentStock === 0 ? t("product.out_of_stock", "Out of stock") : t("product.in_stock", "In stock: {count} items").replace("{count}", String(currentStock));
   };
 
   const handleAddToCart = () => {
@@ -190,9 +196,13 @@ export function useProductDetail() {
       id: product.id,
       category_id: product.category_id,
       name: product.name,
+      name_vi: product.name_vi,
+      name_en: product.name_en,
       price: salePrice,
       color_id: selectedColor?.id,
       color: selectedColor?.color_name,
+      color_name_vi: selectedColor?.color_name_vi,
+      color_name_en: selectedColor?.color_name_en,
       color_image: selectedColor?.image_url,
       size_id: selectedSize?.id,
       size: selectedSize?.size,

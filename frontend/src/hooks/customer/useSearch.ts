@@ -5,7 +5,7 @@ import { PRICE_RANGES, GENDERS } from "../../components/customer/search/searchCo
 import { useLanguage } from "../../context/LanguageContext";
 
 export function useSearch() {
-  const { t } = useLanguage();
+  const { t, getLocalizedText } = useLanguage();
   // --- STATES ---
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -87,14 +87,14 @@ export function useSearch() {
   const resultDisplayText = useMemo(() => {
     let text = t("search.all_products", "All Products");
     const currentCategory = categories.find((c) => String(c.id) === String(urlCategory));
-    const catName = currentCategory ? currentCategory.name : "";
+    const catName = currentCategory ? getLocalizedText(currentCategory, "name") : "";
 
     if (urlQuery && catName) text = `"${urlQuery}" in ${catName}`;
     else if (urlQuery) text = `"${urlQuery}"`;
     else if (catName) text = catName;
 
     return text;
-  }, [urlQuery, urlCategory, categories, t]);
+  }, [urlQuery, urlCategory, categories, t, getLocalizedText]);
 
   // --- EFFECTS ---
   useEffect(() => {

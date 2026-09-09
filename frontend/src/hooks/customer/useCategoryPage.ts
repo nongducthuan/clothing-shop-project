@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useSearchParams, useLocation } from "react-router-dom";
+import { useLanguage } from "../../context/LanguageContext";
 import API from "../../services/apiClient";
 
 const ITEMS_PER_PAGE = 8;
@@ -8,13 +9,15 @@ export function useCategoryPage() {
   const { id } = useParams();
   const location = useLocation();
   const [searchParams] = useSearchParams();
+  const { t } = useLanguage();
+  const { getLocalizedText, language } = useLanguage();
 
   const rawGender = searchParams.get("gender");
   const gender = ["male", "female", "unisex"].includes(rawGender) ? rawGender : null;
 
   // --- State Management ---
   const [products, setProducts] = useState([]);
-  const [categoryName, setCategoryName] = useState("Loading...");
+  const [currentCategory, setCurrentCategory] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
@@ -50,8 +53,8 @@ export function useCategoryPage() {
 
       // Process Categories
       const categoryList = Array.isArray(categoriesResponse.data) ? categoriesResponse.data : categoriesResponse.data?.data || [];
-      const currentCategory = categoryList.find((c) => String(c.id) === String(id));
-      setCategoryName(currentCategory ? currentCategory.name : "Product Category");
+      const found = categoryList.find((c) => String(c.id) === String(id));
+      setCurrentCategory(found || null);
 
       // Process Vouchers
       const voucherList = vouchersResponse.data?.data || vouchersResponse.data;
@@ -63,7 +66,7 @@ export function useCategoryPage() {
 
     } catch (err) {
       console.error("Error loading category data:", err);
-      setError("Unable to load data. Please check your connection.");
+      setError(t("category.error_loading", "Unable to load data. Please check your connection."));
       setProducts([]);
     } finally {
       setIsLoading(false);
@@ -90,10 +93,13 @@ export function useCategoryPage() {
 
   const isInitialLoad = isLoading && products.length === 0;
 
+  const categoryName = getLocalizedText(currentCategory, 'name') || t("category.product_category", "Product Category");
+
   return {
     state: {
       products,
       categoryName,
+      currentCategory,
       currentPage,
       totalPages,
       isLoading,

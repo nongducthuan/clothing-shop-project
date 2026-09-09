@@ -1,5 +1,6 @@
 import React from "react";
 import { useProductDetail } from "../../hooks/customer/useProductDetail";
+import { useLanguage } from "../../context/LanguageContext";
 
 import ProductImageGallery from "../../components/customer/product-detail/ProductImageGallery";
 import ProductMeta from "../../components/customer/product-detail/ProductMeta";
@@ -9,6 +10,7 @@ import ProductActions from "../../components/customer/product-detail/ProductActi
 
 export default function ProductDetail() {
   const { state, actions, helpers, constants } = useProductDetail();
+  const { t } = useLanguage();
 
   // --- ERROR STATE ---
   if (state.error) {
@@ -22,7 +24,7 @@ export default function ProductDetail() {
           onClick={() => actions.navigate("/")}
           className="px-8 py-3 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 rounded-full font-medium hover:bg-slate-800 dark:hover:bg-white transition-colors"
         >
-          Return to Homepage
+          {t("product.return_home", "Return to Homepage")}
         </button>
       </div>
     );
@@ -58,10 +60,10 @@ export default function ProductDetail() {
             {/* DESCRIPTION ACCORDION/SECTION */}
             <div className="mt-16 border-t border-slate-100 dark:border-slate-800 pt-10">
               <h3 className="text-lg font-medium text-slate-900 dark:text-slate-100 mb-6">
-                Product Details
+                {t("product.details", "Product Details")}
               </h3>
               <div className="prose prose-slate prose-p:text-slate-500 dark:prose-invert dark:prose-p:text-slate-400 prose-p:leading-relaxed max-w-none text-sm whitespace-pre-line text-slate-500 dark:text-slate-400">
-                {state.product.description || "No detailed description available for this product."}
+                {state.product.description || t("product.no_detailed_desc", "No detailed description available for this product.")}
               </div>
             </div>
 
@@ -71,4 +73,3 @@ export default function ProductDetail() {
     </div>
   );
 }
-

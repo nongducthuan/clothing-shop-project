@@ -64,16 +64,22 @@ export const getProductDetail = async (req: Request, res: Response): Promise<voi
     const formattedProduct = {
       id: product.id,
       name: product.name,
+      name_vi: product.name_vi,
+      name_en: product.name_en,
       description: product.description,
       price: product.price,
       image_url: product.image_url,
       gender: product.gender,
       category_name: product.category?.name,
+      category_name_vi: product.category?.name_vi,
+      category_name_en: product.category?.name_en,
       sale_percent,
       total_stock: totalStock,
       colors: product.colors.map(c => ({
         color_id: c.id,
         color_name: c.color_name,
+        color_name_vi: c.color_name_vi,
+        color_name_en: c.color_name_en,
         color_code: c.color_code,
         image_url: c.image_url,
         sizes: c.sizes.map(s => ({

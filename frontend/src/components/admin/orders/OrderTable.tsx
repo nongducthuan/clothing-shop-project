@@ -216,17 +216,17 @@ export default function OrderTable({
 
                       {/* --- DÒNG MỞ RỘNG (EXPANDABLE DETAILS) --- */}
                       {isExpanded && (
-                        <tr className="bg-gray-50/50">
-                          <td colSpan={6} className="p-0 border-b border-gray-100">
+                        <tr className="bg-gray-50/50 dark:bg-slate-700/30">
+                          <td colSpan={6} className="p-0 border-b border-gray-100 dark:border-slate-700">
                             <div className="p-6 sm:p-8 animate-fadeIn">
-                              <div className="bg-white p-6 md:p-8 rounded-[2rem] shadow-sm border border-gray-100 flex flex-col gap-8">
+                              <div className="bg-white dark:bg-slate-800 p-6 md:p-8 rounded-[2rem] shadow-sm border border-gray-100 dark:border-slate-700 flex flex-col gap-8">
 
                                 {/* Header Details */}
-                                <h4 className="text-xl font-extrabold text-gray-800 flex items-center gap-3 border-b border-gray-50 pb-4 m-0 leading-none">
-                                  <div className="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm">
+                                <h4 className="text-xl font-extrabold text-gray-800 dark:text-slate-100 flex items-center gap-3 border-b border-gray-50 dark:border-slate-700 pb-4 m-0 leading-none">
+                                  <div className="w-10 h-10 bg-blue-100 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 rounded-full flex items-center justify-center text-sm">
                                     <i className="fa-solid fa-receipt"></i>
                                   </div>
-                                  Order Details #{order.id}
+                                  {t("admin.order_details")} #{order.id}
                                 </h4>
 
                                 {/* Return Info (Nếu có) */}
@@ -241,9 +241,9 @@ export default function OrderTable({
                                 </div>
 
                                 {/* Footer Total */}
-                                <div className="flex justify-between items-center pt-6 mt-2 border-t border-gray-100 bg-gray-50 p-6 rounded-[1.5rem]">
-                                  <span className="font-bold text-gray-500 uppercase tracking-widest text-sm">Grand Total</span>
-                                  <span className="text-3xl font-black text-red-600">
+                                <div className="flex justify-between items-center pt-6 mt-2 border-t border-gray-100 dark:border-slate-700 bg-gray-50 dark:bg-slate-700/50 p-6 rounded-[1.5rem]">
+                                  <span className="font-bold text-gray-500 dark:text-slate-400 uppercase tracking-widest text-sm">{t("cart.total")}</span>
+                                  <span className="text-3xl font-black text-red-600 dark:text-rose-400">
                                     {formatCurrency(order.total_price)}
                                   </span>
                                 </div>
@@ -270,26 +270,27 @@ export default function OrderTable({
 // ==========================================
 
 const ReturnInfoSection = ({ order }) => {
+  const { t } = useLanguage();
   const bankInfo = order.refund_bank_info;
 
   const getReturnBadge = (status: string) => {
     if (status === "Return Approved") {
       return (
         <span className="text-[10px] font-extrabold uppercase tracking-widest bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-full border border-emerald-300/40 whitespace-nowrap inline-flex items-center shrink-0">
-          Approved
+          {t("admin.return_approved_badge")}
         </span>
       );
     }
     if (status === "Return Rejected") {
       return (
         <span className="text-[10px] font-extrabold uppercase tracking-widest bg-rose-100 text-rose-800 px-2.5 py-1 rounded-full border border-rose-300/40 whitespace-nowrap inline-flex items-center shrink-0">
-          Rejected
+          {t("admin.return_rejected_badge")}
         </span>
       );
     }
     return (
       <span className="text-[10px] font-extrabold uppercase tracking-widest bg-amber-200/60 text-amber-800 px-2.5 py-1 rounded-full border border-amber-300/40 whitespace-nowrap inline-flex items-center shrink-0">
-        Action Required
+        {t("admin.return_action_required")}
       </span>
     );
   };
@@ -301,29 +302,29 @@ const ReturnInfoSection = ({ order }) => {
           <span className="w-7 h-7 rounded-full bg-amber-100/80 text-amber-700 flex items-center justify-center text-xs shadow-xs shrink-0">
             <i className="fa-solid fa-rotate-left"></i>
           </span>
-          Return Request Details
+          {t("admin.return_request_details")}
         </h5>
         {getReturnBadge(order.status)}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Lý do trả hàng */}
-        <div className="bg-white p-5 rounded-2xl shadow-sm flex flex-col justify-between space-y-4">
+        <div className="bg-white dark:bg-slate-700 p-5 rounded-2xl shadow-sm flex flex-col justify-between space-y-4">
           <div>
-            <span className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-1">
-              Reason for Return
+            <span className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-400 mb-1">
+              {t("admin.return_reason")}
             </span>
-            <span className="inline-block bg-slate-100 text-slate-800 text-xs font-extrabold px-3 py-1 rounded-lg border border-slate-200/60">
-              {order.reason_code || "Not specified"}
+            <span className="inline-block bg-slate-100 dark:bg-slate-600 text-slate-800 dark:text-slate-200 text-xs font-extrabold px-3 py-1 rounded-lg border border-slate-200/60">
+              {order.reason_code || t("admin.not_specified")}
             </span>
           </div>
 
           <div>
-            <span className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-1">
-              Customer Note
+            <span className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-400 mb-1">
+              {t("admin.customer_note")}
             </span>
-            <div className="bg-slate-50 rounded-xl p-3.5 text-xs text-slate-600 italic leading-relaxed min-h-[50px] flex items-center">
-              "{order.description || "No additional description provided."}"
+            <div className="bg-slate-50 dark:bg-slate-600 rounded-xl p-3.5 text-xs text-slate-600 dark:text-slate-200 italic leading-relaxed min-h-[50px] flex items-center">
+              "{order.description || t("admin.no_description")}"
             </div>
           </div>
         </div>
@@ -336,7 +337,7 @@ const ReturnInfoSection = ({ order }) => {
 
           <div className="flex justify-between items-center relative z-10">
             <span className="text-[9px] uppercase font-bold text-slate-400 tracking-widest flex items-center gap-1.5">
-              <i className="fa-solid fa-credit-card text-indigo-400"></i> Refund Destination Account
+              <i className="fa-solid fa-credit-card text-indigo-400"></i> {t("admin.refund_account")}
             </span>
             <i className="fa-solid fa-wifi text-slate-500 text-xs rotate-90"></i>
           </div>
@@ -344,22 +345,22 @@ const ReturnInfoSection = ({ order }) => {
           {bankInfo ? (
             <div className="relative z-10 space-y-0.5">
               <p className="text-[10px] uppercase font-semibold text-slate-400 tracking-wider">
-                {bankInfo.name || bankInfo.bankName || "Bank Account"}
+                {bankInfo.name || bankInfo.bankName || t("admin.no_phone", "Bank Account")}
               </p>
               <p className="text-base font-mono font-bold tracking-[0.15em] text-indigo-200 drop-shadow-sm">
                 {bankInfo.acc || bankInfo.bankNumber || "•••• •••• ••••"}
               </p>
             </div>
           ) : (
-            <p className="text-xs italic text-slate-400 relative z-10">Missing bank account details</p>
+            <p className="text-xs italic text-slate-400 relative z-10">{t("admin.missing_bank_info")}</p>
           )}
 
           <div className="relative z-10 pt-2 border-t border-white/10 flex justify-between items-center text-xs">
             <span className="font-bold text-slate-200 uppercase tracking-wider truncate max-w-[70%]" title={bankInfo?.owner}>
-              {bankInfo?.owner || "N/A"}
+              {bankInfo?.owner || t("admin.no_phone", "N/A")}
             </span>
             <span className="text-[9px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-full font-mono uppercase tracking-wider">
-              Verified
+              {t("admin.verified")}
             </span>
           </div>
         </div>
@@ -369,7 +370,7 @@ const ReturnInfoSection = ({ order }) => {
       {order.return_images && order.return_images.length > 0 && (
         <div className="pt-3 border-t border-amber-200/60">
           <span className="block text-[10px] font-extrabold text-amber-900/70 uppercase mb-2.5 tracking-wider">
-            Evidence Attachments ({order.return_images.length})
+            {t("admin.evidence_attachments")} ({order.return_images.length})
           </span>
           <div className="flex flex-wrap gap-3">
             {order.return_images.map((img, idx) => {
@@ -378,7 +379,7 @@ const ReturnInfoSection = ({ order }) => {
                 <div key={idx} className="relative group">
                   <img
                     src={fullImgUrl}
-                    alt={`Evidence ${idx + 1}`}
+                    alt={`${t("admin.evidence_attachments")} ${idx + 1}`}
                     className="w-20 h-20 object-cover rounded-xl border-2 border-white shadow-md cursor-pointer hover:scale-105 transition-transform duration-300"
                     onClick={() => window.open(fullImgUrl, '_blank')}
                   />
@@ -396,39 +397,41 @@ const ReturnInfoSection = ({ order }) => {
 };
 
 const DeliveryInfoSection = ({ order }) => {
+  const { t, language } = useLanguage();
+  const dateLocale = language === 'vi' ? 'vi-VN' : 'en-GB';
   return (
-    <div className="bg-blue-50/50 p-6 rounded-[1.5rem] border border-blue-100/50 text-sm h-full flex flex-col">
-      <h5 className="font-bold text-blue-800 mb-5 uppercase text-xs tracking-wider flex items-center gap-2 m-0 leading-none">
-        <i className="fa-solid fa-truck-fast text-blue-500 text-base"></i> Delivery Details
+    <div className="bg-blue-50/50 dark:bg-blue-950/20 p-6 rounded-[1.5rem] border border-blue-100/50 dark:border-blue-900/30 text-sm h-full flex flex-col">
+      <h5 className="font-bold text-blue-800 dark:text-blue-200 mb-5 uppercase text-xs tracking-wider flex items-center gap-2 m-0 leading-none">
+        <i className="fa-solid fa-truck-fast text-blue-500 dark:text-blue-400 text-base"></i> {t("admin.delivery_details")}
       </h5>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-5 gap-x-6 bg-white p-6 rounded-2xl border border-blue-50 shadow-sm flex-1">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-5 gap-x-6 bg-white dark:bg-slate-700 p-6 rounded-2xl border border-blue-50 dark:border-slate-600 shadow-sm flex-1">
         <div>
-          <span className="block text-[10px] uppercase font-bold text-gray-400 mb-1 tracking-wider">Recipient</span>
-          <span className="font-bold text-gray-800 text-base">{order.user_name || order.name}</span>
+          <span className="block text-[10px] uppercase font-bold text-gray-400 dark:text-slate-400 mb-1 tracking-wider">{t("admin.recipient")}</span>
+          <span className="font-bold text-gray-800 dark:text-slate-100 text-base">{order.user_name || order.name}</span>
         </div>
         <div>
-          <span className="block text-[10px] uppercase font-bold text-gray-400 mb-1 tracking-wider">Phone</span>
-          <span className="font-bold text-gray-800 text-base">{order.phone}</span>
+          <span className="block text-[10px] uppercase font-bold text-gray-400 dark:text-slate-400 mb-1 tracking-wider">{t("admin.phone")}</span>
+          <span className="font-bold text-gray-800 dark:text-slate-100 text-base">{order.phone}</span>
         </div>
         <div className="sm:col-span-2">
-          <span className="block text-[10px] uppercase font-bold text-gray-400 mb-1 tracking-wider">Address</span>
-          <span className="font-bold text-gray-800 leading-relaxed">{order.address}</span>
+          <span className="block text-[10px] uppercase font-bold text-gray-400 dark:text-slate-400 mb-1 tracking-wider">{t("admin.shipping_address")}</span>
+          <span className="font-bold text-gray-800 dark:text-slate-100 leading-relaxed">{order.address}</span>
         </div>
         <div>
-          <span className="block text-[10px] uppercase font-bold text-gray-400 mb-1 tracking-wider">Placed On</span>
-          <span className="font-bold text-gray-800">{new Date(order.created_at).toLocaleString("en-GB")}</span>
+          <span className="block text-[10px] uppercase font-bold text-gray-400 dark:text-slate-400 mb-1 tracking-wider">{t("admin.placed_on")}</span>
+          <span className="font-bold text-gray-800 dark:text-slate-100">{new Date(order.created_at).toLocaleString(dateLocale)}</span>
         </div>
         <div>
-          <span className="block text-[10px] uppercase font-bold text-gray-400 mb-1 tracking-wider">Payment Method</span>
+          <span className="block text-[10px] uppercase font-bold text-gray-400 dark:text-slate-400 mb-1 tracking-wider">{t("admin.payment_method")}</span>
           <div className="flex items-center gap-2">
             <PaymentBadge method={order.payment_method} badgeStyle={true} />
             {order.payment_status === "Paid" ? (
-              <span className="text-green-600 font-extrabold bg-green-50 px-2.5 py-1 rounded-full inline-flex items-center gap-1 text-[11px] border border-green-100">
-                <i className="fa-solid fa-check-circle"></i> Paid
+              <span className="text-green-600 dark:text-emerald-400 font-extrabold bg-green-50 dark:bg-emerald-950/40 px-2.5 py-1 rounded-full inline-flex items-center gap-1 text-[11px] border border-green-100 dark:border-emerald-900/40">
+                <i className="fa-solid fa-check-circle"></i> {t("admin.paid_badge")}
               </span>
             ) : (
-              <span className="text-orange-600 font-extrabold bg-orange-50 px-2.5 py-1 rounded-full inline-flex items-center gap-1 text-[11px] border border-orange-100">
-                <i className="fa-solid fa-clock"></i> Awaiting
+              <span className="text-orange-600 dark:text-orange-400 font-extrabold bg-orange-50 dark:bg-orange-950/40 px-2.5 py-1 rounded-full inline-flex items-center gap-1 text-[11px] border border-orange-100 dark:border-orange-900/40">
+                <i className="fa-solid fa-clock"></i> {t("admin.awaiting_badge")}
               </span>
             )}
           </div>
@@ -439,10 +442,11 @@ const DeliveryInfoSection = ({ order }) => {
 };
 
 const OrderItemsList = ({ items, formatCurrency }) => {
+  const { t } = useLanguage();
   return (
-    <div className="bg-gray-50/50 p-6 rounded-[1.5rem] border border-gray-100 h-full flex flex-col">
-      <h5 className="font-bold text-gray-800 mb-5 text-xs uppercase tracking-wider flex items-center gap-2 m-0 leading-none">
-        <i className="fa-solid fa-basket-shopping text-gray-400 text-base"></i> Ordered Products ({items?.length || 0})
+    <div className="bg-gray-50/50 dark:bg-slate-700/40 p-6 rounded-[1.5rem] border border-gray-100 dark:border-slate-700 h-full flex flex-col">
+      <h5 className="font-bold text-gray-800 dark:text-slate-100 mb-5 text-xs uppercase tracking-wider flex items-center gap-2 m-0 leading-none">
+        <i className="fa-solid fa-basket-shopping text-gray-400 dark:text-slate-500 text-base"></i> {t("admin.ordered_products")} ({items?.length || 0})
       </h5>
       <div className="space-y-3 flex-1 overflow-y-auto custom-scrollbar pr-2 max-h-[350px]">
         {items?.map((item, idx) => (
@@ -461,42 +465,42 @@ const OrderItemCard = ({ item, formatCurrency }) => {
 
   return (
     <div className={`flex gap-4 rounded-2xl p-4 items-center shadow-sm transition-all border ${
-      isGift ? "bg-rose-50 border-rose-100" : "bg-white border-gray-100 hover:border-violet-100 hover:shadow-md"
+      isGift ? "bg-rose-50 border-rose-100" : "bg-white dark:bg-slate-800 border-gray-100 dark:border-slate-700 hover:border-violet-100 hover:shadow-md"
     }`}>
-      <div className={`w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 ${isGift ? 'border-2 border-white shadow-sm' : 'bg-gray-50 border border-gray-100'}`}>
+      <div className={`w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 ${isGift ? 'border-2 border-white shadow-sm' : 'bg-gray-50 dark:bg-slate-700 border border-gray-100 dark:border-slate-600'}`}>
         <img
           src={imageUrl}
           onError={(e) => ((e.target as HTMLImageElement).src = getImageUrl(null))}
-          alt={item.product_name}
+          alt={getLocalizedText(item, "product_name") || item.product_name}
           className="w-full h-full object-cover"
         />
       </div>
 
       <div className="flex-1 min-w-0 pr-2">
-        <h4 className="text-sm font-extrabold text-gray-800 truncate mb-1">
+        <h4 className="text-sm font-extrabold text-gray-800 dark:text-slate-100 truncate mb-1">
           {getLocalizedText(item, "product_name") || item.product_name}
         </h4>
 
-        <p className="text-xs font-medium text-gray-500 mb-3">
-          {item.color_name && `Color: ${item.color_name}`}
-          {item.size && <span className="mx-1.5 text-gray-300">|</span>}
-          {item.size && `Size: ${item.size}`}
+        <p className="text-xs font-medium text-gray-500 dark:text-slate-400 mb-3">
+          {item.color_name && <>{t("admin.color_label", "Color:")} {item.color_name}</>}
+          {item.color_name && item.size && <span className="mx-1.5 text-gray-300 dark:text-slate-600">|</span>}
+          {item.size && <>{t("admin.size_label", "Size:")} {item.size}</>}
         </p>
 
         <div className="flex justify-between items-center">
-          <span className="text-[10px] bg-gray-100 px-3 py-1 rounded-full font-bold text-gray-600 uppercase tracking-wider">
-            Qty: {item.quantity}
+          <span className="text-[10px] bg-gray-100 dark:bg-slate-600 px-3 py-1 rounded-full font-bold text-gray-600 dark:text-slate-200 uppercase tracking-wider">
+            {t("admin.qty_label")}: {item.quantity}
           </span>
 
           {isGift ? (
             <div className="flex items-center gap-2">
               <span className="bg-rose-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider shadow-sm">
-                Free Gift
+                {t("admin.free_gift")}
               </span>
               <span className="text-sm font-black text-rose-600">0 đ</span>
             </div>
           ) : (
-            <span className="text-sm font-black text-gray-900">
+            <span className="text-sm font-black text-gray-900 dark:text-slate-100">
               {formatCurrency(item.price * item.quantity)}
             </span>
           )}
@@ -505,5 +509,3 @@ const OrderItemCard = ({ item, formatCurrency }) => {
     </div>
   );
 };
-
-

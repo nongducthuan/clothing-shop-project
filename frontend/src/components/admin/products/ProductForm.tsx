@@ -12,7 +12,7 @@ export default function ProductForm({
   handleFileUpload,
   resetForm
 }) {
-  const { t } = useLanguage();
+  const { t, getLocalizedText } = useLanguage();
 
   // Hàm chặn sự kiện lăn chuột làm thay đổi số
   const handleWheel = (e) => {
@@ -66,7 +66,7 @@ export default function ProductForm({
                   className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 focus:bg-white dark:focus:bg-slate-700 focus:border-violet-500 dark:focus:border-violet-400 focus:ring-4 focus:ring-violet-500/10 rounded-2xl transition-all duration-300 outline-none text-slate-800 dark:text-slate-100 font-medium no-spinner placeholder:text-slate-400 dark:placeholder:text-slate-500"
                   value={form.import_price || ""}
                   onChange={(e) => setForm({ ...form, import_price: e.target.value === "" ? "" : +e.target.value })}
-                  placeholder="e.g. 100000"
+                  placeholder={t("admin.original_price_placeholder")}
                 />
               </div>
 
@@ -78,7 +78,7 @@ export default function ProductForm({
                   className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 focus:bg-white dark:focus:bg-slate-700 focus:border-violet-500 dark:focus:border-violet-400 focus:ring-4 focus:ring-violet-500/10 rounded-2xl transition-all duration-300 outline-none text-slate-800 dark:text-slate-100 font-medium no-spinner placeholder:text-slate-400 dark:placeholder:text-slate-500"
                   value={form.price}
                   onChange={(e) => setForm({ ...form, price: e.target.value === "" ? "" : +e.target.value })}
-                  placeholder="e.g. 150000"
+                  placeholder={t("admin.price_placeholder")}
                   required
                 />
               </div>
@@ -112,7 +112,7 @@ export default function ProductForm({
                     .filter((c) => c.gender === form.gender)
                     .map((c) => (
                       <option key={c.id} value={c.id}>
-                        {c.name}
+                        {getLocalizedText(c, "name")}
                       </option>
                     ))}
                 </select>
@@ -138,7 +138,7 @@ export default function ProductForm({
                 className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 focus:bg-white dark:focus:bg-slate-700 focus:border-violet-500 dark:focus:border-violet-400 focus:ring-4 focus:ring-violet-500/10 rounded-2xl transition-all duration-300 outline-none text-slate-500 dark:text-slate-400 text-sm font-medium mb-1"
                 value={form.image_url}
                 onChange={(e) => setForm({ ...form, image_url: e.target.value })}
-                placeholder="Or paste image URL"
+                placeholder={t("admin.paste_image_url")}
               />
               {uploading && <span className="text-xs font-bold text-violet-500 animate-pulse ml-1"><i className="fa-solid fa-spinner fa-spin mr-1"></i> {t("common.loading")}</span>}
             </div>

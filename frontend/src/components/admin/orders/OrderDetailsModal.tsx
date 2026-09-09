@@ -93,12 +93,12 @@ const ReturnInfoSection = ({ order }) => {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {/* Lý do trả hàng */}
-        <div className="bg-white p-4 rounded-2xl shadow-sm flex flex-col justify-between space-y-3">
+        <div className="bg-white dark:bg-slate-700 p-4 rounded-2xl shadow-sm flex flex-col justify-between space-y-3">
           <div>
             <span className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-1">
               {t("admin.return_reason")}
             </span>
-            <span className="inline-block bg-slate-100 text-slate-800 text-xs font-extrabold px-2.5 py-1 rounded-lg border border-slate-200/60">
+            <span className="inline-block bg-slate-100 dark:bg-slate-600 text-slate-800 dark:text-slate-200 text-xs font-extrabold px-2.5 py-1 rounded-lg border border-slate-200/60">
               {order.reason_code || t("admin.not_specified")}
             </span>
           </div>
@@ -107,7 +107,7 @@ const ReturnInfoSection = ({ order }) => {
             <span className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-1">
               {t("admin.customer_note")}
             </span>
-            <div className="bg-slate-50 rounded-xl p-3 text-xs text-slate-600 italic leading-relaxed min-h-[45px] flex items-center">
+            <div className="bg-slate-50 dark:bg-slate-600 rounded-xl p-3 text-xs text-slate-600 dark:text-slate-200 italic leading-relaxed min-h-[45px] flex items-center">
               "{order.description || t("admin.no_description")}"
             </div>
           </div>
@@ -129,7 +129,7 @@ const ReturnInfoSection = ({ order }) => {
           {bankInfo ? (
             <div className="relative z-10 space-y-0.5">
               <p className="text-[10px] uppercase font-semibold text-slate-400 tracking-wider">
-                {bankInfo.name || bankInfo.bankName || "Bank Account"}
+                {bankInfo.name || bankInfo.bankName || t("admin.no_phone", "Bank Account")}
               </p>
               <p className="text-base font-mono font-bold tracking-[0.15em] text-indigo-200 drop-shadow-sm">
                 {bankInfo.acc || bankInfo.bankNumber || "•••• •••• ••••"}
@@ -140,9 +140,9 @@ const ReturnInfoSection = ({ order }) => {
           )}
 
           <div className="relative z-10 pt-2 border-t border-white/10 flex justify-between items-center text-xs">
-            <span className="font-bold text-slate-200 uppercase tracking-wider truncate max-w-[70%]" title={bankInfo?.owner}>
-              {bankInfo?.owner || "N/A"}
-            </span>
+          <span className="font-bold text-slate-200 uppercase tracking-wider truncate max-w-[70%]" title={bankInfo?.owner}>
+            {bankInfo?.owner || t("admin.no_phone", "N/A")}
+          </span>
             <span className="text-[8px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-full font-mono uppercase tracking-wider">
               {t("admin.verified")}
             </span>
@@ -181,13 +181,14 @@ const ReturnInfoSection = ({ order }) => {
 };
 
 const DeliveryInfoSection = ({ order }) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const dateLocale = language === 'vi' ? 'vi-VN' : 'en-US';
   return (
     <div className="bg-blue-50/50 p-3 md:p-5 rounded-[1.5rem] border border-blue-100/50 text-sm">
       <h5 className="font-bold text-blue-800 mb-4 uppercase text-xs tracking-wider flex items-center gap-2 m-0 leading-none">
         <i className="fa-solid fa-truck-fast text-blue-500 text-base"></i> {t("admin.delivery_details")}
       </h5>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-6 bg-white p-4 md:p-5 rounded-2xl border border-blue-50 shadow-sm">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-6 bg-white dark:bg-slate-700 p-4 md:p-5 rounded-2xl border border-blue-50 dark:border-slate-600 shadow-sm">
         <div>
           <span className="block text-[10px] uppercase font-bold text-gray-400 mb-1 tracking-wider">{t("admin.recipient")}</span>
           <span className="font-bold text-gray-800">{order.user_name || order.name}</span>
@@ -202,7 +203,7 @@ const DeliveryInfoSection = ({ order }) => {
         </div>
         <div>
           <span className="block text-[10px] uppercase font-bold text-gray-400 mb-1 tracking-wider">{t("admin.placed_on")}</span>
-          <span className="font-bold text-gray-800">{new Date(order.created_at).toLocaleString("en-GB")}</span>
+          <span className="font-bold text-gray-800">{new Date(order.created_at).toLocaleString(dateLocale)}</span>
         </div>
         <div>
           <span className="block text-[10px] uppercase font-bold text-gray-400 mb-1 tracking-wider">{t("admin.payment_method")}</span>
@@ -241,32 +242,31 @@ const OrderItemsList = ({ items, formatCurrency }) => {
 };
 
 const OrderItemCard = ({ item, formatCurrency }) => {
-  const { t } = useLanguage();
+  const { t, getLocalizedText } = useLanguage();
   const imageUrl = getImageUrl(item.image_url);
 
   const isGift = Boolean(item.is_gift);
 
   return (
     <div className={`flex gap-3 md:gap-4 rounded-2xl p-3 items-center shadow-sm transition-all border ${
-      isGift ? "bg-rose-50 border-rose-100" : "bg-white border-gray-100 hover:border-violet-100 hover:shadow-md"
+      isGift ? "bg-rose-50 border-rose-100" : "bg-white dark:bg-slate-800 border-gray-100 dark:border-slate-700 hover:border-violet-100 hover:shadow-md"
     }`}>
       {/* Cố định kích thước khung ảnh để tránh bị giật layout */}
-      <div className={`w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 ${isGift ? 'border-2 border-white shadow-sm' : 'bg-gray-50 border border-gray-100'}`}>
+      <div className={`w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 ${isGift ? 'border-2 border-white shadow-sm' : 'bg-gray-50 dark:bg-slate-700 border border-gray-100 dark:border-slate-600'}`}>
         <img
           src={imageUrl}
-          // Sửa lại cú pháp fallback image đúng chuẩn
           onError={(e) => {
-            (e.target as HTMLImageElement).onerror = null; // Ngăn chặn lặp vô hạn lỗi onError
+            (e.target as HTMLImageElement).onerror = null;
             (e.target as HTMLImageElement).src = getImageUrl(null);
           }}
-          alt={item.product_name}
+          alt={getLocalizedText(item, "product_name") || item.product_name}
           className="w-full h-full object-cover"
         />
       </div>
 
       <div className="flex-1 min-w-0">
-        <h4 className="text-sm font-extrabold text-gray-800 truncate mb-0.5">
-          {item.product_name}
+        <h4 className="text-sm font-extrabold text-gray-800 dark:text-slate-100 truncate mb-0.5">
+          {getLocalizedText(item, "product_name") || item.product_name}
         </h4>
 
         <p className="text-xs font-medium text-gray-500 mb-2">
@@ -276,7 +276,7 @@ const OrderItemCard = ({ item, formatCurrency }) => {
         </p>
 
         <div className="flex flex-wrap justify-between items-center gap-2">
-          <span className="text-[10px] bg-gray-100 px-2.5 py-1 rounded-full font-bold text-gray-600 uppercase tracking-wider">
+          <span className="text-[10px] bg-gray-100 dark:bg-slate-600 px-2.5 py-1 rounded-full font-bold text-gray-600 dark:text-slate-200 uppercase tracking-wider">
             {t("admin.qty_label")}: {item.quantity}
           </span>
 
@@ -288,7 +288,7 @@ const OrderItemCard = ({ item, formatCurrency }) => {
               <span className="text-sm font-black text-rose-600">0 đ</span>
             </div>
           ) : (
-            <span className="text-sm font-black text-gray-900">
+            <span className="text-sm font-black text-gray-900 dark:text-slate-100">
               {formatCurrency(item.price * item.quantity)}
             </span>
           )}

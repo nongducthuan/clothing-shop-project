@@ -1,24 +1,26 @@
 import React from "react";
+import { useLanguage } from "../../../context/LanguageContext";
 
 export function ShippingSection({ address, setAddress, fetchLocation, isLocating, locationError }) {
+  const { t } = useLanguage();
   return (
     <section className="mb-10">
       <div className="flex justify-between items-end mb-4">
-        <h3 className="text-xl font-medium text-slate-900 dark:text-slate-100">Shipping Address</h3>
+        <h3 className="text-xl font-medium text-slate-900 dark:text-slate-100">{t("checkout.shipping_address", "Shipping Address")}</h3>
         <button
           onClick={() => fetchLocation(setAddress)}
           disabled={isLocating}
           className="text-xs bg-transparent font-medium text-blue-600 hover:text-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-1"
         >
           <i className={`fa-solid ${isLocating ? "fa-spinner animate-spin" : "fa-location-crosshairs"}`}></i>
-          {isLocating ? "Locating..." : "Use Current Location"}
+          {isLocating ? t("checkout.locating", "Locating...") : t("checkout.use_location", "Use Current Location")}
         </button>
       </div>
       <textarea
         rows={3}
         value={address}
         onChange={(e) => setAddress(e.target.value)}
-        placeholder="Enter your house number, street, ward, district..."
+        placeholder={t("checkout.address_placeholder", "Enter your house number, street, ward, district...")}
         className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-4 py-3.5 rounded-2xl focus:ring-2 focus:ring-slate-900 dark:focus:ring-slate-400 focus:border-slate-900 dark:focus:border-slate-400 outline-none transition-all resize-none text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 text-sm"
       />
       {locationError && <p className="text-rose-500 text-xs mt-2 ml-1">{locationError}</p>}
@@ -27,14 +29,15 @@ export function ShippingSection({ address, setAddress, fetchLocation, isLocating
 }
 
 export function GuestContactSection({ guestInfo, onChange }) {
+  const { t } = useLanguage();
   return (
     <section className="mb-10">
-      <h3 className="text-xl font-medium text-slate-900 dark:text-slate-100 mb-4">Contact Information</h3>
+      <h3 className="text-xl font-medium text-slate-900 dark:text-slate-100 mb-4">{t("checkout.contact_info", "Contact Information")}</h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <InputField label="Full Name" name="name" value={guestInfo.name} onChange={onChange} placeholder="John Doe" />
-        <InputField label="Phone Number" name="phone" value={guestInfo.phone} onChange={onChange} placeholder="0901234567" />
+        <InputField label={t("checkout.full_name", "Full Name")} name="name" value={guestInfo.name} onChange={onChange} placeholder={t("checkout.name_placeholder", "John Doe")} />
+        <InputField label={t("checkout.phone", "Phone Number")} name="phone" value={guestInfo.phone} onChange={onChange} placeholder="0901234567" />
         <div className="md:col-span-2">
-          <InputField label="Email Address" type="email" name="email" value={guestInfo.email} onChange={onChange} placeholder="john@example.com" />
+          <InputField label={t("checkout.email", "Email Address")} type="email" name="email" value={guestInfo.email} onChange={onChange} placeholder={t("checkout.email_placeholder", "john@example.com")} />
         </div>
       </div>
     </section>
@@ -42,20 +45,21 @@ export function GuestContactSection({ guestInfo, onChange }) {
 }
 
 export function PaymentSection({ currentMethod, onChange }) {
+  const { t } = useLanguage();
   return (
     <section className="mb-10">
-      <h3 className="text-xl font-medium text-slate-900 dark:text-slate-100 mb-4">Payment Method</h3>
+      <h3 className="text-xl font-medium text-slate-900 dark:text-slate-100 mb-4">{t("checkout.payment_method", "Payment Method")}</h3>
       <div className="grid grid-cols-1 gap-4">
         <PaymentOption
-          id="cod" label="Cash on Delivery (COD)" sub="Pay with cash upon receiving your package"
+          id="cod" label={t("checkout.cod", "Cash on Delivery (COD)")} sub={t("checkout.cod_desc", "Pay with cash upon receiving your package")}
           icon="fa-box" current={currentMethod} onChange={onChange}
         />
         <PaymentOption
-          id="momo" label="MoMo (Domestic ATM Card)" sub="Pay via Domestic ATM Card or MoMo Wallet"
+          id="momo" label={t("checkout.momo", "MoMo E-Wallet")} sub={t("checkout.momo_desc", "Pay via Domestic ATM Card or MoMo Wallet")}
           icon="fa-wallet" current={currentMethod} onChange={onChange}
         />
         <PaymentOption
-          id="vnpay" label="VNPay (Domestic ATM Card)" sub="Pay via Domestic ATM Card or Internet Banking"
+          id="vnpay" label={t("checkout.vnpay", "VNPay Gateway")} sub={t("checkout.vnpay_desc", "Pay via Domestic ATM Card or Internet Banking")}
           icon="fa-credit-card" current={currentMethod} onChange={onChange}
         />
       </div>
@@ -92,4 +96,3 @@ const PaymentOption = ({ id, label, sub, icon, current, onChange }) => {
     </label>
   );
 };
-

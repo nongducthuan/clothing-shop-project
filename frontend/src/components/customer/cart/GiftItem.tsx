@@ -1,5 +1,8 @@
+import { useLanguage } from "../../../context/LanguageContext";
+
 export default function GiftItem({ gift, detail, helpers, onSelectVariant }) {
   const { formatPrice, getImageUrl } = helpers;
+  const { t } = useLanguage();
 
   if (!detail) {
     return <div className="animate-pulse h-24 bg-slate-50 rounded-2xl"></div>;
@@ -35,7 +38,7 @@ export default function GiftItem({ gift, detail, helpers, onSelectVariant }) {
         <div className="flex items-center gap-2 flex-wrap">
           <h4 className="font-medium text-slate-900 text-sm leading-tight">{detail.name}</h4>
           <span className="inline-flex items-center gap-1 bg-rose-50 text-rose-600 border border-rose-100 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
-            <i className="fa-solid fa-gift text-rose-500"></i> Free Gift ({gift.promoName})
+            <i className="fa-solid fa-gift text-rose-500"></i> {t("cart.free_gift", "Free Gift")} ({gift.promoName})
           </span>
         </div>
 
@@ -43,7 +46,7 @@ export default function GiftItem({ gift, detail, helpers, onSelectVariant }) {
         <div className="flex flex-wrap items-center gap-3 pt-1">
           {detail.colors?.length > 0 && (
             <div className="flex items-center gap-1.5 text-xs text-slate-600">
-              <span className="font-medium text-slate-400">Color:</span>
+              <span className="font-medium text-slate-400">{t("cart.color_label", "Color:")}</span>
               <select
                 value={currentColor?.id || ""}
                 onChange={handleColorChange}
@@ -58,7 +61,7 @@ export default function GiftItem({ gift, detail, helpers, onSelectVariant }) {
 
           {currentColor?.sizes?.length > 0 && (
             <div className="flex items-center gap-1.5 text-xs text-slate-600">
-              <span className="font-medium text-slate-400">Size:</span>
+              <span className="font-medium text-slate-400">{t("cart.size_label", "Size:")}</span>
               <select
                 value={currentSize?.id || ""}
                 onChange={handleSizeChange}
@@ -66,7 +69,7 @@ export default function GiftItem({ gift, detail, helpers, onSelectVariant }) {
               >
                 {currentColor.sizes.map(s => (
                   <option key={s.id} value={s.id} disabled={s.stock === 0}>
-                    {s.size} {s.stock === 0 ? "(Out of stock)" : ""}
+                    {s.size} {s.stock === 0 && <span> {t("product.out_of_stock_label", "(Out of stock)")}</span>}
                   </option>
                 ))}
               </select>
@@ -77,7 +80,7 @@ export default function GiftItem({ gift, detail, helpers, onSelectVariant }) {
 
       <div className="text-right hidden sm:block z-10 pr-4">
         <span className="text-xs text-slate-400 line-through block">{formatPrice(detail.price)}</span>
-        <span className="font-bold text-emerald-600 text-sm">Free</span>
+        <span className="font-bold text-emerald-600 text-sm">{t("checkout.free", "Free")}</span>
       </div>
 
       <div className="font-semibold text-slate-700 z-10 pr-2 self-end sm:self-center bg-white px-2.5 py-1 rounded-lg border border-slate-200 text-xs shadow-sm">

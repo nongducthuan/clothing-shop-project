@@ -94,7 +94,11 @@ export const getCategoriesWithPreview = async (req: Request, res: Response): Pro
       return {
         id: c.id,
         name: c.name,
+        name_vi: c.name_vi,
+        name_en: c.name_en,
         description: c.description,
+        description_vi: c.description_vi,
+        description_en: c.description_en,
         gender: c.gender,
         image_url: c.image_url,
         preview_image: preview_image

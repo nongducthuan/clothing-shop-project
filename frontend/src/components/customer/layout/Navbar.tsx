@@ -78,12 +78,13 @@ const DesktopNav = ({ menuData, navigate }) => {
   const [hoveredGender, setHoveredGender] = useState(null);
   const [pillStyle, setPillStyle] = useState({ left: 0, width: 0, opacity: 0 });
   const closeTimer = useRef(null);
+  const { t } = useLanguage();
+  const { getLocalizedText } = useLanguage();
 
   const handleMouseEnter = (gender, e) => {
     if (closeTimer.current) clearTimeout(closeTimer.current);
     setHoveredGender(gender);
 
-    // Dynamically calculate the position and width for the sliding pill
     if (e.currentTarget) {
       setPillStyle({
         left: e.currentTarget.offsetLeft,
@@ -96,18 +97,15 @@ const DesktopNav = ({ menuData, navigate }) => {
   const handleMouseLeave = () => {
     closeTimer.current = setTimeout(() => {
       setHoveredGender(null);
-      // Fade out the pill when mouse leaves the nav area entirely
       setPillStyle((prev) => ({ ...prev, opacity: 0 }));
     }, 200);
   };
 
   return (
-    // The Track (Rãnh trượt)
     <div
-      className="hidden md:flex relative bg-white/10 backdrop-blur-sm rounded-full p-1.5 mx-auto shadow-inner border border-white/10"
+      className="hidden md:flex relative bg-slate-100/80 dark:bg-white/10 backdrop-blur-sm rounded-full p-1.5 mx-auto shadow-inner border border-slate-200/60 dark:border-white/10"
       onMouseLeave={handleMouseLeave}
     >
-      {/* The Sliding Pill (Viên thuốc trượt) */}
       <div
         className="absolute top-1.5 bottom-1.5 bg-violet-600 rounded-full transition-all duration-300 ease-out shadow-md pointer-events-none"
         style={pillStyle}
@@ -116,21 +114,22 @@ const DesktopNav = ({ menuData, navigate }) => {
       {GENDERS.map((gender) => (
         <div
           key={gender}
-          className="relative z-10" // z-10 ensures the text sits on top of the sliding pill
+          className="relative z-10"
           onMouseEnter={(e) => handleMouseEnter(gender, e)}
         >
-          {/* Nav Item Text */}
           <div
-            className={`cursor-pointer uppercase font-bold text-sm tracking-wide px-6 py-2 transition-colors duration-300 ${hoveredGender === gender ? "text-white" : "text-white/60 hover:text-white"
-              }`}
+            className={`cursor-pointer uppercase font-bold text-sm tracking-wide px-6 py-2 transition-colors duration-300 ${
+              hoveredGender === gender
+                ? "text-white"
+                : "text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white"
+            }`}
           >
-            {gender.toUpperCase()}
+            {t(`gender.${gender}`)}
           </div>
 
-          {/* Dropdown Menu */}
           {hoveredGender === gender && (
             <div
-              className="absolute left-1/2 -translate-x-1/2 top-full mt-5 bg-gray-900 shadow-2xl border border-gray-700 rounded-2xl p-6 w-[600px] z-50 animate-fadeIn"
+              className="absolute left-1/2 -translate-x-1/2 top-full mt-5 bg-white dark:bg-slate-900 shadow-2xl border border-slate-200 dark:border-slate-700 rounded-2xl p-6 w-[600px] z-50 animate-fadeIn"
               onMouseEnter={() => clearTimeout(closeTimer.current)}
               onMouseLeave={handleMouseLeave}
             >
@@ -141,15 +140,15 @@ const DesktopNav = ({ menuData, navigate }) => {
                     className="cursor-pointer group text-center"
                     onClick={() => navigate(`/category/${cat.id}?gender=${gender}`)}
                   >
-                    <div className="mx-auto w-32 aspect-square overflow-hidden rounded-xl border border-gray-700 bg-gray-800 flex items-center justify-center transition-colors group-hover:border-violet-500 group-hover:bg-violet-900/40">
+                    <div className="mx-auto w-32 aspect-square overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 flex items-center justify-center transition-colors group-hover:border-violet-500 group-hover:bg-violet-50 dark:group-hover:bg-violet-900/40">
                       <img
                         src={getImgUrl(cat.image_url || cat.preview_image)}
                         className="max-w-full max-h-full object-contain transition-transform duration-300 group-hover:scale-110 drop-shadow-sm"
-                        alt={cat.name}
+                        alt={getLocalizedText(cat, 'name')}
                       />
                     </div>
-                    <span className="block text-sm font-bold mt-3 text-gray-200 transition-colors group-hover:text-violet-400">
-                      {cat.name}
+                    <span className="block text-sm font-bold mt-3 text-slate-800 dark:text-slate-200 transition-colors group-hover:text-violet-600 dark:group-hover:text-violet-400">
+                      {getLocalizedText(cat, 'name')}
                     </span>
                   </div>
                 ))}
@@ -184,6 +183,7 @@ const UserDropdown = ({ user, navigate, onLogout }) => {
         <div
           className="absolute right-0 top-10 bg-white dark:bg-slate-800 shadow-lg rounded-xl border border-gray-100 dark:border-slate-700 w-52 py-2 z-50 animate-fadeIn"
           onMouseEnter={cancelClose}
+          onMouseLeave={close}
         >
           {user ? (
             <>
@@ -261,8 +261,9 @@ const UserDropdown = ({ user, navigate, onLogout }) => {
 // Renders the Mobile Drawer (Hidden on Desktop)
 const MobileMenu = ({ isOpen, onClose, user, menuData, navigate, onLogout }) => {
   const [expandedGender, setExpandedGender] = useState(null);
+  const { t } = useLanguage();
+  const { getLocalizedText } = useLanguage();
 
-  // Lock background scroll when drawer is open
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
@@ -287,7 +288,6 @@ const MobileMenu = ({ isOpen, onClose, user, menuData, navigate, onLogout }) => 
 
   return (
     <>
-      {/* Backdrop overlay */}
       <div
         className="fixed inset-0 top-16 bg-slate-900/40 backdrop-blur-xs z-30 md:hidden animate-fadeIn"
         onClick={onClose}
@@ -318,13 +318,13 @@ const MobileMenu = ({ isOpen, onClose, user, menuData, navigate, onLogout }) => 
                   onClick={() => handleNav("/login")}
                   className="flex-1 py-3 border-2 border-violet-600 text-violet-600 rounded-xl font-bold transition-all active:scale-[0.98]"
                 >
-                  Login
+                  {t("nav.login_link", "Login")}
                 </button>
                 <button
                   onClick={() => handleNav("/register")}
                   className="flex-1 py-3 bg-violet-600 text-white rounded-xl font-bold transition-all shadow-md active:scale-[0.98]"
                 >
-                  Register
+                  {t("nav.register_link", "Register")}
                 </button>
               </div>
             )}
@@ -339,7 +339,7 @@ const MobileMenu = ({ isOpen, onClose, user, menuData, navigate, onLogout }) => 
               <div className="w-7 h-7 rounded-lg bg-violet-100 dark:bg-violet-900/40 text-violet-600 dark:text-violet-400 flex items-center justify-center shrink-0">
                 <i className="fa-solid fa-shield-halved text-xs"></i>
               </div>
-              <span className="whitespace-nowrap leading-tight">Sales Policy</span>
+              <span className="whitespace-nowrap leading-tight">{t("nav.sales_policy", "Sales Policy")}</span>
             </button>
 
             {user ? (
@@ -350,7 +350,7 @@ const MobileMenu = ({ isOpen, onClose, user, menuData, navigate, onLogout }) => 
                 <div className="w-7 h-7 rounded-lg bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
                   <i className="fa-solid fa-box-archive text-xs"></i>
                 </div>
-                <span className="whitespace-nowrap leading-tight">My Orders</span>
+                <span className="whitespace-nowrap leading-tight">{t("nav.my_orders", "My Orders")}</span>
               </button>
             ) : (
               <button
@@ -360,7 +360,7 @@ const MobileMenu = ({ isOpen, onClose, user, menuData, navigate, onLogout }) => 
                 <div className="w-7 h-7 rounded-lg bg-sky-100 dark:bg-sky-900/40 text-sky-600 dark:text-sky-400 flex items-center justify-center shrink-0">
                   <i className="fa-solid fa-truck-fast text-xs"></i>
                 </div>
-                <span className="whitespace-nowrap leading-tight">Track Order</span>
+                <span className="whitespace-nowrap leading-tight">{t("nav.track_order", "Track Order")}</span>
               </button>
             )}
           </div>
@@ -378,7 +378,7 @@ const MobileMenu = ({ isOpen, onClose, user, menuData, navigate, onLogout }) => 
                       expandedGender === gender ? "text-violet-700 dark:text-violet-400" : "text-gray-800 dark:text-slate-200"
                     }`}
                   >
-                    {gender.toUpperCase()}
+                    {t(`gender.${gender}`)}
                   </span>
                   <div className={`w-7 h-7 rounded-full flex items-center justify-center transition-colors ${expandedGender === gender ? 'bg-violet-100 dark:bg-violet-900/40' : 'bg-gray-200 dark:bg-slate-700'}`}>
                     <i
@@ -401,7 +401,7 @@ const MobileMenu = ({ isOpen, onClose, user, menuData, navigate, onLogout }) => 
                         onClick={() => handleNav(`/category/${cat.id}?gender=${gender}`)}
                         className="p-3 bg-white dark:bg-slate-700 border border-gray-100 dark:border-slate-600 rounded-xl text-xs font-semibold text-gray-700 dark:text-slate-200 hover:border-violet-300 hover:text-violet-700 dark:hover:text-violet-400 transition-all text-center truncate shadow-xs"
                       >
-                        {cat.name}
+                        {getLocalizedText(cat, 'name')}
                       </div>
                     ))}
                   </div>
@@ -417,7 +417,7 @@ const MobileMenu = ({ isOpen, onClose, user, menuData, navigate, onLogout }) => 
                 onClick={() => handleNav("/admin")}
                 className="w-full py-3.5 bg-slate-900 dark:bg-slate-700 text-white rounded-xl font-bold transition-all hover:bg-slate-800 dark:hover:bg-slate-600 flex items-center justify-center gap-2"
               >
-                Dashboard
+                {t("nav.dashboard", "Dashboard")}
               </button>
             </div>
           )}
@@ -430,7 +430,7 @@ const MobileMenu = ({ isOpen, onClose, user, menuData, navigate, onLogout }) => 
               onClick={onLogout}
               className="w-full py-3 text-red-500 bg-red-50 dark:bg-red-900/20 rounded-xl font-bold transition-colors hover:bg-red-100 dark:hover:bg-red-900/40 flex items-center justify-center gap-2"
             >
-              <i className="fa-solid fa-arrow-right-from-bracket"></i> Logout
+              <i className="fa-solid fa-arrow-right-from-bracket"></i> {t("nav.logout", "Logout")}
             </button>
           </div>
         )}

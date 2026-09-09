@@ -1,12 +1,14 @@
 import { useContext, useState, useEffect, useMemo } from "react";
 import { CartContext } from "../../context/CartContext.jsx";
 import { AuthContext } from "../../context/AuthContext.jsx";
+import { useLanguage } from "../../context/LanguageContext";
 import API from "../../services/apiClient.js";
 import { getImageUrl } from "../../utils/imageUtils";
 
 export function useCartPage() {
   const { cart, removeFromCart, updateQuantity } = useContext(CartContext);
   const { user, discount, tier } = useContext(AuthContext);
+  const { t } = useLanguage();
 
   const [voucherCode, setVoucherCode] = useState("");
   const [appliedVoucher, setAppliedVoucher] = useState(null);
@@ -153,7 +155,7 @@ export function useCartPage() {
       }
     } catch (error) {
       setAppliedVoucher(null);
-      setVoucherMessage({ type: 'error', text: error.response?.data?.message || 'Server connection error' });
+       setVoucherMessage({ type: 'error', text: error.response?.data?.message || t("cart.server_error", "Server connection error") });
     } finally {
       setIsApplying(false);
     }

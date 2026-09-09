@@ -55,12 +55,14 @@ export const getCategoryRecommendations = async (req: Request, res: Response): P
 
 export const createCategory = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { name, gender, image_url } = req.body;
-    
+    const { name, name_vi, name_en, gender, image_url } = req.body;
+
     // Convert gender string to enum type manually if needed, assuming Prisma maps it correctly from request
     const category = await prisma.category.create({
       data: {
         name,
+        name_vi: name_vi || null,
+        name_en: name_en || null,
         gender: gender || 'unisex',
         image_url: image_url || null,
       },
@@ -75,17 +77,19 @@ export const createCategory = async (req: Request, res: Response): Promise<void>
 export const updateCategory = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
-    const { name, gender, image_url } = req.body;
+    const { name, name_vi, name_en, gender, image_url } = req.body;
 
     const category = await prisma.category.update({
       where: { id: Number(id) },
       data: {
         name,
+        name_vi: name_vi !== undefined ? name_vi : undefined,
+        name_en: name_en !== undefined ? name_en : undefined,
         gender,
         image_url,
       },
     });
-    
+
     res.json({ message: "Successfully updated" });
   } catch (err) {
     console.error("updateCategory error:", err);

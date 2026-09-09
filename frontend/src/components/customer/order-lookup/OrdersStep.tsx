@@ -1,11 +1,14 @@
 import React from "react";
 import { getImageUrl } from "../../../utils/imageUtils";
 import { PaymentBadge } from "../../common/PaymentBadge";
+import { useLanguage } from "../../../context/LanguageContext";
 
 export default function OrdersStep({
   orders, expandedOrder, toggleOrder, formatCurrency,
   handleRepay, handleOpenPaymentModal, loading, openReturnForm, handleCancelReturn, onReset
 }) {
+  const { t, getLocalizedText, language } = useLanguage();
+  const dateLocale = language === 'vi' ? 'vi-VN' : 'en-US';
   return (
     <div className="space-y-4">
       {orders.length === 0 ? (
@@ -38,7 +41,7 @@ export default function OrdersStep({
                 {/* ROW 2: Date + Payment Method (Left) vs Payment Status (Right) */}
                 <div className="flex items-center justify-between text-xs text-gray-400 dark:text-slate-400 pt-1 border-t border-gray-100 dark:border-slate-600">
                   <div className="flex items-center gap-2">
-                    <span>{new Date(order.created_at).toLocaleDateString('vi-VN')}</span>
+                    <span>{new Date(order.created_at).toLocaleDateString(dateLocale)}</span>
                     <span>•</span>
                     <PaymentBadge method={order.payment_method} badgeStyle={true} />
                   </div>
@@ -56,9 +59,9 @@ export default function OrdersStep({
                 <div className="bg-gray-50 dark:bg-slate-800 p-3 sm:p-4 border-t border-gray-100 dark:border-slate-600 space-y-3 animate-fadeIn">
                   {order.items?.map((item, idx) => (
                     <div key={idx} className="flex gap-3 items-start sm:items-center">
-                      <img src={getImageUrl(item.image_url)} alt={item.product_name} className="w-12 h-12 sm:w-14 sm:h-14 object-cover rounded-md border dark:border-slate-600 flex-shrink-0" onError={(e) => { (e.target as HTMLImageElement).src = getImageUrl(null) }} />
+                      <img src={getImageUrl(item.image_url)} alt={getLocalizedText(item, "product_name") || item.product_name} className="w-12 h-12 sm:w-14 sm:h-14 object-cover rounded-md border dark:border-slate-600 flex-shrink-0" onError={(e) => { (e.target as HTMLImageElement).src = getImageUrl(null) }} />
                       <div className="flex-1 min-w-0">
-                        <h4 className="text-xs sm:text-sm font-medium text-gray-800 dark:text-slate-200 leading-tight">{item.product_name}</h4>
+                        <h4 className="text-xs sm:text-sm font-medium text-gray-800 dark:text-slate-200 leading-tight">{getLocalizedText(item, "product_name") || item.product_name}</h4>
                         <p className="text-[11px] text-gray-500 dark:text-slate-400 mt-0.5">Variant: {item.color}, {item.size} | Qty: x{item.quantity}</p>
                       </div>
                       <p className="text-xs sm:text-sm font-semibold text-gray-700 dark:text-slate-300 flex-shrink-0">{formatCurrency(item.price)}</p>

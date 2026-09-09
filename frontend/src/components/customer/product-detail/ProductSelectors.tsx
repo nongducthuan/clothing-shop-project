@@ -1,8 +1,10 @@
 import { getImageUrl } from "../../../utils/imageUtils";
+import { useLanguage } from "../../../context/LanguageContext";
 
 export default function ProductSelectors({ state, actions }) {
   const { product, selectedColor, selectedSize, isProductIncomplete } = state;
   const { setSelectedColor, setSelectedSize } = actions;
+  const { t } = useLanguage();
 
   return (
     <div className="space-y-8 mb-8 border-t border-slate-100 dark:border-slate-800 pt-8">
@@ -29,7 +31,7 @@ export default function ProductSelectors({ state, actions }) {
       {/* COLOR DOTS */}
       <div>
         <h3 className="text-xs font-bold text-slate-900 dark:text-slate-100 uppercase tracking-widest mb-3">
-          Color <span className="text-slate-500 dark:text-slate-400 font-normal normal-case ml-2">{selectedColor?.color_name || "Not selected"}</span>
+          {t("product.color_label", "Color")} <span className="text-slate-500 dark:text-slate-400 font-normal normal-case ml-2">{selectedColor?.color_name || t("product.not_selected", "Not selected")}</span>
         </h3>
         <div className="flex items-center flex-wrap gap-3">
           {product.colors?.map((color) => (
@@ -46,14 +48,14 @@ export default function ProductSelectors({ state, actions }) {
             />
           ))}
           {isProductIncomplete && (
-            <p className="text-sm text-slate-400 dark:text-slate-500 italic">Color information not available.</p>
+            <p className="text-sm text-slate-400 dark:text-slate-500 italic">{t("product.color_info_unavailable", "Color information not available.")}</p>
           )}
         </div>
       </div>
 
       {/* SIZES */}
       <div>
-        <h3 className="text-xs font-bold text-slate-900 dark:text-slate-100 uppercase tracking-widest mb-3">Size</h3>
+        <h3 className="text-xs font-bold text-slate-900 dark:text-slate-100 uppercase tracking-widest mb-3">{t("product.size_label", "Size")}</h3>
         <div className="flex flex-wrap gap-3">
           {selectedColor?.sizes?.map((sizeObj) => {
             const isSelected = selectedSize?.id === sizeObj.id;
@@ -72,13 +74,13 @@ export default function ProductSelectors({ state, actions }) {
                     : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-slate-900 dark:hover:border-slate-400 hover:text-slate-900 dark:hover:text-slate-100"
                 }`}
               >
-                {sizeObj.size}
+                {sizeObj.size} {sizeObj.stock === 0 && <span className="text-xs">{t("product.out_of_stock_label", "(Out of stock)")}</span>}
               </button>
             );
           })}
         </div>
         {!isProductIncomplete && (!selectedColor?.sizes || selectedColor.sizes.length === 0) && (
-          <p className="text-sm text-rose-500 mt-2 font-medium">This color has no sizes available.</p>
+          <p className="text-sm text-rose-500 mt-2 font-medium">{t("product.no_sizes", "This color has no sizes available.")}</p>
         )}
       </div>
     </div>

@@ -4,9 +4,10 @@ import { PaymentBadge } from "../../common/PaymentBadge";
 import { useLanguage } from "../../../context/LanguageContext";
 
 export default function OrderDetailModal({ order, onClose, onOpenPaymentModal, helpers }) {
-  const { t } = useLanguage();
+  const { t, getLocalizedText, language } = useLanguage();
   if (!order) return null;
   const { formatCurrency, getImgUrl } = helpers;
+  const dateLocale = language === 'vi' ? 'vi-VN' : 'en-US';
 
   return (
     <div
@@ -22,9 +23,9 @@ export default function OrderDetailModal({ order, onClose, onOpenPaymentModal, h
         <div className="px-4 py-3.5 sm:px-6 sm:py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/80 shrink-0">
           <div>
             <h3 className="font-semibold text-slate-900 dark:text-slate-100 text-base sm:text-lg">{t('order_details.title', 'Đơn hàng')} #{order.id}</h3>
-            <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-              {new Date(order.created_at).toLocaleString("vi-VN")}
-            </p>
+              <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                {new Date(order.created_at).toLocaleString(dateLocale)}
+              </p>
           </div>
           <button
             onClick={onClose}
@@ -56,9 +57,9 @@ export default function OrderDetailModal({ order, onClose, onOpenPaymentModal, h
                 <div key={idx} className="flex gap-3 sm:gap-4 items-center bg-slate-50/70 dark:bg-slate-700/50 p-3 sm:p-3.5 rounded-xl border border-slate-100 dark:border-slate-700">
                   {/* Ảnh sản phẩm */}
                   <div className="w-14 h-14 sm:w-16 sm:h-16 shrink-0 rounded-lg overflow-hidden border border-slate-200/60 dark:border-slate-600 bg-white dark:bg-slate-700">
-                    <img
-                      src={safeImgSrc}
-                      alt={item.product_name || "Product"}
+                      <img
+                        src={safeImgSrc}
+                        alt={getLocalizedText(item, "product_name") || t("product.no_desc", "Product")}
                       className="w-full h-full object-cover"
                       onError={(e) => {
                         (e.target as HTMLImageElement).onerror = null;
@@ -69,17 +70,17 @@ export default function OrderDetailModal({ order, onClose, onOpenPaymentModal, h
 
                   {/* Thông tin sản phẩm */}
                   <div className="flex-1 min-w-0">
-                    <h4 
-                      className="font-medium text-slate-900 dark:text-slate-100 text-xs sm:text-sm leading-snug line-clamp-2" 
-                      title={item.product_name}
+                    <h4
+                      className="font-medium text-slate-900 dark:text-slate-100 text-xs sm:text-sm leading-snug line-clamp-2"
+                      title={getLocalizedText(item, "product_name") || item.product_name}
                     >
-                      {item.product_name}
+                      {getLocalizedText(item, "product_name") || item.product_name}
                     </h4>
                     
                     {/* Badge thuộc tính */}
                     <div className="flex flex-wrap items-center gap-1.5 mt-1.5 text-[11px] font-medium text-slate-500 dark:text-slate-400">
                       <span className="bg-white dark:bg-slate-700 border border-slate-200/80 dark:border-slate-600 px-1.5 py-0.5 rounded text-slate-600 dark:text-slate-300">
-                        {item.color_name || item.color || "N/A"}
+                        {t('order_details.color_label', 'Color')}: {item.color_name || item.color || "N/A"}
                       </span>
                       <span className="bg-white dark:bg-slate-700 border border-slate-200/80 dark:border-slate-600 px-1.5 py-0.5 rounded text-slate-600 dark:text-slate-300">
                         {t('order_details.size_label', 'Size')}: {item.size || item.size_name || "N/A"}

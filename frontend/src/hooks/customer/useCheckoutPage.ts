@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useContext } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { CartContext } from "../../context/CartContext.jsx";
 import { AuthContext } from "../../context/AuthContext.jsx";
+import { useLanguage } from "../../context/LanguageContext";
 import API from "../../services/apiClient.js";
 import { getImageUrl } from "../../utils/imageUtils";
 import {
@@ -14,6 +15,7 @@ import {
 const useGeolocation = () => {
   const [isLocating, setIsLocating] = useState(false);
   const [locationError, setLocationError] = useState("");
+  const { t } = useLanguage();
 
   const getAddressFromCoords = async (lat, lon) => {
     try {
@@ -69,7 +71,7 @@ const useGeolocation = () => {
           const address = await getAddressFromCoords(ipData.latitude, ipData.longitude);
           onSuccess(address);
         } catch {
-          setLocationError("Could not determine location. Please enter manually.");
+          setLocationError(t("checkout.location_error", "Could not determine location. Please enter manually."));
         } finally {
           setIsLocating(false);
         }
@@ -87,6 +89,7 @@ export function useCheckoutPage() {
   const routeLocation = useLocation();
   const { cart, setCart } = useContext(CartContext);
   const { user, discount, tier } = useContext(AuthContext);
+  const { t } = useLanguage();
   const { fetchCurrentLocation, isLocating, locationError } = useGeolocation();
 
   // State Management
@@ -147,10 +150,10 @@ export function useCheckoutPage() {
   };
 
   const validateForm = () => {
-    if (!shippingAddress.trim()) return "Please enter a shipping address.";
+    if (!shippingAddress.trim()) return t("checkout.error_address", "Please enter a shipping address.");
     if (!user) {
-      if (!guestInfo.name || !guestInfo.phone || !guestInfo.email) return "Please fill in all contact information.";
-      if (!guestInfo.email.includes("@")) return "Invalid email format.";
+      if (!guestInfo.name || !guestInfo.phone || !guestInfo.email) return t("checkout.error_contact", "Please fill in all contact information.");
+      if (!guestInfo.email.includes("@")) return t("checkout.invalid_email", "Invalid email format.");
     }
     return null;
   };
@@ -225,7 +228,7 @@ export function useCheckoutPage() {
         window.location.href = res.data.payUrl;
       } else {
         setIsStatusSuccess(true);
-        setStatusMessage("Order placed successfully!");
+        setStatusMessage(t("checkout.success", "Order placed successfully!"));
         setTimeout(() => navigate(user ? "/profile" : "/"), 2000);
       }
     } catch (err) {

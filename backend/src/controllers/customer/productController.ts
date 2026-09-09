@@ -156,6 +156,8 @@ export const searchProducts = async (req: Request, res: Response): Promise<void>
             return {
                 ...p,
                 category_name: p.category?.name,
+                category_name_vi: p.category?.name_vi,
+                category_name_en: p.category?.name_en,
                 sale_percent,
                 total_stock,
             };
@@ -202,6 +204,8 @@ export const getProduct = async (req: Request, res: Response): Promise<void> => 
         const responseProduct = {
             ...product,
             category_name: product.category?.name,
+            category_name_vi: product.category?.name_vi,
+            category_name_en: product.category?.name_en,
             sale_percent,
         };
 

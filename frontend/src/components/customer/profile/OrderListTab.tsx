@@ -7,7 +7,7 @@ export default function OrderListTab({ state, actions, helpers }) {
   const { orders, loadingOrders } = state;
   const { setSelectedOrder, handleOpenPaymentModal, handleOpenReturnModal, handleCancelReturn } = actions;
   const { formatCurrency } = helpers;
-  const { t } = useLanguage();
+  const { t, getLocalizedText, language } = useLanguage();
 
   if (loadingOrders) {
     return (
@@ -30,7 +30,7 @@ export default function OrderListTab({ state, actions, helpers }) {
     <div className="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-5 animate-in fade-in duration-300">
       {orders.map((order) => {
         const totalItems = order.items?.reduce((sum, item) => sum + (item.quantity || 1), 0) || 0;
-        const itemsSummary = order.items?.map(item => `${item.product_name || 'Item'} (x${item.quantity})`).join(', ');
+        const itemsSummary = order.items?.map(item => `${getLocalizedText(item, "product_name") || t("orders.items_count", "Item")} (x${item.quantity})`).join(', ');
 
         return (
           <div
@@ -45,7 +45,7 @@ export default function OrderListTab({ state, actions, helpers }) {
                     {t("orders.order_prefix")} #{order.id}
                   </span>
                   <p className="text-xs font-medium text-slate-600 dark:text-slate-400 mt-0.5">
-                    {new Date(order.created_at).toLocaleDateString("vi-VN", { year: 'numeric', month: 'short', day: 'numeric' })}
+                     {new Date(order.created_at).toLocaleDateString(language === 'vi' ? 'vi-VN' : 'en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
                   </p>
                 </div>
                 <ModernStatusBadge status={order.status} />

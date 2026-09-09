@@ -29,8 +29,12 @@ export interface AuthResponse {
 export interface Category {
   id: number;
   name: string;
-  image_url?: string;
+  name_vi?: string;
+  name_en?: string;
   description?: string;
+  description_vi?: string;
+  description_en?: string;
+  image_url?: string;
   created_at?: string;
 }
 
@@ -80,12 +84,16 @@ export interface CartItem {
   cartItemId?: string; // Made optional since addToCart constructs it if not present
   id: number;
   name: string;
+  name_vi?: string;
+  name_en?: string;
   price: number;
   quantity: number;
   size_id: number;
   color_id: number;
   size_name?: string;
   color_name?: string;
+  color_name_vi?: string;
+  color_name_en?: string;
   image_url?: string;
   variant_id?: number;
   stock?: number;

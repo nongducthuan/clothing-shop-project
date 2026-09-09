@@ -1,7 +1,9 @@
 import { useState } from "react";
+import { useLanguage } from "../../../context/LanguageContext";
 import Toast from "../layout/Toast";
 
-export default function VoucherBanner({ voucher, categoryName }) {
+export default function VoucherBanner({ voucher, category }) {
+  const { t, getLocalizedText } = useLanguage();
   const [toastMessage, setToastMessage] = useState(null);
   const [isCopied, setIsCopied] = useState(false);
 
@@ -11,11 +13,12 @@ export default function VoucherBanner({ voucher, categoryName }) {
   const remainingUses = voucher.usage_limit ? voucher.usage_limit - voucher.used_count : null;
   const isRunningOut = remainingUses !== null && remainingUses <= 5;
   const formatCurrency = (amount) => new Intl.NumberFormat("vi-VN").format(amount) + "đ";
+  const categoryName = category ? getLocalizedText(category, 'name') || category.name : '';
 
   const handleCopyCode = () => {
     navigator.clipboard.writeText(voucher.code);
     setIsCopied(true);
-    setToastMessage("Code copied: " + voucher.code);
+    setToastMessage(t("voucher.code_copied", "Code copied: {code}").replace("{code}", voucher.code));
     setTimeout(() => setIsCopied(false), 2000);
   };
 
@@ -38,23 +41,23 @@ export default function VoucherBanner({ voucher, categoryName }) {
             </span>
           </div>
           <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1.5">
-            {voucher.apply_scope === "all" ? "All products" : categoryName}
+            {voucher.apply_scope === "all" ? t("voucher.all_products", "All products") : categoryName}
           </p>
           {(voucher.min_order_value > 0 || voucher.max_discount_amount > 0 || remainingUses !== null) && (
             <div className="flex items-center justify-between gap-1.5 mt-2.5 pt-1.5 border-t border-rose-200/50 dark:border-rose-900/30">
               {voucher.min_order_value > 0 && (
                 <span className="text-[11px] text-slate-500 dark:text-slate-400">
-                  Min: <span className="font-semibold text-slate-700 dark:text-slate-300">{formatCurrency(voucher.min_order_value)}</span>
+                  {t("voucher.min_spend", "Min spend")}: <span className="font-semibold text-slate-700 dark:text-slate-300">{formatCurrency(voucher.min_order_value)}</span>
                 </span>
               )}
               {voucher.max_discount_amount > 0 && (
                 <span className="text-[11px] text-slate-500 dark:text-slate-400">
-                  Max: <span className="font-semibold text-slate-700 dark:text-slate-300">{formatCurrency(voucher.max_discount_amount)}</span>
+                  {t("voucher.max_discount", "Max discount")}: <span className="font-semibold text-slate-700 dark:text-slate-300">{formatCurrency(voucher.max_discount_amount)}</span>
                 </span>
               )}
               {remainingUses !== null && (
                 <span className={`text-[11px] font-bold ${isRunningOut ? "text-rose-600 dark:text-rose-400 animate-pulse" : "text-slate-600 dark:text-slate-400"}`}>
-                  {remainingUses} left
+                  {remainingUses} {t("voucher.left", "left")}
                 </span>
               )}
             </div>
@@ -77,7 +80,7 @@ export default function VoucherBanner({ voucher, categoryName }) {
             }`}
           >
             <i className={`fa-solid ${isCopied ? "fa-check text-xs" : "fa-copy text-xs"}`}></i>
-            {isCopied ? "Copied!" : "Copy code"}
+            {isCopied ? t("voucher.copied", "Copied!") : t("voucher.copy_code", "Copy code")}
           </button>
         </div>
       </div>
@@ -95,26 +98,26 @@ export default function VoucherBanner({ voucher, categoryName }) {
             </span>
           </div>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            {voucher.apply_scope === "all" ? "Valid for all products" : `Valid for ${categoryName}`}
+            {voucher.apply_scope === "all" ? t("voucher.valid_all", "Valid for all products") : t("voucher.valid_for", "Valid for {category}").replace("{category}", categoryName)}
           </p>
           <div className="flex flex-wrap gap-5 mt-3">
             {voucher.min_order_value > 0 && (
               <div>
-                <p className="text-[11px] text-slate-400 dark:text-slate-500">Min spend</p>
+                <p className="text-[11px] text-slate-400 dark:text-slate-500">{t("voucher.min_spend", "Min spend")}</p>
                 <p className="text-sm text-slate-800 dark:text-slate-200 font-medium">{formatCurrency(voucher.min_order_value)}</p>
               </div>
             )}
             {voucher.max_discount_amount > 0 && (
               <div>
-                <p className="text-[11px] text-slate-400 dark:text-slate-500">Max discount</p>
+                <p className="text-[11px] text-slate-400 dark:text-slate-500">{t("voucher.max_discount", "Max discount")}</p>
                 <p className="text-sm text-slate-800 dark:text-slate-200 font-medium">{formatCurrency(voucher.max_discount_amount)}</p>
               </div>
             )}
             {remainingUses !== null && (
               <div>
-                <p className="text-[11px] text-slate-400 dark:text-slate-500">Remaining</p>
+                <p className="text-[11px] text-slate-400 dark:text-slate-500">{t("voucher.remaining", "Remaining")}</p>
                 <p className={`text-sm font-bold ${isRunningOut ? "text-rose-600 dark:text-rose-400 animate-pulse" : "text-slate-800 dark:text-slate-200"}`}>
-                  {remainingUses} left
+                  {remainingUses} {t("voucher.left", "left")}
                 </p>
               </div>
             )}
@@ -137,7 +140,7 @@ export default function VoucherBanner({ voucher, categoryName }) {
             }`}
           >
             <i className={`fa-solid ${isCopied ? "fa-check text-xs" : "fa-copy text-xs"}`}></i>
-            {isCopied ? "Copied!" : "Copy code"}
+            {isCopied ? t("voucher.copied", "Copied!") : t("voucher.copy_code", "Copy code")}
           </button>
         </div>
       </div>

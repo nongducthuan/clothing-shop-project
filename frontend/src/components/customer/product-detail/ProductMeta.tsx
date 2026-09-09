@@ -7,11 +7,12 @@ export default function ProductMeta({ state, helpers }) {
   const { getLocalizedText } = useLanguage();
 
   const productName = getLocalizedText(product, 'name');
+  const categoryName = getLocalizedText(product, 'category_name') || product.category_name;
 
   return (
     <div className="mb-8">
       <div className="mb-3 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
-        {product.category_name}
+        {categoryName}
       </div>
       <h1 className="text-3xl sm:text-4xl font-medium text-slate-900 dark:text-slate-100 mb-4 leading-tight tracking-tight">
         {productName}

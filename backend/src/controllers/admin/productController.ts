@@ -20,6 +20,8 @@ export const getProducts = async (req: Request, res: Response): Promise<void> =>
             return {
                 ...p,
                 category_name: p.category?.name,
+                category_name_vi: p.category?.name_vi,
+                category_name_en: p.category?.name_en,
                 total_stock: totalStock,
                 unit_profit: Number(p.price) - Number(p.import_price)
             };
