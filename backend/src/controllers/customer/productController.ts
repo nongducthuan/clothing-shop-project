@@ -128,7 +128,10 @@ export const searchProducts = async (req: Request, res: Response): Promise<void>
             is_active: true,
             OR: [
                 { name: { contains: searchStr } },
-                { description: { contains: searchStr } }
+                { name_vi: { contains: searchStr } },
+                { name_en: { contains: searchStr } },
+                { description_vi: { contains: searchStr } },
+                { description_en: { contains: searchStr } }
             ]
         };
         if (category) where.category_id = Number(category);

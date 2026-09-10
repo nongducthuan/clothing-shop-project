@@ -69,7 +69,10 @@ export default function useProductManager() {
   const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState({
     name: "",
-    description: "",
+    name_vi: "",
+    name_en: "",
+    description_vi: "",
+    description_en: "",
     import_price: "",
     price: "",
     image_url: "",
@@ -82,7 +85,7 @@ export default function useProductManager() {
   // --- Helpers ---
   const resetForm = useCallback(() => {
     setEditingId(null);
-    setForm({ name: "", description: "", import_price: "", price: "", image_url: "", gender: "unisex", category_id: "" });
+    setForm({ name: "", name_vi: "", name_en: "", description_vi: "", description_en: "", import_price: "", price: "", image_url: "", gender: "unisex", category_id: "" });
     setMobileFormOpen(false);
   }, []);
 
@@ -146,7 +149,10 @@ export default function useProductManager() {
     const payload = {
       ...form,
       name: cleanName,
-      description: form.description.trim(),
+      name_vi: (form.name_vi || "").trim() || cleanName,
+      name_en: (form.name_en || "").trim() || cleanName,
+      description_vi: (form.description_vi || "").trim(),
+      description_en: (form.description_en || "").trim(),
       import_price: form.import_price ? +form.import_price : 0,
       price: +form.price
     };
@@ -167,8 +173,11 @@ export default function useProductManager() {
 
   const handleEdit = useCallback((p) => {
     setForm({
-      name: p.name,
-      description: p.description || "",
+      name: p.name || "",
+      name_vi: p.name_vi || p.name || "",
+      name_en: p.name_en || p.name || "",
+      description_vi: p.description_vi || "",
+      description_en: p.description_en || "",
       import_price: p.import_price || "",
       price: p.price,
       image_url: p.image_url || "",

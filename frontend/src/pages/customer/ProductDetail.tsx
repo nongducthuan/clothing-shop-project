@@ -10,7 +10,7 @@ import ProductActions from "../../components/customer/product-detail/ProductActi
 
 export default function ProductDetail() {
   const { state, actions, helpers, constants } = useProductDetail();
-  const { t } = useLanguage();
+  const { t, getLocalizedText } = useLanguage();
 
   // --- ERROR STATE ---
   if (state.error) {
@@ -63,7 +63,7 @@ export default function ProductDetail() {
                 {t("product.details", "Product Details")}
               </h3>
               <div className="prose prose-slate prose-p:text-slate-500 dark:prose-invert dark:prose-p:text-slate-400 prose-p:leading-relaxed max-w-none text-sm whitespace-pre-line text-slate-500 dark:text-slate-400">
-                {state.product.description || t("product.no_detailed_desc", "No detailed description available for this product.")}
+                {getLocalizedText(state.product, 'description') || t("product.no_detailed_desc", "No detailed description available for this product.")}
               </div>
             </div>
 

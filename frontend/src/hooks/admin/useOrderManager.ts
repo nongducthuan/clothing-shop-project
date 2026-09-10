@@ -202,10 +202,10 @@ export default function useOrderManager() {
    * Rejects a customer's return request with a required admin note
    */
   const handleRejectReturn = async (orderId) => {
-    const reason = window.prompt("Enter reason for rejection:");
+    const reason = window.prompt("Nhập lý do từ chối:");
     if (reason === null) return;
     if (reason.trim() === "") {
-      showToast("Please provide a reason!", "warning");
+      showToast("Vui lòng cung cấp lý do!", "warning");
       return;
     }
 

@@ -44,17 +44,29 @@ export default function ProductForm({
           </h3>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-            {/* Name Input */}
-            <div>
-              <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 ml-1">{t("admin.product_name")}</label>
-              <input
-                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 focus:bg-white dark:focus:bg-slate-700 focus:border-violet-500 dark:focus:border-violet-400 focus:ring-4 focus:ring-violet-500/10 rounded-2xl transition-all duration-300 outline-none text-slate-800 dark:text-slate-100 font-medium placeholder:text-slate-400 dark:placeholder:text-slate-500"
-                value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
-                placeholder={t("admin.product_name")}
-                required
-              />
+            {/* Name Input VI / EN */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 ml-1">{t("admin.name_vi_label")}</label>
+                <input
+                  className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 focus:bg-white dark:focus:bg-slate-700 focus:border-violet-500 dark:focus:border-violet-400 focus:ring-4 focus:ring-violet-500/10 rounded-2xl transition-all duration-300 outline-none text-slate-800 dark:text-slate-100 font-medium placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                  value={form.name_vi || ""}
+                  onChange={(e) => setForm({ ...form, name_vi: e.target.value, name: e.target.value })}
+                  placeholder={t("admin.name_vi_placeholder")}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 ml-1">{t("admin.name_en_label")}</label>
+                <input
+                  className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 focus:bg-white dark:focus:bg-slate-700 focus:border-violet-500 dark:focus:border-violet-400 focus:ring-4 focus:ring-violet-500/10 rounded-2xl transition-all duration-300 outline-none text-slate-800 dark:text-slate-100 font-medium placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                  value={form.name_en || ""}
+                  onChange={(e) => setForm({ ...form, name_en: e.target.value })}
+                  placeholder={t("admin.name_en_placeholder")}
+                />
+              </div>
             </div>
+            {/* Hidden legacy single-name field kept for backward compat */}
+            <input type="hidden" value={form.name} readOnly />
 
             {/* Prices Row: Cost Price & Selling Price */}
             <div className="grid grid-cols-2 gap-4">
@@ -143,16 +155,28 @@ export default function ProductForm({
               {uploading && <span className="text-xs font-bold text-violet-500 animate-pulse ml-1"><i className="fa-solid fa-spinner fa-spin mr-1"></i> {t("common.loading")}</span>}
             </div>
 
-            {/* Description */}
-            <div>
-              <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 ml-1">{t("admin.description")}</label>
-              <textarea
-                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 focus:bg-white dark:focus:bg-slate-700 focus:border-violet-500 dark:focus:border-violet-400 focus:ring-4 focus:ring-violet-500/10 rounded-2xl transition-all duration-300 outline-none text-slate-800 dark:text-slate-100 font-medium resize-none placeholder:text-slate-400 dark:placeholder:text-slate-500"
-                rows={3}
-                value={form.description}
-                onChange={(e) => setForm({ ...form, description: e.target.value })}
-                placeholder={t("admin.description_placeholder")}
-              />
+            {/* Description VI / EN */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 ml-1">{t("admin.description_vi_label")}</label>
+                <textarea
+                  className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 focus:bg-white dark:focus:bg-slate-700 focus:border-violet-500 dark:focus:border-violet-400 focus:ring-4 focus:ring-violet-500/10 rounded-2xl transition-all duration-300 outline-none text-slate-800 dark:text-slate-100 font-medium resize-none placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                  rows={3}
+                  value={form.description_vi || ""}
+                  onChange={(e) => setForm({ ...form, description_vi: e.target.value })}
+                  placeholder={t("admin.description_vi_placeholder_vi")}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 ml-1">{t("admin.description_en_label")}</label>
+                <textarea
+                  className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 focus:bg-white dark:focus:bg-slate-700 focus:border-violet-500 dark:focus:border-violet-400 focus:ring-4 focus:ring-violet-500/10 rounded-2xl transition-all duration-300 outline-none text-slate-800 dark:text-slate-100 font-medium resize-none placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                  rows={3}
+                  value={form.description_en || ""}
+                  onChange={(e) => setForm({ ...form, description_en: e.target.value })}
+                  placeholder={t("admin.description_en_placeholder_en")}
+                />
+              </div>
             </div>
 
             {/* Action Buttons */}

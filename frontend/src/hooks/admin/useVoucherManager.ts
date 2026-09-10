@@ -20,7 +20,8 @@ export default function useVoucherManager() {
   const [editingId, setEditingId] = useState(null);
   const [formData, setFormData] = useState({
     code: "",
-    description: "",
+    description_vi: "",
+    description_en: "",
     discount_percent: "",
     max_discount_amount: "",
     min_order_value: "",
@@ -89,11 +90,17 @@ export default function useVoucherManager() {
     }
   };
 
+  const emptyVoucherForm = {
+    code: "", description_vi: "", description_en: "", discount_percent: "", max_discount_amount: "",
+    min_order_value: "", usage_limit: "", start_date: "", end_date: "", apply_scope: "all"
+  };
+
   const handleEdit = (voucher) => {
     setEditingId(voucher.id);
     setFormData({
-      code: voucher.code,
-      description: voucher.description || "",
+      code: voucher.code || "",
+      description_vi: voucher.description_vi || "",
+      description_en: voucher.description_en || "",
       discount_percent: voucher.discount_percent,
       max_discount_amount: voucher.max_discount_amount || "",
       min_order_value: voucher.min_order_value || "",
@@ -108,10 +115,7 @@ export default function useVoucherManager() {
 
   const handleCancelEdit = () => {
     setEditingId(null);
-    setFormData({
-      code: "", description: "", discount_percent: "", max_discount_amount: "",
-      min_order_value: "", usage_limit: "", start_date: "", end_date: "", apply_scope: "all"
-    });
+    setFormData({ ...emptyVoucherForm });
     setApplyScope("all");
     setSelectedCategoryIds([]);
     setSelectedProductIds([]);
@@ -121,6 +125,8 @@ export default function useVoucherManager() {
     e.preventDefault();
     const payload = {
       ...formData,
+      description_vi: (formData.description_vi || "").trim(),
+      description_en: (formData.description_en || "").trim(),
       start_date: formData.start_date || null,
       end_date: formData.end_date || null,
       apply_scope: applyScope,
@@ -137,10 +143,7 @@ export default function useVoucherManager() {
         showToast("Tạo mã giảm giá thành công!", "success");
       }
       setEditingId(null);
-      setFormData({
-        code: "", description: "", discount_percent: "", max_discount_amount: "",
-        min_order_value: "", usage_limit: "", start_date: "", end_date: "", apply_scope: "all"
-      });
+      setFormData({ ...emptyVoucherForm });
       setApplyScope("all");
       setSelectedCategoryIds([]);
       setSelectedProductIds([]);

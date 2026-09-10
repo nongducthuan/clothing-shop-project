@@ -2,10 +2,10 @@ import React from "react";
 
 export default function OrderLookupHeader({ step, email }) {
   const stepConfig = {
-    1: { icon: "fa-envelope", title: "Order Tracking", sub: "Enter the email used for purchase" },
-    2: { icon: "fa-lock", title: "OTP Verification", sub: "Please check your inbox" },
-    3: { icon: "fa-box-open", title: "Order List", sub: `Results for: ${email}` },
-    4: { icon: "fa-rotate-left", title: "Return Request", sub: "Please provide return details" },
+    1: { icon: "fa-envelope", title: "Tra cứu đơn hàng", sub: "Nhập email đã dùng để mua hàng" },
+    2: { icon: "fa-lock", title: "Xác minh OTP", sub: "Vui lòng kiểm tra hộp thư của bạn" },
+    3: { icon: "fa-box-open", title: "Danh sách đơn hàng", sub: `Kết quả cho: ${email}` },
+    4: { icon: "fa-rotate-left", title: "Yêu cầu đổi trả", sub: "Vui lòng cung cấp thông tin đổi trả" },
   };
 
   const currentStep = stepConfig[step];

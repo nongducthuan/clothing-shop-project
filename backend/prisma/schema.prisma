@@ -56,7 +56,6 @@ model Category {
   name               String            @db.VarChar(100)
   name_vi            String?           @db.VarChar(100)
   name_en            String?           @db.VarChar(100)
-  description        String?           @db.Text
   description_vi     String?           @db.Text
   description_en     String?           @db.Text
   gender             Gender            @default(unisex)
@@ -75,7 +74,6 @@ model Product {
   name             String                   @db.VarChar(255)
   name_vi          String?                  @db.VarChar(255)
   name_en          String?                  @db.VarChar(255)
-  description      String?                  @db.Text
   description_vi   String?                  @db.Text
   description_en   String?                  @db.Text
   price            Decimal                  @db.Decimal(10, 2)
@@ -145,6 +143,8 @@ model Banner {
 model Sale {
   id               Int            @id @default(autoincrement())
   name             String         @db.VarChar(100)
+  name_vi          String?        @db.VarChar(100)
+  name_en          String?        @db.VarChar(100)
   discount_percent Decimal        @default(0.00) @db.Decimal(5, 2)
   apply_scope      ApplyScope     @default(all)
   start_date       DateTime
@@ -184,7 +184,6 @@ model SaleCategory {
 model Voucher {
   id                  Int               @id @default(autoincrement())
   code                String            @unique @db.VarChar(50)
-  description         String?           @db.Text
   description_vi      String?           @db.Text
   description_en      String?           @db.Text
   discount_percent    Decimal?          @db.Decimal(5, 2)
@@ -233,7 +232,6 @@ model BuyXGetYPromotion {
   name               String                  @db.VarChar(255)
   name_vi            String?                 @db.VarChar(255)
   name_en            String?                 @db.VarChar(255)
-  description        String?                 @db.Text
   description_vi     String?                 @db.Text
   description_en     String?                 @db.Text
   buy_product_id     Int

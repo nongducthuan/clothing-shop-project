@@ -9,12 +9,23 @@ export default function OrdersStep({
 }) {
   const { t, getLocalizedText, language } = useLanguage();
   const dateLocale = language === 'vi' ? 'vi-VN' : 'en-US';
+  const statusLabels = {
+    'Pending': 'Chờ xử lý',
+    'Confirmed': 'Đã xác nhận',
+    'Shipping': 'Đang giao',
+    'Delivered': 'Đã giao',
+    'Cancelled': 'Đã hủy',
+    'Return Requested': 'Yêu cầu đổi trả',
+    'Return Rejected': 'Đổi trả bị từ chối',
+    'Return Approved': 'Đổi trả đã duyệt'
+  };
+  const paymentLabels = { Paid: 'Đã thanh toán', Unpaid: 'Chưa thanh toán', Refunded: 'Đã hoàn tiền' };
   return (
     <div className="space-y-4">
       {orders.length === 0 ? (
         <div className="text-center py-10">
           <i className="fa-solid fa-box-open text-4xl text-gray-300 dark:text-slate-600 mb-3"></i>
-          <p className="text-gray-500 dark:text-slate-400">No orders found.</p>
+          <p className="text-gray-500 dark:text-slate-400">Không tìm thấy đơn hàng.</p>
         </div>
       ) : (
         <div className="max-h-[60vh] sm:max-h-[500px] overflow-y-auto pr-1 sm:pr-2 space-y-4 custom-scrollbar">
@@ -24,12 +35,12 @@ export default function OrdersStep({
                 {/* ROW 1: Order ID + Status (Left) vs Total Price + Chevron (Right) */}
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
-                    <span className="font-bold text-gray-900 dark:text-slate-100 text-sm sm:text-base">Order #{order.id}</span>
+                    <span className="font-bold text-gray-900 dark:text-slate-100 text-sm sm:text-base">Đơn hàng #{order.id}</span>
                     <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${
                       order.status === 'Delivered' ? 'bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-400' :
                       order.status === 'Cancelled' ? 'bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400' : 'bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400'
                     }`}>
-                      {order.status}
+                      {statusLabels[order.status] || order.status}
                     </span>
                   </div>
                   <div className="flex items-center gap-1.5 font-bold text-violet-600 dark:text-violet-400 text-sm sm:text-base">
@@ -50,7 +61,7 @@ export default function OrdersStep({
                       ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-700'
                       : 'bg-rose-100 dark:bg-rose-900/40 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-700'
                   }`}>
-                    {order.payment_status || 'Unpaid'}
+                    {paymentLabels[order.payment_status] || order.payment_status || 'Chưa thanh toán'}
                   </span>
                 </div>
               </div>
@@ -62,7 +73,7 @@ export default function OrdersStep({
                       <img src={getImageUrl(item.image_url)} alt={getLocalizedText(item, "product_name") || item.product_name} className="w-12 h-12 sm:w-14 sm:h-14 object-cover rounded-md border dark:border-slate-600 flex-shrink-0" onError={(e) => { (e.target as HTMLImageElement).src = getImageUrl(null) }} />
                       <div className="flex-1 min-w-0">
                         <h4 className="text-xs sm:text-sm font-medium text-gray-800 dark:text-slate-200 leading-tight">{getLocalizedText(item, "product_name") || item.product_name}</h4>
-                        <p className="text-[11px] text-gray-500 dark:text-slate-400 mt-0.5">Variant: {item.color}, {item.size} | Qty: x{item.quantity}</p>
+                        <p className="text-[11px] text-gray-500 dark:text-slate-400 mt-0.5">Biến thể: {getLocalizedText(item, "color_name") || item.color}, {item.size} | SL: x{item.quantity}</p>
                       </div>
                       <p className="text-xs sm:text-sm font-semibold text-gray-700 dark:text-slate-300 flex-shrink-0">{formatCurrency(item.price)}</p>
                     </div>
@@ -72,16 +83,16 @@ export default function OrdersStep({
                   <div className="mt-3 pt-3 border-t border-dashed border-gray-300 dark:border-slate-600">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs bg-white dark:bg-slate-700 p-3 rounded-lg border border-gray-100 dark:border-slate-600">
                       <div>
-                        <span className="text-gray-400 dark:text-slate-400 block text-[11px]">Customer Name:</span>
-                        <span className="font-semibold text-gray-800 dark:text-slate-200">{order.name || 'Guest'}</span>
+                        <span className="text-gray-400 dark:text-slate-400 block text-[11px]">Tên khách hàng:</span>
+                        <span className="font-semibold text-gray-800 dark:text-slate-200">{order.name || 'Khách'}</span>
                       </div>
                       <div>
-                        <span className="text-gray-400 dark:text-slate-400 block text-[11px]">Phone Number:</span>
-                        <span className="font-semibold text-gray-800 dark:text-slate-200">{order.phone || 'N/A'}</span>
+                        <span className="text-gray-400 dark:text-slate-400 block text-[11px]">Số điện thoại:</span>
+                        <span className="font-semibold text-gray-800 dark:text-slate-200">{order.phone || 'Không có'}</span>
                       </div>
                       <div className="sm:col-span-2 pt-1 border-t border-gray-50 dark:border-slate-600 mt-1">
-                        <span className="text-gray-400 dark:text-slate-400 block text-[11px]">Shipping Address:</span>
-                        <span className="font-semibold text-gray-800 dark:text-slate-200 break-words">{order.address || 'N/A'}</span>
+                        <span className="text-gray-400 dark:text-slate-400 block text-[11px]">Địa chỉ giao hàng:</span>
+                        <span className="font-semibold text-gray-800 dark:text-slate-200 break-words">{order.address || 'Không có'}</span>
                       </div>
                     </div>
 
@@ -94,7 +105,7 @@ export default function OrdersStep({
                         {loading ? (
                           <i className="fa-solid fa-circle-notch fa-spin"></i>
                         ) : (
-                          <>Pay / Change Payment Method</>
+                          <>Thanh toán / Đổi phương thức</>
                         )}
                       </button>
                     )}
@@ -103,20 +114,20 @@ export default function OrdersStep({
                         onClick={() => openReturnForm(order)}
                         className="w-full mt-3 bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-700 py-2.5 rounded-lg text-sm font-bold hover:bg-orange-100 dark:hover:bg-orange-900/50 transition flex items-center justify-center gap-2"
                       >
-                        <i className="fa-solid fa-rotate-left"></i> Request Return
+                        <i className="fa-solid fa-rotate-left"></i> Yêu cầu đổi trả
                       </button>
                     )}
                     {(order.status === 'Return Requested' || order.return_request) && (
                       <div className="mt-3 space-y-2">
                         <div className="p-2.5 bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 text-center rounded-lg text-xs font-bold border border-orange-100 dark:border-orange-700 flex items-center justify-center gap-2">
-                          <i className="fa-solid fa-spinner animate-spin"></i> Return request is being processed
+                          <i className="fa-solid fa-spinner animate-spin"></i> Yêu cầu đổi trả đang được xử lý
                         </div>
                         <button
                           onClick={() => handleCancelReturn && handleCancelReturn(order.id)}
                           disabled={loading}
                           className="w-full bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-700 py-2 rounded-lg text-xs font-bold hover:bg-rose-100 dark:hover:bg-rose-900/50 transition flex items-center justify-center gap-1.5"
                         >
-                          <i className="fa-solid fa-xmark"></i> Cancel Return Request
+                          <i className="fa-solid fa-xmark"></i> Hủy yêu cầu đổi trả
                         </button>
                       </div>
                     )}
@@ -131,7 +142,7 @@ export default function OrdersStep({
         onClick={onReset}
         className="w-full mt-4 border border-gray-300 dark:border-slate-600 text-gray-600 dark:text-slate-400 font-bold py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 transition"
       >
-        Track another Email
+        Tra cứu Email khác
       </button>
     </div>
   );

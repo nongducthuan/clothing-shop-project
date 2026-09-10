@@ -24,29 +24,53 @@ export default function BannerForm({
       </h3>
 
       <form onSubmit={handleSubmit} className="space-y-6 flex-1 flex flex-col">
-        {/* Title Input */}
-        <div>
-          <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 ml-1">{t("admin.banner_title")}</label>
-          <input
-            type="text"
-            required
-            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 focus:bg-white dark:focus:bg-slate-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-4 focus:ring-blue-500/10 rounded-2xl transition-all duration-300 outline-none text-slate-800 dark:text-slate-100 font-medium placeholder:text-slate-400 dark:placeholder:text-slate-500"
-            value={form.title}
-            onChange={(e) => setForm({ ...form, title: e.target.value })}
-            placeholder={t("admin.banner_title")}
-          />
+        {/* Title Input VI / EN */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 ml-1">{t("admin.banner_title_vi")}</label>
+            <input
+              type="text"
+              required
+              className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 focus:bg-white dark:focus:bg-slate-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-4 focus:ring-blue-500/10 rounded-2xl transition-all duration-300 outline-none text-slate-800 dark:text-slate-100 font-medium placeholder:text-slate-400 dark:placeholder:text-slate-500"
+              value={form.title_vi || ""}
+              onChange={(e) => setForm({ ...form, title_vi: e.target.value, title: e.target.value })}
+              placeholder={t("admin.banner_title")}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 ml-1">{t("admin.banner_title_en")}</label>
+            <input
+              type="text"
+              className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 focus:bg-white dark:focus:bg-slate-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-4 focus:ring-blue-500/10 rounded-2xl transition-all duration-300 outline-none text-slate-800 dark:text-slate-100 font-medium placeholder:text-slate-400 dark:placeholder:text-slate-500"
+              value={form.title_en || ""}
+              onChange={(e) => setForm({ ...form, title_en: e.target.value })}
+              placeholder={t("admin.banner_title")}
+            />
+          </div>
         </div>
 
-        {/* Subtitle Input */}
-        <div>
-          <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 ml-1">{t("admin.description")}</label>
-          <input
-            type="text"
-            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 focus:bg-white dark:focus:bg-slate-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-4 focus:ring-blue-500/10 rounded-2xl transition-all duration-300 outline-none text-slate-800 dark:text-slate-100 font-medium placeholder:text-slate-400 dark:placeholder:text-slate-500"
-            value={form.subtitle}
-            onChange={(e) => setForm({ ...form, subtitle: e.target.value })}
-            placeholder={t("admin.description_placeholder")}
-          />
+        {/* Subtitle Input VI / EN */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 ml-1">{t("admin.banner_subtitle_vi")}</label>
+            <input
+              type="text"
+              className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 focus:bg-white dark:focus:bg-slate-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-4 focus:ring-blue-500/10 rounded-2xl transition-all duration-300 outline-none text-slate-800 dark:text-slate-100 font-medium placeholder:text-slate-400 dark:placeholder:text-slate-500"
+              value={form.subtitle_vi || ""}
+              onChange={(e) => setForm({ ...form, subtitle_vi: e.target.value, subtitle: e.target.value })}
+              placeholder={t("admin.description_placeholder")}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 ml-1">{t("admin.banner_subtitle_en")}</label>
+            <input
+              type="text"
+              className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 focus:bg-white dark:focus:bg-slate-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-4 focus:ring-blue-500/10 rounded-2xl transition-all duration-300 outline-none text-slate-800 dark:text-slate-100 font-medium placeholder:text-slate-400 dark:placeholder:text-slate-500"
+              value={form.subtitle_en || ""}
+              onChange={(e) => setForm({ ...form, subtitle_en: e.target.value })}
+              placeholder={t("admin.description_placeholder")}
+            />
+          </div>
         </div>
 
         {/* Image Upload & Preview */}
@@ -73,7 +97,7 @@ export default function BannerForm({
             className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 focus:bg-white dark:focus:bg-slate-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-4 focus:ring-blue-500/10 rounded-2xl transition-all duration-300 outline-none text-slate-500 dark:text-slate-400 text-sm font-medium mb-3 placeholder:text-slate-400 dark:placeholder:text-slate-500"
             value={form.imageUrl}
             onChange={(e) => setForm({ ...form, imageUrl: e.target.value })}
-            placeholder="Or paste an image URL here..."
+            placeholder={t("admin.banner_image_url_placeholder")}
           />
 
           {uploading && (
@@ -87,7 +111,7 @@ export default function BannerForm({
             <div className="w-full h-32 rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-700 shadow-inner border border-slate-200/80 dark:border-slate-600 relative group mt-2">
               <img
                 src={getImageUrl(form.imageUrl)}
-                alt="Preview"
+                alt="Xem trước ảnh banner"
                 className="w-full h-full object-cover"
               />
             </div>

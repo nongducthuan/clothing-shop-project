@@ -36,12 +36,15 @@ export const getProducts = async (req: Request, res: Response): Promise<void> =>
 
 export const addProduct = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { name, description, price, import_price, image_url, gender, category_id } = req.body;
+        const { name, name_vi, name_en, description_vi, description_en, price, import_price, image_url, gender, category_id } = req.body;
         
         const product = await prisma.product.create({
             data: {
                 name,
-                description: description || null,
+                name_vi: name_vi || name || null,
+                name_en: name_en || name || null,
+                description_vi: description_vi || null,
+                description_en: description_en || null,
                 price,
                 import_price: import_price || 0,
                 image_url: image_url || null,
@@ -60,13 +63,16 @@ export const addProduct = async (req: Request, res: Response): Promise<void> => 
 export const editProduct = async (req: Request, res: Response): Promise<void> => {
     try {
         const { id } = req.params;
-        const { name, description, price, import_price, image_url, gender, category_id } = req.body;
+        const { name, name_vi, name_en, description_vi, description_en, price, import_price, image_url, gender, category_id } = req.body;
         
         const product = await prisma.product.update({
             where: { id: Number(id) },
             data: {
                 name,
-                description: description || null,
+                name_vi: name_vi !== undefined ? (name_vi || null) : undefined,
+                name_en: name_en !== undefined ? (name_en || null) : undefined,
+                description_vi: description_vi !== undefined ? (description_vi || null) : undefined,
+                description_en: description_en !== undefined ? (description_en || null) : undefined,
                 price,
                 import_price: import_price || 0,
                 image_url: image_url || null,

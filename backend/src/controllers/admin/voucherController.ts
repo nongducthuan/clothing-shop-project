@@ -4,13 +4,14 @@ import { Prisma } from '../../generated/prisma/client';
 
 export const createVoucherAdmin = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { productIds, categoryIds, applicable_category_id, code, description, discount_percent, max_discount_amount, min_order_value, usage_limit, start_date, end_date, apply_scope } = req.body;
+    const { productIds, categoryIds, applicable_category_id, code, description_vi, description_en, discount_percent, max_discount_amount, min_order_value, usage_limit, start_date, end_date, apply_scope } = req.body;
     
     await prisma.$transaction(async (tx) => {
       const voucher = await tx.voucher.create({
         data: {
           code,
-          description: description || null,
+          description_vi: description_vi || null,
+          description_en: description_en || null,
           discount_percent: discount_percent ? Number(discount_percent) : null,
           max_discount_amount: max_discount_amount ? Number(max_discount_amount) : null,
           min_order_value: Number(min_order_value) || 0,
@@ -55,14 +56,15 @@ export const createVoucherAdmin = async (req: Request, res: Response): Promise<v
 export const updateVoucherAdmin = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
-    const { productIds, categoryIds, code, description, discount_percent, max_discount_amount, min_order_value, usage_limit, start_date, end_date, apply_scope } = req.body;
+    const { productIds, categoryIds, code, description_vi, description_en, discount_percent, max_discount_amount, min_order_value, usage_limit, start_date, end_date, apply_scope } = req.body;
 
     await prisma.$transaction(async (tx) => {
       await tx.voucher.update({
         where: { id: Number(id) },
         data: {
           code,
-          description: description || null,
+          description_vi: description_vi !== undefined ? (description_vi || null) : undefined,
+          description_en: description_en !== undefined ? (description_en || null) : undefined,
           discount_percent: discount_percent ? Number(discount_percent) : null,
           max_discount_amount: max_discount_amount ? Number(max_discount_amount) : null,
           min_order_value: Number(min_order_value) || 0,

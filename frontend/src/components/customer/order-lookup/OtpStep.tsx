@@ -4,7 +4,7 @@ export default function OtpStep({ otp, setOtp, onSubmit, loading, onBack }) {
   return (
     <form onSubmit={onSubmit} className="space-y-6">
       <div className="text-center">
-        <label className="block text-sm font-semibold text-gray-600 dark:text-slate-300 mb-4">Enter the 6-digit code we just sent</label>
+        <label className="block text-sm font-semibold text-gray-600 dark:text-slate-300 mb-4">Nhập mã 6 số vừa được gửi cho bạn</label>
         <input
           type="text"
           required
@@ -20,11 +20,11 @@ export default function OtpStep({ otp, setOtp, onSubmit, loading, onBack }) {
         disabled={loading}
         className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg shadow-md transition disabled:opacity-70"
       >
-        {loading ? "Checking..." : "Confirm & View Orders"}
+        {loading ? "Đang kiểm tra..." : "Xác nhận & Xem đơn hàng"}
       </button>
       <div className="text-center mt-4">
         <button type="button" onClick={onBack} className="text-gray-500 dark:text-slate-400 hover:text-violet-600 dark:hover:text-violet-400 text-sm font-medium transition">
-          <i className="fa-solid fa-arrow-left mr-1"></i> Resend code or change Email?
+          <i className="fa-solid fa-arrow-left mr-1"></i> Gửi lại mã hoặc đổi Email?
         </button>
       </div>
     </form>

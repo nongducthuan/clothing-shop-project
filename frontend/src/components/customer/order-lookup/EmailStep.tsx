@@ -4,7 +4,7 @@ export default function EmailStep({ email, setEmail, onSubmit, loading }) {
   return (
     <form onSubmit={onSubmit} className="space-y-6">
       <div>
-        <label className="block text-sm font-semibold text-gray-600 dark:text-slate-300 mb-2">Purchasing Email</label>
+        <label className="block text-sm font-semibold text-gray-600 dark:text-slate-300 mb-2">Email mua hàng</label>
         <div className="relative">
           <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-400 pointer-events-none">
             <i className="fa-solid fa-envelope"></i>
@@ -23,7 +23,7 @@ export default function EmailStep({ email, setEmail, onSubmit, loading }) {
         disabled={loading}
         className="w-full bg-violet-600 hover:bg-violet-700 text-white font-bold py-3 rounded-lg shadow-md transition disabled:opacity-70"
       >
-        {loading ? <span><i className="fa-solid fa-circle-notch fa-spin mr-2"></i>Sending...</span> : "Send Verification Code"}
+        {loading ? <span><i className="fa-solid fa-circle-notch fa-spin mr-2"></i>Đang gửi...</span> : "Gửi mã xác minh"}
       </button>
     </form>
   );

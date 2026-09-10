@@ -19,6 +19,8 @@ export default function useSaleManager() {
 
   const [formData, setFormData] = useState({
     name: "",
+    name_vi: "",
+    name_en: "",
     discount_percent: "",
     start_date: "",
     end_date: "",
@@ -83,10 +85,14 @@ export default function useSaleManager() {
     }
   };
 
+  const emptySaleForm = { name: "", name_vi: "", name_en: "", discount_percent: "", start_date: "", end_date: "", apply_scope: "all" };
+
   const handleEdit = (sale) => {
     setEditingId(sale.id);
     setFormData({
-      name: sale.name,
+      name: sale.name || "",
+      name_vi: sale.name_vi || sale.name || "",
+      name_en: sale.name_en || sale.name || "",
       discount_percent: sale.discount_percent,
       start_date: sale.start_date ? sale.start_date.slice(0, 16) : "",
       end_date: sale.end_date ? sale.end_date.slice(0, 16) : "",
@@ -98,7 +104,7 @@ export default function useSaleManager() {
 
   const handleCancelEdit = () => {
     setEditingId(null);
-    setFormData({ name: "", discount_percent: "", start_date: "", end_date: "", apply_scope: "all" });
+    setFormData({ ...emptySaleForm });
     setApplyScope("all");
     setSelectedCategoryIds([]);
     setSelectedProductIds([]);
@@ -109,6 +115,8 @@ export default function useSaleManager() {
 
     const payload = {
       ...formData,
+      name_vi: (formData.name_vi || "").trim() || (formData.name || "").trim(),
+      name_en: (formData.name_en || "").trim() || (formData.name || "").trim(),
       apply_scope: applyScope,
       categoryIds: applyScope === "category" ? selectedCategoryIds : [],
       productIds: applyScope === "product" ? selectedProductIds : []
@@ -124,7 +132,7 @@ export default function useSaleManager() {
       }
       // Reset form
       setEditingId(null);
-      setFormData({ name: "", discount_percent: "", start_date: "", end_date: "", apply_scope: "all" });
+      setFormData({ ...emptySaleForm });
       setApplyScope("all");
       setSelectedCategoryIds([]);
       setSelectedProductIds([]);

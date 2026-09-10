@@ -26,17 +26,32 @@ export default function CategoryForm({
       </h3>
 
       <form onSubmit={handleSubmit} className="space-y-6 flex-1">
-        {/* Category Name */}
-        <div>
-          <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 ml-1">{t("admin.category")}</label>
-          <input
-            name="name"
-            value={form.name}
-            onChange={handleChange}
-            required
-            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 focus:bg-white dark:focus:bg-slate-700 focus:border-violet-500 dark:focus:border-violet-400 focus:ring-4 focus:ring-violet-500/10 rounded-2xl transition-all duration-300 outline-none text-slate-800 dark:text-slate-100 font-medium placeholder:text-slate-400 dark:placeholder:text-slate-500"
-            placeholder={t("admin.category_name_placeholder")}
-          />
+        {/* Category Name VI / EN */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 ml-1">{t("admin.name_vi_label")}</label>
+            <input
+              name="name_vi"
+              value={form.name_vi || ""}
+              onChange={(e) => { handleChange(e); setForm((prev) => ({ ...prev, name: e.target.value })); }}
+              required
+              className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 focus:bg-white dark:focus:bg-slate-700 focus:border-violet-500 dark:focus:border-violet-400 focus:ring-4 focus:ring-violet-500/10 rounded-2xl transition-all duration-300 outline-none text-slate-800 dark:text-slate-100 font-medium placeholder:text-slate-400 dark:placeholder:text-slate-500"
+              placeholder={t("admin.name_vi_placeholder")}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 ml-1">{t("admin.name_en_label")}</label>
+            <input
+              name="name_en"
+              value={form.name_en || ""}
+              onChange={handleChange}
+              className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 focus:bg-white dark:focus:bg-slate-700 focus:border-violet-500 dark:focus:border-violet-400 focus:ring-4 focus:ring-violet-500/10 rounded-2xl transition-all duration-300 outline-none text-slate-800 dark:text-slate-100 font-medium placeholder:text-slate-400 dark:placeholder:text-slate-500"
+              placeholder={t("admin.name_en_placeholder")}
+            />
+          </div>
+        </div>
+        {/* Hidden legacy name */}
+        <input type="hidden" name="name" value={form.name} readOnly />
 
           {recommendNames.length > 0 && (
             <div className="mt-3 p-4 border border-violet-100 dark:border-violet-900/50 rounded-[1.5rem] bg-violet-50/50 dark:bg-violet-950/30">
@@ -48,7 +63,7 @@ export default function CategoryForm({
                   <button
                     key={idx}
                     type="button"
-                    onClick={() => setForm((prev) => ({ ...prev, name: item.name }))}
+                    onClick={() => setForm((prev) => ({ ...prev, name: item.name, name_vi: item.name, name_en: item.name }))}
                     className="px-4 py-1.5 bg-white dark:bg-slate-700 border border-violet-100 dark:border-violet-800 rounded-full shadow-sm hover:bg-violet-600 hover:text-white dark:hover:bg-violet-600 text-violet-700 dark:text-violet-300 text-sm font-semibold transition-colors duration-300"
                   >
                     {item.name}
@@ -57,7 +72,6 @@ export default function CategoryForm({
               </div>
             </div>
           )}
-        </div>
 
         {/* Gender Selection */}
         <div>

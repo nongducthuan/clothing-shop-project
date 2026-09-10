@@ -13,7 +13,7 @@ export function useBannerManager() {
   const [banners, setBanners] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
   const [editingId, setEditingId] = useState(null);
-  const [form, setForm] = useState({ imageUrl: "", title: "", subtitle: "" });
+  const [form, setForm] = useState({ imageUrl: "", title: "", title_vi: "", title_en: "", subtitle: "", subtitle_vi: "", subtitle_en: "" });
 
   /**
    * Fetches all banners from the backend and maps field names for consistency.
@@ -66,7 +66,14 @@ export function useBannerManager() {
   const saveBanner = async (e) => {
     e.preventDefault();
     try {
-      const payload = { ...form, image_url: form.imageUrl };
+      const payload = {
+        ...form,
+        image_url: form.imageUrl,
+        title_vi: (form.title_vi || "").trim() || form.title.trim(),
+        title_en: (form.title_en || "").trim() || form.title.trim(),
+        subtitle_vi: (form.subtitle_vi || "").trim() || (form.subtitle || "").trim(),
+        subtitle_en: (form.subtitle_en || "").trim() || (form.subtitle || "").trim(),
+      };
       const endpoint = editingId ? `/admin/banners/${editingId}` : "/admin/banners";
       const method = editingId ? "put" : "post";
 
@@ -103,9 +110,13 @@ export function useBannerManager() {
    */
   const selectForEdit = (banner) => {
     setForm({
-      imageUrl: banner.image_url,
-      title: banner.title,
-      subtitle: banner.subtitle,
+      imageUrl: banner.image_url || "",
+      title: banner.title || "",
+      title_vi: banner.title_vi || banner.title || "",
+      title_en: banner.title_en || banner.title || "",
+      subtitle: banner.subtitle || "",
+      subtitle_vi: banner.subtitle_vi || banner.subtitle || "",
+      subtitle_en: banner.subtitle_en || banner.subtitle || "",
     });
     setEditingId(banner.id);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -116,7 +127,7 @@ export function useBannerManager() {
    */
   const resetForm = () => {
     setEditingId(null);
-    setForm({ imageUrl: "", title: "", subtitle: "" });
+    setForm({ imageUrl: "", title: "", title_vi: "", title_en: "", subtitle: "", subtitle_vi: "", subtitle_en: "" });
   };
 
   useEffect(() => {

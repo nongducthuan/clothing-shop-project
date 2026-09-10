@@ -80,7 +80,7 @@ export default function OrderDetailModal({ order, onClose, onOpenPaymentModal, h
                     {/* Badge thuộc tính */}
                     <div className="flex flex-wrap items-center gap-1.5 mt-1.5 text-[11px] font-medium text-slate-500 dark:text-slate-400">
                       <span className="bg-white dark:bg-slate-700 border border-slate-200/80 dark:border-slate-600 px-1.5 py-0.5 rounded text-slate-600 dark:text-slate-300">
-                        {t('order_details.color_label', 'Color')}: {item.color_name || item.color || "N/A"}
+                        {t('order_details.color_label', 'Color')}: {getLocalizedText(item, "color_name") || item.color_name || item.color || "N/A"}
                       </span>
                       <span className="bg-white dark:bg-slate-700 border border-slate-200/80 dark:border-slate-600 px-1.5 py-0.5 rounded text-slate-600 dark:text-slate-300">
                         {t('order_details.size_label', 'Size')}: {item.size || item.size_name || "N/A"}

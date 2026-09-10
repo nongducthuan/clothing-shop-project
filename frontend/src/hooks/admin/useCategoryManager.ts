@@ -22,7 +22,7 @@ export function useCategoryManager() {
   const [recommendNames, setRecommendNames] = useState([]);
 
   // Form State
-  const [form, setForm] = useState({ name: "", gender: "", image_url: "" });
+  const [form, setForm] = useState({ name: "", name_vi: "", name_en: "", gender: "", image_url: "" });
 
   /**
    * Fetches all categories and sorts them by a predefined gender order.
@@ -70,10 +70,15 @@ export function useCategoryManager() {
     e.preventDefault();
     setLoading(true);
     try {
+      const payload = {
+        ...form,
+        name_vi: (form.name_vi || "").trim() || form.name.trim(),
+        name_en: (form.name_en || "").trim() || form.name.trim(),
+      };
       if (editingId) {
-        await API.put(`/admin/categories/${editingId}`, form, authConfig);
+        await API.put(`/admin/categories/${editingId}`, payload, authConfig);
       } else {
-        await API.post("/admin/categories", form, authConfig);
+        await API.post("/admin/categories", payload, authConfig);
       }
       resetForm();
       await fetchCategories();
@@ -94,7 +99,9 @@ export function useCategoryManager() {
   const handleEdit = async (cat) => {
     setEditingId(cat.id);
     setForm({
-      name: cat.name,
+      name: cat.name || "",
+      name_vi: cat.name_vi || cat.name || "",
+      name_en: cat.name_en || cat.name || "",
       gender: cat.gender,
       image_url: cat.image_url || "",
     });
@@ -132,7 +139,7 @@ export function useCategoryManager() {
    */
   const resetForm = () => {
     setEditingId(null);
-    setForm({ name: "", gender: "", image_url: "" });
+    setForm({ name: "", name_vi: "", name_en: "", gender: "", image_url: "" });
     setCategoryImages([]);
     setRecommendNames([]);
   };

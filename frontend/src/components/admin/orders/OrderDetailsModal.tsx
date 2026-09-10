@@ -54,7 +54,7 @@ export default function OrderDetailsModal({ order, onClose, formatCurrency }) {
 // ==========================================
 
 const ReturnInfoSection = ({ order }) => {
-  const { t } = useLanguage();
+  const { t, getLocalizedLabel } = useLanguage();
   const bankInfo = order.refund_bank_info;
 
   const getReturnBadge = (status: string) => {
@@ -99,7 +99,7 @@ const ReturnInfoSection = ({ order }) => {
               {t("admin.return_reason")}
             </span>
             <span className="inline-block bg-slate-100 dark:bg-slate-600 text-slate-800 dark:text-slate-200 text-xs font-extrabold px-2.5 py-1 rounded-lg border border-slate-200/60">
-              {order.reason_code || t("admin.not_specified")}
+              {getLocalizedLabel("returnReason", order.reason_code) || t("admin.not_specified")}
             </span>
           </div>
 

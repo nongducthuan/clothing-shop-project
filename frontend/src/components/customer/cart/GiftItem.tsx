@@ -2,7 +2,7 @@ import { useLanguage } from "../../../context/LanguageContext";
 
 export default function GiftItem({ gift, detail, helpers, onSelectVariant }) {
   const { formatPrice, getImageUrl } = helpers;
-  const { t } = useLanguage();
+  const { t, getLocalizedText } = useLanguage();
 
   if (!detail) {
     return <div className="animate-pulse h-24 bg-slate-50 rounded-2xl"></div>;
@@ -53,7 +53,7 @@ export default function GiftItem({ gift, detail, helpers, onSelectVariant }) {
                 className="bg-white border border-slate-200 text-slate-800 text-xs rounded-lg px-2.5 py-1 focus:outline-none focus:border-slate-400 font-medium cursor-pointer shadow-sm"
               >
                 {detail.colors.map(c => (
-                  <option key={c.id} value={c.id}>{c.color_name}</option>
+                  <option key={c.id} value={c.id}>{getLocalizedText(c, "color_name") || c.color_name}</option>
                 ))}
               </select>
             </div>

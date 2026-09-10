@@ -3,7 +3,10 @@ import { useLanguage } from "../../../context/LanguageContext";
 
 interface PromotionFormData {
   name: string;
-  description: string;
+  name_vi: string;
+  name_en: string;
+  description_vi: string;
+  description_en: string;
   buy_product_id: number | string | null;
   gift_product_id: number | string | null;
   buy_quantity: number | string;
@@ -51,7 +54,7 @@ export default function PromotionForm({ state, actions, helpers }: PromotionForm
   const { formData, isLoading, editingId, products, searchBuyTerm, searchGetTerm } = state;
   const { handleInputChange, handleSubmit, handleResetForm, setSearchBuyTerm, setSearchGetTerm, setFormData } = actions;
   const { getCategoryName, getProductStock, getGenderStyle } = helpers;
-  const { getLocalizedText } = useLanguage();
+  const { t, getLocalizedText } = useLanguage();
 
   const getGenderLabel = (gender: string): string => {
     const g = (gender || "").toLowerCase();
@@ -93,7 +96,7 @@ export default function PromotionForm({ state, actions, helpers }: PromotionForm
           <i className="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
           <input
             type="text"
-            placeholder="Tìm theo tên SP, danh mục..."
+            placeholder={isBuyType ? t("admin.promo_search_buy_ph") : t("admin.promo_search_gift_ph")}
             className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 transition-all outline-none text-slate-800 dark:text-slate-100"
             value={currentSearchTerm}
             onChange={(e) => setSearch(e.target.value)}
@@ -133,7 +136,7 @@ export default function PromotionForm({ state, actions, helpers }: PromotionForm
                       </span>
                     )}
                     <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold uppercase tracking-tighter ${stockAmount > 0 ? "bg-amber-100 text-amber-600" : "bg-red-100 text-red-600"}`}>
-                      Tồn: {stockAmount}
+                      {t("admin.promo_stock")}: {stockAmount}
                     </span>
                   </div>
                 </div>
@@ -168,7 +171,7 @@ export default function PromotionForm({ state, actions, helpers }: PromotionForm
         <div className="bg-gradient-to-r from-purple-500 to-pink-500 p-6 px-8 flex justify-between items-center">
           <h2 className="text-xl font-bold text-white flex items-center gap-2 m-0 leading-none">
             <i className="fa-solid fa-gift text-purple-100"></i>
-            {editingId ? "Cập nhật khuyến mãi" : "Tạo khuyến mãi mới"}
+            {editingId ? t("admin.promo_form_title_edit") : t("admin.promo_form_title")}
           </h2>
         </div>
 
@@ -176,29 +179,55 @@ export default function PromotionForm({ state, actions, helpers }: PromotionForm
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
-                Tên chiến dịch <span className="text-red-500">*</span>
+                {t("admin.promo_name_label")} (VI) <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
-                name="name"
+                name="name_vi"
                 required
-                value={formData.name}
-                onChange={handleInputChange}
+                value={(formData as any).name_vi || ""}
+                onChange={(e) => { handleInputChange(e as any); setFormData((prev: any) => ({ ...prev, name: (e.target as HTMLInputElement).value })); }}
                 className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-indigo-500 text-sm outline-none transition-all text-slate-800 dark:text-slate-100"
-                placeholder="VD: Mua 2 áo tặng 1 thắt lưng"
+                placeholder={t("admin.promo_name_vi_placeholder")}
               />
             </div>
             <div>
               <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
-                Mô tả
+                {t("admin.promo_name_label")} (EN)
               </label>
               <input
                 type="text"
-                name="description"
-                value={formData.description}
+                name="name_en"
+                value={(formData as any).name_en || ""}
                 onChange={handleInputChange}
                 className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-indigo-500 text-sm outline-none transition-all text-slate-800 dark:text-slate-100"
-                placeholder="Hiển thị cho khách hàng"
+                placeholder={t("admin.promo_name_en_placeholder")}
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                {t("admin.description_vi_label")}
+              </label>
+              <input
+                type="text"
+                name="description_vi"
+                value={(formData as any).description_vi || ""}
+                onChange={handleInputChange}
+                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-indigo-500 text-sm outline-none transition-all text-slate-800 dark:text-slate-100"
+                placeholder={t("admin.description_vi_placeholder_vi")}
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                {t("admin.description_en_label")}
+              </label>
+              <input
+                type="text"
+                name="description_en"
+                value={(formData as any).description_en || ""}
+                onChange={handleInputChange}
+                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-indigo-500 text-sm outline-none transition-all text-slate-800 dark:text-slate-100"
+                placeholder={t("admin.description_en_placeholder_en")}
               />
             </div>
           </div>
@@ -208,10 +237,10 @@ export default function PromotionForm({ state, actions, helpers }: PromotionForm
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-base font-bold text-indigo-800 dark:text-indigo-300 flex items-center gap-2 m-0 leading-none">
                   <span className="bg-indigo-200 dark:bg-indigo-700 text-indigo-800 dark:text-indigo-200 w-6 h-6 rounded-full flex items-center justify-center text-xs">1</span>
-                  Khách hàng mua
+                  {t("admin.promo_buy_title")}
                 </h3>
                 <div className="flex items-center gap-2">
-                  <label className="text-xs font-semibold text-indigo-500 dark:text-indigo-400 uppercase tracking-wider">SL <span className="text-red-500">*</span></label>
+                  <label className="text-xs font-semibold text-indigo-500 dark:text-indigo-400 uppercase tracking-wider">{t("admin.promo_qty_buy")} <span className="text-red-500">*</span></label>
                   <input
                     type="number"
                     name="buy_quantity"
@@ -231,10 +260,10 @@ export default function PromotionForm({ state, actions, helpers }: PromotionForm
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-base font-bold text-purple-800 dark:text-purple-300 flex items-center gap-2 m-0 leading-none">
                   <span className="bg-purple-200 dark:bg-purple-700 text-purple-800 dark:text-purple-200 w-6 h-6 rounded-full flex items-center justify-center text-xs">2</span>
-                  Khách hàng được tặng
+                  {t("admin.promo_gift_title")}
                 </h3>
                 <div className="flex items-center gap-2">
-                  <label className="text-xs font-semibold text-purple-500 dark:text-purple-400 uppercase tracking-wider">SL <span className="text-red-500">*</span></label>
+                  <label className="text-xs font-semibold text-purple-500 dark:text-purple-400 uppercase tracking-wider">{t("admin.promo_qty_gift")} <span className="text-red-500">*</span></label>
                   <input
                     type="number"
                     name="gift_quantity"
@@ -256,7 +285,7 @@ export default function PromotionForm({ state, actions, helpers }: PromotionForm
               className="p-3 bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl cursor-pointer transition-colors border border-transparent focus-within:border-indigo-200 focus-within:ring-2 focus-within:ring-indigo-500"
               onClick={() => startDateRef.current?.showPicker()}
             >
-              <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1 cursor-pointer">Ngày bắt đầu <span className="text-red-500">*</span></label>
+              <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1 cursor-pointer">{t("admin.promo_start")} <span className="text-red-500">*</span></label>
               <input
                 ref={startDateRef}
                 type="datetime-local"
@@ -272,7 +301,7 @@ export default function PromotionForm({ state, actions, helpers }: PromotionForm
               className="p-3 bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl cursor-pointer transition-colors border border-transparent focus-within:border-indigo-200 focus-within:ring-2 focus-within:ring-indigo-500"
               onClick={() => endDateRef.current?.showPicker()}
             >
-              <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1 cursor-pointer">Ngày kết thúc <span className="text-red-500">*</span></label>
+              <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1 cursor-pointer">{t("admin.end_label")} <span className="text-red-500">*</span></label>
               <input
                 ref={endDateRef}
                 type="datetime-local"
@@ -285,7 +314,7 @@ export default function PromotionForm({ state, actions, helpers }: PromotionForm
             </div>
 
             <div className="p-3 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
-              <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Tối đa quà / đơn</label>
+              <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">{t("admin.promo_limit_per_order")}</label>
               <input
                 type="number"
                 name="max_gift_per_order"
@@ -293,12 +322,12 @@ export default function PromotionForm({ state, actions, helpers }: PromotionForm
                 value={formData.max_gift_per_order}
                 onChange={handleInputChange}
                 className="w-full bg-transparent border-none p-0 text-sm font-medium text-slate-700 dark:text-slate-200 outline-none no-spinner"
-                placeholder="Trống = Không giới hạn"
+                placeholder={t("admin.promo_limit_per_ph")}
               />
             </div>
 
             <div className="p-3 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
-              <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Giới hạn cả chiến dịch</label>
+              <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">{t("admin.promo_limit_total")}</label>
               <input
                 type="number"
                 name="total_gift_limit"
@@ -306,7 +335,7 @@ export default function PromotionForm({ state, actions, helpers }: PromotionForm
                 value={formData.total_gift_limit}
                 onChange={handleInputChange}
                 className="w-full bg-transparent border-none p-0 text-sm font-medium text-slate-700 dark:text-slate-200 outline-none no-spinner"
-                placeholder="Tổng tồn kho phân bổ"
+                placeholder={t("admin.promo_limit_total_ph")}
               />
             </div>
           </div>
@@ -314,7 +343,7 @@ export default function PromotionForm({ state, actions, helpers }: PromotionForm
           <div className="flex flex-col md:flex-row items-center justify-between gap-6 pt-6 border-t border-slate-100 dark:border-slate-700">
             <div className="flex items-center gap-8 w-full md:w-auto">
               <div>
-                <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2 text-center">Độ ưu tiên</label>
+                <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2 text-center">{t("admin.promo_priority")}</label>
                 <input
                   type="number"
                   name="priority"
@@ -333,8 +362,8 @@ export default function PromotionForm({ state, actions, helpers }: PromotionForm
                     <div className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${formData.is_stackable ? "transform translate-x-4" : ""}`}></div>
                   </div>
                   <div className="ml-3 text-sm font-semibold text-slate-700 dark:text-slate-200">
-                    Cộng dồn
-                    <span className="block text-[10px] font-normal text-slate-400 dark:text-slate-400">Cho phép dùng kèm Mã giảm giá</span>
+                    {t("admin.promo_stackable")}
+                    <span className="block text-[10px] font-normal text-slate-400 dark:text-slate-400">{t("admin.promo_stackable_desc")}</span>
                   </div>
                 </label>
               </div>
@@ -343,11 +372,11 @@ export default function PromotionForm({ state, actions, helpers }: PromotionForm
             <div className="flex gap-4 w-full md:w-auto">
               {editingId && (
                 <button type="button" onClick={handleResetForm} className="w-full md:w-auto px-6 py-3 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-bold rounded-xl shadow-sm transition-all whitespace-nowrap uppercase tracking-wider text-xs">
-                  Hủy
+                  {t("common.cancel")}
                 </button>
               )}
               <button type="submit" disabled={isLoading} className="w-full md:w-auto px-8 py-3 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold rounded-xl shadow-md shadow-purple-200 transition-all whitespace-nowrap uppercase tracking-wider text-xs">
-                {isLoading ? "Đang lưu..." : editingId ? "Cập nhật" : "Tạo mới"}
+                {isLoading ? t("common.loading") : editingId ? t("admin.save_changes") : t("admin.add_new_promotion")}
               </button>
             </div>
           </div>

@@ -85,26 +85,26 @@ export default function Report() {
           <section>
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-50 dark:bg-indigo-900/30 rounded-full mb-6 border border-indigo-100 dark:border-indigo-800/50">
               <i className="fa-solid fa-calendar-week text-indigo-500 text-xs"></i>
-              <h3 className="text-[10px] font-black text-indigo-800 dark:text-indigo-300 uppercase tracking-widest m-0 leading-none">Tổng quan 7 ngày</h3>
+              <h3 className="text-[10px] font-black text-indigo-800 dark:text-indigo-300 uppercase tracking-widest m-0 leading-none">{t("admin.overview_7days")}</h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <StatCard title="Đơn hàng" value={summary?.weeklyOrders ?? 0} color="text-indigo-600 dark:text-indigo-400" />
-              <StatCard title="Doanh thu" value={formatCurrency(summary?.weeklyRevenue ?? 0)} color="text-amber-500 dark:text-amber-400" />
-              <StatCard title="Lợi nhuận" value={formatCurrency(summary?.weeklyProfit ?? 0)} color="text-emerald-500 dark:text-emerald-400" />
-              <StatCard title="Đã bán" value={summary?.productsSoldWeek ?? 0} color="text-rose-500 dark:text-rose-400" />
+              <StatCard title={t("admin.stat_orders")} value={summary?.weeklyOrders ?? 0} color="text-indigo-600 dark:text-indigo-400" />
+              <StatCard title={t("admin.stat_revenue")} value={formatCurrency(summary?.weeklyRevenue ?? 0)} color="text-amber-500 dark:text-amber-400" />
+              <StatCard title={t("admin.stat_profit")} value={formatCurrency(summary?.weeklyProfit ?? 0)} color="text-emerald-500 dark:text-emerald-400" />
+              <StatCard title={t("admin.stat_sold")} value={summary?.productsSoldWeek ?? 0} color="text-rose-500 dark:text-rose-400" />
             </div>
           </section>
 
           <section>
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-purple-50 dark:bg-purple-900/30 rounded-full mb-6 border border-purple-100 dark:border-purple-800/50">
               <i className="fa-solid fa-calendar-days text-purple-500 text-xs"></i>
-              <h3 className="text-[10px] font-black text-purple-800 dark:text-purple-300 uppercase tracking-widest m-0 leading-none">Tổng quan 30 ngày</h3>
+              <h3 className="text-[10px] font-black text-purple-800 dark:text-purple-300 uppercase tracking-widest m-0 leading-none">{t("admin.overview_30days")}</h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <StatCard title="Đơn hàng" value={summary?.monthlyOrders ?? 0} color="text-emerald-600 dark:text-emerald-400" />
-              <StatCard title="Doanh thu" value={formatCurrency(summary?.monthlyRevenue ?? 0)} color="text-purple-600 dark:text-purple-400" />
-              <StatCard title="Lợi nhuận" value={formatCurrency(summary?.monthlyProfit ?? 0)} color="text-teal-600 dark:text-teal-400" />
-              <StatCard title="Đã bán" value={summary?.productsSoldMonth ?? 0} color="text-blue-600 dark:text-blue-400" />
+              <StatCard title={t("admin.stat_orders")} value={summary?.monthlyOrders ?? 0} color="text-emerald-600 dark:text-emerald-400" />
+              <StatCard title={t("admin.stat_revenue")} value={formatCurrency(summary?.monthlyRevenue ?? 0)} color="text-purple-600 dark:text-purple-400" />
+              <StatCard title={t("admin.stat_profit")} value={formatCurrency(summary?.monthlyProfit ?? 0)} color="text-teal-600 dark:text-teal-400" />
+              <StatCard title={t("admin.stat_sold")} value={summary?.productsSoldMonth ?? 0} color="text-blue-600 dark:text-blue-400" />
             </div>
           </section>
         </div>

@@ -3,7 +3,7 @@ import API from "../../services/apiClient";
 import { useLanguage } from "../../context/LanguageContext";
 
 export function useReport() {
-  const { getLocalizedText, t } = useLanguage();
+  const { getLocalizedText, getLocalizedLabel, t } = useLanguage();
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -35,71 +35,37 @@ export function useReport() {
   const summary = stats;
   const { revenue7Days, orderStatus, revenueMonths, categoryStats, returnStatuses, returnReasons } = stats;
 
-  // Nhãn tiếng Việt cho trạng thái đơn hàng / đổi trả
-  const orderStatusLabel = (status) => {
-    const keyMap = {
-      Pending: "order_status.pending",
-      Confirmed: "order_status.confirmed",
-      Shipping: "order_status.shipping",
-      Delivered: "order_status.delivered",
-      Cancelled: "order_status.cancelled"
-    };
-    return keyMap[status] ? t(keyMap[status], status) : status;
-  };
-
-  const returnStatusLabel = (status) => {
-    const keyMap = {
-      Pending: "order_status.return_pending",
-      Approved: "order_status.return_approved",
-      Rejected: "order_status.return_rejected"
-    };
-    return keyMap[status] ? t(keyMap[status], status) : status;
-  };
-
-  // Nhãn tiếng Việt cho lý do đổi trả
-  const reasonLabel = (reason) => {
-    if (!reason) return "Khác";
-    const reasonMap = {
-      "Damaged": "Hàng bị hỏng",
-      "Wrong item": "Giao nhầm hàng",
-      "Change mind": "Đổi ý không mua",
-      "Not as described": "Không giống mô tả",
-      "Other": "Khác"
-    };
-    return reasonMap[reason] || (reason.charAt(0).toUpperCase() + reason.slice(1));
-  };
-
-  // Xử lý dữ liệu cho các biểu đồ
+  // Xử lý dữ liệu cho các biểu đồ (header dịch qua i18n)
   const weeklyChartData = [
-    ["Ngày", "Doanh thu", "Lợi nhuận"],
+    [t("admin.chart_date"), t("admin.chart_revenue"), t("admin.chart_profit")],
     ...(revenue7Days || []).map(r => [r.day, Number(r.revenue), Number(r.profit)])
   ];
 
   const statusPieData = [
-    ["Trạng thái", "Số lượng"],
+    [t("admin.chart_status"), t("admin.chart_quantity")],
     ...(orderStatus || [])
       .filter(r => ["Pending", "Confirmed", "Shipping", "Delivered", "Cancelled"].includes(r.status))
-      .map(r => [orderStatusLabel(r.status), Number(r.quantity)])
+      .map(r => [getLocalizedLabel("orderStatus", r.status), Number(r.quantity)])
   ];
 
   const yearlyTrendData = [
-    ["Tháng", "Doanh thu", "Lợi nhuận"],
+    [t("admin.chart_month"), t("admin.chart_revenue"), t("admin.chart_profit")],
     ...(revenueMonths || []).map(r => [r.month_label, Number(r.revenue), Number(r.profit)])
   ];
 
   const categoryRevenueData = [
-    ["Danh mục", "Doanh thu"],
+    [t("admin.chart_category"), t("admin.chart_revenue")],
     ...(categoryStats || []).map(r => [getLocalizedText(r, "category_name") || r.category_name, Number(r.total_revenue)])
   ];
 
   const returnApprovalData = [
-    ["Trạng thái", "Số lượng"],
-    ...(returnStatuses || []).map(r => [returnStatusLabel(r.status), Number(r.quantity)])
+    [t("admin.chart_status"), t("admin.chart_quantity")],
+    ...(returnStatuses || []).map(r => [getLocalizedLabel("returnStatus", r.status), Number(r.quantity)])
   ];
 
   const reasonData = [
-    ["Lý do", "Số lượng"],
-    ...(returnReasons || []).map(r => [reasonLabel(r.reason), Number(r.quantity)])
+    [t("admin.chart_reason"), t("admin.chart_quantity")],
+    ...(returnReasons || []).map(r => [getLocalizedLabel("returnReason", r.reason) || t("admin.chart_no_data"), Number(r.quantity)])
   ];
 
   return {

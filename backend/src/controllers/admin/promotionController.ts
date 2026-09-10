@@ -20,7 +20,10 @@ export const createPromotion = async (req: Request, res: Response): Promise<void
         const newPromo = await prisma.buyXGetYPromotion.create({
             data: {
                 name: data.name,
-                description: data.description,
+                name_vi: data.name_vi || data.name || null,
+                name_en: data.name_en || data.name || null,
+                description_vi: data.description_vi || null,
+                description_en: data.description_en || null,
                 buy_product_id: Number(data.buy_product_id),
                 buy_quantity: Number(data.buy_quantity),
                 gift_product_id: Number(data.gift_product_id),
@@ -50,7 +53,10 @@ export const updatePromotion = async (req: Request, res: Response): Promise<void
             where: { id: Number(id) },
             data: {
                 name: data.name,
-                description: data.description,
+                name_vi: data.name_vi !== undefined ? (data.name_vi || null) : undefined,
+                name_en: data.name_en !== undefined ? (data.name_en || null) : undefined,
+                description_vi: data.description_vi !== undefined ? (data.description_vi || null) : undefined,
+                description_en: data.description_en !== undefined ? (data.description_en || null) : undefined,
                 buy_product_id: Number(data.buy_product_id),
                 buy_quantity: Number(data.buy_quantity),
                 gift_product_id: Number(data.gift_product_id),

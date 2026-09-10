@@ -15,9 +15,17 @@ export const getBanners = async (req: Request, res: Response): Promise<void> => 
 
 export const addBanner = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { image_url, title, subtitle } = req.body;
+        const { image_url, title, title_vi, title_en, subtitle, subtitle_vi, subtitle_en } = req.body;
         const banner = await prisma.banner.create({
-            data: { image_url, title, subtitle }
+            data: {
+                image_url,
+                title,
+                title_vi: title_vi || title || null,
+                title_en: title_en || title || null,
+                subtitle: subtitle || null,
+                subtitle_vi: subtitle_vi || subtitle || null,
+                subtitle_en: subtitle_en || subtitle || null,
+            }
         });
         res.status(201).json({ id: banner.id, message: "Banner added successfully" });
     } catch (err) {
@@ -29,10 +37,18 @@ export const addBanner = async (req: Request, res: Response): Promise<void> => {
 export const editBanner = async (req: Request, res: Response): Promise<void> => {
     try {
         const { id } = req.params;
-        const { image_url, title, subtitle } = req.body;
+        const { image_url, title, title_vi, title_en, subtitle, subtitle_vi, subtitle_en } = req.body;
         await prisma.banner.update({
             where: { id: Number(id) },
-            data: { image_url, title, subtitle }
+            data: {
+                image_url,
+                title,
+                title_vi: title_vi !== undefined ? (title_vi || null) : undefined,
+                title_en: title_en !== undefined ? (title_en || null) : undefined,
+                subtitle: subtitle !== undefined ? (subtitle || null) : undefined,
+                subtitle_vi: subtitle_vi !== undefined ? (subtitle_vi || null) : undefined,
+                subtitle_en: subtitle_en !== undefined ? (subtitle_en || null) : undefined,
+            }
         });
         res.json({ message: "Banner updated successfully" });
     } catch (err) {
