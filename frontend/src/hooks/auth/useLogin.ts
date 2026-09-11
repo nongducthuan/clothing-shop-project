@@ -2,6 +2,7 @@ import { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../../services/apiClient.js";
 import { AuthContext } from "../../context/AuthContext.jsx";
+import { useLanguage } from "../../context/LanguageContext.jsx";
 
 export function useLogin() {
   const [form, setForm] = useState({ identifier: "", password: "" });
@@ -10,6 +11,7 @@ export function useLogin() {
 
   const navigate = useNavigate();
   const { setUser } = useContext(AuthContext);
+  const { t } = useLanguage();
 
   /**
    * Synchronizes local form state with input changes.
@@ -34,7 +36,7 @@ export function useLogin() {
 
       // Ensure necessary data is present in the response
       if (!user || !token) {
-        setError("Invalid response from server. Please try again.");
+        setError(t("auth.invalid_response"));
         setIsLoading(false);
         return;
       }
@@ -53,7 +55,7 @@ export function useLogin() {
         navigate("/");
       }
     } catch (err) {
-      const errorMessage = err.response?.data?.message || "Login failed. Please check your credentials.";
+      const errorMessage = err.response?.data?.message || t("auth.login_failed");
       setError(errorMessage);
     } finally {
       setIsLoading(false);

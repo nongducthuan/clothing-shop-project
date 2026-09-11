@@ -44,29 +44,6 @@ export default function VoucherForm({ formData, setFormData, onSubmit, editingId
         </div>
 
         <form onSubmit={onSubmit} className="p-6 space-y-4 flex-grow flex flex-col">
-          {/* Description VI / EN */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5 ml-1">{t("admin.description_vi_label")}</label>
-              <input
-                type="text"
-                placeholder={t("admin.description_vi_placeholder_vi")}
-                value={formData.description_vi || ""}
-                className="w-full p-4 bg-slate-50 dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 rounded-2xl focus:ring-2 focus:ring-indigo-500 font-medium outline-none transition-all text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
-                onChange={(e) => setFormData({ ...formData, description_vi: e.target.value })}
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5 ml-1">{t("admin.description_en_label")}</label>
-              <input
-                type="text"
-                placeholder={t("admin.description_en_placeholder_en")}
-                value={formData.description_en || ""}
-                className="w-full p-4 bg-slate-50 dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 rounded-2xl focus:ring-2 focus:ring-indigo-500 font-medium outline-none transition-all text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
-                onChange={(e) => setFormData({ ...formData, description_en: e.target.value })}
-              />
-            </div>
-          </div>
           {/* Code & Discount % */}
           <div className="grid grid-cols-2 gap-3">
             <input

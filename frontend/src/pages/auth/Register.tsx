@@ -1,11 +1,13 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { useRegister } from "../../hooks/auth/useRegister";
+import { useLanguage } from "../../context/LanguageContext";
 import AuthInput from "../../components/auth/AuthInput";
 import AuthAlert from "../../components/auth/AuthAlert";
 
 export default function Register() {
   const { state, actions } = useRegister();
+  const { t } = useLanguage();
   const { form, error, success, isLoading } = state;
   const { handleChange, handleSubmit } = actions;
 
@@ -16,10 +18,10 @@ export default function Register() {
         {/* Header Section */}
         <div className="text-center mb-10">
           <h2 className="text-3xl sm:text-4xl font-medium text-slate-900 dark:text-slate-100 tracking-tight mb-3">
-            Create an account
+            {t("auth.register_title")}
           </h2>
           <p className="text-slate-500 dark:text-slate-400">
-            Join us to get the best shopping experience.
+            {t("auth.register_subtitle")}
           </p>
         </div>
 
@@ -31,27 +33,27 @@ export default function Register() {
 
           <form onSubmit={handleSubmit} className="space-y-2">
             <AuthInput
-              label="Full Name"
+              label={t("auth.fullname_label")}
               name="name"
               type="text"
-              placeholder="John Doe"
+              placeholder={t("auth.fullname_placeholder")}
               value={form.name}
               onChange={handleChange}
               required
             />
 
             <AuthInput
-              label="Email Address"
+              label={t("auth.email_label")}
               name="email"
               type="email"
-              placeholder="name@example.com"
+              placeholder={t("auth.email_placeholder")}
               value={form.email}
               onChange={handleChange}
               required
             />
 
             <AuthInput
-              label="Phone Number"
+              label={t("auth.phone_label")}
               name="phone"
               type="tel"
               placeholder="0901234567"
@@ -61,20 +63,20 @@ export default function Register() {
             />
 
             <AuthInput
-              label="Password"
+              label={t("auth.password_label")}
               name="password"
               type="password"
-              placeholder="At least 6 characters"
+              placeholder={t("auth.password_min_placeholder")}
               value={form.password}
               onChange={handleChange}
               required
             />
 
             <AuthInput
-              label="Confirm Password"
+              label={t("auth.confirm_password_label")}
               name="confirmPassword"
               type="password"
-              placeholder="Match your password"
+              placeholder={t("auth.confirm_password_placeholder")}
               value={form.confirmPassword}
               onChange={handleChange}
               required
@@ -86,16 +88,16 @@ export default function Register() {
                 disabled={isLoading || !!success}
                 className="w-full py-4 bg-slate-900 dark:bg-violet-600 text-white rounded-full font-medium text-base hover:bg-slate-800 dark:hover:bg-violet-700 transition-colors disabled:opacity-70 disabled:cursor-not-allowed shadow-md"
               >
-                {isLoading ? "Processing..." : "Sign Up"}
+                {isLoading ? t("auth.processing") : t("auth.signup")}
               </button>
             </div>
           </form>
 
           {/* Footer Section */}
           <div className="mt-8 text-center text-sm">
-            <span className="text-slate-500 dark:text-slate-400">Already have an account? </span>
+            <span className="text-slate-500 dark:text-slate-400">{t("auth.have_account")} </span>
             <Link to="/login" className="font-medium text-slate-900 dark:text-violet-400 hover:underline underline-offset-4 transition-colors">
-              Sign in
+              {t("auth.signin_link")}
             </Link>
           </div>
 

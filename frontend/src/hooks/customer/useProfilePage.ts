@@ -4,6 +4,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import API from "../../services/apiClient.js";
 import { getImageUrl } from "../../utils/imageUtils";
 import { useToast } from "../../context/ToastContext";
+import { useLanguage } from "../../context/LanguageContext";
 
 const TIER_CONFIG = {
   Normal: { next: 5000000, color: "text-slate-400", bg: "bg-slate-100", icon: "fa-shield-halved", label: "Bronze" },
@@ -24,6 +25,7 @@ const INITIAL_RETURN_DATA = {
 
 export function useProfilePage() {
   const { showToast } = useToast();
+  const { t } = useLanguage();
   const { user, logout, tier, refreshUser } = useContext(AuthContext);
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -68,10 +70,10 @@ export function useProfilePage() {
     const paymentResult = searchParams.get("resultCode");
     if (paymentResult) {
       if (paymentResult === "0") {
-        showToast("Order paid successfully! Thank you.", "success");
+        showToast(t("profile.order_paid"), "success");
         fetchOrders(); // Refresh orders to show 'Paid' status
       } else {
-        showToast("Payment failed or was cancelled.", "error");
+        showToast(t("profile.payment_failed"), "error");
       }
       const newParams = new URLSearchParams(searchParams);
       newParams.delete("resultCode");
@@ -149,13 +151,13 @@ export function useProfilePage() {
     const { bankName, bankNumber, accountHolder, reason, note, images } = returnData;
 
     if (!bankName || !bankNumber || !accountHolder) {
-      showToast("Please fill in all bank details.", "warning");
+      showToast(t("profile.fill_bank"), "warning");
       return;
     }
 
     const currentOrder = orders.find((o) => o.id === returnOrderId);
     if (!currentOrder?.email) {
-      showToast("Order email information not found!", "error");
+      showToast(t("profile.order_email_not_found"), "error");
       return;
     }
 
@@ -177,24 +179,24 @@ export function useProfilePage() {
       );
 
       if (response.status === 200 || response.status === 201) {
-        showToast("Return request submitted successfully! Your order is being processed.", "success");
+        showToast(t("profile.return_submitted"), "success");
         setShowReturnModal(false);
         fetchOrders();
       }
     } catch (error) {
       console.error("Connection error:", error);
-      showToast(error.response?.data?.message || "Unable to connect to the server or process request.", "error");
+      showToast(error.response?.data?.message || t("profile.connect_error"), "error");
     }
   };
 
   const handleCancelReturn = async (orderId) => {
-    if (!window.confirm("Are you sure you want to cancel this return request?")) return;
+    if (!window.confirm(t("lookup.cancel_return_confirm"))) return;
     try {
       const token = localStorage.getItem("token");
       await API.delete(`/orders/${orderId}/return`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      showToast("Return request cancelled. Your order is back to Delivered.", "success");
+      showToast(t("lookup.return_cancelled"), "success");
       setOrders((prevOrders: any[]) =>
         prevOrders.map((order) =>
           order.id === orderId
@@ -204,7 +206,7 @@ export function useProfilePage() {
       );
       fetchOrders();
     } catch (error: any) {
-      showToast(error.response?.data?.message || "Unable to cancel return request.", "error");
+      showToast(error.response?.data?.message || t("lookup.cancel_return_error"), "error");
     }
   };
 
@@ -220,11 +222,11 @@ export function useProfilePage() {
         { phone },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      showToast("Profile updated successfully!", "success");
+      showToast(t("profile.profile_updated"), "success");
       refreshUser();
     } catch (error) {
       console.error("Update profile error:", error);
-      showToast("Failed to update profile. " + (error.response?.data?.message || ""), "error");
+      showToast(t("profile.update_failed") + (error.response?.data?.message || ""), "error");
     }
   };
 
@@ -235,15 +237,15 @@ export function useProfilePage() {
 
   const changePassword = async () => {
     if (!currentPassword || !newPassword || !confirmPassword) {
-      showToast("Please fill in all password fields.", "warning");
+      showToast(t("profile.fill_password"), "warning");
       return;
     }
     if (newPassword.length < 6) {
-      showToast("New password must be at least 6 characters.", "warning");
+      showToast(t("profile.password_too_short"), "warning");
       return;
     }
     if (newPassword !== confirmPassword) {
-      showToast("New password and confirm password do not match.", "warning");
+      showToast(t("profile.password_mismatch"), "warning");
       return;
     }
 
@@ -255,13 +257,13 @@ export function useProfilePage() {
         { currentPassword, newPassword },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      showToast("Password changed successfully!", "success");
+      showToast(t("profile.password_changed"), "success");
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
     } catch (error) {
       console.error("Change password error:", error);
-      showToast(error.response?.data?.message || "Failed to change password.", "error");
+      showToast(error.response?.data?.message || t("profile.password_failed"), "error");
     } finally {
       setIsChangingPassword(false);
     }

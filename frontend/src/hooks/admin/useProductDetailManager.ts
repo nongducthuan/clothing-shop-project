@@ -20,7 +20,7 @@ export function useProductInventory(productId) {
   const [selectedColorId, setSelectedColorId] = useState(null);
 
   // Form States
-  const [colorForm, setColorForm] = useState({ color_name: "", color_code: "#000000", image_url: "" });
+  const [colorForm, setColorForm] = useState({ color_name: "", color_name_vi: "", color_name_en: "", color_code: "#000000", image_url: "" });
   const [sizeForm, setSizeForm] = useState({ size: "S", stock: 10 });
 
   // UI States
@@ -87,7 +87,7 @@ export function useProductInventory(productId) {
       });
 
       // Reset form & refresh data
-      setColorForm({ color_name: "", color_code: "#000000", image_url: "" });
+      setColorForm({ color_name: "", color_name_vi: "", color_name_en: "", color_code: "#000000", image_url: "" });
       fetchProductData();
       showToast("Color added successfully!", "success");
     } catch (err) {

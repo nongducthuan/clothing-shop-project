@@ -1,11 +1,13 @@
 import { useState } from "react";
 import API from "../../services/apiClient";
 import { useToast } from "../../context/ToastContext";
+import { useLanguage } from "../../context/LanguageContext";
 
 type AxiosErr = { response?: { data?: { message?: string } } };
 
 export function useOrderLookup() {
   const { showToast } = useToast();
+  const { t } = useLanguage();
   const [step, setStep] = useState(1);
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
@@ -46,7 +48,7 @@ export function useOrderLookup() {
       await API.post("/orders/otp/send", { email });
       setStep(2);
     } catch (err: unknown) {
-      showToast("Error sending OTP", "error");
+      showToast(t("lookup.otp_send_error"), "error");
     } finally {
       setLoading(false);
     }
@@ -63,7 +65,7 @@ export function useOrderLookup() {
       setOrders(res.data.orders);
       setStep(3);
     } catch (err: unknown) {
-      showToast("Incorrect or expired OTP code", "error");
+      showToast(t("lookup.otp_invalid"), "error");
     } finally {
       setLoading(false);
     }
@@ -90,7 +92,7 @@ export function useOrderLookup() {
       if (res.data.payUrl) {
         window.location.href = res.data.payUrl;
       } else {
-        showToast(res.data.message || "Payment method updated successfully!", "success");
+        showToast(res.data.message || t("lookup.payment_updated"), "success");
         setPaymentModalOrder(null);
         if (email && otp) {
           try {
@@ -103,7 +105,7 @@ export function useOrderLookup() {
       }
     } catch (err: unknown) {
       const axErr = err as AxiosErr;
-      showToast(axErr.response?.data?.message || "Error initiating payment", "error");
+      showToast(axErr.response?.data?.message || t("lookup.payment_error"), "error");
     } finally {
       setLoading(false);
     }
@@ -167,7 +169,7 @@ export function useOrderLookup() {
       );
 
       // 7. Reset form and show success message
-      showToast("Return request submitted successfully!", "success");
+      showToast(t("lookup.return_success"), "success");
       setStep(3); // Return to order list
       setSelectedOrder(null);
       setReturnForm({
@@ -182,14 +184,14 @@ export function useOrderLookup() {
     } catch (err: unknown) {
       const axErr = err as AxiosErr;
       console.error("Error submitting return request:", err);
-      showToast(axErr.response?.data?.message || "Error submitting return request", "error");
+      showToast(axErr.response?.data?.message || t("lookup.return_error"), "error");
     } finally {
       setLoading(false);
     }
   };
 
   const handleCancelReturn = async (orderId: number | string) => {
-    if (!window.confirm("Are you sure you want to cancel this return request?")) return;
+    if (!window.confirm(t("lookup.cancel_return_confirm"))) return;
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
@@ -197,7 +199,7 @@ export function useOrderLookup() {
         data: { email },
         headers: token ? { Authorization: `Bearer ${token}` } : {}
       });
-      showToast("Return request cancelled. Your order is back to Delivered.", "success");
+      showToast(t("lookup.return_cancelled"), "success");
       setOrders((prevOrders: any[]) =>
         prevOrders.map((order) =>
           order.id === orderId
@@ -207,7 +209,7 @@ export function useOrderLookup() {
       );
     } catch (err: unknown) {
       const axErr = err as AxiosErr;
-      showToast(axErr.response?.data?.message || "Unable to cancel return request", "error");
+      showToast(axErr.response?.data?.message || t("lookup.cancel_return_error"), "error");
     } finally {
       setLoading(false);
     }

@@ -130,12 +130,14 @@ export const getProductDetail = async (req: Request, res: Response): Promise<voi
 export const addColor = async (req: Request, res: Response): Promise<void> => {
     try {
         const { productId } = req.params;
-        const { color_name, color_code, image_url } = req.body;
+        const { color_name, color_name_vi, color_name_en, color_code, image_url } = req.body;
         
         const color = await prisma.productColor.create({
             data: {
                 product_id: Number(productId),
                 color_name,
+                color_name_vi: color_name_vi || color_name || null,
+                color_name_en: color_name_en || color_name || null,
                 color_code,
                 image_url
             }

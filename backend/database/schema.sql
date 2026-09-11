@@ -41,7 +41,6 @@ CREATE TABLE otps (
 CREATE TABLE categories (
   id INT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(100) NOT NULL,
-  description TEXT,
   gender ENUM('male','female','unisex') DEFAULT 'unisex',
   image_url VARCHAR(512) NULL
 );
@@ -121,7 +120,6 @@ CREATE TABLE sale_categories (
 CREATE TABLE vouchers (
   id INT AUTO_INCREMENT PRIMARY KEY,
   code VARCHAR(50) UNIQUE NOT NULL,
-  description TEXT,
   discount_percent DECIMAL(5,2) CHECK (discount_percent BETWEEN 0 AND 100),
   max_discount_amount DECIMAL(10,2) DEFAULT NULL,
   min_order_value DECIMAL(10,2) DEFAULT 0,
@@ -155,7 +153,6 @@ CREATE TABLE voucher_categories (
 CREATE TABLE buy_x_get_y_promotions (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
-    description TEXT,
     buy_product_id INT NOT NULL,
     buy_quantity INT NOT NULL CHECK (buy_quantity > 0),
     gift_product_id INT NOT NULL,

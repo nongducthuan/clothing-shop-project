@@ -10,8 +10,6 @@ export default function usePromotionManager() {
     name: "",
     name_vi: "",
     name_en: "",
-    description_vi: "",
-    description_en: "",
     buy_product_id: "",
     buy_quantity: "",
     gift_product_id: "",
@@ -87,8 +85,6 @@ export default function usePromotionManager() {
         ...formData,
         name_vi: (formData.name_vi || "").trim?.() || formData.name_vi || formData.name || "",
         name_en: (formData.name_en || "").trim?.() || formData.name_en || formData.name || "",
-        description_vi: (formData.description_vi || "").trim?.() || formData.description_vi || "",
-        description_en: (formData.description_en || "").trim?.() || formData.description_en || "",
       };
       payload.max_gift_per_order = payload.max_gift_per_order || null;
       payload.total_gift_limit = payload.total_gift_limit || null;
@@ -118,8 +114,6 @@ export default function usePromotionManager() {
       name: promo.name || "",
       name_vi: promo.name_vi || promo.name || "",
       name_en: promo.name_en || promo.name || "",
-      description_vi: promo.description_vi || "",
-      description_en: promo.description_en || "",
       start_date: formatForInputDate(promo.start_date),
       end_date: formatForInputDate(promo.end_date),
       is_stackable: Boolean(promo.is_stackable),
@@ -178,14 +172,10 @@ export default function usePromotionManager() {
   const filteredPromotions = promotions.filter((p) => {
     if (!searchTerm) return true; // Nếu không nhập gì thì hiện tất cả
     const term = searchTerm.toLowerCase();
-    const desc_vi = p.description_vi || "";
-    const desc_en = p.description_en || "";
     return (
       (p.name || "").toLowerCase().includes(term) ||
       (p.name_vi || "").toLowerCase().includes(term) ||
       (p.name_en || "").toLowerCase().includes(term) ||
-      desc_vi.toLowerCase().includes(term) ||
-      desc_en.toLowerCase().includes(term) ||
       (p.status || "").toLowerCase().includes(term)
     );
   });

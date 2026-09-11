@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../../services/apiClient.js";
+import { useLanguage } from "../../context/LanguageContext.jsx";
 
 export function useRegister() {
   const [form, setForm] = useState({
@@ -15,6 +16,7 @@ export function useRegister() {
   const [isLoading, setIsLoading] = useState(false);
 
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   /** * Synchronizes input field values with the local state object
    */
@@ -32,12 +34,12 @@ export function useRegister() {
 
     // Basic Validation
     if (form.password !== form.confirmPassword) {
-      setError("Confirmation password does not match.");
+      setError(t("auth.password_mismatch"));
       return;
     }
 
     if (form.password.length < 6) {
-      setError("Password must be at least 6 characters long.");
+      setError(t("auth.password_too_short"));
       return;
     }
 
@@ -47,7 +49,7 @@ export function useRegister() {
       const { name, email, phone, password } = form;
       await API.post("/auth/register", { name, email, phone, password });
 
-      setSuccess("Registration successful! Redirecting to login...");
+      setSuccess(t("auth.register_success"));
 
       // Redirect after a short delay
       setTimeout(() => {
@@ -55,7 +57,7 @@ export function useRegister() {
       }, 2000);
     } catch (err: unknown) {
       const axiosErr = err as { response?: { data?: { message?: string } } };
-      const errorMessage = axiosErr.response?.data?.message || "Registration failed. Please try again later.";
+      const errorMessage = axiosErr.response?.data?.message || t("auth.register_failed");
       setError(errorMessage);
     } finally {
       setIsLoading(false);

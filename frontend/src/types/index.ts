@@ -31,9 +31,6 @@ export interface Category {
   name: string;
   name_vi?: string;
   name_en?: string;
-  description?: string;
-  description_vi?: string;
-  description_en?: string;
   image_url?: string;
   created_at?: string;
 }

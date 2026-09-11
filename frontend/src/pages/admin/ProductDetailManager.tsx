@@ -8,7 +8,7 @@ import { useLanguage } from "../../context/LanguageContext";
 export default function ProductDetailManager() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { t } = useLanguage();
+  const { t, getLocalizedText } = useLanguage();
 
   // Logic is completely isolated in the custom hook
   const {
@@ -48,7 +48,7 @@ export default function ProductDetailManager() {
         <div className="inline-flex items-center gap-3 bg-white dark:bg-slate-800 px-6 py-3.5 rounded-full shadow-sm border border-slate-200/80 dark:border-slate-700 overflow-hidden">
           <div className="w-3 h-3 flex-shrink-0 bg-indigo-500 rounded-full animate-pulse"></div>
           <h2 className="font-bold uppercase text-slate-700 dark:text-slate-100 tracking-wider text-sm m-0 leading-none">
-            {t("admin.manage_colors_sizes")}: <span className="text-indigo-500 dark:text-indigo-400">{product.name}</span>
+            {t("admin.manage_colors_sizes")}: <span className="text-indigo-500 dark:text-indigo-400">{getLocalizedText(product, "name") || product.name}</span>
           </h2>
         </div>
       </div>

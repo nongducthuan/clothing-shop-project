@@ -1,11 +1,13 @@
 import React from "react";
+import { useLanguage } from "../../../context/LanguageContext";
 
 export default function OrderLookupHeader({ step, email }) {
+  const { t } = useLanguage();
   const stepConfig = {
-    1: { icon: "fa-envelope", title: "Tra cứu đơn hàng", sub: "Nhập email đã dùng để mua hàng" },
-    2: { icon: "fa-lock", title: "Xác minh OTP", sub: "Vui lòng kiểm tra hộp thư của bạn" },
-    3: { icon: "fa-box-open", title: "Danh sách đơn hàng", sub: `Kết quả cho: ${email}` },
-    4: { icon: "fa-rotate-left", title: "Yêu cầu đổi trả", sub: "Vui lòng cung cấp thông tin đổi trả" },
+    1: { icon: "fa-envelope", title: t("lookup.title"), sub: t("lookup.email_sub") },
+    2: { icon: "fa-lock", title: t("lookup.otp_title"), sub: t("lookup.otp_sub") },
+    3: { icon: "fa-box-open", title: t("lookup.orders_title"), sub: t("lookup.orders_sub").replace("{email}", email) },
+    4: { icon: "fa-rotate-left", title: t("lookup.return_title"), sub: t("lookup.return_sub") },
   };
 
   const currentStep = stepConfig[step];

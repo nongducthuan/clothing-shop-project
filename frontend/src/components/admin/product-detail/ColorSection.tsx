@@ -1,5 +1,6 @@
 import React from "react";
 import { getImageUrl } from "../../../utils/imageUtils";
+import { useLanguage } from "../../../context/LanguageContext";
 
 export default function ColorSection({
   colors,
@@ -12,6 +13,7 @@ export default function ColorSection({
   onAddColor,
   isUploading
 }) {
+  const { t, getLocalizedText } = useLanguage();
   return (
     <>
       <style>{`
@@ -31,7 +33,7 @@ export default function ColorSection({
           <div className="w-8 h-8 bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 rounded-full flex items-center justify-center text-sm">
             1
           </div>
-          Biến thể màu sắc
+          {t("admin.pd_color_section")}
         </h4>
 
         {/* Scrollable Color List (Giới hạn max-height để nếu có nhiều màu thì tự cuộn) */}
@@ -54,7 +56,7 @@ export default function ColorSection({
                       <img
                         src={getImageUrl(color.image_url)}
                         className="w-full h-full object-cover"
-                        alt={color.color_name}
+                        alt={getLocalizedText(color, "color_name") || color.color_name}
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-slate-300 dark:text-slate-500">
@@ -66,7 +68,7 @@ export default function ColorSection({
                   {/* Info */}
                   <div>
                     <p className={`font-black text-sm truncate ${isSelected ? "text-indigo-800 dark:text-indigo-300" : "text-slate-700 dark:text-slate-200"}`}>
-                      {color.color_name}
+                      {getLocalizedText(color, "color_name") || color.color_name}
                     </p>
                     <div className="flex items-center gap-2 mt-1">
                       <span className="w-3 h-3 rounded-full border border-slate-200 dark:border-slate-600 shadow-sm" style={{ backgroundColor: color.color_code }}></span>
@@ -78,7 +80,7 @@ export default function ColorSection({
                 <button
                   onClick={(e) => { e.stopPropagation(); onDeleteColor(color.id); }}
                   className="w-8 h-8 flex items-center justify-center text-rose-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-full transition-colors flex-shrink-0"
-                  title="Xóa biến thể màu"
+                  title={t("admin.pd_delete_color_title")}
                 >
                   <i className="fa-solid fa-trash text-sm"></i>
                 </button>
@@ -87,7 +89,7 @@ export default function ColorSection({
           })}
           {colors.length === 0 && (
             <div className="text-center py-6 text-slate-400 italic text-sm border-2 border-dashed border-slate-200/80 dark:border-slate-700 rounded-2xl">
-              Chưa có biến thể màu nào.
+              {t("admin.pd_no_colors")}
             </div>
           )}
         </div>
@@ -95,7 +97,7 @@ export default function ColorSection({
         {/* Add New Color Form */}
         <div className="bg-slate-50 dark:bg-slate-700/40 p-5 rounded-[1.5rem] border border-slate-200/80 dark:border-slate-600/60">
           <h5 className="font-bold text-xs uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-4 flex items-center gap-2 m-0 leading-none">
-            <i className="fa-solid fa-plus-circle text-indigo-400"></i> Thêm màu mới
+            <i className="fa-solid fa-plus-circle text-indigo-400"></i> {t("admin.pd_add_color")}
           </h5>
 
           <div className="space-y-3">
@@ -113,13 +115,21 @@ export default function ColorSection({
                 </div>
               </div>
 
-              {/* Name Input */}
-              <input
-                className="w-full px-4 py-2.5 bg-white dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 rounded-xl transition-all outline-none text-sm font-bold text-slate-700 dark:text-slate-100"
-                placeholder="Tên màu (VD: Xanh navy)"
-                value={colorForm.color_name}
-                onChange={(e) => setColorForm({ ...colorForm, color_name: e.target.value })}
-              />
+              {/* Name Inputs (VI / EN) */}
+              <div className="flex-1 space-y-2">
+                <input
+                  className="w-full px-4 py-2 bg-white dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 rounded-xl transition-all outline-none text-sm font-bold text-slate-700 dark:text-slate-100"
+                  placeholder={t("admin.pd_color_name_vi_placeholder")}
+                  value={colorForm.color_name_vi}
+                  onChange={(e) => setColorForm({ ...colorForm, color_name_vi: e.target.value, color_name: e.target.value })}
+                />
+                <input
+                  className="w-full px-4 py-2 bg-white dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 rounded-xl transition-all outline-none text-sm font-bold text-slate-700 dark:text-slate-100"
+                  placeholder={t("admin.pd_color_name_en_placeholder")}
+                  value={colorForm.color_name_en}
+                  onChange={(e) => setColorForm({ ...colorForm, color_name_en: e.target.value })}
+                />
+              </div>
             </div>
 
             {/* Image Upload Row */}
@@ -134,21 +144,21 @@ export default function ColorSection({
                 <div className="w-full py-3 bg-indigo-50 dark:bg-indigo-900/20 border-2 border-dashed border-indigo-200 dark:border-indigo-800/50 rounded-xl flex flex-col items-center justify-center gap-1 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition-all">
                   <i className="fa-solid fa-cloud-arrow-up text-lg"></i>
                   <span className="text-[11px] font-bold uppercase">
-                    {colorForm.image_url ? "Thay đổi ảnh đã chọn" : "Tải ảnh sản phẩm lên"}
+                    {colorForm.image_url ? t("admin.pd_change_image") : t("admin.pd_upload_image")}
                   </span>
                 </div>
               </div>
 
               <div className="flex items-center gap-3">
                 <div className="h-[1px] flex-1 bg-slate-200 dark:bg-slate-600"></div>
-                <span className="text-[10px] font-bold text-slate-400">HOẶC</span>
+                <span className="text-[10px] font-bold text-slate-400">{t("admin.pd_or")}</span>
                 <div className="h-[1px] flex-1 bg-slate-200 dark:bg-slate-600"></div>
               </div>
 
               {/* Ô URL bên dưới */}
               <input
                 className="w-full px-4 py-2 bg-white dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 rounded-xl text-xs text-slate-800 dark:text-slate-100"
-                placeholder="Dán link ảnh ở đây..."
+                placeholder={t("admin.pd_image_url_placeholder")}
                 value={colorForm.image_url || ""}
                 onChange={(e) => setColorForm({ ...colorForm, image_url: e.target.value })}
               />
@@ -156,7 +166,7 @@ export default function ColorSection({
 
             {isUploading && (
               <p className="text-xs font-bold text-indigo-500 animate-pulse text-center">
-                <i className="fa-solid fa-spinner fa-spin mr-1"></i> Đang tải ảnh lên...
+                <i className="fa-solid fa-spinner fa-spin mr-1"></i> {t("admin.pd_uploading")}
               </p>
             )}
 
@@ -165,7 +175,7 @@ export default function ColorSection({
               disabled={isUploading}
               className="w-full py-3 bg-slate-800 dark:bg-slate-700 text-white rounded-xl font-bold text-sm tracking-wider uppercase hover:bg-indigo-600 dark:hover:bg-indigo-500 transition-all shadow-sm disabled:opacity-50 mt-2"
             >
-              Lưu biến thể màu
+              {t("admin.pd_save_color")}
             </button>
           </div>
         </div>

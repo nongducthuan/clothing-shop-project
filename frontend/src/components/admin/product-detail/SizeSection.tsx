@@ -1,6 +1,7 @@
 import React from "react";
 import { SIZE_ORDER } from "../../../hooks/admin/useProductDetailManager";
 import { getImageUrl } from "../../../utils/imageUtils";
+import { useLanguage } from "../../../context/LanguageContext";
 
 export default function SizeSection({
   selectedColorObj,
@@ -9,6 +10,7 @@ export default function SizeSection({
   setSizeForm,
   onAddSize
 }) {
+  const { t, getLocalizedText } = useLanguage();
   const handleWheel = (e) => e.target.blur();
 
   if (!selectedColorObj) {
@@ -17,8 +19,8 @@ export default function SizeSection({
         <div className="w-20 h-20 bg-slate-50 dark:bg-slate-700/50 rounded-full flex items-center justify-center mb-4 shadow-inner border border-slate-200/80 dark:border-slate-700">
           <i className="fa-solid fa-palette text-3xl text-slate-300 dark:text-slate-500"></i>
         </div>
-        <h4 className="text-lg font-bold text-slate-700 dark:text-slate-200 mb-1">Chưa chọn biến thể</h4>
-        <p className="text-xs text-slate-400">Vui lòng chọn một màu sắc từ danh sách bên trái để quản lý kích thước & tồn kho.</p>
+        <h4 className="text-lg font-bold text-slate-700 dark:text-slate-200 mb-1">{t("admin.pd_no_color_selected")}</h4>
+        <p className="text-xs text-slate-400">{t("admin.pd_select_color_hint")}</p>
       </div>
     );
   }
@@ -38,7 +40,7 @@ export default function SizeSection({
           <div className="w-8 h-8 bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 rounded-full flex items-center justify-center text-sm flex-shrink-0">
             2
           </div>
-          Quản lý kích thước & Tồn kho
+          {t("admin.pd_size_section")}
         </h4>
 
         {/* Selected Color Header Card */}
@@ -56,9 +58,9 @@ export default function SizeSection({
           </div>
           <div className="flex-1 min-w-0">
             <span className="px-2.5 py-0.5 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 font-bold text-[9px] uppercase tracking-widest rounded-full mb-1 inline-block">
-              Đang chọn
+              {t("admin.pd_selected")}
             </span>
-            <h5 className="font-black text-xl md:text-2xl text-slate-800 dark:text-slate-100 truncate">{selectedColorObj.color_name}</h5>
+            <h5 className="font-black text-xl md:text-2xl text-slate-800 dark:text-slate-100 truncate">{getLocalizedText(selectedColorObj, "color_name") || selectedColorObj.color_name}</h5>
             <div className="flex items-center gap-2 mt-1">
               <span className="w-3 h-3 rounded-full border border-slate-300 dark:border-slate-600 shadow-sm flex-shrink-0" style={{ backgroundColor: selectedColorObj.color_code }}></span>
               <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">{selectedColorObj.color_code}</p>
@@ -86,7 +88,7 @@ export default function SizeSection({
                   </div>
                   <div className="sm:col-span-4 text-left sm:text-center">
                     <span className="font-black text-lg md:text-xl text-emerald-600 dark:text-emerald-400">{sizeItem.stock}</span>
-                    <span className="text-[10px] md:text-xs text-emerald-600/70 dark:text-emerald-400/70 ml-1 font-bold">SẢN PHẨM</span>
+                    <span className="text-[10px] md:text-xs text-emerald-600/70 dark:text-emerald-400/70 ml-1 font-bold">{t("admin.pd_product_label")}</span>
                   </div>
                   <div className="sm:col-span-4 text-right flex justify-end">
                     <button
@@ -94,14 +96,14 @@ export default function SizeSection({
                       className="px-3 py-1.5 md:px-4 md:py-2 bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 font-bold text-[11px] md:text-xs uppercase tracking-wider rounded-xl hover:bg-rose-600 hover:text-white transition-all shadow-sm flex items-center gap-1"
                     >
                       <i className="fa-solid fa-trash"></i> 
-                      <span className="hidden sm:inline">Xóa</span>
+                      <span className="hidden sm:inline">{t("admin.pd_delete")}</span>
                     </button>
                   </div>
                 </div>
               ))
           ) : (
             <div className="py-8 text-center text-slate-400 italic text-xs md:text-sm border-2 border-dashed border-slate-200/80 dark:border-slate-700 rounded-2xl">
-              Chưa có kích thước nào cho màu này.
+              {t("admin.pd_no_sizes")}
             </div>
           )}
         </div>
@@ -109,11 +111,11 @@ export default function SizeSection({
         {/* Add Size Form */}
         <div className="bg-slate-50 dark:bg-slate-700/40 p-4 md:p-5 rounded-[1.5rem] border border-slate-200/80 dark:border-slate-600/60 shadow-sm mt-auto">
           <h5 className="font-bold text-xs uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-3 flex items-center gap-2 m-0 leading-none">
-            <i className="fa-solid fa-layer-group text-indigo-400"></i> Thêm số lượng tồn kho
+            <i className="fa-solid fa-layer-group text-indigo-400"></i> {t("admin.pd_add_stock")}
           </h5>
           <div className="flex flex-col sm:flex-row gap-3 items-end">
             <div className="w-full sm:w-1/3">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1 ml-1">Chọn kích thước</label>
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1 ml-1">{t("admin.pd_select_size")}</label>
               <select
                 className="w-full px-3.5 py-2.5 bg-white dark:bg-slate-700 border border-slate-200/80 dark:border-slate-600 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 rounded-xl transition-all outline-none text-xs md:text-sm font-bold text-slate-700 dark:text-slate-100 appearance-none cursor-pointer"
                 value={sizeForm.size}
@@ -123,7 +125,7 @@ export default function SizeSection({
               </select>
             </div>
             <div className="w-full sm:w-1/3">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1 ml-1">Số lượng</label>
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1 ml-1">{t("admin.pd_quantity")}</label>
               <input
                 type="number"
                 onWheel={handleWheel}
@@ -138,7 +140,7 @@ export default function SizeSection({
                 onClick={onAddSize}
                 className="w-full py-2.5 md:py-3 bg-emerald-500 text-white rounded-xl font-bold text-xs md:text-sm tracking-wider uppercase hover:bg-emerald-600 transition-all shadow-sm flex items-center justify-center gap-2"
               >
-                <i className="fa-solid fa-plus"></i> Thêm tồn kho
+                <i className="fa-solid fa-plus"></i> {t("admin.pd_add_stock_btn")}
               </button>
             </div>
           </div>

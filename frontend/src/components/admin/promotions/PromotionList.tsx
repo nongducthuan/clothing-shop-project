@@ -43,9 +43,6 @@ export default function PromotionList({ state, actions, helpers }) {
                     <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 line-clamp-1">
                       {promo.name}
                     </h3>
-                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 line-clamp-1">
-                      {promo.description_vi || promo.description_en || ""}
-                    </p>
                   </div>
                   <span
                     className={`px-3 py-1 text-xs font-bold rounded-full uppercase tracking-wider whitespace-nowrap ml-2 ${promo.status === "active" ? "bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300" : "bg-rose-100 dark:bg-rose-900/40 text-rose-700 dark:text-rose-300"}`}

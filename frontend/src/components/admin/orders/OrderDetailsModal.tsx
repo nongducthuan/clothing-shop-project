@@ -60,30 +60,30 @@ const ReturnInfoSection = ({ order }) => {
   const getReturnBadge = (status: string) => {
     if (status === "Return Approved") {
       return (
-        <span className="text-[9px] font-extrabold uppercase tracking-widest bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-full border border-emerald-300/40 whitespace-nowrap inline-flex items-center shrink-0">
+        <span className="text-[9px] font-extrabold uppercase tracking-widest bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 px-2.5 py-1 rounded-full border border-emerald-300/40 dark:border-emerald-700/50 whitespace-nowrap inline-flex items-center shrink-0">
           {t("admin.return_approved_badge")}
         </span>
       );
     }
     if (status === "Return Rejected") {
       return (
-        <span className="text-[9px] font-extrabold uppercase tracking-widest bg-rose-100 text-rose-800 px-2.5 py-1 rounded-full border border-rose-300/40 whitespace-nowrap inline-flex items-center shrink-0">
+        <span className="text-[9px] font-extrabold uppercase tracking-widest bg-rose-100 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300 px-2.5 py-1 rounded-full border border-rose-300/40 dark:border-rose-700/50 whitespace-nowrap inline-flex items-center shrink-0">
           {t("admin.return_rejected_badge")}
         </span>
       );
     }
     return (
-      <span className="text-[9px] font-extrabold uppercase tracking-widest bg-amber-200/60 text-amber-800 px-2.5 py-1 rounded-full border border-amber-300/40 whitespace-nowrap inline-flex items-center shrink-0">
+      <span className="text-[9px] font-extrabold uppercase tracking-widest bg-amber-200/60 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 px-2.5 py-1 rounded-full border border-amber-300/40 dark:border-amber-700/50 whitespace-nowrap inline-flex items-center shrink-0">
         {t("admin.return_action_required")}
       </span>
     );
   };
 
   return (
-    <div className="bg-gradient-to-r from-amber-50/60 via-orange-50/40 to-amber-50/60 p-4 sm:p-5 rounded-[1.5rem] border border-amber-200/60 text-sm shadow-sm space-y-3">
+    <div className="bg-gradient-to-r from-amber-50/60 via-orange-50/40 to-amber-50/60 dark:from-amber-950/30 dark:via-orange-950/20 dark:to-amber-950/30 p-4 sm:p-5 rounded-[1.5rem] border border-amber-200/60 dark:border-amber-800/40 text-sm shadow-sm space-y-3">
       <div className="flex items-center justify-between gap-2 flex-wrap">
-        <h5 className="font-extrabold text-amber-900 text-[11px] sm:text-xs uppercase tracking-wider flex items-center gap-2 m-0 leading-none whitespace-nowrap">
-          <span className="w-6 h-6 rounded-full bg-amber-100/80 text-amber-700 flex items-center justify-center text-[10px] shadow-xs shrink-0">
+        <h5 className="font-extrabold text-amber-900 dark:text-amber-300 text-[11px] sm:text-xs uppercase tracking-wider flex items-center gap-2 m-0 leading-none whitespace-nowrap">
+          <span className="w-6 h-6 rounded-full bg-amber-100/80 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300 flex items-center justify-center text-[10px] shadow-xs shrink-0">
             <i className="fa-solid fa-rotate-left"></i>
           </span>
           {t("admin.return_request_details")}
@@ -95,16 +95,16 @@ const ReturnInfoSection = ({ order }) => {
         {/* Lý do trả hàng */}
         <div className="bg-white dark:bg-slate-700 p-4 rounded-2xl shadow-sm flex flex-col justify-between space-y-3">
           <div>
-            <span className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-1">
+            <span className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-400 mb-1">
               {t("admin.return_reason")}
             </span>
-            <span className="inline-block bg-slate-100 dark:bg-slate-600 text-slate-800 dark:text-slate-200 text-xs font-extrabold px-2.5 py-1 rounded-lg border border-slate-200/60">
+            <span className="inline-block bg-slate-100 dark:bg-slate-600 text-slate-800 dark:text-slate-200 text-xs font-extrabold px-2.5 py-1 rounded-lg border border-slate-200/60 dark:border-slate-500/60">
               {getLocalizedLabel("returnReason", order.reason_code) || t("admin.not_specified")}
             </span>
           </div>
 
           <div>
-            <span className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-1">
+            <span className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-400 mb-1">
               {t("admin.customer_note")}
             </span>
             <div className="bg-slate-50 dark:bg-slate-600 rounded-xl p-3 text-xs text-slate-600 dark:text-slate-200 italic leading-relaxed min-h-[45px] flex items-center">
@@ -152,8 +152,8 @@ const ReturnInfoSection = ({ order }) => {
 
       {/* Hình ảnh bằng chứng */}
       {order.return_images && order.return_images.length > 0 && (
-        <div className="pt-2.5 border-t border-amber-200/60">
-          <span className="block text-[10px] font-extrabold text-amber-900/70 uppercase mb-2 tracking-wider">
+        <div className="pt-2.5 border-t border-amber-200/60 dark:border-amber-800/40">
+          <span className="block text-[10px] font-extrabold text-amber-900/70 dark:text-amber-300/80 uppercase mb-2 tracking-wider">
             {t("admin.evidence_attachments")} ({order.return_images.length})
           </span>
           <div className="flex flex-wrap gap-2.5">
@@ -164,7 +164,7 @@ const ReturnInfoSection = ({ order }) => {
                   <img
                     src={fullImgUrl}
                     alt={`${t("admin.evidence_attachments")} ${idx + 1}`}
-                    className="w-16 h-16 object-cover rounded-xl border-2 border-white shadow-md cursor-pointer hover:scale-105 transition-transform duration-300"
+                    className="w-16 h-16 object-cover rounded-xl border-2 border-white dark:border-slate-600 shadow-md cursor-pointer hover:scale-105 transition-transform duration-300"
                     onClick={() => window.open(fullImgUrl, '_blank')}
                   />
                   <div className="absolute inset-0 bg-black/20 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
@@ -184,37 +184,37 @@ const DeliveryInfoSection = ({ order }) => {
   const { t, language } = useLanguage();
   const dateLocale = language === 'vi' ? 'vi-VN' : 'en-US';
   return (
-    <div className="bg-blue-50/50 p-3 md:p-5 rounded-[1.5rem] border border-blue-100/50 text-sm">
-      <h5 className="font-bold text-blue-800 mb-4 uppercase text-xs tracking-wider flex items-center gap-2 m-0 leading-none">
-        <i className="fa-solid fa-truck-fast text-blue-500 text-base"></i> {t("admin.delivery_details")}
+    <div className="bg-blue-50/50 dark:bg-blue-950/20 p-3 md:p-5 rounded-[1.5rem] border border-blue-100/50 dark:border-blue-900/40 text-sm">
+      <h5 className="font-bold text-blue-800 dark:text-blue-300 mb-4 uppercase text-xs tracking-wider flex items-center gap-2 m-0 leading-none">
+        <i className="fa-solid fa-truck-fast text-blue-500 dark:text-blue-400 text-base"></i> {t("admin.delivery_details")}
       </h5>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-6 bg-white dark:bg-slate-700 p-4 md:p-5 rounded-2xl border border-blue-50 dark:border-slate-600 shadow-sm">
         <div>
-          <span className="block text-[10px] uppercase font-bold text-gray-400 mb-1 tracking-wider">{t("admin.recipient")}</span>
-          <span className="font-bold text-gray-800">{order.user_name || order.name}</span>
+          <span className="block text-[10px] uppercase font-bold text-gray-400 dark:text-slate-400 mb-1 tracking-wider">{t("admin.recipient")}</span>
+          <span className="font-bold text-gray-800 dark:text-slate-100">{order.user_name || order.name}</span>
         </div>
         <div>
-          <span className="block text-[10px] uppercase font-bold text-gray-400 mb-1 tracking-wider">{t("admin.phone")}</span>
-          <span className="font-bold text-gray-800">{order.phone}</span>
+          <span className="block text-[10px] uppercase font-bold text-gray-400 dark:text-slate-400 mb-1 tracking-wider">{t("admin.phone")}</span>
+          <span className="font-bold text-gray-800 dark:text-slate-100">{order.phone}</span>
         </div>
         <div className="sm:col-span-2">
-          <span className="block text-[10px] uppercase font-bold text-gray-400 mb-1 tracking-wider">{t("admin.shipping_address")}</span>
-          <span className="font-bold text-gray-800">{order.address}</span>
+          <span className="block text-[10px] uppercase font-bold text-gray-400 dark:text-slate-400 mb-1 tracking-wider">{t("admin.shipping_address")}</span>
+          <span className="font-bold text-gray-800 dark:text-slate-100">{order.address}</span>
         </div>
         <div>
-          <span className="block text-[10px] uppercase font-bold text-gray-400 mb-1 tracking-wider">{t("admin.placed_on")}</span>
-          <span className="font-bold text-gray-800">{new Date(order.created_at).toLocaleString(dateLocale)}</span>
+          <span className="block text-[10px] uppercase font-bold text-gray-400 dark:text-slate-400 mb-1 tracking-wider">{t("admin.placed_on")}</span>
+          <span className="font-bold text-gray-800 dark:text-slate-100">{new Date(order.created_at).toLocaleString(dateLocale)}</span>
         </div>
         <div>
-          <span className="block text-[10px] uppercase font-bold text-gray-400 mb-1 tracking-wider">{t("admin.payment_method")}</span>
+          <span className="block text-[10px] uppercase font-bold text-gray-400 dark:text-slate-400 mb-1 tracking-wider">{t("admin.payment_method")}</span>
           <div className="flex items-center gap-2">
             <PaymentBadge method={order.payment_method} badgeStyle={true} />
             {order.payment_status === "Paid" ? (
-              <span className="text-green-600 font-extrabold bg-green-50 px-2.5 py-1 rounded-full inline-flex items-center gap-1 text-[11px]">
+              <span className="text-green-600 dark:text-emerald-300 font-extrabold bg-green-50 dark:bg-emerald-950/50 px-2.5 py-1 rounded-full inline-flex items-center gap-1 text-[11px]">
                 <i className="fa-solid fa-check-circle"></i> {t("admin.paid_badge")}
               </span>
             ) : (
-              <span className="text-orange-600 font-extrabold bg-orange-50 px-2.5 py-1 rounded-full inline-flex items-center gap-1 text-[11px]">
+              <span className="text-orange-600 dark:text-amber-300 font-extrabold bg-orange-50 dark:bg-amber-950/50 px-2.5 py-1 rounded-full inline-flex items-center gap-1 text-[11px]">
                 <i className="fa-solid fa-clock"></i> {t("admin.awaiting_badge")}
               </span>
             )}
@@ -229,8 +229,8 @@ const OrderItemsList = ({ items, formatCurrency }) => {
   const { t } = useLanguage();
   return (
     <div>
-      <h5 className="font-bold text-gray-800 mb-4 text-xs uppercase tracking-wider flex items-center gap-2 m-0 leading-none">
-        <i className="fa-solid fa-basket-shopping text-gray-400 text-base"></i> {t("admin.ordered_products")} ({items?.length || 0})
+      <h5 className="font-bold text-gray-800 dark:text-slate-200 mb-4 text-xs uppercase tracking-wider flex items-center gap-2 m-0 leading-none">
+        <i className="fa-solid fa-basket-shopping text-gray-400 dark:text-slate-500 text-base"></i> {t("admin.ordered_products")} ({items?.length || 0})
       </h5>
       <div className="space-y-3">
         {items?.map((item, idx) => (
@@ -249,10 +249,10 @@ const OrderItemCard = ({ item, formatCurrency }) => {
 
   return (
     <div className={`flex gap-3 md:gap-4 rounded-2xl p-3 items-center shadow-sm transition-all border ${
-      isGift ? "bg-rose-50 border-rose-100" : "bg-white dark:bg-slate-800 border-gray-100 dark:border-slate-700 hover:border-violet-100 hover:shadow-md"
+      isGift ? "bg-rose-50 dark:bg-rose-950/30 border-rose-100 dark:border-rose-900/50" : "bg-white dark:bg-slate-800 border-gray-100 dark:border-slate-700 hover:border-violet-100 dark:hover:border-violet-900/50 hover:shadow-md"
     }`}>
       {/* Cố định kích thước khung ảnh để tránh bị giật layout */}
-      <div className={`w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 ${isGift ? 'border-2 border-white shadow-sm' : 'bg-gray-50 dark:bg-slate-700 border border-gray-100 dark:border-slate-600'}`}>
+      <div className={`w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 ${isGift ? 'border-2 border-white dark:border-rose-900/50 shadow-sm' : 'bg-gray-50 dark:bg-slate-700 border border-gray-100 dark:border-slate-600'}`}>
         <img
           src={imageUrl}
           onError={(e) => {
@@ -269,9 +269,9 @@ const OrderItemCard = ({ item, formatCurrency }) => {
           {getLocalizedText(item, "product_name") || item.product_name}
         </h4>
 
-        <p className="text-xs font-medium text-gray-500 mb-2">
+        <p className="text-xs font-medium text-gray-500 dark:text-slate-400 mb-2">
           {item.color_name && `${t("admin.color_label")}: ${item.color_name}`}
-          {item.size && <span className="mx-1.5 text-gray-300">|</span>}
+          {item.size && <span className="mx-1.5 text-gray-300 dark:text-slate-600">|</span>}
           {item.size && `${t("admin.size_label")}: ${item.size}`}
         </p>
 
@@ -285,7 +285,7 @@ const OrderItemCard = ({ item, formatCurrency }) => {
               <span className="bg-rose-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider shadow-sm">
                 {t("admin.free_gift")}
               </span>
-              <span className="text-sm font-black text-rose-600">0 đ</span>
+              <span className="text-sm font-black text-rose-600 dark:text-rose-400">0 đ</span>
             </div>
           ) : (
             <span className="text-sm font-black text-gray-900 dark:text-slate-100">
@@ -297,4 +297,3 @@ const OrderItemCard = ({ item, formatCurrency }) => {
     </div>
   );
 };
-

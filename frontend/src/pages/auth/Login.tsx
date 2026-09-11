@@ -1,11 +1,13 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { useLogin } from "../../hooks/auth/useLogin";
+import { useLanguage } from "../../context/LanguageContext";
 import AuthInput from "../../components/auth/AuthInput";
 import AuthAlert from "../../components/auth/AuthAlert";
 
 export default function Login() {
   const { state, actions } = useLogin();
+  const { t } = useLanguage();
   const { form, error, isLoading } = state;
   const { handleChange, handleSubmit } = actions;
 
@@ -16,10 +18,10 @@ export default function Login() {
         {/* Header Section */}
         <div className="text-center mb-10">
           <h2 className="text-3xl sm:text-4xl font-medium text-slate-900 dark:text-slate-100 tracking-tight mb-3">
-            Welcome back
+            {t("auth.login_title")}
           </h2>
           <p className="text-slate-500 dark:text-slate-400">
-            Please enter your details to sign in.
+            {t("auth.login_subtitle")}
           </p>
         </div>
 
@@ -30,20 +32,20 @@ export default function Login() {
 
           <form onSubmit={handleSubmit} className="space-y-2">
             <AuthInput
-              label="Email Address"
+              label={t("auth.email_label")}
               name="identifier"
               type="email"
-              placeholder="name@example.com"
+              placeholder={t("auth.email_placeholder")}
               value={form.identifier}
               onChange={handleChange}
               required
             />
 
             <AuthInput
-              label="Password"
+              label={t("auth.password_label")}
               name="password"
               type="password"
-              placeholder="Enter your password"
+              placeholder={t("auth.password_placeholder")}
               value={form.password}
               onChange={handleChange}
               required
@@ -55,16 +57,16 @@ export default function Login() {
                 disabled={isLoading}
                 className="w-full py-4 bg-slate-900 dark:bg-violet-600 text-white rounded-full font-medium text-base hover:bg-slate-800 dark:hover:bg-violet-700 transition-colors disabled:opacity-70 disabled:cursor-not-allowed shadow-md"
               >
-                {isLoading ? "Signing in..." : "Sign In"}
+                {isLoading ? t("auth.signing_in") : t("auth.signin")}
               </button>
             </div>
           </form>
 
           {/* Footer Section */}
           <div className="mt-8 text-center text-sm">
-            <span className="text-slate-500 dark:text-slate-400">Don't have an account? </span>
+            <span className="text-slate-500 dark:text-slate-400">{t("auth.no_account")} </span>
             <Link to="/register" className="font-medium text-slate-900 dark:text-violet-400 hover:underline underline-offset-4 transition-colors">
-              Sign up
+              {t("auth.signup_link")}
             </Link>
           </div>
 

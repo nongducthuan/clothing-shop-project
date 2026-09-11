@@ -5,8 +5,6 @@ interface PromotionFormData {
   name: string;
   name_vi: string;
   name_en: string;
-  description_vi: string;
-  description_en: string;
   buy_product_id: number | string | null;
   gift_product_id: number | string | null;
   buy_quantity: number | string;
@@ -202,32 +200,6 @@ export default function PromotionForm({ state, actions, helpers }: PromotionForm
                 onChange={handleInputChange}
                 className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-indigo-500 text-sm outline-none transition-all text-slate-800 dark:text-slate-100"
                 placeholder={t("admin.promo_name_en_placeholder")}
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
-                {t("admin.description_vi_label")}
-              </label>
-              <input
-                type="text"
-                name="description_vi"
-                value={(formData as any).description_vi || ""}
-                onChange={handleInputChange}
-                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-indigo-500 text-sm outline-none transition-all text-slate-800 dark:text-slate-100"
-                placeholder={t("admin.description_vi_placeholder_vi")}
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
-                {t("admin.description_en_label")}
-              </label>
-              <input
-                type="text"
-                name="description_en"
-                value={(formData as any).description_en || ""}
-                onChange={handleInputChange}
-                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-indigo-500 text-sm outline-none transition-all text-slate-800 dark:text-slate-100"
-                placeholder={t("admin.description_en_placeholder_en")}
               />
             </div>
           </div>
