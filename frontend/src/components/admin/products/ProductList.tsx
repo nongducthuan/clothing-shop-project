@@ -130,7 +130,7 @@ export default function ProductList({
                         </div>
                         <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-1">
                           <div className="flex items-center gap-1 text-[10px] text-slate-500 dark:text-slate-400">
-                            <span className="font-medium opacity-70">{t("admin.original_price")}:</span>
+                            <span className="font-medium opacity-70">{t("admin.import_price")}:</span>
                             <span className="font-semibold">{Number(p.import_price || 0).toLocaleString()}đ</span>
                           </div>
                         </div>

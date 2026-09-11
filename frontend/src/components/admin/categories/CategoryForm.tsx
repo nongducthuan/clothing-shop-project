@@ -36,7 +36,7 @@ export default function CategoryForm({
               onChange={(e) => { handleChange(e); setForm((prev) => ({ ...prev, name: e.target.value })); }}
               required
               className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 focus:bg-white dark:focus:bg-slate-700 focus:border-violet-500 dark:focus:border-violet-400 focus:ring-4 focus:ring-violet-500/10 rounded-2xl transition-all duration-300 outline-none text-slate-800 dark:text-slate-100 font-medium placeholder:text-slate-400 dark:placeholder:text-slate-500"
-              placeholder={t("admin.name_vi_placeholder")}
+              placeholder={"Vd: Áo Sơ Mi"}
             />
           </div>
           <div>
@@ -46,7 +46,7 @@ export default function CategoryForm({
               value={form.name_en || ""}
               onChange={handleChange}
               className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 focus:bg-white dark:focus:bg-slate-700 focus:border-violet-500 dark:focus:border-violet-400 focus:ring-4 focus:ring-violet-500/10 rounded-2xl transition-all duration-300 outline-none text-slate-800 dark:text-slate-100 font-medium placeholder:text-slate-400 dark:placeholder:text-slate-500"
-              placeholder={t("admin.name_en_placeholder")}
+              placeholder={"E.g: Shirt"}
             />
           </div>
         </div>

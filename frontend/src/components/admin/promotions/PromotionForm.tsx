@@ -177,7 +177,7 @@ export default function PromotionForm({ state, actions, helpers }: PromotionForm
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
-                {t("admin.promo_name_label")} (VI) <span className="text-red-500">*</span>
+                {t("admin.promo_name_label")} (VI) 
               </label>
               <input
                 type="text"
@@ -186,7 +186,7 @@ export default function PromotionForm({ state, actions, helpers }: PromotionForm
                 value={(formData as any).name_vi || ""}
                 onChange={(e) => { handleInputChange(e as any); setFormData((prev: any) => ({ ...prev, name: (e.target as HTMLInputElement).value })); }}
                 className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-indigo-500 text-sm outline-none transition-all text-slate-800 dark:text-slate-100"
-                placeholder={t("admin.promo_name_vi_placeholder")}
+                placeholder={"Vd: Mua 2 tặng 1"}
               />
             </div>
             <div>
@@ -199,7 +199,7 @@ export default function PromotionForm({ state, actions, helpers }: PromotionForm
                 value={(formData as any).name_en || ""}
                 onChange={handleInputChange}
                 className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-indigo-500 text-sm outline-none transition-all text-slate-800 dark:text-slate-100"
-                placeholder={t("admin.promo_name_en_placeholder")}
+                placeholder={"E.g: Buy 2 Get 1"}
               />
             </div>
           </div>

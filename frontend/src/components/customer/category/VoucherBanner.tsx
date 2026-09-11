@@ -34,7 +34,7 @@ export default function VoucherBanner({ voucher, category }) {
         <div className="px-4 pt-4 pb-3">
           <div className="flex items-center gap-2">
             <span className="text-xl font-bold text-rose-700 dark:text-rose-400 leading-none">
-              {Number.parseFloat(voucher.discount_percent)}% off
+              {t("voucher.discount_badge", "{percent}% off").replace("{percent}", String(Number.parseFloat(voucher.discount_percent)))}
             </span>
             <span className="font-mono text-[11px] font-bold text-rose-600 dark:text-rose-400 bg-white dark:bg-slate-800 border border-dashed border-rose-300 dark:border-rose-800 px-2 py-0.5 rounded-md tracking-wide leading-none">
               {voucher.code}
@@ -91,7 +91,7 @@ export default function VoucherBanner({ voucher, category }) {
         <div className="flex-1 px-5 py-4">
           <div className="flex items-baseline gap-2 flex-wrap">
             <span className="text-2xl font-bold text-rose-700 dark:text-rose-400">
-              {Number.parseFloat(voucher.discount_percent)}% off
+              {t("voucher.discount_badge", "{percent}% off").replace("{percent}", String(Number.parseFloat(voucher.discount_percent)))}
             </span>
             <span className="font-mono text-xs font-bold text-rose-700 dark:text-rose-400 bg-white dark:bg-slate-800 border border-dashed border-rose-300 dark:border-rose-800 px-2.5 py-1 rounded-md">
               {voucher.code}

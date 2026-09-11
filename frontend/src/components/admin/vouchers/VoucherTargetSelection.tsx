@@ -15,13 +15,13 @@ export default function VoucherTargetSelection({
   selectedProductIds,
   toggleProduct
 }) {
-  const { getLocalizedText } = useLanguage();
+  const { getLocalizedText, t } = useLanguage();
 
   const getGenderLabel = (gender) => {
     const g = (gender || "").toLowerCase();
-    if (g === 'men' || g === 'male') return 'Nam';
-    if (g === 'women' || g === 'female') return 'Nữ';
-    return 'Unisex';
+    if (g === 'men' || g === 'male') return t("gender.male");
+    if (g === 'women' || g === 'female') return t("gender.female");
+    return t("gender.unisex");
   };
 
   const handleScopeChange = (scope) => {
@@ -36,7 +36,7 @@ export default function VoucherTargetSelection({
     return 'bg-emerald-100 text-emerald-600';
   };
 
-  const scopeLabels = { all: "Toàn bộ", category: "Danh mục", product: "Sản phẩm" };
+  const scopeLabels = { all: t("admin.scope_all"), category: t("admin.scope_category"), product: t("admin.scope_product") };
 
   return (
     <>
@@ -59,7 +59,7 @@ export default function VoucherTargetSelection({
 
       <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm border border-slate-200/80 dark:border-slate-700 h-full">
         <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 mb-8">
-          <h3 className="text-sm font-bold text-slate-400 dark:text-slate-400 uppercase tracking-widest">Chọn mục tiêu</h3>
+          <h3 className="text-sm font-bold text-slate-400 dark:text-slate-400 uppercase tracking-widest">{t("admin.target_title")}</h3>
           <div className="flex flex-wrap gap-2 bg-slate-100 dark:bg-slate-700/50 p-1 rounded-xl w-full xl:w-auto">
             {["all", "category", "product"].map((scope) => (
               <button
@@ -81,8 +81,8 @@ export default function VoucherTargetSelection({
           {applyScope === "all" && (
             <div className="flex flex-col items-center justify-center h-64 border-4 border-dashed border-indigo-50 dark:border-indigo-900/40 rounded-3xl p-10 text-center">
               <i className="fa-solid fa-store text-4xl text-indigo-200 dark:text-indigo-700 mb-4"></i>
-              <h4 className="font-bold text-slate-800 dark:text-slate-100">Mã giảm giá toàn cửa hàng</h4>
-              <p className="text-slate-400 text-xs mt-2">Mã này áp dụng cho tất cả sản phẩm trong cửa hàng.</p>
+              <h4 className="font-bold text-slate-800 dark:text-slate-100">{t("admin.all_store_voucher_title")}</h4>
+              <p className="text-slate-400 text-xs mt-2">{t("admin.all_store_voucher_desc")}</p>
             </div>
           )}
 

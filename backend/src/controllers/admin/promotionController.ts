@@ -17,11 +17,13 @@ export const getAdminPromotions = async (req: Request, res: Response): Promise<v
 export const createPromotion = async (req: Request, res: Response): Promise<void> => {
     try {
         const data = req.body;
+        // name is the canonical display name (NOT NULL). Falls back to either localized name.
+        const baseName = data.name || data.name_vi || data.name_en;
         const newPromo = await prisma.buyXGetYPromotion.create({
             data: {
-                name: data.name,
-                name_vi: data.name_vi || data.name || null,
-                name_en: data.name_en || data.name || null,
+                name: baseName,
+                name_vi: data.name_vi || baseName || null,
+                name_en: data.name_en || baseName || null,
                 buy_product_id: Number(data.buy_product_id),
                 buy_quantity: Number(data.buy_quantity),
                 gift_product_id: Number(data.gift_product_id),
@@ -47,12 +49,15 @@ export const updatePromotion = async (req: Request, res: Response): Promise<void
         const { id } = req.params;
         const data = req.body;
         
+        // Only touch names that were provided; derive canonical name if missing.
+        const baseName = data.name || data.name_vi || data.name_en;
+        
         await prisma.buyXGetYPromotion.update({
             where: { id: Number(id) },
             data: {
-                name: data.name,
-                name_vi: data.name_vi !== undefined ? (data.name_vi || null) : undefined,
-                name_en: data.name_en !== undefined ? (data.name_en || null) : undefined,
+                name: baseName || undefined,
+                name_vi: data.name_vi !== undefined ? (data.name_vi || baseName || null) : undefined,
+                name_en: data.name_en !== undefined ? (data.name_en || baseName || null) : undefined,
                 buy_product_id: Number(data.buy_product_id),
                 buy_quantity: Number(data.buy_quantity),
                 gift_product_id: Number(data.gift_product_id),

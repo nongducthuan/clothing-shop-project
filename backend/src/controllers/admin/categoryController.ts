@@ -57,12 +57,15 @@ export const createCategory = async (req: Request, res: Response): Promise<void>
   try {
     const { name, name_vi, name_en, gender, image_url } = req.body;
 
+    // name is the canonical display name (NOT NULL). Falls back to either localized name.
+    const baseName = name || name_vi || name_en;
+
     // Convert gender string to enum type manually if needed, assuming Prisma maps it correctly from request
     const category = await prisma.category.create({
       data: {
-        name,
-        name_vi: name_vi || null,
-        name_en: name_en || null,
+        name: baseName,
+        name_vi: name_vi || baseName || null,
+        name_en: name_en || baseName || null,
         gender: gender || 'unisex',
         image_url: image_url || null,
       },
@@ -79,12 +82,15 @@ export const updateCategory = async (req: Request, res: Response): Promise<void>
     const { id } = req.params;
     const { name, name_vi, name_en, gender, image_url } = req.body;
 
+    // Only touch names that were provided; derive canonical name if missing.
+    const baseName = name || name_vi || name_en;
+
     const category = await prisma.category.update({
       where: { id: Number(id) },
       data: {
-        name,
-        name_vi: name_vi !== undefined ? name_vi : undefined,
-        name_en: name_en !== undefined ? name_en : undefined,
+        name: baseName || undefined,
+        name_vi: name_vi !== undefined ? (name_vi || baseName || null) : undefined,
+        name_en: name_en !== undefined ? (name_en || baseName || null) : undefined,
         gender,
         image_url,
       },

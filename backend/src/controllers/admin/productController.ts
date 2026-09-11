@@ -38,11 +38,14 @@ export const addProduct = async (req: Request, res: Response): Promise<void> => 
     try {
         const { name, name_vi, name_en, description_vi, description_en, price, import_price, image_url, gender, category_id } = req.body;
         
+        // name is the canonical display name (NOT NULL). Falls back to either localized name.
+        const baseName = name || name_vi || name_en;
+        
         const product = await prisma.product.create({
             data: {
-                name,
-                name_vi: name_vi || name || null,
-                name_en: name_en || name || null,
+                name: baseName,
+                name_vi: name_vi || baseName || null,
+                name_en: name_en || baseName || null,
                 description_vi: description_vi || null,
                 description_en: description_en || null,
                 price,
@@ -65,12 +68,15 @@ export const editProduct = async (req: Request, res: Response): Promise<void> =>
         const { id } = req.params;
         const { name, name_vi, name_en, description_vi, description_en, price, import_price, image_url, gender, category_id } = req.body;
         
+        // Only touch names that were provided; derive canonical name if missing.
+        const baseName = name || name_vi || name_en;
+        
         const product = await prisma.product.update({
             where: { id: Number(id) },
             data: {
-                name,
-                name_vi: name_vi !== undefined ? (name_vi || null) : undefined,
-                name_en: name_en !== undefined ? (name_en || null) : undefined,
+                name: baseName || undefined,
+                name_vi: name_vi !== undefined ? (name_vi || baseName || null) : undefined,
+                name_en: name_en !== undefined ? (name_en || baseName || null) : undefined,
                 description_vi: description_vi !== undefined ? (description_vi || null) : undefined,
                 description_en: description_en !== undefined ? (description_en || null) : undefined,
                 price,
@@ -132,12 +138,16 @@ export const addColor = async (req: Request, res: Response): Promise<void> => {
         const { productId } = req.params;
         const { color_name, color_name_vi, color_name_en, color_code, image_url } = req.body;
         
+        // color_name is the canonical display name (NOT NULL in schema).
+        // Falls back to either localized name if the base one is missing.
+        const baseName = color_name || color_name_vi || color_name_en;
+        
         const color = await prisma.productColor.create({
             data: {
                 product_id: Number(productId),
-                color_name,
-                color_name_vi: color_name_vi || color_name || null,
-                color_name_en: color_name_en || color_name || null,
+                color_name: baseName,
+                color_name_vi: color_name_vi || baseName || null,
+                color_name_en: color_name_en || baseName || null,
                 color_code,
                 image_url
             }

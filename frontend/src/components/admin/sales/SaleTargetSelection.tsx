@@ -15,13 +15,13 @@ export default function SaleTargetSelection({
   selectedProductIds,
   toggleProduct
 }) {
-  const { getLocalizedText } = useLanguage();
+  const { getLocalizedText, t } = useLanguage();
 
   const getGenderLabel = (gender) => {
     const g = (gender || "").toLowerCase();
-    if (g === 'men' || g === 'male') return 'Nam';
-    if (g === 'women' || g === 'female') return 'Nữ';
-    return 'Unisex';
+    if (g === 'men' || g === 'male') return t("gender.male");
+    if (g === 'women' || g === 'female') return t("gender.female");
+    return t("gender.unisex");
   };
 
   const handleScopeChange = (scope) => {
@@ -36,7 +36,7 @@ export default function SaleTargetSelection({
     return 'bg-emerald-100 text-emerald-600';
   };
 
-  const scopeLabels = { all: "Toàn bộ", category: "Danh mục", product: "Sản phẩm" };
+  const scopeLabels = { all: t("admin.scope_all"), category: t("admin.scope_category"), product: t("admin.scope_product") };
 
   return (
     <>
@@ -49,7 +49,7 @@ export default function SaleTargetSelection({
 
       <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm border border-slate-200/80 dark:border-slate-700 h-full">
         <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 mb-8">
-          <h3 className="text-sm font-bold text-slate-400 dark:text-slate-400 uppercase tracking-widest">Chọn mục tiêu</h3>
+          <h3 className="text-sm font-bold text-slate-400 dark:text-slate-400 uppercase tracking-widest">{t("admin.target_title")}</h3>
           <div className="flex flex-wrap gap-2 bg-slate-100 dark:bg-slate-700/50 p-1 rounded-xl w-full xl:w-auto">
             {["all", "category", "product"].map((scope) => (
               <button
@@ -73,8 +73,8 @@ export default function SaleTargetSelection({
               <div className="w-20 h-20 bg-blue-100 dark:bg-blue-900/40 rounded-full flex items-center justify-center mb-4">
                 <i className="fa-solid fa-globe text-3xl text-blue-600 dark:text-blue-400"></i>
               </div>
-              <h4 className="font-bold text-slate-800 dark:text-slate-100 text-lg">Giảm giá toàn cửa hàng</h4>
-              <p className="text-slate-400 text-sm max-w-xs mt-2">Chiến dịch này sẽ tự động áp dụng cho tất cả sản phẩm trong cửa hàng.</p>
+              <h4 className="font-bold text-slate-800 dark:text-slate-100 text-lg">{t("admin.all_store_sale_title")}</h4>
+              <p className="text-slate-400 text-sm max-w-xs mt-2">{t("admin.all_store_sale_desc")}</p>
             </div>
           )}
 

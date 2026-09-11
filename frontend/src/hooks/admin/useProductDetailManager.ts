@@ -79,7 +79,9 @@ export function useProductInventory(productId) {
    * Sends a request to add a new color variant to the current product.
    */
   const addColor = async () => {
-    if (!colorForm.color_name) return showToast("Please enter a color name.", "warning");
+    // Accept any of the 3 name fields; backend derives the canonical color_name
+    if (!colorForm.color_name && !colorForm.color_name_vi && !colorForm.color_name_en)
+      return showToast("Please enter a color name.", "warning");
 
     try {
       await API.post(`/admin/products/${productId}/colors`, colorForm, {

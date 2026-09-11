@@ -2,7 +2,7 @@ import React from "react";
 import { useLanguage } from "../../../context/LanguageContext";
 
 export default function SaleDetailModal({ detailModal, onClose }) {
-  const { getLocalizedText } = useLanguage();
+  const { getLocalizedText, t } = useLanguage();
   if (!detailModal.isOpen) return null;
 
   return (
@@ -41,7 +41,7 @@ export default function SaleDetailModal({ detailModal, onClose }) {
               </div>
             ))}
             {detailModal.data.length === 0 && (
-              <p className="text-center text-gray-400 text-xs italic py-4">Không có dữ liệu.</p>
+              <p className="text-center text-gray-400 text-xs italic py-4">{t("admin.no_data")}</p>
             )}
           </div>
         </div>

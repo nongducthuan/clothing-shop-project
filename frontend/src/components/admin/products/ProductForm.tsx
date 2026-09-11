@@ -52,7 +52,7 @@ export default function ProductForm({
                   className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 focus:bg-white dark:focus:bg-slate-700 focus:border-violet-500 dark:focus:border-violet-400 focus:ring-4 focus:ring-violet-500/10 rounded-2xl transition-all duration-300 outline-none text-slate-800 dark:text-slate-100 font-medium placeholder:text-slate-400 dark:placeholder:text-slate-500"
                   value={form.name_vi || ""}
                   onChange={(e) => setForm({ ...form, name_vi: e.target.value, name: e.target.value })}
-                  placeholder={t("admin.name_vi_placeholder")}
+                  placeholder={"Vd: Áo Sơ Mi Trắng"}
                 />
               </div>
               <div>
@@ -61,7 +61,7 @@ export default function ProductForm({
                   className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 focus:bg-white dark:focus:bg-slate-700 focus:border-violet-500 dark:focus:border-violet-400 focus:ring-4 focus:ring-violet-500/10 rounded-2xl transition-all duration-300 outline-none text-slate-800 dark:text-slate-100 font-medium placeholder:text-slate-400 dark:placeholder:text-slate-500"
                   value={form.name_en || ""}
                   onChange={(e) => setForm({ ...form, name_en: e.target.value })}
-                  placeholder={t("admin.name_en_placeholder")}
+                  placeholder={"E.g: White Shirt"}
                 />
               </div>
             </div>
@@ -71,26 +71,26 @@ export default function ProductForm({
             {/* Prices Row: Cost Price & Selling Price */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 ml-1">{t("admin.original_price")} (đ)</label>
+                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 ml-1">{t("admin.import_price")} (đ)</label>
                 <input
                   type="number"
                   onWheel={handleWheel}
                   className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 focus:bg-white dark:focus:bg-slate-700 focus:border-violet-500 dark:focus:border-violet-400 focus:ring-4 focus:ring-violet-500/10 rounded-2xl transition-all duration-300 outline-none text-slate-800 dark:text-slate-100 font-medium no-spinner placeholder:text-slate-400 dark:placeholder:text-slate-500"
                   value={form.import_price || ""}
                   onChange={(e) => setForm({ ...form, import_price: e.target.value === "" ? "" : +e.target.value })}
-                  placeholder={t("admin.original_price_placeholder")}
+                  placeholder={t("admin.import_price_placeholder")}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 ml-1">{t("admin.price")} (đ)</label>
+                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 ml-1">{t("admin.selling_price")} (đ)</label>
                 <input
                   type="number"
                   onWheel={handleWheel}
                   className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 focus:bg-white dark:focus:bg-slate-700 focus:border-violet-500 dark:focus:border-violet-400 focus:ring-4 focus:ring-violet-500/10 rounded-2xl transition-all duration-300 outline-none text-slate-800 dark:text-slate-100 font-medium no-spinner placeholder:text-slate-400 dark:placeholder:text-slate-500"
                   value={form.price}
                   onChange={(e) => setForm({ ...form, price: e.target.value === "" ? "" : +e.target.value })}
-                  placeholder={t("admin.price_placeholder")}
+                  placeholder={t("admin.selling_price_placeholder")}
                   required
                 />
               </div>

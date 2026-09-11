@@ -62,7 +62,7 @@ export default function ProductCard({ product, promotion }: ProductCardProps) {
 
         {isSale && (
           <div className="absolute top-4 sm:top-6 -left-10 sm:-left-9 w-32 sm:w-36 -rotate-45 bg-rose-500 text-white text-center text-[9px] sm:text-[10px] font-black py-1 sm:py-1.5 uppercase tracking-widest shadow-md z-10">
-            -{Math.round(product.sale_percent)}% OFF
+            -{Math.round(product.sale_percent)}% {t("voucher.discount_off_suffix", "GIẢM")}
           </div>
         )}
 
@@ -75,7 +75,7 @@ export default function ProductCard({ product, promotion }: ProductCardProps) {
         {promotion && (
           <div className="absolute bottom-2 right-2 sm:bottom-4 sm:right-4 z-10">
             <span className="px-2 py-1 sm:px-3 sm:py-1.5 rounded-full text-[9px] sm:text-[10px] font-bold uppercase tracking-wider sm:tracking-widest bg-slate-900/90 dark:bg-slate-700/90 backdrop-blur-md text-white shadow-md">
-              BUY {promotion.buy_quantity} GET {promotion.gift_quantity}
+              {t("product.promo_badge", "BUY {buy} GET {gift}").replace("{buy}", String(promotion.buy_quantity)).replace("{gift}", String(promotion.gift_quantity))}
             </span>
           </div>
         )}

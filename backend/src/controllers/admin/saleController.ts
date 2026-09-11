@@ -5,12 +5,15 @@ export const createSaleAdmin = async (req: Request, res: Response): Promise<void
   try {
     const { name, name_vi, name_en, discount_percent, productIds, categoryIds, buy_x, get_y, start_date, end_date, apply_scope } = req.body;
     
+    // name is the canonical display name (NOT NULL). Falls back to either localized name.
+    const baseName = name || name_vi || name_en;
+    
     await prisma.$transaction(async (tx) => {
       const sale = await tx.sale.create({
         data: {
-          name,
-          name_vi: name_vi || name || null,
-          name_en: name_en || name || null,
+          name: baseName,
+          name_vi: name_vi || baseName || null,
+          name_en: name_en || baseName || null,
           discount_percent: Number(discount_percent),
           apply_scope: apply_scope as any,
           start_date: new Date(start_date),
@@ -50,13 +53,16 @@ export const updateSaleAdmin = async (req: Request, res: Response): Promise<void
     const { id } = req.params;
     const { name, name_vi, name_en, discount_percent, productIds, categoryIds, start_date, end_date, apply_scope } = req.body;
 
+    // Only touch names that were provided; derive canonical name if missing.
+    const baseName = name || name_vi || name_en;
+
     await prisma.$transaction(async (tx) => {
       await tx.sale.update({
         where: { id: Number(id) },
         data: {
-          name,
-          name_vi: name_vi !== undefined ? (name_vi || null) : undefined,
-          name_en: name_en !== undefined ? (name_en || null) : undefined,
+          name: baseName || undefined,
+          name_vi: name_vi !== undefined ? (name_vi || baseName || null) : undefined,
+          name_en: name_en !== undefined ? (name_en || baseName || null) : undefined,
           discount_percent: Number(discount_percent),
           apply_scope: apply_scope as any,
           start_date: new Date(start_date),
