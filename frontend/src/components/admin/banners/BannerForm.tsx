@@ -34,7 +34,7 @@ export default function BannerForm({
               className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 focus:bg-white dark:focus:bg-slate-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-4 focus:ring-blue-500/10 rounded-2xl transition-all duration-300 outline-none text-slate-800 dark:text-slate-100 font-medium placeholder:text-slate-400 dark:placeholder:text-slate-500"
               value={form.title_vi || ""}
               onChange={(e) => setForm({ ...form, title_vi: e.target.value, title: e.target.value })}
-              placeholder={"Nhập tiêu đề"}
+              placeholder={t("admin.ex_banner_title_vi")}
             />
           </div>
           <div>
@@ -44,7 +44,7 @@ export default function BannerForm({
               className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 focus:bg-white dark:focus:bg-slate-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-4 focus:ring-blue-500/10 rounded-2xl transition-all duration-300 outline-none text-slate-800 dark:text-slate-100 font-medium placeholder:text-slate-400 dark:placeholder:text-slate-500"
               value={form.title_en || ""}
               onChange={(e) => setForm({ ...form, title_en: e.target.value })}
-              placeholder={"Enter title"}
+              placeholder={t("admin.ex_banner_title_en")}
             />
           </div>
         </div>
@@ -58,7 +58,7 @@ export default function BannerForm({
               className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 focus:bg-white dark:focus:bg-slate-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-4 focus:ring-blue-500/10 rounded-2xl transition-all duration-300 outline-none text-slate-800 dark:text-slate-100 font-medium placeholder:text-slate-400 dark:placeholder:text-slate-500"
               value={form.subtitle_vi || ""}
               onChange={(e) => setForm({ ...form, subtitle_vi: e.target.value, subtitle: e.target.value })}
-              placeholder={"Nhập phụ đề"}
+              placeholder={t("admin.ex_banner_subtitle_vi")}
             />
           </div>
           <div>
@@ -68,7 +68,7 @@ export default function BannerForm({
               className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 focus:bg-white dark:focus:bg-slate-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-4 focus:ring-blue-500/10 rounded-2xl transition-all duration-300 outline-none text-slate-800 dark:text-slate-100 font-medium placeholder:text-slate-400 dark:placeholder:text-slate-500"
               value={form.subtitle_en || ""}
               onChange={(e) => setForm({ ...form, subtitle_en: e.target.value })}
-              placeholder={"Enter subtitle"}
+              placeholder={t("admin.ex_banner_subtitle_en")}
             />
           </div>
         </div>

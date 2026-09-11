@@ -3,7 +3,7 @@ import EmptyState from "../../common/EmptyState";
 import { useLanguage } from "../../../context/LanguageContext";
 
 export default function SaleTable({ sales, onShowDetail, onDelete, onEdit }) {
-  const { t, language } = useLanguage();
+  const { t, language, getLocalizedText } = useLanguage();
   const dateLocale = language === "vi" ? "vi-VN" : "en-GB";
 
   const formatDate = (dateString) => {
@@ -33,7 +33,7 @@ export default function SaleTable({ sales, onShowDetail, onDelete, onEdit }) {
           <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60">
             {sales && sales.length > 0 ? sales.map((item) => (
               <tr key={item.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-700/30 transition-colors">
-                <td className="py-4 px-4 font-bold text-slate-800 dark:text-slate-100">{item.name}</td>
+                <td className="py-4 px-4 font-bold text-slate-800 dark:text-slate-100">{getLocalizedText(item, "name") || item.name}</td>
                 <td className="py-4 px-4">
                   <span className="bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 px-3 py-1 rounded-full text-[11px] font-black uppercase border border-emerald-200 dark:border-emerald-900/50">
                     {t("admin.vt_discount_badge").replace("{percent}", String(Number.parseFloat(item.discount_percent)))}

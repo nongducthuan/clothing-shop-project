@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
 import API from "../../services/apiClient"; // Adjust path as needed
 import { useToast } from "../../context/ToastContext";
+import { useLanguage } from "../../context/LanguageContext";
 
 export default function useVoucherManager() {
   const { showToast } = useToast();
+  const { t } = useLanguage();
   const [vouchers, setVouchers] = useState([]);
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -81,7 +83,7 @@ export default function useVoucherManager() {
       setDetailModal({
         isOpen: true,
         data: response.data.details || [],
-        title: scope === 'category' ? "Danh mục đã chọn" : "Sản phẩm đã chọn"
+        title: scope === 'category' ? t("admin.selected_categories") : t("admin.selected_products")
       });
     } catch (error) {
       console.error("Error fetching voucher details:", error);

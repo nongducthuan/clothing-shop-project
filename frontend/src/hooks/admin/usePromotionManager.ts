@@ -5,7 +5,7 @@ import { useLanguage } from "../../context/LanguageContext";
 
 export default function usePromotionManager() {
   const { showToast } = useToast();
-  const { getLocalizedText } = useLanguage();
+  const { getLocalizedText, t } = useLanguage();
   const initialFormState = {
     name: "",
     name_vi: "",
@@ -150,12 +150,12 @@ export default function usePromotionManager() {
 
   const getProductName = (id) => {
     const product = products.find((p) => p.id === id);
-    return product ? (getLocalizedText(product, "name") || product.name) : `Sản phẩm #${id}`;
+    return product ? (getLocalizedText(product, "name") || product.name) : t("admin.product_id_fallback").replace("{id}", String(id));
   };
 
   const getCategoryName = (categoryId) => {
     const category = categories.find((c) => c.id === categoryId);
-    return category ? (getLocalizedText(category, "name") || category.name) : "Không phân loại";
+    return category ? (getLocalizedText(category, "name") || category.name) : t("admin.uncategorized");
   };
 
   const getProductStock = (product) => {

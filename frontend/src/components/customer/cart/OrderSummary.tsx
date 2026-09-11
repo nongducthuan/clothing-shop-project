@@ -34,7 +34,7 @@ export default function OrderSummary({ state, actions, helpers, onCheckout }) {
           <p className="text-sm font-medium text-slate-900 dark:text-slate-100 flex items-center gap-2">
             <i className="fa-solid fa-circle-user text-slate-400"></i> {t("cart.member_label", "Thành viên")} {getLocalizedTierName(tier)}
           </p>
-          <p className="text-xs text-slate-500 dark:text-slate-400">{t("cart.saving_label", "Saving")} {Math.round(discount)}%{t("cart.saving_desc", "% on this order.")}</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400">{t("cart.saving_label", "Saving")} {Math.round(discount)}{t("cart.saving_desc", "% on this order.")}</p>
         </div>
       ) : (
         <div className="mb-6">

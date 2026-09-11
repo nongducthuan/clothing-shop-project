@@ -270,7 +270,7 @@ const OrderItemCard = ({ item, formatCurrency }) => {
         </h4>
 
         <p className="text-xs font-medium text-gray-500 dark:text-slate-400 mb-2">
-          {item.color_name && `${t("admin.color_label")}: ${item.color_name}`}
+          {(getLocalizedText(item, "color_name") || item.color_name) && `${t("admin.color_label")}: ${getLocalizedText(item, "color_name") || item.color_name}`}
           {item.size && <span className="mx-1.5 text-gray-300 dark:text-slate-600">|</span>}
           {item.size && `${t("admin.size_label")}: ${item.size}`}
         </p>

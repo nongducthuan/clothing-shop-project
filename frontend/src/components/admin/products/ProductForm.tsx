@@ -52,7 +52,7 @@ export default function ProductForm({
                   className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 focus:bg-white dark:focus:bg-slate-700 focus:border-violet-500 dark:focus:border-violet-400 focus:ring-4 focus:ring-violet-500/10 rounded-2xl transition-all duration-300 outline-none text-slate-800 dark:text-slate-100 font-medium placeholder:text-slate-400 dark:placeholder:text-slate-500"
                   value={form.name_vi || ""}
                   onChange={(e) => setForm({ ...form, name_vi: e.target.value, name: e.target.value })}
-                  placeholder={"Vd: Áo Sơ Mi Trắng"}
+                  placeholder={t("admin.ex_product_name_vi")}
                 />
               </div>
               <div>
@@ -61,7 +61,7 @@ export default function ProductForm({
                   className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 focus:bg-white dark:focus:bg-slate-700 focus:border-violet-500 dark:focus:border-violet-400 focus:ring-4 focus:ring-violet-500/10 rounded-2xl transition-all duration-300 outline-none text-slate-800 dark:text-slate-100 font-medium placeholder:text-slate-400 dark:placeholder:text-slate-500"
                   value={form.name_en || ""}
                   onChange={(e) => setForm({ ...form, name_en: e.target.value })}
-                  placeholder={"E.g: White Shirt"}
+                  placeholder={t("admin.ex_product_name_en")}
                 />
               </div>
             </div>
@@ -164,7 +164,7 @@ export default function ProductForm({
                   rows={3}
                   value={form.description_vi || ""}
                   onChange={(e) => setForm({ ...form, description_vi: e.target.value })}
-                  placeholder={t("admin.description_vi_placeholder_vi")}
+                  placeholder={t("admin.ex_product_desc_vi")}
                 />
               </div>
               <div>
@@ -174,7 +174,7 @@ export default function ProductForm({
                   rows={3}
                   value={form.description_en || ""}
                   onChange={(e) => setForm({ ...form, description_en: e.target.value })}
-                  placeholder={t("admin.description_en_placeholder_en")}
+                  placeholder={t("admin.ex_product_desc_en")}
                 />
               </div>
             </div>

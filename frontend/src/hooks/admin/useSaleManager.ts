@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
 import API from "../../services/apiClient";
 import { useToast } from "../../context/ToastContext";
+import { useLanguage } from "../../context/LanguageContext";
 
 export default function useSaleManager() {
   const { showToast } = useToast();
+  const { t } = useLanguage();
   const [sales, setSales] = useState([]);
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -67,7 +69,7 @@ export default function useSaleManager() {
       setDetailModal({
         isOpen: true,
         data: response.data.details || [],
-        title: type === 'category' ? "Danh mục đã chọn" : "Sản phẩm đã chọn"
+        title: type === 'category' ? t("admin.selected_categories") : t("admin.selected_products")
       });
     } catch (error) {
       showToast("Không thể tải chi tiết", "error");

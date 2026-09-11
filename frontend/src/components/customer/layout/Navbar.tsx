@@ -339,7 +339,7 @@ const MobileMenu = ({ isOpen, onClose, user, menuData, navigate, onLogout }) => 
               <div className="w-7 h-7 rounded-lg bg-violet-100 dark:bg-violet-900/40 text-violet-600 dark:text-violet-400 flex items-center justify-center shrink-0">
                 <i className="fa-solid fa-shield-halved text-xs"></i>
               </div>
-              <span className="whitespace-nowrap leading-tight">{t("nav.sales_policy", "Sales Policy")}</span>
+              <span className="min-w-0 flex-1 text-center leading-tight">{t("nav.sales_policy", "Sales Policy")}</span>
             </button>
 
             {user ? (
@@ -350,7 +350,7 @@ const MobileMenu = ({ isOpen, onClose, user, menuData, navigate, onLogout }) => 
                 <div className="w-7 h-7 rounded-lg bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
                   <i className="fa-solid fa-box-archive text-xs"></i>
                 </div>
-                <span className="whitespace-nowrap leading-tight">{t("nav.my_orders", "My Orders")}</span>
+                <span className="min-w-0 flex-1 text-center leading-tight">{t("nav.my_orders", "My Orders")}</span>
               </button>
             ) : (
               <button
@@ -360,7 +360,7 @@ const MobileMenu = ({ isOpen, onClose, user, menuData, navigate, onLogout }) => 
                 <div className="w-7 h-7 rounded-lg bg-sky-100 dark:bg-sky-900/40 text-sky-600 dark:text-sky-400 flex items-center justify-center shrink-0">
                   <i className="fa-solid fa-truck-fast text-xs"></i>
                 </div>
-                <span className="whitespace-nowrap leading-tight">{t("nav.track_order", "Track Order")}</span>
+                <span className="min-w-0 flex-1 text-center leading-tight">{t("nav.track_order", "Track Order")}</span>
               </button>
             )}
           </div>

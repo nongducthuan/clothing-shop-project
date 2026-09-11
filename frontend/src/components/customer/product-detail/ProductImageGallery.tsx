@@ -18,7 +18,7 @@ export default function ProductImageGallery({ state }) {
       {/* SALE BADGE */}
       {isSale && (
         <span className="absolute top-6 left-6 bg-rose-500 text-white px-4 py-1.5 rounded-full text-sm font-bold shadow-md z-10 tracking-wider">
-          -{Math.round(product.sale_percent)}% OFF
+          {t("product.sale_off_badge", "-{percent}% GIẢM").replace("{percent}", String(Math.round(product.sale_percent)))}
         </span>
       )}
 
@@ -26,7 +26,7 @@ export default function ProductImageGallery({ state }) {
       {activePromotion && (
         <div className="absolute top-6 right-6 z-10">
           <span className="bg-slate-900/90 dark:bg-slate-100/90 text-white dark:text-slate-900 px-4 py-1.5 rounded-full text-xs font-bold shadow-md uppercase tracking-widest backdrop-blur-sm">
-            BUY {activePromotion.buy_quantity} GET {activePromotion.gift_quantity}
+            {t("product.promo_badge", "BUY {buy} GET {gift}").replace("{buy}", String(activePromotion.buy_quantity)).replace("{gift}", String(activePromotion.gift_quantity))}
           </span>
         </div>
       )}

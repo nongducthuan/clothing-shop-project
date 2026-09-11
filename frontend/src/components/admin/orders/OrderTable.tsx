@@ -276,30 +276,30 @@ const ReturnInfoSection = ({ order }) => {
   const getReturnBadge = (status: string) => {
     if (status === "Return Approved") {
       return (
-        <span className="text-[10px] font-extrabold uppercase tracking-widest bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-full border border-emerald-300/40 whitespace-nowrap inline-flex items-center shrink-0">
+        <span className="text-[10px] font-extrabold uppercase tracking-widest bg-emerald-100 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 px-2.5 py-1 rounded-full border border-emerald-300/40 dark:border-emerald-900/40 whitespace-nowrap inline-flex items-center shrink-0">
           {t("admin.return_approved_badge")}
         </span>
       );
     }
     if (status === "Return Rejected") {
       return (
-        <span className="text-[10px] font-extrabold uppercase tracking-widest bg-rose-100 text-rose-800 px-2.5 py-1 rounded-full border border-rose-300/40 whitespace-nowrap inline-flex items-center shrink-0">
+        <span className="text-[10px] font-extrabold uppercase tracking-widest bg-rose-100 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300 px-2.5 py-1 rounded-full border border-rose-300/40 dark:border-rose-900/40 whitespace-nowrap inline-flex items-center shrink-0">
           {t("admin.return_rejected_badge")}
         </span>
       );
     }
     return (
-      <span className="text-[10px] font-extrabold uppercase tracking-widest bg-amber-200/60 text-amber-800 px-2.5 py-1 rounded-full border border-amber-300/40 whitespace-nowrap inline-flex items-center shrink-0">
+      <span className="text-[10px] font-extrabold uppercase tracking-widest bg-amber-200/60 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 px-2.5 py-1 rounded-full border border-amber-300/40 dark:border-amber-900/40 whitespace-nowrap inline-flex items-center shrink-0">
         {t("admin.return_action_required")}
       </span>
     );
   };
 
   return (
-    <div className="bg-gradient-to-r from-amber-50/60 via-orange-50/40 to-amber-50/60 p-5 sm:p-6 rounded-[1.75rem] border border-amber-200/60 text-sm shadow-sm space-y-4">
+    <div className="bg-gradient-to-r from-amber-50/60 via-orange-50/40 to-amber-50/60 dark:from-amber-950/30 dark:via-orange-950/20 dark:to-amber-950/30 p-5 sm:p-6 rounded-[1.75rem] border border-amber-200/60 dark:border-amber-900/40 text-sm shadow-sm space-y-4">
       <div className="flex items-center justify-between gap-2 flex-wrap">
-        <h5 className="font-extrabold text-amber-900 text-[11px] sm:text-xs uppercase tracking-wider flex items-center gap-2 m-0 leading-none whitespace-nowrap">
-          <span className="w-7 h-7 rounded-full bg-amber-100/80 text-amber-700 flex items-center justify-center text-xs shadow-xs shrink-0">
+        <h5 className="font-extrabold text-amber-900 dark:text-amber-200 text-[11px] sm:text-xs uppercase tracking-wider flex items-center gap-2 m-0 leading-none whitespace-nowrap">
+          <span className="w-7 h-7 rounded-full bg-amber-100/80 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 flex items-center justify-center text-xs shadow-xs shrink-0">
             <i className="fa-solid fa-rotate-left"></i>
           </span>
           {t("admin.return_request_details")}
@@ -314,7 +314,7 @@ const ReturnInfoSection = ({ order }) => {
             <span className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-400 mb-1">
               {t("admin.return_reason")}
             </span>
-            <span className="inline-block bg-slate-100 dark:bg-slate-600 text-slate-800 dark:text-slate-200 text-xs font-extrabold px-3 py-1 rounded-lg border border-slate-200/60">
+            <span className="inline-block bg-slate-100 dark:bg-slate-600 text-slate-800 dark:text-slate-200 text-xs font-extrabold px-3 py-1 rounded-lg border border-slate-200/60 dark:border-slate-500/60">
               {getLocalizedLabel("returnReason", order.reason_code) || t("admin.not_specified")}
             </span>
           </div>
@@ -368,8 +368,8 @@ const ReturnInfoSection = ({ order }) => {
 
       {/* Hình ảnh bằng chứng */}
       {order.return_images && order.return_images.length > 0 && (
-        <div className="pt-3 border-t border-amber-200/60">
-          <span className="block text-[10px] font-extrabold text-amber-900/70 uppercase mb-2.5 tracking-wider">
+        <div className="pt-3 border-t border-amber-200/60 dark:border-amber-900/40">
+          <span className="block text-[10px] font-extrabold text-amber-900/70 dark:text-amber-200/70 uppercase mb-2.5 tracking-wider">
             {t("admin.evidence_attachments")} ({order.return_images.length})
           </span>
           <div className="flex flex-wrap gap-3">
@@ -462,10 +462,11 @@ const OrderItemCard = ({ item, formatCurrency }) => {
   const imageUrl = getImageUrl(item.image_url);
 
   const isGift = Boolean(item.is_gift);
+  const colorDisplay = getLocalizedText(item, "color_name") || item.color_name;
 
   return (
     <div className={`flex gap-4 rounded-2xl p-4 items-center shadow-sm transition-all border ${
-      isGift ? "bg-rose-50 border-rose-100" : "bg-white dark:bg-slate-800 border-gray-100 dark:border-slate-700 hover:border-violet-100 hover:shadow-md"
+      isGift ? "bg-rose-50 dark:bg-rose-950/30 border-rose-100 dark:border-rose-900/40" : "bg-white dark:bg-slate-800 border-gray-100 dark:border-slate-700 hover:border-violet-100 hover:shadow-md"
     }`}>
       <div className={`w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 ${isGift ? 'border-2 border-white shadow-sm' : 'bg-gray-50 dark:bg-slate-700 border border-gray-100 dark:border-slate-600'}`}>
         <img
@@ -482,8 +483,8 @@ const OrderItemCard = ({ item, formatCurrency }) => {
         </h4>
 
         <p className="text-xs font-medium text-gray-500 dark:text-slate-400 mb-3">
-          {item.color_name && <>{t("admin.color_label", "Color:")} {item.color_name}</>}
-          {item.color_name && item.size && <span className="mx-1.5 text-gray-300 dark:text-slate-600">|</span>}
+          {colorDisplay && <>{t("admin.color_label", "Color:")} {colorDisplay}</>}
+          {colorDisplay && item.size && <span className="mx-1.5 text-gray-300 dark:text-slate-600">|</span>}
           {item.size && <>{t("admin.size_label", "Size:")} {item.size}</>}
         </p>
 
@@ -497,7 +498,7 @@ const OrderItemCard = ({ item, formatCurrency }) => {
               <span className="bg-rose-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider shadow-sm">
                 {t("admin.free_gift")}
               </span>
-              <span className="text-sm font-black text-rose-600">0 đ</span>
+              <span className="text-sm font-black text-rose-600 dark:text-rose-400">0 đ</span>
             </div>
           ) : (
             <span className="text-sm font-black text-gray-900 dark:text-slate-100">

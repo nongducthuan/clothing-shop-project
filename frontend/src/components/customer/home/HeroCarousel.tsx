@@ -19,7 +19,7 @@ const BannerOverlay = ({ title, subtitle }) => (
 );
 
 export default function HeroCarousel({ banners = [] }) {
-  const { getLocalizedText } = useLanguage();
+  const { getLocalizedText, t } = useLanguage();
   const [current, setCurrent] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
 
@@ -56,10 +56,10 @@ export default function HeroCarousel({ banners = [] }) {
         }}
       >
         {slides.map((banner, idx) => {
-          const title = banner ? getLocalizedText(banner, "title") : "Welcome to Clothing Shop";
+          const title = banner ? getLocalizedText(banner, "title") : t("home.hero_fallback_title", "Welcome to Clothing Shop");
           const subtitle = banner
             ? getLocalizedText(banner, "subtitle")
-            : "The latest collection is here – Up to 50% off today!";
+            : t("home.hero_fallback_subtitle", "The latest collection is here – Up to 50% off today!");
           const imgSrc = banner
             ? getImageUrl(banner.image_url)
             : getImageUrl("/public/images/placeholder-banner.png");

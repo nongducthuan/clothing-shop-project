@@ -28,34 +28,34 @@ export default function Toast({ message, type = "success", onClose }) {
   const config = {
     success: {
       icon: "fa-circle-check",
-      bgColor: "bg-emerald-50",
-      borderColor: "border-emerald-200",
-      textColor: "text-emerald-800",
-      iconColor: "text-emerald-500",
+      bgColor: "bg-emerald-50 dark:bg-emerald-950/60",
+      borderColor: "border-emerald-200 dark:border-emerald-900/50",
+      textColor: "text-emerald-800 dark:text-emerald-200",
+      iconColor: "text-emerald-500 dark:text-emerald-400",
       title: "Success",
     },
     error: {
       icon: "fa-circle-exclamation",
-      bgColor: "bg-red-50",
-      borderColor: "border-red-200",
-      textColor: "text-red-800",
-      iconColor: "text-red-500",
+      bgColor: "bg-red-50 dark:bg-red-950/60",
+      borderColor: "border-red-200 dark:border-red-900/50",
+      textColor: "text-red-800 dark:text-red-200",
+      iconColor: "text-red-500 dark:text-red-400",
       title: "Error",
     },
     warning: {
       icon: "fa-triangle-exclamation",
-      bgColor: "bg-amber-50",
-      borderColor: "border-amber-200",
-      textColor: "text-amber-800",
-      iconColor: "text-amber-500",
+      bgColor: "bg-amber-50 dark:bg-amber-950/60",
+      borderColor: "border-amber-200 dark:border-amber-900/50",
+      textColor: "text-amber-800 dark:text-amber-200",
+      iconColor: "text-amber-500 dark:text-amber-400",
       title: "Warning",
     },
     info: {
       icon: "fa-circle-info",
-      bgColor: "bg-blue-50",
-      borderColor: "border-blue-200",
-      textColor: "text-blue-800",
-      iconColor: "text-blue-500",
+      bgColor: "bg-blue-50 dark:bg-blue-950/60",
+      borderColor: "border-blue-200 dark:border-blue-900/50",
+      textColor: "text-blue-800 dark:text-blue-200",
+      iconColor: "text-blue-500 dark:text-blue-400",
       title: "Info",
     },
   };
@@ -78,13 +78,13 @@ export default function Toast({ message, type = "success", onClose }) {
       {/* Content Section */}
       <div className="flex-1">
         <h4 className={`font-bold text-sm ${style.textColor}`}>{style.title}</h4>
-        <p className={`text-sm mt-1 text-gray-600`}>{message}</p>
+        <p className={`text-sm mt-1 text-gray-600 dark:text-slate-300`}>{message}</p>
       </div>
 
       {/* Close Button */}
       <button
         onClick={handleClose}
-        className="text-gray-400 hover:text-gray-600 transition-colors"
+        className="text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300 transition-colors"
       >
         <i className="fa-solid fa-xmark"></i>
       </button>

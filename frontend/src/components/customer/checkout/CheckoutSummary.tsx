@@ -76,7 +76,7 @@ export function CheckoutSummary({ state, helpers }) {
               chosenSize = chosenColor?.sizes?.[0];
             }
             if (chosenColor && chosenSize) {
-              variantText = `${t("cart.color_label", "Color:")} ${chosenColor.color_name} | ${t("cart.size_label", "Size:")} ${chosenSize.size}`;
+              variantText = `${t("cart.color_label", "Color:")} ${getLocalizedText(chosenColor, "color_name") || chosenColor.color_name} | ${t("cart.size_label", "Size:")} ${chosenSize.size}`;
               colorImageUrl = chosenColor.image_url || detail.image_url;
             }
           }

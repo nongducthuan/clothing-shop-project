@@ -186,7 +186,7 @@ export default function PromotionForm({ state, actions, helpers }: PromotionForm
                 value={(formData as any).name_vi || ""}
                 onChange={(e) => { handleInputChange(e as any); setFormData((prev: any) => ({ ...prev, name: (e.target as HTMLInputElement).value })); }}
                 className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-indigo-500 text-sm outline-none transition-all text-slate-800 dark:text-slate-100"
-                placeholder={"Vd: Mua 2 tặng 1"}
+                placeholder={t("admin.ex_promo_name_vi")}
               />
             </div>
             <div>
@@ -199,7 +199,7 @@ export default function PromotionForm({ state, actions, helpers }: PromotionForm
                 value={(formData as any).name_en || ""}
                 onChange={handleInputChange}
                 className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-indigo-500 text-sm outline-none transition-all text-slate-800 dark:text-slate-100"
-                placeholder={"E.g: Buy 2 Get 1"}
+                placeholder={t("admin.ex_promo_name_en")}
               />
             </div>
           </div>

@@ -32,7 +32,7 @@ export default function SaleForm({ formData, setFormData, onSubmit, editingId, o
               <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5 ml-1">{t("admin.sale_name_vi")}</label>
               <input
                 type="text"
-                placeholder={"Vd: Sale Hè 2025"}
+                placeholder={t("admin.ex_sale_name_vi")}
                 className="w-full p-4 bg-slate-50 dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 rounded-2xl focus:ring-2 focus:ring-blue-500 font-medium outline-none transition-all text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
                 value={formData.name_vi || ""}
                 onChange={(e) => setFormData({ ...formData, name_vi: e.target.value, name: e.target.value })}
@@ -43,7 +43,7 @@ export default function SaleForm({ formData, setFormData, onSubmit, editingId, o
               <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5 ml-1">{t("admin.sale_name_en")}</label>
               <input
                 type="text"
-                placeholder={"E.g: Summer Sale 2025"}
+                placeholder={t("admin.ex_sale_name_en")}
                 className="w-full p-4 bg-slate-50 dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 rounded-2xl focus:ring-2 focus:ring-blue-500 font-medium outline-none transition-all text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
                 value={formData.name_en || ""}
                 onChange={(e) => setFormData({ ...formData, name_en: e.target.value })}

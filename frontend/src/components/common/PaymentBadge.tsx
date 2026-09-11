@@ -62,10 +62,10 @@ export function PaymentBadge({
 
   if (badgeStyle) {
     const badgeColor = isVnPay
-      ? "bg-blue-50 text-blue-700 border-blue-200/60"
+      ? "bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border-blue-200/60 dark:border-blue-900/40"
       : isMomo
-      ? "bg-fuchsia-50 text-fuchsia-700 border-fuchsia-200/60"
-      : "bg-emerald-50 text-emerald-700 border-emerald-200/60";
+      ? "bg-fuchsia-50 dark:bg-fuchsia-950/40 text-fuchsia-700 dark:text-fuchsia-300 border-fuchsia-200/60 dark:border-fuchsia-900/40"
+      : "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200/60 dark:border-emerald-900/40";
 
     return (
       <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border ${badgeColor} ${className}`}>

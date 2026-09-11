@@ -31,9 +31,9 @@ export default function SaleTargetSelection({
 
   const getGenderBadge = (gender) => {
     const g = (gender || "").toLowerCase();
-    if (g === 'men' || g === 'male') return 'bg-blue-100 text-blue-600';
-    if (g === 'women' || g === 'female') return 'bg-pink-100 text-pink-600';
-    return 'bg-emerald-100 text-emerald-600';
+    if (g === 'men' || g === 'male') return 'bg-blue-100 dark:bg-blue-950/40 text-blue-600 dark:text-blue-300';
+    if (g === 'women' || g === 'female') return 'bg-pink-100 dark:bg-pink-950/40 text-pink-600 dark:text-pink-300';
+    return 'bg-emerald-100 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-300';
   };
 
   const scopeLabels = { all: t("admin.scope_all"), category: t("admin.scope_category"), product: t("admin.scope_product") };
@@ -85,7 +85,7 @@ export default function SaleTargetSelection({
                 <i className="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
                 <input
                   type="text"
-                  placeholder="Tìm tên danh mục..."
+                  placeholder={t("admin.search_category_ph")}
                   className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 rounded-xl text-xs focus:ring-2 focus:ring-blue-500 transition-all outline-none text-slate-800 dark:text-slate-100"
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -133,7 +133,7 @@ export default function SaleTargetSelection({
                 <i className="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
                 <input
                   type="text"
-                  placeholder="Tìm tên sản phẩm, danh mục hoặc giới tính..."
+                  placeholder={t("admin.search_product_gender_ph")}
                   className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 rounded-xl text-xs focus:ring-2 focus:ring-blue-500 transition-all outline-none text-slate-800 dark:text-slate-100"
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -154,7 +154,7 @@ export default function SaleTargetSelection({
                 }).map(p => {
                   const isSelected = selectedProductIds.includes(p.id);
                   const foundCategory = categories.find(c => c.id === p.category_id);
-                  const displayCatName = foundCategory ? (getLocalizedText(foundCategory, "name") || foundCategory.name) : "Không phân loại";
+                  const displayCatName = foundCategory ? (getLocalizedText(foundCategory, "name") || foundCategory.name) : t("admin.uncategorized");
 
                   return (
                     <div

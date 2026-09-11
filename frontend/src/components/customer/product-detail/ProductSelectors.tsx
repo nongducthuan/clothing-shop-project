@@ -4,7 +4,7 @@ import { useLanguage } from "../../../context/LanguageContext";
 export default function ProductSelectors({ state, actions }) {
   const { product, selectedColor, selectedSize, isProductIncomplete } = state;
   const { setSelectedColor, setSelectedSize } = actions;
-  const { t } = useLanguage();
+  const { t, getLocalizedText } = useLanguage();
 
   return (
     <div className="space-y-8 mb-8 border-t border-slate-100 dark:border-slate-800 pt-8">
@@ -22,7 +22,7 @@ export default function ProductSelectors({ state, actions }) {
                   : "border-transparent opacity-60 hover:opacity-100"
               }`}
               onClick={() => setSelectedColor(color)}
-              alt={color.color_name}
+              alt={getLocalizedText(color, "color_name") || color.color_name}
             />
           ))}
         </div>
@@ -31,7 +31,7 @@ export default function ProductSelectors({ state, actions }) {
       {/* COLOR DOTS */}
       <div>
         <h3 className="text-xs font-bold text-slate-900 dark:text-slate-100 uppercase tracking-widest mb-3">
-          {t("product.color_label", "Color")} <span className="text-slate-500 dark:text-slate-400 font-normal normal-case ml-2">{selectedColor?.color_name || t("product.not_selected", "Not selected")}</span>
+          {t("product.color_label", "Color")} <span className="text-slate-500 dark:text-slate-400 font-normal normal-case ml-2">{getLocalizedText(selectedColor, "color_name") || selectedColor?.color_name || t("product.not_selected", "Not selected")}</span>
         </h3>
         <div className="flex items-center flex-wrap gap-3">
           {product.colors?.map((color) => (
@@ -44,7 +44,7 @@ export default function ProductSelectors({ state, actions }) {
                   : "hover:scale-110"
               }`}
               style={{ backgroundColor: color.color_code }}
-              title={color.color_name}
+              title={getLocalizedText(color, "color_name") || color.color_name}
             />
           ))}
           {isProductIncomplete && (

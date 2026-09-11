@@ -94,13 +94,13 @@ export default function PolicyOffers({ state, actions }) {
         <div className="mt-12 pt-12 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row gap-4 justify-center">
           <button
             onClick={handleShopNow}
-            className="px-10 py-4 bg-slate-900 dark:bg-violet-600 text-white font-medium rounded-full hover:bg-slate-800 dark:hover:bg-violet-700 transition-all active:scale-95 border-0 cursor-pointer"
+            className="w-full sm:w-auto px-6 sm:px-10 py-4 bg-slate-900 dark:bg-violet-600 text-white font-medium rounded-full hover:bg-slate-800 dark:hover:bg-violet-700 transition-all active:scale-95 border-0 cursor-pointer sm:whitespace-nowrap"
           >
             {t("policy.shop_now_btn", "Shop Now")}
           </button>
           <button
             onClick={handleContactSupport}
-            className="px-10 py-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-medium rounded-full hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+            className="w-full sm:w-auto px-6 sm:px-10 py-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-medium rounded-full hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors cursor-pointer sm:whitespace-nowrap"
           >
             {t("policy.contact_support_btn", "Contact Support")}
           </button>

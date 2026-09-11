@@ -24,3 +24,22 @@
     transform: translateY(0);
   }
 }
+
+/* =============================================
+ * Date/time inputs: icon calendar hiển thị đúng
+ * theo light/dark mode (áp dụng cho Sale, Voucher,
+ * Promotion form...)
+ * ============================================= */
+@layer base {
+  input[type="date"],
+  input[type="datetime-local"],
+  input[type="time"] {
+    color-scheme: light;
+  }
+
+  .dark input[type="date"],
+  .dark input[type="datetime-local"],
+  .dark input[type="time"] {
+    color-scheme: dark;
+  }
+}

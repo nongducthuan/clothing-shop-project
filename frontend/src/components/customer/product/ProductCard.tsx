@@ -62,7 +62,7 @@ export default function ProductCard({ product, promotion }: ProductCardProps) {
 
         {isSale && (
           <div className="absolute top-4 sm:top-6 -left-10 sm:-left-9 w-32 sm:w-36 -rotate-45 bg-rose-500 text-white text-center text-[9px] sm:text-[10px] font-black py-1 sm:py-1.5 uppercase tracking-widest shadow-md z-10">
-            -{Math.round(product.sale_percent)}% {t("voucher.discount_off_suffix", "GIẢM")}
+            {t("product.sale_off_badge", "-{percent}% GIẢM").replace("{percent}", String(Math.round(product.sale_percent)))}
           </div>
         )}
 
