@@ -75,7 +75,7 @@ export default function usePromotionManager() {
     e.preventDefault();
 
     if (!formData.buy_product_id || !formData.gift_product_id) {
-      showToast("Please select both a Buy Product and a Gift Product.", "warning");
+      showToast(t("admin.promotion.toast_select_both", "Please select both a Buy Product and a Gift Product."), "warning");
       return;
     }
 
@@ -91,17 +91,17 @@ export default function usePromotionManager() {
 
       if (editingId) {
         await API.put(`/admin/promotions/${editingId}`, payload);
-        showToast("Promotion updated successfully!", "success");
+        showToast(t("admin.promotion.toast_updated", "Promotion updated successfully!"), "success");
       } else {
         await API.post("/admin/promotions", payload);
-        showToast("Promotion created successfully!", "success");
+        showToast(t("admin.promotion.toast_created", "Promotion created successfully!"), "success");
       }
 
       await fetchInitialData();
       handleResetForm();
     } catch (error) {
       console.error("Error saving promotion:", error);
-      showToast("Failed to save promotion. Please check console.", "error");
+      showToast(t("admin.promotion.toast_save_failed", "Failed to save promotion. Please check console."), "error");
     } finally {
       setIsLoading(false);
     }
@@ -130,10 +130,10 @@ export default function usePromotionManager() {
       await API.delete(`/admin/promotions/${id}`);
       setPromotions((prev) => prev.filter((p) => p.id !== id));
       if (editingId === id) handleResetForm();
-      showToast("Promotion deleted.", "success");
+      showToast(t("admin.promotion.toast_deleted", "Promotion deleted."), "success");
     } catch (error) {
       console.error("Error deleting promotion:", error);
-      showToast("Failed to delete promotion.", "error");
+      showToast(t("admin.promotion.toast_delete_failed", "Failed to delete promotion."), "error");
     }
   };
 

@@ -72,6 +72,7 @@ model Product {
   name             String                   @db.VarChar(255)
   name_vi          String?                  @db.VarChar(255)
   name_en          String?                  @db.VarChar(255)
+  description      String                   @db.Text
   description_vi   String?                  @db.Text
   description_en   String?                  @db.Text
   price            Decimal                  @db.Decimal(10, 2)

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import API from "../../services/apiClient";
 import { useToast } from "../../context/ToastContext";
+import { useLanguage } from "../../context/LanguageContext";
 
 /**
  * Custom hook to manage category-related operations including fetching,
@@ -8,6 +9,7 @@ import { useToast } from "../../context/ToastContext";
  */
 export function useCategoryManager() {
   const { showToast } = useToast();
+  const { t } = useLanguage();
   const token = localStorage.getItem("token");
   const authConfig = { headers: { Authorization: `Bearer ${token}` } };
 
@@ -128,9 +130,9 @@ export function useCategoryManager() {
     try {
       await API.delete(`/admin/categories/${id}`, authConfig);
       await fetchCategories();
-      showToast("Category deleted successfully!", "success");
+      showToast(t("admin.category.toast_deleted", "Category deleted successfully!"), "success");
     } catch (err) {
-      showToast("Cannot delete category containing products.", "error");
+      showToast(t("admin.category.toast_delete_failed", "Cannot delete category containing products."), "error");
     }
   };
 

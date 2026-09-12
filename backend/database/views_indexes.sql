@@ -1,11 +1,6 @@
 USE shopdb;
 
--- ==============================================================================
--- VIEWS
--- ==============================================================================
-
--- Generates a recommendation score based on user interaction weights
-CREATE VIEW user_product_score AS
+CREATE OR REPLACE VIEW user_product_score AS
 SELECT
   user_id,
   product_id,
@@ -20,11 +15,11 @@ SELECT
 FROM user_product_interaction
 GROUP BY user_id, product_id;
 
--- ==============================================================================
--- INDEXES FOR PERFORMANCE OPTIMIZATION
--- ==============================================================================
+ALTER TABLE user_product_interaction
+  ADD INDEX IF NOT EXISTS idx_upi_user_product (user_id, product_id);
 
-CREATE INDEX idx_upi_user_product ON user_product_interaction(user_id, product_id);
-CREATE INDEX idx_interaction_user ON user_product_interaction(user_id);
-CREATE INDEX idx_interaction_product ON user_product_interaction(product_id);
-CREATE INDEX idx_product_id ON products(id);
+ALTER TABLE user_product_interaction
+  ADD INDEX IF NOT EXISTS idx_interaction_user (user_id);
+
+ALTER TABLE user_product_interaction
+  ADD INDEX IF NOT EXISTS idx_interaction_product (product_id);

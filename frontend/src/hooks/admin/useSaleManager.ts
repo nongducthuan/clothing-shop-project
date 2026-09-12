@@ -72,7 +72,7 @@ export default function useSaleManager() {
         title: type === 'category' ? t("admin.selected_categories") : t("admin.selected_products")
       });
     } catch (error) {
-      showToast("Không thể tải chi tiết", "error");
+      showToast(t("admin.toast_details_failed", "Không thể tải chi tiết"), "error");
     }
   };
 
@@ -80,10 +80,10 @@ export default function useSaleManager() {
     if (!window.confirm("Bạn có chắc muốn xóa mục này?")) return;
     try {
       await API.delete(`/admin/sales/${id}`);
-      showToast("Xóa thành công!", "success");
+      showToast(t("admin.toast_deleted", "Đã xóa thành công!"), "success");
       fetchInitialData();
     } catch (error) {
-      showToast("Xóa thất bại: " + (error.response?.data?.message || error.message), "error");
+      showToast(t("admin.toast_delete_failed", "Xóa thất bại: {error}").replace("{error}", error.response?.data?.message || error.message), "error");
     }
   };
 
@@ -127,10 +127,10 @@ export default function useSaleManager() {
     try {
       if (editingId) {
         await API.put(`/admin/sales/${editingId}`, payload);
-        showToast("Cập nhật thành công!", "success");
+        showToast(t("admin.toast_updated", "Cập nhật thành công!"), "success");
       } else {
         await API.post("/admin/sales", payload);
-        showToast("Tạo mới thành công!", "success");
+        showToast(t("admin.toast_created", "Tạo mới thành công!"), "success");
       }
       // Reset form
       setEditingId(null);
@@ -140,7 +140,7 @@ export default function useSaleManager() {
       setSelectedProductIds([]);
       fetchInitialData();
     } catch (error) {
-      showToast("Error: " + error.message, "error");
+      showToast(t("admin.toast_error", "Error: {error}").replace("{error}", error.message), "error");
     }
   };
 

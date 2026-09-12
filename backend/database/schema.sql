@@ -9,8 +9,12 @@ USE shopdb;
 CREATE TABLE memberships (
   id INT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(50) NOT NULL,
-  min_spending DECIMAL(10,2) NOT NULL,
-  discount_percent DECIMAL(5,2) DEFAULT 0
+  name_vi VARCHAR(50) NULL,
+  name_en VARCHAR(50) NULL,
+  min_spending DECIMAL(10,2) NOT NULL DEFAULT 0,
+  discount_percent DECIMAL(5,2) DEFAULT 0,
+  is_active BOOLEAN DEFAULT TRUE, -- Soft delete
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE users (
@@ -31,7 +35,9 @@ CREATE TABLE otps (
     email VARCHAR(255) NOT NULL,
     code VARCHAR(6) NOT NULL,
     expires_at DATETIME NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    failed_attempts INT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX otps_email_idx (email)
 );
 
 -- ==============================================================================
@@ -41,30 +47,43 @@ CREATE TABLE otps (
 CREATE TABLE categories (
   id INT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(100) NOT NULL,
+  name_vi VARCHAR(100) NULL,
+  name_en VARCHAR(100) NULL,
   gender ENUM('male','female','unisex') DEFAULT 'unisex',
-  image_url VARCHAR(512) NULL
+  image_url VARCHAR(512) NULL,
+  is_active BOOLEAN DEFAULT TRUE, -- Soft delete
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE products (
   id INT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(255) NOT NULL,
-  description TEXT,
+  name_vi VARCHAR(255) NULL,
+  name_en VARCHAR(255) NULL,
+  description TEXT NOT NULL,
+  description_vi TEXT NULL,
+  description_en TEXT NULL,
   price DECIMAL(10,2) NOT NULL CHECK (price >= 0),
   import_price DECIMAL(15,2) NOT NULL DEFAULT 0 CHECK (import_price >= 0),
   image_url VARCHAR(512),
   gender ENUM('male','female','unisex') NOT NULL DEFAULT 'unisex',
   category_id INT NOT NULL,
+  is_active BOOLEAN DEFAULT TRUE, -- Soft delete
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (category_id) REFERENCES categories(id)
+  FOREIGN KEY (category_id) REFERENCES categories(id),
+  INDEX products_category_id_fkey (category_id)
 );
 
 CREATE TABLE product_colors (
   id INT AUTO_INCREMENT PRIMARY KEY,
   product_id INT NOT NULL,
   color_name VARCHAR(50) NOT NULL,
+  color_name_vi VARCHAR(50) NULL,
+  color_name_en VARCHAR(50) NULL,
   color_code VARCHAR(10) DEFAULT NULL,
   image_url VARCHAR(512) NOT NULL,
-  FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+  FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+  INDEX product_colors_product_id_fkey (product_id)
 );
 
 CREATE TABLE product_sizes (
@@ -84,18 +103,24 @@ CREATE TABLE banners (
   id INT AUTO_INCREMENT PRIMARY KEY,
   image_url VARCHAR(500) NOT NULL,
   title VARCHAR(255) NOT NULL,
+  title_vi VARCHAR(255) NULL,
+  title_en VARCHAR(255) NULL,
   subtitle VARCHAR(500) NOT NULL,
+  subtitle_vi VARCHAR(500) NULL,
+  subtitle_en VARCHAR(500) NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE sales (
   id INT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(100) NOT NULL,
+  name_vi VARCHAR(100) NULL,
+  name_en VARCHAR(100) NULL,
   discount_percent DECIMAL(5,2) DEFAULT 0 CHECK (discount_percent BETWEEN 0 AND 100),
   apply_scope ENUM('all', 'category', 'product') DEFAULT 'all',
   start_date DATETIME NOT NULL,
   end_date DATETIME NOT NULL,
-  status TINYINT DEFAULT 1,
+  status TINYINT(1) DEFAULT 1,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -153,6 +178,8 @@ CREATE TABLE voucher_categories (
 CREATE TABLE buy_x_get_y_promotions (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
+    name_vi VARCHAR(255) NULL,
+    name_en VARCHAR(255) NULL,
     buy_product_id INT NOT NULL,
     buy_quantity INT NOT NULL CHECK (buy_quantity > 0),
     gift_product_id INT NOT NULL,
@@ -164,6 +191,7 @@ CREATE TABLE buy_x_get_y_promotions (
     priority INT DEFAULT 0,
     is_stackable BOOLEAN DEFAULT FALSE,
     status ENUM('active', 'paused', 'expired') DEFAULT 'active',
+    is_active BOOLEAN DEFAULT TRUE, -- Soft delete
     times_applied INT DEFAULT 0,
     total_gifts_issued INT DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -186,10 +214,11 @@ CREATE TABLE orders (
    address TEXT NOT NULL,
    total_price DECIMAL(10,2) DEFAULT 0 CHECK (total_price >= 0),
    status ENUM('Pending','Confirmed','Shipping','Delivered','Cancelled','Return Requested','Return Rejected','Return Approved') DEFAULT 'Pending',
-   payment_method ENUM('cod', 'momo') DEFAULT 'cod',
+   payment_method ENUM('cod', 'momo', 'vnpay') DEFAULT 'cod',
    payment_status ENUM('Unpaid', 'Paid', 'Refunded') DEFAULT 'Unpaid',
    momo_order_id VARCHAR(255) NULL,
    momo_pay_url TEXT NULL,
+   delivered_at DATETIME NULL, -- Thời điểm giao hàng, dùng để tính revenue đúng ngày
    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
@@ -219,9 +248,11 @@ CREATE TABLE promotion_usage_history (
     promotion_id INT NOT NULL,
     buy_quantity_used INT NOT NULL,
     gifts_awarded INT NOT NULL,
+    size_id INT DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
-    FOREIGN KEY (promotion_id) REFERENCES buy_x_get_y_promotions(id) ON DELETE CASCADE
+    FOREIGN KEY (promotion_id) REFERENCES buy_x_get_y_promotions(id) ON DELETE CASCADE,
+    FOREIGN KEY (size_id) REFERENCES product_sizes(id)
 );
 
 CREATE TABLE return_requests (

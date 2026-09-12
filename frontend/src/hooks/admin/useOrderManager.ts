@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import API from "../../services/apiClient";
 import { useToast } from "../../context/ToastContext";
+import { useLanguage } from "../../context/LanguageContext";
 
 // ==========================================
 // CONSTANTS (Declared outside to prevent re-creation on every render)
@@ -52,6 +53,7 @@ const PAYMENT_STATUS_COLORS = {
 export default function useOrderManager() {
   // --- STATE MANAGEMENT ---
   const { showToast } = useToast();
+  const { t } = useLanguage();
   const [orders, setOrders] = useState([]);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [confirmAction, setConfirmAction] = useState(false);
@@ -94,7 +96,7 @@ export default function useOrderManager() {
       );
       setOrders(sortedOrders);
     } catch (error: unknown) {
-      showToast("Error loading orders", "error");
+      showToast(t("admin.order.toast_load_failed", "Error loading orders"), "error");
     }
   }, [getToken, showToast]);
 
@@ -123,7 +125,7 @@ export default function useOrderManager() {
         setSelectedOrder((prev) => ({ ...prev, status }));
       }
 
-      showToast("Order status updated successfully!");
+      showToast(t("admin.order.toast_status_updated", "Order status updated successfully!"));
     } catch (err: unknown) {
       const axErr = err as { response?: { data?: { message?: string } }; message?: string };
       showToast(axErr.response?.data?.message || axErr.message || "Error", "error");
@@ -156,7 +158,7 @@ export default function useOrderManager() {
       showToast(`Payment status updated to ${newStatus}!`);
     } catch (err: unknown) {
       console.error(err);
-      showToast("Error updating payment", "error");
+      showToast(t("admin.order.toast_payment_failed", "Error updating payment"), "error");
     }
   };
 
@@ -164,13 +166,13 @@ export default function useOrderManager() {
    * Approves a customer's return request
    */
   const handleApproveReturn = async (orderId) => {
-    if (!window.confirm("Confirm that you have refunded the money? This will set status to 'Return Approved'.")) {
+    if (!window.confirm(t("admin.order.confirm_refunded", "Confirm that you have refunded the money? This will set status to 'Return Approved'."))) {
       return;
     }
 
     const token = getToken();
     if (!token) {
-      showToast("Error: Authentication token not found!", "error");
+      showToast(t("admin.order.toast_no_token", "Error: Authentication token not found!"), "error");
       return;
     }
 
@@ -186,15 +188,15 @@ export default function useOrderManager() {
       const data = await response.json();
 
       if (response.ok) {
-        showToast("Return request approved successfully!", "success");
+        showToast(t("admin.order.toast_return_approved", "Return request approved successfully!"), "success");
         fetchOrders();
         setSelectedOrder(null); // Close modal if open
       } else {
-        showToast(data.message || "Failed to approve return", "error");
+        showToast(data.message || t("admin.order.toast_approve_failed", "Failed to approve return"), "error");
       }
     } catch (error: unknown) {
       console.error(error);
-      showToast("Server connection error", "error");
+      showToast(t("admin.order.toast_server_error", "Server connection error"), "error");
     }
   };
 
@@ -202,16 +204,16 @@ export default function useOrderManager() {
    * Rejects a customer's return request with a required admin note
    */
   const handleRejectReturn = async (orderId) => {
-    const reason = window.prompt("Nhập lý do từ chối:");
+    const reason = window.prompt(t("admin.order.prompt_reject_reason", "Nhập lý do từ chối:"));
     if (reason === null) return;
     if (reason.trim() === "") {
-      showToast("Vui lòng cung cấp lý do!", "warning");
+      showToast(t("admin.toast_provide_reason", "Vui lòng cung cấp lý do!"), "warning");
       return;
     }
 
     const token = getToken();
     if (!token) {
-      showToast("Error: Authentication token not found!", "error");
+      showToast(t("admin.order.toast_no_token", "Error: Authentication token not found!"), "error");
       return;
     }
 
@@ -226,16 +228,16 @@ export default function useOrderManager() {
       });
 
       if (response.ok) {
-        showToast("Return request rejected.", "info");
+        showToast(t("admin.order.toast_return_rejected", "Return request rejected."), "info");
         fetchOrders();
         setSelectedOrder(null); // Close modal if open
       } else {
         const data = await response.json();
-        showToast(data.message || "Failed to reject return", "error");
+        showToast(data.message || t("admin.order.toast_reject_failed", "Failed to reject return"), "error");
       }
     } catch (error: unknown) {
       console.error(error);
-      showToast("Server connection error", "error");
+      showToast(t("admin.order.toast_server_error", "Server connection error"), "error");
     }
   };
 

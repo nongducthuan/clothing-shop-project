@@ -1,12 +1,14 @@
 import { useState, useEffect, useCallback } from "react";
 import API from "../../services/apiClient.js";
 import { useToast } from "../../context/ToastContext";
+import { useLanguage } from "../../context/LanguageContext";
 
 /**
  * Custom hook to manage Banner business logic: fetching, uploading, saving, and deleting.
  */
 export function useBannerManager() {
   const { showToast } = useToast();
+  const { t } = useLanguage();
   const token = localStorage.getItem("token");
 
   // State management
@@ -54,7 +56,7 @@ export function useBannerManager() {
       });
       setForm((prev) => ({ ...prev, imageUrl: res.data.url }));
     } catch (err) {
-      showToast("Image upload failed", "error");
+      showToast(t("admin.banner.toast_upload_failed", "Image upload failed"), "error");
     } finally {
       setIsUploading(false);
     }
@@ -83,9 +85,9 @@ export function useBannerManager() {
 
       resetForm();
       fetchBanners();
-      showToast("Banner saved successfully!", "success");
+      showToast(t("admin.banner.toast_saved", "Banner saved successfully!"), "success");
     } catch (err) {
-      showToast("Failed to save banner!", "error");
+      showToast(t("admin.banner.toast_save_failed", "Failed to save banner!"), "error");
     }
   };
 
@@ -99,9 +101,9 @@ export function useBannerManager() {
         headers: { Authorization: `Bearer ${token}` },
       });
       fetchBanners();
-      showToast("Banner deleted.", "success");
+      showToast(t("admin.banner.toast_deleted", "Banner deleted."), "success");
     } catch (err) {
-      showToast("Delete failed!", "error");
+      showToast(t("admin.banner.toast_delete_failed", "Delete failed!"), "error");
     }
   };
 

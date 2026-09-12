@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import API from "../../services/apiClient.js";
 import { useToast } from "../../context/ToastContext";
+import { useLanguage } from "../../context/LanguageContext";
 
 // Constants
 export const SIZE_ORDER = ["XS", "S", "M", "L", "XL", "XXL", "FreeSize", "29", "30", "31", "32"];
@@ -12,6 +13,7 @@ export const API_URL = import.meta.env.VITE_API_URL;
  */
 export function useProductInventory(productId) {
   const { showToast } = useToast();
+  const { t } = useLanguage();
   const token = localStorage.getItem("token");
 
   // Data States
@@ -69,7 +71,7 @@ export function useProductInventory(productId) {
       });
       setColorForm((prev) => ({ ...prev, image_url: data.url }));
     } catch (err) {
-      showToast("Upload failed. Please try again.", "error");
+      showToast(t("admin.pd.toast_upload_failed", "Upload failed. Please try again."), "error");
     } finally {
       setIsUploading(false);
     }
@@ -81,7 +83,7 @@ export function useProductInventory(productId) {
   const addColor = async () => {
     // Accept any of the 3 name fields; backend derives the canonical color_name
     if (!colorForm.color_name && !colorForm.color_name_vi && !colorForm.color_name_en)
-      return showToast("Please enter a color name.", "warning");
+      return showToast(t("admin.pd.toast_name_required", "Please enter a color name."), "warning");
 
     try {
       await API.post(`/admin/products/${productId}/colors`, colorForm, {
@@ -91,9 +93,9 @@ export function useProductInventory(productId) {
       // Reset form & refresh data
       setColorForm({ color_name: "", color_name_vi: "", color_name_en: "", color_code: "#000000", image_url: "" });
       fetchProductData();
-      showToast("Color added successfully!", "success");
+      showToast(t("admin.pd.toast_color_added", "Color added successfully!"), "success");
     } catch (err) {
-      showToast("Failed to add color. Please try again.", "error");
+      showToast(t("admin.pd.toast_color_add_failed", "Failed to add color. Please try again."), "error");
     }
   };
 
@@ -101,7 +103,7 @@ export function useProductInventory(productId) {
    * Deletes a color variant and all associated sizes after user confirmation.
    */
   const deleteColor = async (colorId) => {
-    if (!window.confirm("Deleting this color will delete all associated sizes. Continue?")) return;
+    if (!window.confirm(t("admin.pd.confirm_delete_color", "Deleting this color will delete all associated sizes. Continue?"))) return;
 
     try {
       await API.delete(`/admin/colors/${colorId}`, {
@@ -111,9 +113,9 @@ export function useProductInventory(productId) {
       // Clear selection if the deleted color was selected
       if (selectedColorId === colorId) setSelectedColorId(null);
       fetchProductData();
-      showToast("Color deleted.", "success");
+      showToast(t("admin.pd.toast_color_deleted", "Color deleted."), "success");
     } catch (err) {
-      showToast("Failed to delete color.", "error");
+      showToast(t("admin.pd.toast_color_delete_failed", "Failed to delete color."), "error");
     }
   };
 
@@ -121,11 +123,11 @@ export function useProductInventory(productId) {
    * Adds a new size or increments stock for an existing size under the selected color.
    */
   const addSize = async () => {
-    if (!selectedColorId) return showToast("Please select a color first!", "warning");
-    if (!sizeForm.size?.trim()) return showToast("Please select a size.", "warning");
+    if (!selectedColorId) return showToast(t("admin.pd.toast_select_color", "Please select a color first!"), "warning");
+    if (!sizeForm.size?.trim()) return showToast(t("admin.pd.toast_select_size", "Please select a size."), "warning");
 
     const stockValue = Number(sizeForm.stock);
-    if (isNaN(stockValue) || stockValue < 0) return showToast("Invalid stock value.", "warning");
+    if (isNaN(stockValue) || stockValue < 0) return showToast(t("admin.pd.toast_invalid_stock", "Invalid stock value."), "warning");
 
     try {
       const currentColor = colors.find((c) => c.id === selectedColorId);
@@ -146,9 +148,9 @@ export function useProductInventory(productId) {
 
       setColors([...colors]); // Trigger re-render
       setSizeForm({ size: "S", stock: 0 }); // Reset form
-      showToast("Size stock updated successfully!", "success");
+      showToast(t("admin.pd.toast_stock_updated", "Size stock updated successfully!"), "success");
     } catch (err) {
-      showToast("Failed to add/update size stock.", "error");
+      showToast(t("admin.pd.toast_add_size_failed", "Failed to add/update size stock."), "error");
     }
   };
 
@@ -156,17 +158,17 @@ export function useProductInventory(productId) {
    * Deletes a specific size entry from the database.
    */
   const deleteSize = async (sizeId) => {
-    if (!window.confirm("Are you sure you want to delete this size?")) return;
+    if (!window.confirm(t("admin.pd.confirm_delete_size", "Are you sure you want to delete this size?"))) return;
 
     try {
       await API.delete(`/admin/sizes/${sizeId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       fetchProductData();
-      showToast("Size deleted.", "success");
+      showToast(t("admin.pd.toast_size_deleted", "Size deleted."), "success");
     } catch (err) {
       console.error("Delete Size Error:", err);
-      showToast("Failed to delete size.", "error");
+      showToast(t("admin.pd.toast_size_delete_failed", "Failed to delete size."), "error");
     }
   };
 
@@ -178,7 +180,7 @@ export function useProductInventory(productId) {
   const updateSizeStock = async (sizeId, stock) => {
     const stockValue = Number(stock);
     if (stock === "" || stock === null || isNaN(stockValue) || !Number.isInteger(stockValue) || stockValue < 0) {
-      showToast("Invalid stock value.", "warning");
+      showToast(t("admin.pd.toast_invalid_stock", "Invalid stock value."), "warning");
       return false;
     }
 
@@ -196,11 +198,11 @@ export function useProductInventory(productId) {
           sizes: color.sizes?.map((s) => (s.id === Number(sizeId) ? { ...s, stock: data.stock ?? stockValue } : s)) || [],
         }))
       );
-      showToast("Stock updated successfully!", "success");
+      showToast(t("admin.pd.toast_stock_updated", "Stock updated successfully!"), "success");
       return true;
     } catch (err) {
       console.error("Update Size Error:", err);
-      showToast("Failed to update stock.", "error");
+      showToast(t("admin.pd.toast_stock_update_failed", "Failed to update stock."), "error");
       return false;
     }
   };

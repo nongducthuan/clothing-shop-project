@@ -1,15 +1,35 @@
 USE shopdb;
 
+ALTER TABLE memberships ADD COLUMN IF NOT EXISTS name_vi VARCHAR(100) NULL;
+ALTER TABLE memberships ADD COLUMN IF NOT EXISTS name_en VARCHAR(100) NULL;
+ALTER TABLE categories ADD COLUMN IF NOT EXISTS name_vi VARCHAR(100) NULL;
+ALTER TABLE categories ADD COLUMN IF NOT EXISTS name_en VARCHAR(100) NULL;
+ALTER TABLE products ADD COLUMN IF NOT EXISTS name_vi VARCHAR(255) NULL;
+ALTER TABLE products ADD COLUMN IF NOT EXISTS name_en VARCHAR(255) NULL;
+ALTER TABLE products ADD COLUMN IF NOT EXISTS description_vi TEXT NULL;
+ALTER TABLE products ADD COLUMN IF NOT EXISTS description_en TEXT NULL;
+ALTER TABLE product_colors ADD COLUMN IF NOT EXISTS color_name_vi VARCHAR(100) NULL;
+ALTER TABLE product_colors ADD COLUMN IF NOT EXISTS color_name_en VARCHAR(100) NULL;
+ALTER TABLE banners ADD COLUMN IF NOT EXISTS title_vi VARCHAR(255) NULL;
+ALTER TABLE banners ADD COLUMN IF NOT EXISTS title_en VARCHAR(255) NULL;
+ALTER TABLE banners ADD COLUMN IF NOT EXISTS subtitle_vi VARCHAR(500) NULL;
+ALTER TABLE banners ADD COLUMN IF NOT EXISTS subtitle_en VARCHAR(500) NULL;
+
 -- 1. SEED MEMBERSHIPS
-INSERT INTO memberships (name, min_spending, discount_percent) VALUES
-('Normal', 0, 0),
-('Bronze', 5000000, 5),
-('Silver', 10000000, 10),
-('Gold', 15000000, 15),
-('Diamond', 20000000, 20);
+
+INSERT INTO memberships (name, min_spending, discount_percent, name_vi, name_en) VALUES
+
+('Normal', 0, 0, 'Thường', 'Normal'),
+('Bronze', 5000000, 5, 'Đồng', 'Bronze'),
+('Silver', 10000000, 10, 'Bạc', 'Silver'),
+('Gold', 15000000, 15, 'Vàng', 'Gold'),
+('Diamond', 20000000, 20, 'Kim Cương', 'Diamond');
+
 
 -- 2. SEED USERS
+
 INSERT INTO users (id, name, email, password, role) VALUES
+
 (3, 'Nguyễn Văn A', 'vana@example.com', 'password123', 'customer'),
 (4, 'Trần Thị B', 'thib@example.com', 'password123', 'customer'),
 (5, 'Lê Văn C', 'vanc@example.com', 'password123', 'customer'),
@@ -21,140 +41,152 @@ INSERT INTO users (id, name, email, password, role) VALUES
 (11, 'Vũ Hải I', 'haii@example.com', 'password123', 'customer'),
 (12, 'Phan An K', 'ank@example.com', 'password123', 'customer');
 
+
 -- 3. SEED CATEGORIES
-INSERT INTO categories (id, name, gender, image_url) VALUES
-(1, 'Shirt', 'male', NULL),
-(2, 'Trousers/Pants', 'male', NULL),
-(3, 'Jacket/Hoodie', 'male', NULL),
-(4, 'Shirt', 'female', NULL),
-(5, 'T-shirt', 'female', NULL),
-(6, 'Trousers/Pants', 'female', NULL),
-(7, 'T-shirt', 'unisex', NULL),
-(8, 'Trousers/Pants', 'unisex', NULL),
-(9, 'Shorts', 'unisex', NULL);
+
+INSERT INTO categories (id, name, gender, image_url, name_vi, name_en) VALUES
+
+(1, 'Shirt', 'male', NULL, 'Áo Sơ Mi', 'Shirt'),
+(2, 'Trousers/Pants', 'male', NULL, 'Quần Dài', 'Trousers/Pants'),
+(3, 'Jacket/Hoodie', 'male', NULL, 'Áo Khoác', 'Jacket/Hoodie'),
+(4, 'Shirt', 'female', NULL, 'Áo Sơ Mi', 'Shirt'),
+(5, 'T-shirt', 'female', NULL, 'Áo Thun', 'T-shirt'),
+(6, 'Trousers/Pants', 'female', NULL, 'Quần Dài', 'Trousers/Pants'),
+(7, 'T-shirt', 'unisex', NULL, 'Áo Thun', 'T-shirt'),
+(8, 'Trousers/Pants', 'unisex', NULL, 'Quần Dài', 'Trousers/Pants'),
+(9, 'Shorts', 'unisex', NULL, 'Quần Short', 'Shorts');
+
 
 -- 4. SEED PRODUCTS
-INSERT INTO products (id, name, description, price, import_price, image_url, category_id, gender) VALUES
-(1, 'Easy-Wear Shirt', 'Slim fit, wrinkle-resistant fabric, comfortable all day long', 150000, 100000, '/public/images/ao-so-mi-nam-white.png', 1, 'male'),
-(2, 'Lightweight Shirt', 'Wrinkle-resistant fabric, slim fit, suitable for all styles', 150000, 100000, '/public/images/ao-so-mi-nam-blue.png', 1, 'male'),
-(3, 'Classic Shirt', 'Regular fit design, wrinkle-resistant fabric', 150000, 100000, '/public/images/ao-so-mi-nam-beige.png', 1, 'male'),
-(4, 'Modern Shirt', 'Easy to wear, wrinkle-resistant fabric, comfortable for movement', 150000, 100000, '/public/images/ao-so-mi-nam-black.png', 1, 'male'),
-(5, 'Active Chino Pants', 'Light stretch khaki fabric, cool and comfortable', 320000, 220000, '/public/images/quan-chino-nam-beige.png', 2, 'male'),
-(6, 'Youthful Chino Pants', 'Light stretch, comfortable for all activities', 320000, 220000, '/public/images/quan-chino-nam-blue.png', 2, 'male'),
-(7, 'Classic Jeans', 'Cool fabric, style suitable for all seasons', 320000, 220000, '/public/images/quan-jean-nam-dark-gray.png', 2, 'male'),
-(8, 'Comfortable Jeans', 'Designed to fit well, comfortable for the whole day', 320000, 220000, '/public/images/quan-jean-nam-light-blue.png', 2, 'male'),
-(9, 'Warm Hoodie', 'Soft fleece, provides good warmth in all weather', 150000, 100000, '/public/images/ao-hoodie-nam-red.png', 3, 'male'),
-(10, 'Stylish Hoodie', 'Super soft fleece, comfortable, easy to mix and match', 150000, 100000, '/public/images/ao-hoodie-nam-green.png', 3, 'male'),
-(11, 'Active Hooded Windbreaker', 'Light warming, windproof material', 150000, 100000, '/public/images/ao-khoac-nam-blue.png', 3, 'male'),
-(12, 'Youthful Hooded Windbreaker', 'Windproof material, comfortable for all activities', 150000, 100000, '/public/images/ao-khoac-nam-yellow.png', 3, 'male'),
-(13, 'Lightweight Shirt', 'Cool linen fabric, comfortable all day long', 280000, 190000, '/public/images/ao-so-mi-nu-white.png', 4, 'female'),
-(14, 'Elegant Shirt', 'Cool linen fabric, elegant design', 280000, 190000, '/public/images/ao-so-mi-nu-green.png', 4, 'female'),
-(15, 'Breathable Shirt', 'Cool linen fabric, easy to mix and match', 280000, 190000, '/public/images/ao-so-mi-nu-ke-soc-white.png', 4, 'female'),
-(16, 'Easy-Wear Shirt', 'Cool linen fabric, suitable for all styles', 280000, 190000, '/public/images/ao-so-mi-nu-ke-soc-blue.png', 4, 'female'),
-(17, 'Active Crew Neck T-shirt', 'Slightly fitted, breathable material', 280000, 190000, '/public/images/ao-thun-co-tron-nu-blue.png', 5, 'female'),
-(18, 'Youthful Crew Neck T-shirt', 'Slightly fitted, provides comfort all day long', 280000, 190000, '/public/images/ao-thun-co-tron-nu-navy.png', 5, 'female'),
-(19, 'Simple Cotton T-shirt', 'Slightly fitted style, easy to pair with various outfits', 280000, 190000, '/public/images/ao-thun-vai-cotton-nu-white.png', 5, 'female'),
-(20, 'Elegant Cotton T-shirt', 'Regular fit, soft and comfortable material', 280000, 190000, '/public/images/ao-thun-vai-cotton-nu-black.png', 5, 'female'),
-(21, 'Modern Gear Pants', 'Thin, light fabric, active design for all activities', 450000, 310000, '/public/images/quan-dai-gear-nu-beige.png', 6, 'female'),
-(22, 'Comfortable Gear Pants', 'Light fabric material, suitable for outings', 450000, 310000, '/public/images/quan-dai-gear-nu-green.png', 6, 'female'),
-(23, 'Feminine Knit Pants', 'Thin, light fabric, comfortable design, suitable for all situations', 450000, 310000, '/public/images/quan-det-kim-nu-gray.png', 6, 'female'),
-(24, 'Elegant Knit Pants', 'Thin, light fabric, active design, suitable for various styles', 450000, 310000, '/public/images/quan-det-kim-nu-khaki.png', 6, 'female'),
-(25, 'Basic Short Sleeve T-shirt', '100% cotton fabric, sweat-absorbent, comfortable all day', 200000, 140000, '/public/images/ao-thun-tay-ngan-unisex-gray.png', 7, 'unisex'),
-(26, 'Active Short Sleeve T-shirt', '100% cotton, breathable and good absorption', 200000, 140000, '/public/images/ao-thun-tay-ngan-unisex-dark-gray.png', 7, 'unisex'),
-(27, 'Comfortable Long Sleeve T-shirt', '100% cotton material, soft and fast-absorbing', 200000, 140000, '/public/images/ao-thun-tay-dai-unisex-blue.png', 7, 'unisex'),
-(28, 'Basic Long Sleeve T-shirt', '100% cotton, simple design, cool and breathable', 200000, 140000, '/public/images/ao-thun-tay-dai-unisex-green.png', 7, 'unisex'),
-(29, 'Practical Wide Leg Pants', 'Soft fabric, comfortable for all genders', 250000, 170000, '/public/images/quan-dai-unisex-beige.png', 8, 'unisex'),
-(30, 'Active Wide Leg Pants', 'Comfortable material, suitable for all activities', 250000, 170000, '/public/images/quan-dai-unisex-green.png', 8, 'unisex'),
-(31, 'Easy-Wear Jeans', 'Comfortable design, suitable for all styles', 250000, 170000, '/public/images/quan-jean-unisex-blue.png', 8, 'unisex'),
-(32, 'Comfortable Jeans', 'Soft fabric, comfortable anytime, anywhere', 250000, 170000, '/public/images/quan-jean-unisex-black.png', 8, 'unisex'),
-(33, 'Comfortable Shorts', 'Soft elastic waistband, cool for summer', 250000, 170000, '/public/images/quan-short-unisex-gray.png', 9, 'unisex'),
-(34, 'Easy-Wear Shorts', 'Comfortable elastic waistband, durable material', 250000, 170000, '/public/images/quan-short-unisex-white.png', 9, 'unisex'),
-(35, 'Stylish Shorts', 'Well-fitted elastic waistband, breathable material', 250000, 170000, '/public/images/quan-short-unisex-green.png', 9, 'unisex'),
-(36, 'Active Shorts', 'Comfortable elastic waistband, pleasant material', 250000, 170000, '/public/images/quan-short-unisex-navy.png', 9, 'unisex'),
-(37, 'Striped Shirt', 'Sophisticated striped pattern, modern office style', 150000, 100000, '/public/images/ao-so-mi-nam-stripe.png', 1, 'male'),
-(38, 'Smoky Gray Shirt', 'Neutral gray color, easy to pair with dress pants', 150000, 100000, '/public/images/ao-so-mi-nam-grey.png', 1, 'male'),
-(39, 'Navy Blue Shirt', 'Masculine navy blue color, absorbent cotton fabric', 150000, 100000, '/public/images/ao-so-mi-nam-navy.png', 1, 'male'),
-(40, 'Linen Fabric Shirt', 'Cool linen material, suitable for summer', 150000, 100000, '/public/images/ao-so-mi-nam-linen.png', 1, 'male'),
-(41, 'Short Sleeve Shirt', 'Active and youthful short-sleeve design', 150000, 100000, '/public/images/ao-so-mi-nam-short.png', 1, 'male'),
-(42, 'Denim Shirt', 'Dusty style, personal and strong character', 150000, 100000, '/public/images/ao-so-mi-nam-denim.png', 1, 'male');
+
+INSERT INTO products (id, name, description, price, import_price, image_url, category_id, gender, name_vi, name_en, description_vi, description_en) VALUES
+
+(1, 'Premium Oxford Cotton Shirt', 'High density Oxford cotton with button-down collar, perfect for business casual', 150000, 100000, '/public/images/ao-so-mi-nam-white.png', 1, 'male', 'Áo Sơ Mi Cotton Oxford Cao Cấp', 'Premium Oxford Cotton Shirt', 'Chất liệu Oxford cotton dày dặn, cổ đơm nút lịch lãm phù hợp đi làm và đi chơi', 'High density Oxford cotton with button-down collar, perfect for business casual'),
+(2, 'Ultra-Lightweight Linen Shirt', '100% natural linen, breathable and quick-drying for hot summer days', 150000, 100000, '/public/images/ao-so-mi-nam-blue.png', 1, 'male', 'Áo Sơ Mi Linen Siêu Nhẹ', 'Ultra-Lightweight Linen Shirt', '100% vải linen tự nhiên, thoáng khí và thấm hút cực tốt cho ngày hè', '100% natural linen, breathable and quick-drying for hot summer days'),
+(3, 'Classic Business Formal Shirt', 'Crisp spread collar, anti-wrinkle bamboo fabric for sharp office looks', 150000, 100000, '/public/images/ao-so-mi-nam-beige.png', 1, 'male', 'Áo Sơ Mi Công Sở Classic', 'Classic Business Formal Shirt', 'Áo cổ bẻ cứng cáp, vải sợi tre chống nhăn giữ phom dáng chuẩn công sở', 'Crisp spread collar, anti-wrinkle bamboo fabric for sharp office looks'),
+(4, 'Slim-Fit Stretch Casual Shirt', 'Modern tailored fit with 5% elastane for maximum freedom of movement', 150000, 100000, '/public/images/ao-so-mi-nam-black.png', 1, 'male', 'Áo Sơ Mi Co Giãn Slim-Fit', 'Slim-Fit Stretch Casual Shirt', 'Form ôm hiện đại pha thun co giãn 4 chiều, thoải mái vận động cả ngày', 'Modern tailored fit with 5% elastane for maximum freedom of movement'),
+(5, 'Slim Tapered Chino Pants', 'Durable twill weave with a modern narrow hem, ideal for smart-casual pairing', 320000, 220000, '/public/images/quan-chino-nam-beige.png', 2, 'male', 'Quần Chino Dáng Slim Tapered', 'Slim Tapered Chino Pants', 'Vải kaki dệt chéo bền bỉ, ống ôm nhẹ trẻ trung dễ phối áo sơ mi hoặc polo', 'Durable twill weave with a modern narrow hem, ideal for smart-casual pairing'),
+(6, 'Relaxed Fit Utility Chino', 'Roomy fit around hips and thighs with deep functional pockets', 320000, 220000, '/public/images/quan-chino-nam-blue.png', 2, 'male', 'Quần Chino Khaki Ống Rộng', 'Relaxed Fit Utility Chino', 'Thiết kế dáng suông thoải mái phần hông và đùi, túi sâu tiện lợi', 'Roomy fit around hips and thighs with deep functional pockets'),
+(7, 'Vintage Straight Denim Jeans', '13oz heavyweight indigo denim with classic contrast stitching', 320000, 220000, '/public/images/quan-jean-nam-dark-gray.png', 2, 'male', 'Quần Jean Nam Dáng Thẳng Vintage', 'Vintage Straight Denim Jeans', 'Chất liệu jean 13oz bền bỉ, đường chỉ may nổi phong cách cổ điển', '13oz heavyweight indigo denim with classic contrast stitching'),
+(8, 'Modern Slim Flex Denim Jeans', 'Soft washed stretch denim providing maximum flexibility for urban wear', 320000, 220000, '/public/images/quan-jean-nam-light-blue.png', 2, 'male', 'Quần Jean Nam Slim Flex Co Giãn', 'Modern Slim Flex Denim Jeans', 'Chất jean xử lý wash mềm mại, co giãn tốt cho các hoạt động phố thị', 'Soft washed stretch denim providing maximum flexibility for urban wear'),
+(9, 'Heavyweight Fleece Hoodie', '400gsm brushed fleece interior with double-layered drawstring hood', 150000, 100000, '/public/images/ao-hoodie-nam-red.png', 3, 'male', 'Áo Hoodie Nỉ Bông Dày Dặn', 'Heavyweight Fleece Hoodie', 'Chất nỉ bông 400gsm giữ nhiệt vượt trội, nón 2 lớp may chèn cao cấp', '400gsm brushed fleece interior with double-layered drawstring hood'),
+(10, 'Urban Streetwear Graphic Hoodie', 'Kangaroo pocket with rib-knit cuffs, relaxed drop-shoulder silhouette', 150000, 100000, '/public/images/ao-hoodie-nam-green.png', 3, 'male', 'Áo Hoodie Streetwear Đô Thị', 'Urban Streetwear Graphic Hoodie', 'Dáng vai trễ khoẻ khoắn, túi kangaroo tiện dụng cùng bo lai co giãn tốt', 'Kangaroo pocket with rib-knit cuffs, relaxed drop-shoulder silhouette'),
+(11, 'Water-Resistant Hooded Windbreaker', 'Lightweight nylon shell with mesh lining and adjustable drawstrings', 150000, 100000, '/public/images/ao-khoac-nam-blue.png', 3, 'male', 'Áo Khoác Gió Kháng Nước Có Mũ', 'Water-Resistant Hooded Windbreaker', 'Lớp vỏ nylon chống thấm nhẹ, lót lưới thoáng khí cùng dây rút tuỳ chỉnh', 'Lightweight nylon shell with mesh lining and adjustable drawstrings'),
+(12, 'Packable Sports Running Windbreaker', 'Ultra-compressible design, reflective zipper elements for night runs', 150000, 100000, '/public/images/ao-khoac-nam-yellow.png', 3, 'male', 'Áo Gió Thể Thao Gọn Nhẹ', 'Packable Sports Running Windbreaker', 'Thiết kế gấp gọn dễ dàng, trang bị khoá kéo phản quang an toàn khi chạy đêm', 'Ultra-compressible design, reflective zipper elements for night runs'),
+(13, 'Soft Silk-Touch Women Shirt', 'Silky smooth drape with elegant v-neckline for office sophistication', 280000, 190000, '/public/images/ao-so-mi-nu-white.png', 4, 'female', 'Áo Sơ Mi Nữ Lụa Mềm Mại', 'Soft Silk-Touch Women Shirt', 'Chất lụa rủ mềm mại, cổ V quyến rũ mang lại vẻ thanh lịch nữ tính', 'Silky smooth drape with elegant v-neckline for office sophistication'),
+(14, 'Cropped Linen Blouse', 'Modern cropped waistline, breathable organic linen fabric', 280000, 190000, '/public/images/ao-so-mi-nu-green.png', 4, 'female', 'Áo Sơ Mi Nữ Dáng Cropped Linen', 'Cropped Linen Blouse', 'Chiều dài cropped hiện đại, chất liệu linen hữu cơ thoáng mát ngày hè', 'Modern cropped waistline, breathable organic linen fabric'),
+(15, 'Vertical Striped Boyfriend Shirt', 'Oversized relaxed silhouette with fine pinstripes', 280000, 190000, '/public/images/ao-so-mi-nu-ke-soc-white.png', 4, 'female', 'Áo Sơ Mi Nữ Kẻ Sọc Boyfriend', 'Vertical Striped Boyfriend Shirt', 'Form rộng boyfriend thoải mái cùng hoạ tiết kẻ sọc mảnh tôn dáng', 'Oversized relaxed silhouette with fine pinstripes'),
+(16, 'Mandarin Collar Casual Blouse', 'Minimalist mandarin collar with concealed button placket', 280000, 190000, '/public/images/ao-so-mi-nu-ke-soc-blue.png', 4, 'female', 'Áo Sơ Mi Nữ Cổ Tàu Nhã Nhặn', 'Mandarin Collar Casual Blouse', 'Thiết kế cổ tàu tối giản, nẹp giấu nút tinh tế phù hợp nhiều hoàn cảnh', 'Minimalist mandarin collar with concealed button placket'),
+(17, 'Ribbed Contour Crop Tee', 'Stretchy ribbed knit fabric that contours comfortably to your figure', 280000, 190000, '/public/images/ao-thun-co-tron-nu-blue.png', 5, 'female', 'Áo Thun Nữ Ôm Sát Cổ Tròn', 'Ribbed Contour Crop Tee', 'Chất thun gân co giãn ôm dáng nhẹ nhàng, tôn vẻ đẹp tự nhiên', 'Stretchy ribbed knit fabric that contours comfortably to your figure'),
+(18, 'Vintage Wash Oversized Female Tee', 'Soft vintage washed cotton with drop shoulder pattern', 280000, 190000, '/public/images/ao-thun-co-tron-nu-navy.png', 5, 'female', 'Áo Thun Nữ Form Rộng Wash Vintage', 'Vintage Wash Oversized Female Tee', 'Chất cotton xử lý wash màu giả cổ, vai trễ cá tính và năng động', 'Soft vintage washed cotton with drop shoulder pattern'),
+(19, 'Organic Crewneck Basic Tee', '100% combed organic cotton, ultra-soft and gentle on sensitive skin', 280000, 190000, '/public/images/ao-thun-vai-cotton-nu-white.png', 5, 'female', 'Áo Thun Nữ Cotton Hữu Cơ Cơ Bản', 'Organic Crewneck Basic Tee', '100% cotton hữu cơ chải kỹ, siêu mềm mịn không gây kích ứng da', '100% combed organic cotton, ultra-soft and gentle on sensitive skin'),
+(20, 'V-Neck Feminine Slim Tee', 'Flattering V-neck cut crafted from breathable modal-cotton blend', 280000, 190000, '/public/images/ao-thun-vai-cotton-nu-black.png', 5, 'female', 'Áo Thun Nữ Cổ V Thanh Lịch', 'V-Neck Feminine Slim Tee', 'Đường cắt cổ V tinh tế từ chất liệu pha modal cao cấp siêu mát', 'Flattering V-neck cut crafted from breathable modal-cotton blend'),
+(21, 'High-Waisted Tailored Gear Trouser', 'Structured pleats with high-rise waist for an elongated leg look', 450000, 310000, '/public/images/quan-dai-gear-nu-beige.png', 6, 'female', 'Quần Tây Nữ Cạp Cao Ống Rộng', 'High-Waisted Tailored Gear Trouser', 'Xếp ly chỉn chu cùng cạp cao giúp hack dáng chiều cao hiệu quả', 'Structured pleats with high-rise waist for an elongated leg look'),
+(22, 'Ankle-Length Stretch Smart Pants', 'Cropped hem above ankles, perfect for heels or casual sneakers', 450000, 310000, '/public/images/quan-dai-gear-nu-green.png', 6, 'female', 'Quần Dài Nữ Ôm Cổ Chân Co Giãn', 'Ankle-Length Stretch Smart Pants', 'Chiều dài chạm cổ chân hiện đại, dễ kết hợp với giày cao gót hoặc sneaker', 'Cropped hem above ankles, perfect for heels or casual sneakers'),
+(23, 'Cozy Wide-Leg Knit Lounge Pants', 'Soft breathable ribbed knit with elasticized drawstring waistband', 450000, 310000, '/public/images/quan-det-kim-nu-gray.png', 6, 'female', 'Quần Dệt Kim Nữ Ống Suông Thoải Mái', 'Cozy Wide-Leg Knit Lounge Pants', 'Chất dệt kim mềm mại, cạp thun dây rút thoải mái khi đi chơi hay ở nhà', 'Soft breathable ribbed knit with elasticized drawstring waistband'),
+(24, 'Straight-Cut Minimalist Suit Pants', 'Wrinkle-resistant fabric with clean crease line down the center', 450000, 310000, '/public/images/quan-det-kim-nu-khaki.png', 6, 'female', 'Quần Tây Nữ Dáng Đứng Tối Giản', 'Straight-Cut Minimalist Suit Pants', 'Vải đứng phom chống nhăn, nếp ly giữa tinh tế tạo nét chỉn chu công sở', 'Wrinkle-resistant fabric with clean crease line down the center'),
+(25, 'Heavyweight Streetwear Unisex Tee', '280gsm combed cotton jersey, structured drop-shoulder fit', 200000, 140000, '/public/images/ao-thun-tay-ngan-unisex-gray.png', 7, 'unisex', 'Áo Thun Unisex Phố Thị Dày Dặn', 'Heavyweight Streetwear Unisex Tee', 'Cotton 280gsm dày dặn đứng phom, dáng xuông vai trễ cá tính chuẩn streetwear', '280gsm combed cotton jersey, structured drop-shoulder fit'),
+(26, 'Breathable Athletic Performance Tee', 'Quick-dry honeycomb mesh fabric for workouts and daily activities', 200000, 140000, '/public/images/ao-thun-tay-ngan-unisex-dark-gray.png', 7, 'unisex', 'Áo Thun Unisex Thể Thao Thoáng Khí', 'Breathable Athletic Performance Tee', 'Vải dệt lưới tổ ong thấm hút và khô nhanh, lý tưởng cho tập luyện và vận động', 'Quick-dry honeycomb mesh fabric for workouts and daily activities'),
+(27, 'Long-Sleeve Ribbed Collar Unisex Tee', 'Classic long sleeve layout with durable rib-knit cuffs and neckband', 200000, 140000, '/public/images/ao-thun-tay-dai-unisex-blue.png', 7, 'unisex', 'Áo Thun Tay Dài Unisex Bo Cổ', 'Long-Sleeve Ribbed Collar Unisex Tee', 'Áo tay dài cổ bo gân bền đẹp, chất vải mềm mại cho những ngày se lạnh', 'Classic long sleeve layout with durable rib-knit cuffs and neckband'),
+(28, 'Graphic Art Boxy Fit Unisex Tee', 'Boxy streetwear silhouette with clean finished hems', 200000, 140000, '/public/images/ao-thun-tay-dai-unisex-green.png', 7, 'unisex', 'Áo Thun Unisex Boxy Fit Độc Đáo', 'Graphic Art Boxy Fit Unisex Tee', 'Form boxy vuông vức cá tính, đường may cẩn thận từng chi tiết', 'Boxy streetwear silhouette with clean finished hems'),
+(29, 'Drawstring Cargo Pocket Track Pants', 'Functional side cargo pockets with toggle drawstring cuffs', 250000, 170000, '/public/images/quan-dai-unisex-beige.png', 8, 'unisex', 'Quần Dài Unisex Túi Hộp Năng Động', 'Drawstring Cargo Pocket Track Pants', 'Túi hộp 2 bên tiện lợi, bo gấu rút dây biến tấu phong cách dễ dàng', 'Functional side cargo pockets with toggle drawstring cuffs'),
+(30, 'Relaxed Canvas Workwear Trousers', 'Heavy duty cotton canvas build for ultimate durability', 250000, 170000, '/public/images/quan-dai-unisex-green.png', 8, 'unisex', 'Quần Dài Unisex Vải Canvas Bền Bỉ', 'Relaxed Canvas Workwear Trousers', 'Chất liệu canvas cotton siêu bền, phù hợp mọi hoạt động di chuyển', 'Heavy duty cotton canvas build for ultimate durability'),
+(31, 'Loose-Fit Washed Unisex Jeans', 'Relaxed leg silhouette with distressed vintage fade processing', 250000, 170000, '/public/images/quan-jean-unisex-blue.png', 8, 'unisex', 'Quần Jean Unisex Form Rộng Wash Sáng', 'Loose-Fit Washed Unisex Jeans', 'Form rộng thoải mái với mảng wash màu khói tự nhiên cực chất', 'Relaxed leg silhouette with distressed vintage fade processing'),
+(32, 'Straight Leg Black Denim Unisex Jeans', 'Deep black dyed denim that keeps its rich tone wash after wash', 250000, 170000, '/public/images/quan-jean-unisex-black.png', 8, 'unisex', 'Quần Jean Unisex Đen Dáng Đứng', 'Straight Leg Black Denim Unisex Jeans', 'Tone màu đen tuyền giữ màu lâu, dễ dàng mix-match với mọi loại trang phục', 'Deep black dyed denim that keeps its rich tone wash after wash'),
+(33, 'French Terry Elastic Sweat Shorts', 'Breathable loopback French terry with deep side slash pockets', 250000, 170000, '/public/images/quan-short-unisex-gray.png', 9, 'unisex', 'Quần Short Unisex Nỉ Da Cá Nhẹ Nhàng', 'French Terry Elastic Sweat Shorts', 'Chất nỉ da cá thoáng mát, túi xéo sâu chứa đồ thoải mái', 'Breathable loopback French terry with deep side slash pockets'),
+(34, 'Quick-Dry Nylon Summer Shorts', 'Water-repellent lightweight nylon, built for beach and summer casual', 250000, 170000, '/public/images/quan-short-unisex-white.png', 9, 'unisex', 'Quần Short Unisex Nylon Khô Nhanh', 'Quick-Dry Nylon Summer Shorts', 'Chất nylon trượt nước nhẹ, khô nhanh thích hợp dạo phố hay đi biển', 'Water-repellent lightweight nylon, built for beach and summer casual'),
+(35, 'Utility Multi-Pocket Trail Shorts', 'Built-in adjustable webbing belt and durable ripstop fabric', 250000, 170000, '/public/images/quan-short-unisex-green.png', 9, 'unisex', 'Quần Short Unisex Túi Hộp Đa Năng', 'Utility Multi-Pocket Trail Shorts', 'Đi kèm đai lưng dệt tiện lợi cùng chất liệu ripstop chống xé', 'Built-in adjustable webbing belt and durable ripstop fabric'),
+(36, 'Classic Cotton Twill Shorts', 'Tailored 7-inch inseam shorts with clean button closure', 250000, 170000, '/public/images/quan-short-unisex-navy.png', 9, 'unisex', 'Quần Short Unisex Cotton Twill Cổ Điển', 'Classic Cotton Twill Shorts', 'Chiều dài 7 inch vừa phải, chất vải twill mềm mịn thoải mái', 'Tailored 7-inch inseam shorts with clean button closure'),
+(37, 'Vertical Stripe Cuban Collar Shirt', 'Relaxed resort-style Cuban collar with vintage vertical stripes', 150000, 100000, '/public/images/ao-so-mi-nam-stripe.png', 1, 'male', 'Áo Sơ Mi Nam Kẻ Sọc Cổ Cuban', 'Vertical Stripe Cuban Collar Shirt', 'Cổ cuban phóng khoáng phong cách nghỉ dưỡng cùng hoạ tiết kẻ sọc sang trọng', 'Relaxed resort-style Cuban collar with vintage vertical stripes'),
+(38, 'Smoky Slate Gray Formal Shirt', 'Modern slate hue crafted from easy-care polyester-cotton weave', 150000, 100000, '/public/images/ao-so-mi-nam-grey.png', 1, 'male', 'Áo Sơ Mi Nam Màu Xám Khói Lịch Lãm', 'Smoky Slate Gray Formal Shirt', 'Tông màu xám khói hiện đại, chất vải dễ giặt ủi và giữ phom chuẩn', 'Modern slate hue crafted from easy-care polyester-cotton weave'),
+(39, 'Deep Navy Tailored Dress Shirt', 'Rich navy shade with mother-of-pearl buttons and stiffened collar', 150000, 100000, '/public/images/ao-so-mi-nam-navy.png', 1, 'male', 'Áo Sơ Mi Nam Xanh Navy Cao Cấp', 'Deep Navy Tailored Dress Shirt', 'Sắc xanh navy nam tính kèm nút xà cừ và cổ áo đứng phom lịch thiệp', 'Rich navy shade with mother-of-pearl buttons and stiffened collar'),
+(40, 'Summer Linen-Blend Shirt', 'Blended linen-cotton offering maximum air permeability with reduced wrinkling', 150000, 100000, '/public/images/ao-so-mi-nam-linen.png', 1, 'male', 'Áo Sơ Mi Nam Linen Pha Cotton Mát Mẻ', 'Summer Linen-Blend Shirt', 'Sự kết hợp giữa linen và cotton giúp tối ưu độ thoáng mát mà ít nhăn', 'Blended linen-cotton offering maximum air permeability with reduced wrinkling'),
+(41, 'Short-Sleeve Casual Button-Down', 'Casual short-sleeve shirt with chest pocket and curved hem', 150000, 100000, '/public/images/ao-so-mi-nam-short.png', 1, 'male', 'Áo Sơ Mi Tay Ngắn Dạo Phố', 'Short-Sleeve Casual Button-Down', 'Thiết kế tay ngắn trẻ trung, có túi ngực và vạt bầu dễ phối quần short', 'Casual short-sleeve shirt with chest pocket and curved hem'),
+(42, 'Classic Indigo Raw Denim Shirt', 'Durable denim fabrication with western flap pockets and snap buttons', 150000, 100000, '/public/images/ao-so-mi-nam-denim.png', 1, 'male', 'Áo Sơ Mi Denim Nam Cổ Độc Đáo', 'Classic Indigo Raw Denim Shirt', 'Vải denim dầy dặn cá tính cùng túi nắp bấm phím đậm chất western style', 'Durable denim fabrication with western flap pockets and snap buttons');
+
 
 -- 5. SEED PRODUCT COLORS
-INSERT INTO product_colors (product_id, color_name, color_code, image_url) VALUES
-(1, 'White', '#FFFFFF', '/public/images/ao-so-mi-nam-white.png'),
-(1, 'Sky Blue', '#87CEEB', '/public/images/ao-so-mi-nam-blue.png'),
-(2, 'White', '#FFFFFF', '/public/images/ao-so-mi-nam-white.png'),
-(2, 'Sky Blue', '#87CEEB', '/public/images/ao-so-mi-nam-blue.png'),
-(3, 'Beige', '#C3B091', '/public/images/ao-so-mi-nam-beige.png'),
-(3, 'Black', '#000000', '/public/images/ao-so-mi-nam-black.png'),
-(4, 'Beige', '#C3B091', '/public/images/ao-so-mi-nam-beige.png'),
-(4, 'Black', '#000000', '/public/images/ao-so-mi-nam-black.png'),
-(5, 'Beige', '#F5F5DC', '/public/images/quan-chino-nam-beige.png'),
-(5, 'Blue', '#0000FF', '/public/images/quan-chino-nam-blue.png'),
-(6, 'Beige', '#F5F5DC', '/public/images/quan-chino-nam-beige.png'),
-(6, 'Blue', '#0000FF', '/public/images/quan-chino-nam-blue.png'),
-(7, 'Light Blue', '#e5ecf6', '/public/images/quan-jean-nam-light-blue.png'),
-(7, 'Dark Gray', '#232227', '/public/images/quan-jean-nam-dark-gray.png'),
-(8, 'Light Blue', '#e5ecf6', '/public/images/quan-jean-nam-light-blue.png'),
-(8, 'Dark Gray', '#232227', '/public/images/quan-jean-nam-dark-gray.png'),
-(9, 'Green', '#6f7c6b', '/public/images/ao-hoodie-nam-green.png'),
-(9, 'Red', '#d74d55', '/public/images/ao-hoodie-nam-red.png'),
-(10, 'Green', '#6f7c6b', '/public/images/ao-hoodie-nam-green.png'),
-(10, 'Red', '#d74d55', '/public/images/ao-hoodie-nam-red.png'),
-(11, 'Blue', '#007bff', '/public/images/ao-khoac-nam-blue.png'),
-(11, 'Yellow', '#d4a017', '/public/images/ao-khoac-nam-yellow.png'),
-(12, 'Blue', '#007bff', '/public/images/ao-khoac-nam-blue.png'),
-(12, 'Yellow', '#d4a017', '/public/images/ao-khoac-nam-yellow.png'),
-(13, 'White', '#FFFFFF', '/public/images/ao-so-mi-nu-white.png'),
-(13, 'Green', '#A9E5BB', '/public/images/ao-so-mi-nu-green.png'),
-(14, 'White', '#FFFFFF', '/public/images/ao-so-mi-nu-white.png'),
-(14, 'Green', '#A9E5BB', '/public/images/ao-so-mi-nu-green.png'),
-(15, 'White', '#FFFFFF', '/public/images/ao-so-mi-nu-ke-soc-white.png'),
-(15, 'Sky Blue', '#87CEEB', '/public/images/ao-so-mi-nu-ke-soc-blue.png'),
-(16, 'White', '#FFFFFF', '/public/images/ao-so-mi-nu-ke-soc-white.png'),
-(16, 'Sky Blue', '#87CEEB', '/public/images/ao-so-mi-nu-ke-soc-blue.png'),
-(17, 'Sky Blue', '#dce2f0', '/public/images/ao-thun-co-tron-nu-blue.png'),
-(17, 'Navy', '#2b3b5d', '/public/images/ao-thun-co-tron-nu-navy.png'),
-(18, 'Sky Blue', '#dce2f0', '/public/images/ao-thun-co-tron-nu-blue.png'),
-(18, 'Navy', '#2b3b5d', '/public/images/ao-thun-co-tron-nu-navy.png'),
-(19, 'White', '#FFFFFF', '/public/images/ao-thun-vai-cotton-nu-white.png'),
-(19, 'Black', '#000000', '/public/images/ao-thun-vai-cotton-nu-black.png'),
-(20, 'White', '#FFFFFF', '/public/images/ao-thun-vai-cotton-nu-white.png'),
-(20, 'Black', '#000000', '/public/images/ao-thun-vai-cotton-nu-black.png'),
-(21, 'Beige', '#F5F5DC', '/public/images/quan-dai-gear-nu-beige.png'),
-(21, 'Dark Green', '#0A3D3B', '/public/images/quan-dai-gear-nu-green.png'),
-(22, 'Beige', '#F5F5DC', '/public/images/quan-dai-gear-nu-beige.png'),
-(22, 'Dark Green', '#0A3D3B', '/public/images/quan-dai-gear-nu-green.png'),
-(23, 'Beige', '#b6a498', '/public/images/quan-det-kim-nu-khaki.png'),
-(23, 'Gray', '#515055', '/public/images/quan-det-kim-nu-gray.png'),
-(24, 'Beige', '#b6a498', '/public/images/quan-det-kim-nu-khaki.png'),
-(24, 'Gray', '#515055', '/public/images/quan-det-kim-nu-gray.png'),
-(25, 'Gray', '#c0c8d3', '/public/images/ao-thun-tay-ngan-unisex-gray.png'),
-(25, 'Dark Gray', '#474b4e', '/public/images/ao-thun-tay-ngan-unisex-dark-gray.png'),
-(26, 'Gray', '#c0c8d3', '/public/images/ao-thun-tay-ngan-unisex-gray.png'),
-(26, 'Dark Gray', '#474b4e', '/public/images/ao-thun-tay-ngan-unisex-dark-gray.png'),
-(27, 'Dark Blue', '#2c3546', '/public/images/ao-thun-tay-dai-unisex-blue.png'),
-(27, 'Light Green', '#b3b6af', '/public/images/ao-thun-tay-dai-unisex-green.png'),
-(28, 'Dark Blue', '#2c3546', '/public/images/ao-thun-tay-dai-unisex-blue.png'),
-(28, 'Light Green', '#b3b6af', '/public/images/ao-thun-tay-dai-unisex-green.png'),
-(29, 'Green', '#5a6151', '/public/images/quan-dai-unisex-green.png'),
-(29, 'Beige', '#cab99f', '/public/images/quan-dai-unisex-beige.png'),
-(30, 'Green', '#5a6151', '/public/images/quan-dai-unisex-green.png'),
-(30, 'Beige', '#cab99f', '/public/images/quan-dai-unisex-beige.png'),
-(31, 'Blue', '#1B4F72', '/public/images/quan-jean-unisex-blue.png'),
-(31, 'Black', '#333333', '/public/images/quan-jean-unisex-black.png'),
-(32, 'Blue', '#1B4F72', '/public/images/quan-jean-unisex-blue.png'),
-(32, 'Black', '#333333', '/public/images/quan-jean-unisex-black.png'),
-(33, 'White', '#f1f0ee', '/public/images/quan-short-unisex-white.png'),
-(33, 'Gray', '#646b7d', '/public/images/quan-short-unisex-gray.png'),
-(34, 'White', '#f1f0ee', '/public/images/quan-short-unisex-white.png'),
-(34, 'Gray', '#646b7d', '/public/images/quan-short-unisex-gray.png'),
-(35, 'Green', '#696C52', '/public/images/quan-short-unisex-green.png'),
-(35, 'Navy', '#2C3243', '/public/images/quan-short-unisex-navy.png'),
-(36, 'Green', '#696C52', '/public/images/quan-short-unisex-green.png'),
-(36, 'Navy', '#2C3243', '/public/images/quan-short-unisex-navy.png');
+
+INSERT INTO product_colors (product_id, color_name, color_code, image_url, color_name_vi, color_name_en) VALUES
+
+(1, 'White', '#FFFFFF', '/public/images/ao-so-mi-nam-white.png', 'Trắng', 'White'),
+(1, 'Sky Blue', '#87CEEB', '/public/images/ao-so-mi-nam-blue.png', 'Xanh Da Trời', 'Sky Blue'),
+(2, 'White', '#FFFFFF', '/public/images/ao-so-mi-nam-white.png', 'Trắng', 'White'),
+(2, 'Sky Blue', '#87CEEB', '/public/images/ao-so-mi-nam-blue.png', 'Xanh Da Trời', 'Sky Blue'),
+(3, 'Beige', '#C3B091', '/public/images/ao-so-mi-nam-beige.png', 'Be', 'Beige'),
+(3, 'Black', '#000000', '/public/images/ao-so-mi-nam-black.png', 'Đen', 'Black'),
+(4, 'Beige', '#C3B091', '/public/images/ao-so-mi-nam-beige.png', 'Be', 'Beige'),
+(4, 'Black', '#000000', '/public/images/ao-so-mi-nam-black.png', 'Đen', 'Black'),
+(5, 'Beige', '#F5F5DC', '/public/images/quan-chino-nam-beige.png', 'Be', 'Beige'),
+(5, 'Blue', '#0000FF', '/public/images/quan-chino-nam-blue.png', 'Xanh Dương', 'Blue'),
+(6, 'Beige', '#F5F5DC', '/public/images/quan-chino-nam-beige.png', 'Be', 'Beige'),
+(6, 'Blue', '#0000FF', '/public/images/quan-chino-nam-blue.png', 'Xanh Dương', 'Blue'),
+(7, 'Light Blue', '#e5ecf6', '/public/images/quan-jean-nam-light-blue.png', 'Xanh Nhạt', 'Light Blue'),
+(7, 'Dark Gray', '#232227', '/public/images/quan-jean-nam-dark-gray.png', 'Xám Đậm', 'Dark Gray'),
+(8, 'Light Blue', '#e5ecf6', '/public/images/quan-jean-nam-light-blue.png', 'Xanh Nhạt', 'Light Blue'),
+(8, 'Dark Gray', '#232227', '/public/images/quan-jean-nam-dark-gray.png', 'Xám Đậm', 'Dark Gray'),
+(9, 'Green', '#6f7c6b', '/public/images/ao-hoodie-nam-green.png', 'Xanh Lá', 'Green'),
+(9, 'Red', '#d74d55', '/public/images/ao-hoodie-nam-red.png', 'Đỏ', 'Red'),
+(10, 'Green', '#6f7c6b', '/public/images/ao-hoodie-nam-green.png', 'Xanh Lá', 'Green'),
+(10, 'Red', '#d74d55', '/public/images/ao-hoodie-nam-red.png', 'Đỏ', 'Red'),
+(11, 'Blue', '#007bff', '/public/images/ao-khoac-nam-blue.png', 'Xanh Dương', 'Blue'),
+(11, 'Yellow', '#d4a017', '/public/images/ao-khoac-nam-yellow.png', 'Vàng', 'Yellow'),
+(12, 'Blue', '#007bff', '/public/images/ao-khoac-nam-blue.png', 'Xanh Dương', 'Blue'),
+(12, 'Yellow', '#d4a017', '/public/images/ao-khoac-nam-yellow.png', 'Vàng', 'Yellow'),
+(13, 'White', '#FFFFFF', '/public/images/ao-so-mi-nu-white.png', 'Trắng', 'White'),
+(13, 'Green', '#A9E5BB', '/public/images/ao-so-mi-nu-green.png', 'Xanh Lá', 'Green'),
+(14, 'White', '#FFFFFF', '/public/images/ao-so-mi-nu-white.png', 'Trắng', 'White'),
+(14, 'Green', '#A9E5BB', '/public/images/ao-so-mi-nu-green.png', 'Xanh Lá', 'Green'),
+(15, 'White', '#FFFFFF', '/public/images/ao-so-mi-nu-ke-soc-white.png', 'Trắng', 'White'),
+(15, 'Sky Blue', '#87CEEB', '/public/images/ao-so-mi-nu-ke-soc-blue.png', 'Xanh Da Trời', 'Sky Blue'),
+(16, 'White', '#FFFFFF', '/public/images/ao-so-mi-nu-ke-soc-white.png', 'Trắng', 'White'),
+(16, 'Sky Blue', '#87CEEB', '/public/images/ao-so-mi-nu-ke-soc-blue.png', 'Xanh Da Trời', 'Sky Blue'),
+(17, 'Sky Blue', '#dce2f0', '/public/images/ao-thun-co-tron-nu-blue.png', 'Xanh Da Trời', 'Sky Blue'),
+(17, 'Navy', '#2b3b5d', '/public/images/ao-thun-co-tron-nu-navy.png', 'Xanh Navy', 'Navy'),
+(18, 'Sky Blue', '#dce2f0', '/public/images/ao-thun-co-tron-nu-blue.png', 'Xanh Da Trời', 'Sky Blue'),
+(18, 'Navy', '#2b3b5d', '/public/images/ao-thun-co-tron-nu-navy.png', 'Xanh Navy', 'Navy'),
+(19, 'White', '#FFFFFF', '/public/images/ao-thun-vai-cotton-nu-white.png', 'Trắng', 'White'),
+(19, 'Black', '#000000', '/public/images/ao-thun-vai-cotton-nu-black.png', 'Đen', 'Black'),
+(20, 'White', '#FFFFFF', '/public/images/ao-thun-vai-cotton-nu-white.png', 'Trắng', 'White'),
+(20, 'Black', '#000000', '/public/images/ao-thun-vai-cotton-nu-black.png', 'Đen', 'Black'),
+(21, 'Beige', '#F5F5DC', '/public/images/quan-dai-gear-nu-beige.png', 'Be', 'Beige'),
+(21, 'Dark Green', '#0A3D3B', '/public/images/quan-dai-gear-nu-green.png', 'Xanh Đậm', 'Dark Green'),
+(22, 'Beige', '#F5F5DC', '/public/images/quan-dai-gear-nu-beige.png', 'Be', 'Beige'),
+(22, 'Dark Green', '#0A3D3B', '/public/images/quan-dai-gear-nu-green.png', 'Xanh Đậm', 'Dark Green'),
+(23, 'Beige', '#b6a498', '/public/images/quan-det-kim-nu-khaki.png', 'Be', 'Beige'),
+(23, 'Gray', '#515055', '/public/images/quan-det-kim-nu-gray.png', 'Xám', 'Gray'),
+(24, 'Beige', '#b6a498', '/public/images/quan-det-kim-nu-khaki.png', 'Be', 'Beige'),
+(24, 'Gray', '#515055', '/public/images/quan-det-kim-nu-gray.png', 'Xám', 'Gray'),
+(25, 'Gray', '#c0c8d3', '/public/images/ao-thun-tay-ngan-unisex-gray.png', 'Xám', 'Gray'),
+(25, 'Dark Gray', '#474b4e', '/public/images/ao-thun-tay-ngan-unisex-dark-gray.png', 'Xám Đậm', 'Dark Gray'),
+(26, 'Gray', '#c0c8d3', '/public/images/ao-thun-tay-ngan-unisex-gray.png', 'Xám', 'Gray'),
+(26, 'Dark Gray', '#474b4e', '/public/images/ao-thun-tay-ngan-unisex-dark-gray.png', 'Xám Đậm', 'Dark Gray'),
+(27, 'Dark Blue', '#2c3546', '/public/images/ao-thun-tay-dai-unisex-blue.png', 'Xanh Đậm', 'Dark Blue'),
+(27, 'Light Green', '#b3b6af', '/public/images/ao-thun-tay-dai-unisex-green.png', 'Xanh Lá Nhạt', 'Light Green'),
+(28, 'Dark Blue', '#2c3546', '/public/images/ao-thun-tay-dai-unisex-blue.png', 'Xanh Đậm', 'Dark Blue'),
+(28, 'Light Green', '#b3b6af', '/public/images/ao-thun-tay-dai-unisex-green.png', 'Xanh Lá Nhạt', 'Light Green'),
+(29, 'Green', '#5a6151', '/public/images/quan-dai-unisex-green.png', 'Xanh Lá', 'Green'),
+(29, 'Beige', '#cab99f', '/public/images/quan-dai-unisex-beige.png', 'Be', 'Beige'),
+(30, 'Green', '#5a6151', '/public/images/quan-dai-unisex-green.png', 'Xanh Lá', 'Green'),
+(30, 'Beige', '#cab99f', '/public/images/quan-dai-unisex-beige.png', 'Be', 'Beige'),
+(31, 'Blue', '#1B4F72', '/public/images/quan-jean-unisex-blue.png', 'Xanh Dương', 'Blue'),
+(31, 'Black', '#333333', '/public/images/quan-jean-unisex-black.png', 'Đen', 'Black'),
+(32, 'Blue', '#1B4F72', '/public/images/quan-jean-unisex-blue.png', 'Xanh Dương', 'Blue'),
+(32, 'Black', '#333333', '/public/images/quan-jean-unisex-black.png', 'Đen', 'Black'),
+(33, 'White', '#f1f0ee', '/public/images/quan-short-unisex-white.png', 'Trắng', 'White'),
+(33, 'Gray', '#646b7d', '/public/images/quan-short-unisex-gray.png', 'Xám', 'Gray'),
+(34, 'White', '#f1f0ee', '/public/images/quan-short-unisex-white.png', 'Trắng', 'White'),
+(34, 'Gray', '#646b7d', '/public/images/quan-short-unisex-gray.png', 'Xám', 'Gray'),
+(35, 'Green', '#696C52', '/public/images/quan-short-unisex-green.png', 'Xanh Lá', 'Green'),
+(35, 'Navy', '#2C3243', '/public/images/quan-short-unisex-navy.png', 'Xanh Navy', 'Navy'),
+(36, 'Green', '#696C52', '/public/images/quan-short-unisex-green.png', 'Xanh Lá', 'Green'),
+(36, 'Navy', '#2C3243', '/public/images/quan-short-unisex-navy.png', 'Xanh Navy', 'Navy');
+
 
 -- 6. SEED PRODUCT SIZES
+
 INSERT INTO product_sizes (color_id, size, stock) VALUES
+
 (1, 'S', 10),(1, 'M', 20),(1, 'L', 15),
 (2, 'S', 8),(2, 'M', 18),(2, 'L', 12),
 (3, 'S', 10),(3, 'M', 15),(3, 'L', 12),
@@ -228,14 +260,19 @@ INSERT INTO product_sizes (color_id, size, stock) VALUES
 (71, 'S', 10),(71, 'M', 15),(71, 'L', 12),
 (72, 'S', 8),(72, 'M', 12),(72, 'L', 10);
 
+
 -- 7. SEED BANNERS
-INSERT INTO banners (image_url, title, subtitle) VALUES
-('/public/images/banner1.png', 'Welcome to Clothing Shop', 'The latest collection is here – Up to 50% off today!'),
-('/public/images/banner2.png', 'New Style Every Day', 'Discover the hottest trending clothing models'),
-('/public/images/banner3.png', 'New Arrivals Every Week', 'Continuously updated – don\'t miss the latest trends'),
-('/public/images/banner4.png', 'Special Weekend Offer', 'Get an extra 20% off your first order – Shop now!');
+
+INSERT INTO banners (image_url, title, subtitle, title_vi, title_en, subtitle_vi, subtitle_en) VALUES
+
+('/public/images/banner1.png', 'Welcome to Clothing Shop', 'The latest collection is here – Up to 50% off today!', 'Chào Mừng Đến Với Clothing Shop', 'Welcome to Clothing Shop', 'Bộ sưu tập mới nhất đã ra mắt – Giảm đến 50% hôm nay!', 'The latest collection is here – Up to 50% off today!'),
+('/public/images/banner2.png', 'New Style Every Day', 'Discover the hottest trending clothing models', 'Phong Cách Mới Mỗi Ngày', 'New Style Every Day', 'Khám phá những mẫu quần áo đang hot nhất hiện nay', 'Discover the hottest trending clothing models'),
+('/public/images/banner3.png', 'New Arrivals Every Week', 'Continuously updated – don\'t miss the latest trends', 'Hàng Mới Về Mỗi Tuần', 'New Arrivals Every Week', 'Liên tục cập nhật – đừng bỏ lỡ xu hướng mới nhất', 'Continuously updated – don\'t miss the latest trends'),
+('/public/images/banner4.png', 'Special Weekend Offer', 'Get an extra 20% off your first order – Shop now!', 'Ưu Đãi Cuối Tuần Đặc Biệt', 'Special Weekend Offer', 'Giảm thêm 20% cho đơn hàng đầu tiên – Mua ngay!', 'Get an extra 20% off your first order – Shop now!');
+
 
 -- 8. SEED ORDERS & ITEMS
+
 SET FOREIGN_KEY_CHECKS = 0;
 TRUNCATE TABLE order_items;
 TRUNCATE TABLE orders;
@@ -285,7 +322,10 @@ INSERT INTO order_items (order_id, product_id, quantity, price) VALUES
 
 UPDATE orders o SET total_price = (SELECT SUM(quantity * price) FROM order_items WHERE order_id = o.id);
 
+
+
 -- 9. SEED RETURN REQUESTS
+
 INSERT INTO return_requests (order_id, reason_code, status) VALUES
 (301, 'Damaged', 'Pending'),
 (302, 'Wrong item', 'Pending'),
@@ -300,7 +340,10 @@ INSERT INTO return_requests (order_id, reason_code, status) VALUES
 (311, 'Change mind', 'Rejected'),
 (312, 'Not as described', 'Rejected');
 
+
+
 -- 10. SEED USER INTERACTIONS
+
 INSERT INTO user_product_interaction (user_id, product_id, interaction_type) VALUES
 (3, 1, 'view'), (3, 1, 'add_to_cart'), (3, 1, 'purchase'),
 (3, 5, 'view'), (3, 5, 'purchase'),

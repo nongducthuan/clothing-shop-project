@@ -69,10 +69,10 @@ export default function useVoucherManager() {
     if (!window.confirm("Bạn có chắc muốn xóa mã giảm giá này?")) return;
     try {
       await API.delete(`/admin/vouchers/${id}`);
-      showToast("Xóa thành công!", "success");
+      showToast(t("admin.toast_deleted", "Đã xóa thành công!"), "success");
       fetchInitialData();
     } catch (error) {
-      showToast("Xóa thất bại: " + (error.response?.data?.message || error.message), "error");
+      showToast(t("admin.toast_delete_failed", "Xóa thất bại: {error}").replace("{error}", error.response?.data?.message || error.message), "error");
     }
   };
 
@@ -133,10 +133,10 @@ export default function useVoucherManager() {
     try {
       if (editingId) {
         await API.put(`/admin/vouchers/${editingId}`, payload);
-        showToast("Cập nhật mã giảm giá thành công!", "success");
+        showToast(t("admin.toast_voucher_updated", "Cập nhật mã giảm giá thành công!"), "success");
       } else {
         await API.post("/admin/vouchers", payload);
-        showToast("Tạo mã giảm giá thành công!", "success");
+        showToast(t("admin.toast_voucher_created", "Tạo mã giảm giá thành công!"), "success");
       }
       setEditingId(null);
       setFormData({ ...emptyVoucherForm });
@@ -145,7 +145,7 @@ export default function useVoucherManager() {
       setSelectedProductIds([]);
       fetchInitialData();
     } catch (error) {
-      showToast("Error: " + error.message, "error");
+      showToast(t("admin.toast_error", "Error: {error}").replace("{error}", error.message), "error");
     }
   };
 

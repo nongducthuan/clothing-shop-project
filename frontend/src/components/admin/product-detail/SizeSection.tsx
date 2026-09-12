@@ -94,9 +94,9 @@ export default function SizeSection({
         {/* Stock List (Fixed Layout Tràn viền) */}
         <div className="flex-1 flex flex-col gap-3 mb-6">
           <div className="hidden sm:grid grid-cols-12 gap-4 px-4 pb-2 border-b border-slate-100 dark:border-slate-700 text-xs font-bold text-slate-400 dark:text-slate-400 uppercase tracking-widest">
-            <div className="col-span-4">Kích thước</div>
-            <div className="col-span-4 text-center">Tồn kho</div>
-            <div className="col-span-4 text-right">Thao tác</div>
+            <div className="col-span-4">{t("admin.pd_size_header")}</div>
+            <div className="col-span-4 text-center">{t("admin.pd_stock_header")}</div>
+            <div className="col-span-4 text-right">{t("admin.pd_actions_header")}</div>
           </div>
 
           {selectedColorObj.sizes?.length > 0 ? (

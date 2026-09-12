@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useToast } from "../../context/ToastContext";
+import { useLanguage } from "../../context/LanguageContext";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -56,6 +57,7 @@ const API = {
 export default function useProductManager() {
   const token = localStorage.getItem("token");
   const { showToast } = useToast();
+  const { t } = useLanguage();
 
   // --- State ---
   const [products, setProducts] = useState([]);
@@ -100,7 +102,7 @@ export default function useProductManager() {
       setCategories(Array.isArray(catRes.data) ? catRes.data : catRes.data?.data || []);
     } catch (err: unknown) {
       console.error("Data Load Error:", err);
-      showToast("Failed to load data", "error");
+      showToast(t("admin.product.toast_load_failed", "Failed to load data"), "error");
     }
   }, [token, showToast]);
 
@@ -124,9 +126,9 @@ export default function useProductManager() {
     try {
       const response = await API.post("/upload", formData);
       setForm((prev) => ({ ...prev, image_url: response.data.url }));
-      showToast("Image uploaded successfully");
+      showToast(t("admin.product.toast_image_uploaded", "Image uploaded successfully"));
     } catch {
-      showToast("Image upload failed", "error");
+      showToast(t("admin.product.toast_image_upload_failed", "Image upload failed"), "error");
     } finally {
       setUploading(false);
     }
@@ -136,13 +138,13 @@ export default function useProductManager() {
     e.preventDefault();
     const cleanName = form.name.trim();
     if (!cleanName || !form.price || !form.category_id) {
-      showToast("Required fields missing", "error");
+      showToast(t("admin.product.toast_required_missing", "Required fields missing"), "error");
       return;
     }
 
     const categoryObj = categories.find((c: { id: number | string; gender: string }) => String(c.id) === String(form.category_id));
     if (categoryObj && categoryObj.gender !== form.gender) {
-      showToast("Gender mismatch with category!", "error");
+      showToast(t("admin.product.toast_gender_mismatch", "Gender mismatch with category!"), "error");
       return;
     }
 
@@ -162,12 +164,12 @@ export default function useProductManager() {
       const method = editingId ? API.put : API.post;
       await method(endpoint, payload, { headers: { Authorization: `Bearer ${token}` } });
 
-      showToast(editingId ? "Product updated!" : "Product created!");
+      showToast(editingId ? t("admin.product.toast_updated", "Product updated!") : t("admin.product.toast_created", "Product created!"));
       resetForm();
       window.dispatchEvent(new Event("categories-updated"));
       await fetchData();
     } catch (err: unknown) {
-      showToast("Save failed", "error");
+      showToast(t("admin.product.toast_save_failed", "Save failed"), "error");
     }
   };
 
@@ -190,13 +192,13 @@ export default function useProductManager() {
   }, []);
 
   const handleDelete = useCallback(async (id) => {
-    if (!window.confirm("Delete this product?")) return;
+    if (!window.confirm(t("admin.product.confirm_delete", "Delete this product?"))) return;
     try {
       await API.delete(`/admin/products/${id}`, { headers: { Authorization: `Bearer ${token}` } });
       setProducts((prev: { id: number }[]) => prev.filter((p) => p.id !== id));
-      showToast("Product deleted");
+      showToast(t("admin.product.toast_deleted", "Product deleted"));
     } catch {
-      showToast("Delete failed", "error");
+      showToast(t("admin.product.toast_delete_failed", "Delete failed"), "error");
     }
   }, [token, showToast]);
 

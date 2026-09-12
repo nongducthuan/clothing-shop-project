@@ -119,7 +119,7 @@ export default function Report() {
               width="100%" height="350px"
               data={weeklyChartData.length > 1 ? weeklyChartData : [["Ngày", "Doanh thu", "Lợi nhuận"], ["Không có dữ liệu", 0, 0]]}
               options={{
-                title: "Xu hướng hiệu suất hàng ngày",
+                title: t("admin.chart_daily_performance", "Xu hướng hiệu suất hàng ngày"),
                 backgroundColor: "transparent",
                 titleTextStyle: { color: textColor, fontSize: 16, bold: true },
                 series: { 0: { color: '#6366f1' }, 1: { color: '#10b981' } },
@@ -138,14 +138,14 @@ export default function Report() {
               width="100%" height="350px"
               data={yearlyTrendData.length > 1 ? yearlyTrendData : [["Tháng", "Doanh thu", "Lợi nhuận"], ["Không có dữ liệu", 0, 0]]}
               options={{
-                title: "Xu hướng phát triển 12 tháng",
+                title: t("admin.chart_year_trend", "Xu hướng phát triển 12 tháng"),
                 backgroundColor: "transparent",
                 titleTextStyle: { color: textColor, fontSize: 16, bold: true },
                 curveType: "function",
                 series: { 0: { color: '#8b5cf6', lineWidth: 4 }, 1: { color: '#14b8a6', lineWidth: 4 } },
                 legend: { position: "top", textStyle: { color: subTextColor } },
                 chartArea: { width: '90%', height: '70%' },
-                hAxis: { title: 'Tháng', titleTextStyle: { color: subTextColor, italic: false }, textStyle: { color: subTextColor } },
+                hAxis: { title: t("admin.chart_month_axis", "Tháng"), titleTextStyle: { color: subTextColor, italic: false }, textStyle: { color: subTextColor } },
                 vAxis: { format: 'short', textStyle: { color: subTextColor } }
               }}
             />
@@ -153,7 +153,7 @@ export default function Report() {
 
           {/* Hàng 3: 4 biểu đồ tròn — lưới 2x2 (phân tích cơ cấu & vận hành) */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <ChartCard title="Doanh thu theo danh mục">
+            <ChartCard title={t("admin.chart_revenue_category", "Doanh thu theo danh mục")}>
               <Chart
                 chartType="PieChart"
                 width="100%" height="300px"
@@ -168,7 +168,7 @@ export default function Report() {
               />
             </ChartCard>
 
-            <ChartCard title="Vòng đời đơn hàng">
+            <ChartCard title={t("admin.chart_order_ratio", "Vòng đời đơn hàng")}>
               <Chart
                 chartType="PieChart"
                 width="100%" height="300px"
@@ -183,7 +183,7 @@ export default function Report() {
               />
             </ChartCard>
 
-            <ChartCard title="Phê duyệt trả hàng">
+            <ChartCard title={t("admin.chart_return_ratio", "Phê duyệt trả hàng")}>
               <Chart
                 chartType="PieChart"
                 width="100%" height="300px"
@@ -198,7 +198,7 @@ export default function Report() {
               />
             </ChartCard>
 
-            <ChartCard title="Lý do trả hàng">
+            <ChartCard title={t("admin.chart_return_reason", "Lý do trả hàng")}>
               <Chart
                 chartType="PieChart"
                 width="100%" height="300px"
