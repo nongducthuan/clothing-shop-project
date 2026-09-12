@@ -212,7 +212,7 @@ export default function PromotionForm({ state, actions, helpers }: PromotionForm
                   {t("admin.promo_buy_title")}
                 </h3>
                 <div className="flex items-center gap-2">
-                  <label className="text-xs font-semibold text-indigo-500 dark:text-indigo-400 uppercase tracking-wider">{t("admin.promo_qty_buy")} <span className="text-red-500">*</span></label>
+                  <label className="text-xs font-semibold text-indigo-500 dark:text-indigo-400 uppercase tracking-wider">{t("admin.promo_qty_buy")}</label>
                   <input
                     type="number"
                     name="buy_quantity"
@@ -235,7 +235,7 @@ export default function PromotionForm({ state, actions, helpers }: PromotionForm
                   {t("admin.promo_gift_title")}
                 </h3>
                 <div className="flex items-center gap-2">
-                  <label className="text-xs font-semibold text-purple-500 dark:text-purple-400 uppercase tracking-wider">{t("admin.promo_qty_gift")} <span className="text-red-500">*</span></label>
+                  <label className="text-xs font-semibold text-purple-500 dark:text-purple-400 uppercase tracking-wider">{t("admin.promo_qty_gift")}</label>
                   <input
                     type="number"
                     name="gift_quantity"
@@ -257,7 +257,7 @@ export default function PromotionForm({ state, actions, helpers }: PromotionForm
               className="p-3 bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl cursor-pointer transition-colors border border-transparent focus-within:border-indigo-200 focus-within:ring-2 focus-within:ring-indigo-500"
               onClick={() => startDateRef.current?.showPicker()}
             >
-              <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1 cursor-pointer">{t("admin.promo_start")} <span className="text-red-500">*</span></label>
+              <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1 cursor-pointer">{t("admin.start_label")}</label>
               <input
                 ref={startDateRef}
                 type="datetime-local"
@@ -273,7 +273,7 @@ export default function PromotionForm({ state, actions, helpers }: PromotionForm
               className="p-3 bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl cursor-pointer transition-colors border border-transparent focus-within:border-indigo-200 focus-within:ring-2 focus-within:ring-indigo-500"
               onClick={() => endDateRef.current?.showPicker()}
             >
-              <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1 cursor-pointer">{t("admin.end_label")} <span className="text-red-500">*</span></label>
+              <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1 cursor-pointer">{t("admin.end_label")}</label>
               <input
                 ref={endDateRef}
                 type="datetime-local"

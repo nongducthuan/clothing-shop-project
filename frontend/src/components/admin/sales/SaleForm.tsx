@@ -58,7 +58,7 @@ export default function SaleForm({ formData, setFormData, onSubmit, editingId, o
               min="1"
               max="100"
               onWheel={handleWheel}
-              className="w-full p-4 bg-blue-50/60 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/50 rounded-2xl focus:ring-2 focus:ring-blue-500 font-bold text-blue-600 dark:text-blue-400 text-md no-spinner outline-none transition-all placeholder:text-blue-300 dark:placeholder:text-blue-500"
+              className="w-full p-4 bg-blue-50/60 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/50 rounded-2xl focus:ring-2 focus:ring-blue-500 font-bold text-blue-600 dark:text-blue-400 text-base no-spinner outline-none transition-all placeholder:text-blue-300 dark:placeholder:text-blue-500"
               value={formData.discount_percent}
               onChange={(e) => setFormData({ ...formData, discount_percent: e.target.value })}
               required

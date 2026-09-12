@@ -117,18 +117,24 @@ export default function ColorSection({
 
               {/* Name Inputs (VI / EN) */}
               <div className="flex-1 space-y-2">
-                <input
-                  className="w-full px-4 py-2 bg-white dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 rounded-xl transition-all outline-none text-sm font-bold text-slate-700 dark:text-slate-100"
-                  placeholder={t("admin.pd_color_name_vi_placeholder")}
-                  value={colorForm.color_name_vi}
-                  onChange={(e) => setColorForm({ ...colorForm, color_name_vi: e.target.value })}
-                />
-                <input
-                  className="w-full px-4 py-2 bg-white dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 rounded-xl transition-all outline-none text-sm font-bold text-slate-700 dark:text-slate-100"
-                  placeholder={t("admin.pd_color_name_en_placeholder")}
-                  value={colorForm.color_name_en}
-                  onChange={(e) => setColorForm({ ...colorForm, color_name_en: e.target.value })}
-                />
+                <div>
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1 ml-1">{t("admin.pd_color_name_vi")}</label>
+                  <input
+                    className="w-full px-4 py-2 bg-white dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 rounded-xl transition-all outline-none text-sm font-bold text-slate-700 dark:text-slate-100"
+                    placeholder={t("admin.pd_color_name_vi_placeholder")}
+                    value={colorForm.color_name_vi}
+                    onChange={(e) => setColorForm({ ...colorForm, color_name_vi: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1 ml-1">{t("admin.pd_color_name_en")}</label>
+                  <input
+                    className="w-full px-4 py-2 bg-white dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 rounded-xl transition-all outline-none text-sm font-bold text-slate-700 dark:text-slate-100"
+                    placeholder={t("admin.pd_color_name_en_placeholder")}
+                    value={colorForm.color_name_en}
+                    onChange={(e) => setColorForm({ ...colorForm, color_name_en: e.target.value })}
+                  />
+                </div>
               </div>
             </div>
 

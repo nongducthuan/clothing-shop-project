@@ -18,7 +18,7 @@ export default function ProductImageGallery({ state }) {
       {/* SALE BADGE */}
       {isSale && (
         <span className="absolute top-6 left-6 bg-rose-500 text-white px-4 py-1.5 rounded-full text-sm font-bold shadow-md z-10 tracking-wider">
-          {t("product.sale_off_badge", "-{percent}% GIẢM").replace("{percent}", String(Math.round(product.sale_percent)))}
+          {t("product.sale_off_badge", "Giảm {percent}%").replace("{percent}", String(Math.round(product.sale_percent)))}
         </span>
       )}
 

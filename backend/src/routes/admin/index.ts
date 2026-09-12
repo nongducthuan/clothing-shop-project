@@ -33,6 +33,7 @@ router.post('/products/:productId/colors', productController.addColor);
 router.delete('/colors/:id', productController.removeColor);
 
 router.post('/colors/:colorId/sizes', productController.addSize);
+router.put('/sizes/:id', productController.updateSize);
 router.delete('/sizes/:id', productController.removeSize);
 
 // --- Categories ---

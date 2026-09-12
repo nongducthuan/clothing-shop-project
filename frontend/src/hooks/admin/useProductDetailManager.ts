@@ -170,6 +170,41 @@ export function useProductInventory(productId) {
     }
   };
 
+  /**
+   * Sets the absolute stock quantity for an existing size (inline edit mode).
+   * Unlike addSize (which increments), this corrects the stock to an exact value.
+   * @returns {Promise<boolean>} true if the update succeeded.
+   */
+  const updateSizeStock = async (sizeId, stock) => {
+    const stockValue = Number(stock);
+    if (stock === "" || stock === null || isNaN(stockValue) || !Number.isInteger(stockValue) || stockValue < 0) {
+      showToast("Invalid stock value.", "warning");
+      return false;
+    }
+
+    try {
+      const { data } = await API.put(
+        `/admin/sizes/${sizeId}`,
+        { stock: stockValue },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      // Local state update for immediate UI feedback without refetching the whole product
+      setColors((prev) =>
+        prev.map((color) => ({
+          ...color,
+          sizes: color.sizes?.map((s) => (s.id === Number(sizeId) ? { ...s, stock: data.stock ?? stockValue } : s)) || [],
+        }))
+      );
+      showToast("Stock updated successfully!", "success");
+      return true;
+    } catch (err) {
+      console.error("Update Size Error:", err);
+      showToast("Failed to update stock.", "error");
+      return false;
+    }
+  };
+
 
   // Initial Data Fetch
   useEffect(() => {
@@ -191,7 +226,8 @@ export function useProductInventory(productId) {
     addColor,
     deleteColor,
     addSize,
-    deleteSize
+    deleteSize,
+    updateSizeStock
   };
 }
 

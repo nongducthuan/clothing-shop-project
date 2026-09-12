@@ -3,11 +3,20 @@ import { ModernStatusBadge, PaymentStatusBadge } from "./OrderBadges";
 import { PaymentBadge } from "../../common/PaymentBadge";
 import { useLanguage } from "../../../context/LanguageContext";
 
+// Format datetime deterministically as "HH:mm:ss dd/mm/yyyy" (Vietnamese style).
+// Avoids locale/browser-dependent output like mm/dd/yyyy (en-US).
+const formatOrderDateTime = (dateString) => {
+  if (!dateString) return "N/A";
+  const d = new Date(dateString);
+  if (isNaN(d.getTime())) return "N/A";
+  const pad = (n) => String(n).padStart(2, "0");
+  return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())} ${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`;
+};
+
 export default function OrderDetailModal({ order, onClose, onOpenPaymentModal, helpers }) {
-  const { t, getLocalizedText, language } = useLanguage();
+  const { t, getLocalizedText } = useLanguage();
   if (!order) return null;
   const { formatCurrency, getImgUrl } = helpers;
-  const dateLocale = language === 'vi' ? 'vi-VN' : 'en-US';
 
   return (
     <div
@@ -24,7 +33,7 @@ export default function OrderDetailModal({ order, onClose, onOpenPaymentModal, h
           <div>
             <h3 className="font-semibold text-slate-900 dark:text-slate-100 text-base sm:text-lg">{t('order_details.title', 'Đơn hàng')} #{order.id}</h3>
               <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                {new Date(order.created_at).toLocaleString(dateLocale)}
+                {formatOrderDateTime(order.created_at)}
               </p>
           </div>
           <button
@@ -107,13 +116,20 @@ export default function OrderDetailModal({ order, onClose, onOpenPaymentModal, h
             <p className="text-[11px] sm:text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">{t('order_details.summary', 'Tóm tắt đơn hàng')}</p>
             
             <div className="flex justify-between items-start gap-3">
+              <span className="text-slate-500 dark:text-slate-400 shrink-0">{t('order_details.customer_name', 'Tên khách hàng')}</span>
+              <span className="font-medium text-slate-900 dark:text-slate-100 text-right break-words max-w-[65%]">
+                {order.name || "N/A"}
+              </span>
+            </div>
+
+            <div className="flex justify-between items-start gap-3">
               <span className="text-slate-500 dark:text-slate-400 shrink-0">{t('order_details.shipping_address', 'Địa chỉ giao hàng')}</span>
               <span className="font-medium text-slate-900 dark:text-slate-100 text-right break-words max-w-[65%]">
                 {order.address || "N/A"}
               </span>
             </div>
 
-            <div className="flex justify-between items-center gap-3 border-t border-slate-200/60 dark:border-slate-600 pt-2.5 sm:pt-3">
+            <div className="flex justify-between items-center gap-3">
               <span className="text-slate-500 dark:text-slate-400 shrink-0">{t('order_details.payment_method', 'Phương thức thanh toán')}</span>
               <PaymentBadge method={order.payment_method} badgeStyle={true} />
             </div>

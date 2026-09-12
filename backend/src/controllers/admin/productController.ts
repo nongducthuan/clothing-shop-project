@@ -219,3 +219,34 @@ export const removeSize = async (req: Request, res: Response): Promise<void> => 
         res.status(500).json({ message: "Server error" });
     }
 };
+
+export const updateSize = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { id } = req.params;
+        const { stock } = req.body;
+
+        // Stock must be a non-negative integer (schema CHECK stock >= 0)
+        const stockValue = Number(stock);
+        if (!Number.isInteger(stockValue) || stockValue < 0) {
+            res.status(400).json({ message: "Stock must be a non-negative integer" });
+            return;
+        }
+
+        const existing = await prisma.productSize.findUnique({ where: { id: Number(id) } });
+        if (!existing) {
+            res.status(404).json({ message: "Size not found" });
+            return;
+        }
+
+        // Set the absolute stock value (correction mode), unlike addSize which increments
+        const updated = await prisma.productSize.update({
+            where: { id: Number(id) },
+            data: { stock: stockValue }
+        });
+
+        res.json(updated);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Server error" });
+    }
+};

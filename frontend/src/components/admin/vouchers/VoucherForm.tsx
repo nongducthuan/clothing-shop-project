@@ -64,7 +64,7 @@ export default function VoucherForm({ formData, setFormData, onSubmit, editingId
                 onChange={(e) => setFormData({ ...formData, discount_percent: e.target.value })}
                 required
               />
-              <span className="absolute right-4 top-1/2 -translate-y-1/2 font-black text-indigo-400 dark:text-indigo-400 pointer-events-none">%</span>
+              <span className="absolute right-4 top-1/2 -translate-y-1/2 font-black text-indigo-400 dark:text-indigo-400 text-xl pointer-events-none">%</span>
             </div>
           </div>
 
@@ -95,7 +95,6 @@ export default function VoucherForm({ formData, setFormData, onSubmit, editingId
             className="w-full p-4 bg-slate-50 dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 rounded-2xl no-spinner outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
             value={formData.usage_limit}
             onChange={(e) => setFormData({ ...formData, usage_limit: e.target.value })}
-            required
           />
 
           {/* Validity Period */}

@@ -112,91 +112,26 @@ export default function Report() {
         {/* --- PHẦN 2: PHÂN TÍCH BIỂU ĐỒ --- */}
         <div className="space-y-8">
 
-          {/* Hàng 1: Doanh thu 7 ngày & Category */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 bg-white dark:bg-slate-800 p-6 md:p-8 shadow-sm rounded-[2rem] border border-slate-200/80 dark:border-slate-700 flex flex-col justify-center overflow-hidden">
-              <Chart
-                chartType="ColumnChart"
-                width="100%" height="300px"
-                data={weeklyChartData.length > 1 ? weeklyChartData : [["Ngày", "Doanh thu", "Lợi nhuận"], ["Không có dữ liệu", 0, 0]]}
-                options={{
-                  title: "Xu hướng hiệu suất hàng ngày",
-                  backgroundColor: "transparent",
-                  titleTextStyle: { color: textColor, fontSize: 14, bold: true },
-                  series: { 0: { color: '#6366f1' }, 1: { color: '#10b981' } },
-                  chartArea: { width: '85%', height: '70%' },
-                  legend: { position: "top", textStyle: { color: subTextColor } },
-                  hAxis: { textStyle: { color: subTextColor } },
-                  vAxis: { textStyle: { color: subTextColor }, format: 'short' }
-                }}
-              />
-            </div>
-
-            <ChartCard title="Doanh thu theo danh mục">
-              <Chart
-                chartType="PieChart"
-                width="100%" height="300px"
-                data={categoryRevenueData.length > 1 ? categoryRevenueData : [["Danh mục", "Doanh thu"], ["Không có dữ liệu", 1]]}
-                options={{
-                  backgroundColor: "transparent",
-                  pieHole: 0.4,
-                  colors: ["#8b5cf6", "#ec4899", "#3b82f6", "#10b981", "#f59e0b"],
-                  legend: { position: "bottom", textStyle: { color: subTextColor } },
-                  chartArea: { width: '90%', height: '75%' }
-                }}
-              />
-            </ChartCard>
+          {/* Hàng 1: Doanh thu 7 ngày (full width) */}
+          <div className="bg-white dark:bg-slate-800 p-6 md:p-8 shadow-sm rounded-[2rem] border border-slate-200/80 dark:border-slate-700 flex flex-col justify-center overflow-hidden">
+            <Chart
+              chartType="ColumnChart"
+              width="100%" height="350px"
+              data={weeklyChartData.length > 1 ? weeklyChartData : [["Ngày", "Doanh thu", "Lợi nhuận"], ["Không có dữ liệu", 0, 0]]}
+              options={{
+                title: "Xu hướng hiệu suất hàng ngày",
+                backgroundColor: "transparent",
+                titleTextStyle: { color: textColor, fontSize: 16, bold: true },
+                series: { 0: { color: '#6366f1' }, 1: { color: '#10b981' } },
+                chartArea: { width: '90%', height: '70%' },
+                legend: { position: "top", textStyle: { color: subTextColor } },
+                hAxis: { textStyle: { color: subTextColor } },
+                vAxis: { textStyle: { color: subTextColor }, format: 'short' }
+              }}
+            />
           </div>
 
-          {/* Hàng 2: Order Status & Return Status & Return Reason */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <ChartCard title="Vòng đời đơn hàng">
-              <Chart
-                chartType="PieChart"
-                width="100%" height="250px"
-                data={statusPieData.length > 1 ? statusPieData : [["Trạng thái", "Số lượng"], ["Không có dữ liệu", 1]]}
-                options={{
-                  backgroundColor: "transparent",
-                  colors: (orderStatus || []).map(r => STATUS_COLORS[r.status] || "#cbd5e1"),
-                  pieHole: 0.5,
-                  legend: { position: "bottom", textStyle: { color: subTextColor } },
-                  chartArea: { width: '90%', height: '75%' }
-                }}
-              />
-            </ChartCard>
-
-            <ChartCard title="Phê duyệt trả hàng">
-              <Chart
-                chartType="PieChart"
-                width="100%" height="250px"
-                data={returnApprovalData.length > 1 ? returnApprovalData : [["Trạng thái", "Số lượng"], ["Không có dữ liệu", 1]]}
-                options={{
-                  backgroundColor: "transparent",
-                  colors: (returnStatuses || []).map(r => STATUS_COLORS[r.status] || "#fb923c"),
-                  pieHole: 0.5,
-                  legend: { position: "bottom", textStyle: { color: subTextColor } },
-                  chartArea: { width: '90%', height: '75%' }
-                }}
-              />
-            </ChartCard>
-
-            <ChartCard title="Lý do trả hàng">
-              <Chart
-                chartType="PieChart"
-                width="100%" height="250px"
-                data={reasonData.length > 1 ? reasonData : [["Lý do", "Số lượng"], ["Không có dữ liệu", 1]]}
-                options={{
-                  backgroundColor: "transparent",
-                  colors: ["#94a3b8", "#ef4444", "#f59e0b", "#3b82f6"],
-                  pieHole: 0.5,
-                  legend: { position: "bottom", textStyle: { color: subTextColor } },
-                  chartArea: { width: '90%', height: '75%' }
-                }}
-              />
-            </ChartCard>
-          </div>
-
-          {/* Hàng 3: Biểu đồ Năm */}
+          {/* Hàng 2: Xu hướng 12 tháng (trend dài hạn, full width) */}
           <div className="bg-white dark:bg-slate-800 p-6 md:p-8 shadow-sm rounded-[2rem] border border-slate-200/80 dark:border-slate-700 flex flex-col justify-center overflow-hidden">
             <Chart
               chartType="LineChart"
@@ -214,6 +149,69 @@ export default function Report() {
                 vAxis: { format: 'short', textStyle: { color: subTextColor } }
               }}
             />
+          </div>
+
+          {/* Hàng 3: 4 biểu đồ tròn — lưới 2x2 (phân tích cơ cấu & vận hành) */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <ChartCard title="Doanh thu theo danh mục">
+              <Chart
+                chartType="PieChart"
+                width="100%" height="300px"
+                data={categoryRevenueData.length > 1 ? categoryRevenueData : [["Danh mục", "Doanh thu"], ["Không có dữ liệu", 1]]}
+                options={{
+                  backgroundColor: "transparent",
+                  pieHole: 0.4,
+                  colors: ["#8b5cf6", "#ec4899", "#3b82f6", "#10b981", "#f59e0b"],
+                  legend: { position: "bottom", textStyle: { color: subTextColor } },
+                  chartArea: { width: '90%', height: '75%' }
+                }}
+              />
+            </ChartCard>
+
+            <ChartCard title="Vòng đời đơn hàng">
+              <Chart
+                chartType="PieChart"
+                width="100%" height="300px"
+                data={statusPieData.length > 1 ? statusPieData : [["Trạng thái", "Số lượng"], ["Không có dữ liệu", 1]]}
+                options={{
+                  backgroundColor: "transparent",
+                  colors: (orderStatus || []).map(r => STATUS_COLORS[r.status] || "#cbd5e1"),
+                  pieHole: 0.5,
+                  legend: { position: "bottom", textStyle: { color: subTextColor } },
+                  chartArea: { width: '90%', height: '75%' }
+                }}
+              />
+            </ChartCard>
+
+            <ChartCard title="Phê duyệt trả hàng">
+              <Chart
+                chartType="PieChart"
+                width="100%" height="300px"
+                data={returnApprovalData.length > 1 ? returnApprovalData : [["Trạng thái", "Số lượng"], ["Không có dữ liệu", 1]]}
+                options={{
+                  backgroundColor: "transparent",
+                  colors: (returnStatuses || []).map(r => STATUS_COLORS[r.status] || "#fb923c"),
+                  pieHole: 0.5,
+                  legend: { position: "bottom", textStyle: { color: subTextColor } },
+                  chartArea: { width: '90%', height: '75%' }
+                }}
+              />
+            </ChartCard>
+
+            <ChartCard title="Lý do trả hàng">
+              <Chart
+                chartType="PieChart"
+                width="100%" height="300px"
+                data={reasonData.length > 1 ? reasonData : [["Lý do", "Số lượng"], ["Không có dữ liệu", 1]]}
+                options={{
+                  backgroundColor: "transparent",
+                  colors: ["#94a3b8", "#ef4444", "#f59e0b", "#3b82f6"],
+                  pieHole: 0.5,
+                  legend: { position: "bottom", textStyle: { color: subTextColor } },
+                  chartArea: { width: '90%', height: '75%' }
+                }}
+              />
+            </ChartCard>
           </div>
 
         </div>

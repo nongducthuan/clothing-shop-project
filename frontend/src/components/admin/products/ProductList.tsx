@@ -140,18 +140,20 @@ export default function ProductList({
                       </div>
 
                       {/* Section 2: Nút Edit / Delete */}
-                      <div className="flex gap-1.5 flex-shrink-0 ml-2 min-w-0">
+                      <div className="flex gap-2 flex-shrink-0 ml-2">
                         <button
                           onClick={(e) => { e.stopPropagation(); handleEdit(p); }}
-                          className="w-6.5 h-6.5 flex items-center justify-center bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-600 hover:text-white dark:hover:bg-blue-600 dark:hover:text-white transition-all shadow-sm"
+                          aria-label={t("common.edit")}
+                          className="w-9 h-9 md:w-8 md:h-8 flex items-center justify-center bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 rounded-xl hover:bg-blue-600 hover:text-white dark:hover:bg-blue-600 dark:hover:text-white active:scale-95 transition-all shadow-sm"
                         >
-                          <i className="fa-solid fa-pen text-[10px]"></i>
+                          <i className="fa-solid fa-pen text-sm"></i>
                         </button>
                         <button
                           onClick={(e) => { e.stopPropagation(); handleDelete(p.id); }}
-                          className="w-6.5 h-6.5 flex items-center justify-center bg-red-50 dark:bg-red-950/50 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-600 hover:text-white dark:hover:bg-red-600 dark:hover:text-white transition-all shadow-sm"
+                          aria-label={t("common.delete")}
+                          className="w-9 h-9 md:w-8 md:h-8 flex items-center justify-center bg-red-50 dark:bg-red-950/50 text-red-600 dark:text-red-400 rounded-xl hover:bg-red-600 hover:text-white dark:hover:bg-red-600 dark:hover:text-white active:scale-95 transition-all shadow-sm"
                         >
-                          <i className="fa-solid fa-trash text-[10px]"></i>
+                          <i className="fa-solid fa-trash text-sm"></i>
                         </button>
                       </div>
                     </div>
@@ -165,5 +167,3 @@ export default function ProductList({
     </div>
   );
 }
-
-

@@ -220,6 +220,7 @@ export const translations = {
     'order_details.items': 'Sản phẩm',
     'order_details.color_label': 'Màu',
     'order_details.summary': 'Tóm tắt đơn hàng',
+    'order_details.customer_name': 'Tên khách hàng',
     'order_details.shipping_address': 'Địa chỉ giao hàng',
     'order_details.payment_method': 'Phương thức thanh toán',
     'order_details.total': 'Tổng tiền',
@@ -416,7 +417,7 @@ export const translations = {
     'admin.vt_scope_all': 'Toàn bộ',
     'admin.vt_scope_category': 'Danh mục',
     'admin.vt_scope_product': 'Sản phẩm',
-    'admin.vt_discount_badge': '{percent}% GIẢM',
+    'admin.vt_discount_badge': 'Giảm {percent}%',
     'admin.vt_max': 'Tối đa: {amount}',
     'admin.vt_min_spend': 'Chi tiêu tối thiểu:',
     'admin.vt_usage_unlimited': 'Không giới hạn lượt dùng',
@@ -561,7 +562,7 @@ export const translations = {
 
     // Product
     'product.no_desc': 'Chưa có mô tả chi tiết cho sản phẩm này.',
-    'product.sale_off_badge': '-{percent}% GIẢM',
+    'product.sale_off_badge': 'Giảm {percent}%',
     'product.promo_badge': 'MUA {buy} TẶNG {gift}',
 
     // Common
@@ -757,7 +758,7 @@ export const translations = {
     'voucher.all_products': 'Tất cả sản phẩm',
     'voucher.valid_all': 'Áp dụng cho tất cả sản phẩm',
     'voucher.valid_for': 'Áp dụng cho {category}',
-    'voucher.discount_badge': '{percent}% GIẢM',
+    'voucher.discount_badge': 'Giảm {percent}%',
     'voucher.copied': 'Đã sao chép!',
     'voucher.copy_code': 'Sao chép mã',
     'voucher.code_copied': 'Đã sao chép mã: {code}',
@@ -1000,6 +1001,7 @@ export const translations = {
     'order_details.items': 'Items',
     'order_details.color_label': 'Color',
     'order_details.summary': 'Summary',
+    'order_details.customer_name': 'Customer name',
     'order_details.shipping_address': 'Shipping Address',
     'order_details.payment_method': 'Payment Method',
     'order_details.total': 'Total',
@@ -1342,7 +1344,7 @@ export const translations = {
 
     // Product
     'product.no_desc': 'No description available for this item.',
-    'product.sale_off_badge': '-{percent}% OFF',
+    'product.sale_off_badge': '{percent}% OFF',
     'product.promo_badge': 'BUY {buy} GET {gift}',
 
     // Common

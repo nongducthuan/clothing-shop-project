@@ -90,7 +90,7 @@ export default function OrdersStep({
                         <span className="text-gray-400 dark:text-slate-400 block text-[11px]">{t("lookup.phone")}</span>
                         <span className="font-semibold text-gray-800 dark:text-slate-200">{order.phone || t('lookup.none')}</span>
                       </div>
-                      <div className="sm:col-span-2 pt-1 border-t border-gray-50 dark:border-slate-600 mt-1">
+                      <div className="sm:col-span-2 pt-1 mt-1">
                         <span className="text-gray-400 dark:text-slate-400 block text-[11px]">{t("lookup.shipping_address")}</span>
                         <span className="font-semibold text-gray-800 dark:text-slate-200 break-words">{order.address || t('lookup.none')}</span>
                       </div>

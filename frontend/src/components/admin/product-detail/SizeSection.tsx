@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { SIZE_ORDER } from "../../../hooks/admin/useProductDetailManager";
 import { getImageUrl } from "../../../utils/imageUtils";
 import { useLanguage } from "../../../context/LanguageContext";
@@ -6,12 +6,35 @@ import { useLanguage } from "../../../context/LanguageContext";
 export default function SizeSection({
   selectedColorObj,
   onDeleteSize,
+  onUpdateSize,
   sizeForm,
   setSizeForm,
   onAddSize
 }) {
   const { t, getLocalizedText } = useLanguage();
   const handleWheel = (e) => e.target.blur();
+
+  // Inline stock editing state (which size row is being edited & its new value)
+  const [editingSizeId, setEditingSizeId] = useState(null);
+  const [editStock, setEditStock] = useState("");
+
+  const startEditStock = (sizeItem) => {
+    setEditingSizeId(sizeItem.id);
+    setEditStock(String(sizeItem.stock));
+  };
+
+  const handleSaveStock = async () => {
+    const success = await onUpdateSize(editingSizeId, editStock);
+    if (success) {
+      setEditingSizeId(null);
+      setEditStock("");
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingSizeId(null);
+    setEditStock("");
+  };
 
   if (!selectedColorObj) {
     return (
@@ -87,17 +110,63 @@ export default function SizeSection({
                     </span>
                   </div>
                   <div className="sm:col-span-4 text-left sm:text-center">
-                    <span className="font-black text-lg md:text-xl text-emerald-600 dark:text-emerald-400">{sizeItem.stock}</span>
-                    <span className="text-[10px] md:text-xs text-emerald-600/70 dark:text-emerald-400/70 ml-1 font-bold">{t("admin.pd_product_label")}</span>
+                    {editingSizeId === sizeItem.id ? (
+                      <input
+                        type="number"
+                        min="0"
+                        autoFocus
+                        onWheel={handleWheel}
+                        className="w-24 mx-auto sm:mx-0 px-2.5 py-1.5 bg-white dark:bg-slate-700 border border-indigo-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 rounded-xl outline-none text-sm md:text-base font-black text-slate-700 dark:text-slate-100 no-spinner text-center"
+                        value={editStock}
+                        onChange={(e) => setEditStock(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") handleSaveStock();
+                          if (e.key === "Escape") handleCancelEdit();
+                        }}
+                      />
+                    ) : (
+                      <>
+                        <span className="font-black text-lg md:text-xl text-emerald-600 dark:text-emerald-400">{sizeItem.stock}</span>
+                        <span className="text-[10px] md:text-xs text-emerald-600/70 dark:text-emerald-400/70 ml-1 font-bold">{t("admin.pd_product_label")}</span>
+                      </>
+                    )}
                   </div>
-                  <div className="sm:col-span-4 text-right flex justify-end">
-                    <button
-                      onClick={() => onDeleteSize(sizeItem.id)}
-                      className="px-3 py-1.5 md:px-4 md:py-2 bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 font-bold text-[11px] md:text-xs uppercase tracking-wider rounded-xl hover:bg-rose-600 hover:text-white transition-all shadow-sm flex items-center gap-1"
-                    >
-                      <i className="fa-solid fa-trash"></i> 
-                      <span className="hidden sm:inline">{t("admin.pd_delete")}</span>
-                    </button>
+                  <div className="sm:col-span-4 text-right flex justify-end gap-2">
+                    {editingSizeId === sizeItem.id ? (
+                      <>
+                        <button
+                          onClick={handleSaveStock}
+                          className="px-3 py-1.5 md:px-4 md:py-2 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 font-bold text-[11px] md:text-xs uppercase tracking-wider rounded-xl hover:bg-emerald-600 hover:text-white transition-all shadow-sm flex items-center gap-1"
+                        >
+                          <i className="fa-solid fa-check"></i>
+                          <span className="hidden sm:inline">{t("common.save")}</span>
+                        </button>
+                        <button
+                          onClick={handleCancelEdit}
+                          className="px-3 py-1.5 md:px-4 md:py-2 bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300 font-bold text-[11px] md:text-xs uppercase tracking-wider rounded-xl hover:bg-slate-600 hover:text-white transition-all shadow-sm flex items-center gap-1"
+                        >
+                          <i className="fa-solid fa-xmark"></i>
+                          <span className="hidden sm:inline">{t("common.cancel")}</span>
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          onClick={() => startEditStock(sizeItem)}
+                          className="px-3 py-1.5 md:px-4 md:py-2 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 font-bold text-[11px] md:text-xs uppercase tracking-wider rounded-xl hover:bg-indigo-600 hover:text-white transition-all shadow-sm flex items-center gap-1"
+                        >
+                          <i className="fa-solid fa-pen"></i>
+                          <span className="hidden sm:inline">{t("common.edit")}</span>
+                        </button>
+                        <button
+                          onClick={() => onDeleteSize(sizeItem.id)}
+                          className="px-3 py-1.5 md:px-4 md:py-2 bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 font-bold text-[11px] md:text-xs uppercase tracking-wider rounded-xl hover:bg-rose-600 hover:text-white transition-all shadow-sm flex items-center gap-1"
+                        >
+                          <i className="fa-solid fa-trash"></i>
+                          <span className="hidden sm:inline">{t("admin.pd_delete")}</span>
+                        </button>
+                      </>
+                    )}
                   </div>
                 </div>
               ))

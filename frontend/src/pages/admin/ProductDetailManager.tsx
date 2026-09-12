@@ -14,7 +14,7 @@ export default function ProductDetailManager() {
   const {
     product, colors, selectedColorId, setSelectedColorId,
     colorForm, setColorForm, sizeForm, setSizeForm,
-    isUploading, uploadImage, addColor, deleteColor, addSize, deleteSize
+    isUploading, uploadImage, addColor, deleteColor, addSize, deleteSize, updateSizeStock
   } = useProductInventory(id);
 
   if (!product) {
@@ -73,6 +73,7 @@ export default function ProductDetailManager() {
         <SizeSection
           selectedColorObj={selectedColorObj}
           onDeleteSize={deleteSize}
+          onUpdateSize={updateSizeStock}
           sizeForm={sizeForm}
           setSizeForm={setSizeForm}
           onAddSize={addSize}
