@@ -68,34 +68,6 @@ export default function ProductForm({
             {/* Hidden legacy single-name field kept for backward compat */}
             <input type="hidden" value={form.name} readOnly />
 
-            {/* Prices Row: Cost Price & Selling Price */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 ml-1">{t("admin.import_price")} (đ)</label>
-                <input
-                  type="number"
-                  onWheel={handleWheel}
-                  className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 focus:bg-white dark:focus:bg-slate-700 focus:border-violet-500 dark:focus:border-violet-400 focus:ring-4 focus:ring-violet-500/10 rounded-2xl transition-all duration-300 outline-none text-slate-800 dark:text-slate-100 font-medium no-spinner placeholder:text-slate-400 dark:placeholder:text-slate-500"
-                  value={form.import_price || ""}
-                  onChange={(e) => setForm({ ...form, import_price: e.target.value === "" ? "" : +e.target.value })}
-                  placeholder={t("admin.import_price_placeholder")}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 ml-1">{t("admin.selling_price")} (đ)</label>
-                <input
-                  type="number"
-                  onWheel={handleWheel}
-                  className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 focus:bg-white dark:focus:bg-slate-700 focus:border-violet-500 dark:focus:border-violet-400 focus:ring-4 focus:ring-violet-500/10 rounded-2xl transition-all duration-300 outline-none text-slate-800 dark:text-slate-100 font-medium no-spinner placeholder:text-slate-400 dark:placeholder:text-slate-500"
-                  value={form.price}
-                  onChange={(e) => setForm({ ...form, price: e.target.value === "" ? "" : +e.target.value })}
-                  placeholder={t("admin.selling_price_placeholder")}
-                  required
-                />
-              </div>
-            </div>
-
             {/* Gender & Category Row */}
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -128,6 +100,34 @@ export default function ProductForm({
                       </option>
                     ))}
                 </select>
+              </div>
+            </div>
+
+            {/* Prices Row: Cost Price & Selling Price */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 ml-1">{t("admin.import_price")} (đ)</label>
+                <input
+                  type="number"
+                  onWheel={handleWheel}
+                  className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 focus:bg-white dark:focus:bg-slate-700 focus:border-violet-500 dark:focus:border-violet-400 focus:ring-4 focus:ring-violet-500/10 rounded-2xl transition-all duration-300 outline-none text-slate-800 dark:text-slate-100 font-medium no-spinner placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                  value={form.import_price || ""}
+                  onChange={(e) => setForm({ ...form, import_price: e.target.value === "" ? "" : +e.target.value })}
+                  placeholder={t("admin.import_price_placeholder")}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 ml-1">{t("admin.selling_price")} (đ)</label>
+                <input
+                  type="number"
+                  onWheel={handleWheel}
+                  className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 focus:bg-white dark:focus:bg-slate-700 focus:border-violet-500 dark:focus:border-violet-400 focus:ring-4 focus:ring-violet-500/10 rounded-2xl transition-all duration-300 outline-none text-slate-800 dark:text-slate-100 font-medium no-spinner placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                  value={form.price}
+                  onChange={(e) => setForm({ ...form, price: e.target.value === "" ? "" : +e.target.value })}
+                  placeholder={t("admin.selling_price_placeholder")}
+                  required
+                />
               </div>
             </div>
 

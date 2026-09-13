@@ -80,7 +80,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     // Fallback to the other language (vi <-> en)
     const otherLang = language === "vi" ? "en" : "vi";
     const otherLangField = `${fieldName}_${otherLang}`;
-    return item[otherLangField] || "";
+    return item[otherLangField] || item[fieldName] || "";
   };
 
   /**

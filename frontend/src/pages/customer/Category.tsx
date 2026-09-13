@@ -35,7 +35,7 @@ export default function CategoryPage() {
 
       <CategoryHeader
         category={state.currentCategory}
-        productCount={state.products.length}
+        productCount={state.totalProducts}
       />
 
       {state.activeVoucher && (

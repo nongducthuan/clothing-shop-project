@@ -63,7 +63,11 @@ export interface ProductVariant {
 export interface Product {
   id: number;
   name: string;
+  name_vi?: string;
+  name_en?: string;
   description?: string;
+  description_vi?: string;
+  description_en?: string;
   category_id?: number;
   category?: Category;
   variants?: ProductVariant[];

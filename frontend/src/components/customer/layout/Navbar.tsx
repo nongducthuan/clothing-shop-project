@@ -162,7 +162,7 @@ const DesktopNav = ({ menuData, navigate }) => {
 };
 
 // Renders the User Icon and Dropdown (Desktop)
-const UserDropdown = ({ user, navigate, onLogout }) => {
+const UserDropdown = ({ user, navigate, onLogout, cartCount }: { user: any; navigate: any; onLogout: any; cartCount: number }) => {
   const { isOpen, open, close, closeImmediately, cancelClose } = useHoverDelay();
   const { t } = useLanguage();
 
@@ -173,15 +173,22 @@ const UserDropdown = ({ user, navigate, onLogout }) => {
 
   return (
     <div className="relative hidden md:block" onMouseEnter={open} onMouseLeave={close}>
-      <i
-        className={`fa-solid fa-user text-xl cursor-pointer transition-colors ${
-          user ? "text-violet-600" : "text-gray-700 dark:text-slate-300 hover:text-violet-600"
-        }`}
-      ></i>
+      <div className="relative cursor-pointer py-1">
+        <i
+          className={`fa-solid fa-user text-xl transition-colors ${
+            user ? "text-violet-600" : "text-gray-700 dark:text-slate-300 hover:text-violet-600"
+          }`}
+        ></i>
+        {cartCount > 0 && (
+          <span className="absolute -top-1 -right-2 bg-red-500 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center border border-white">
+            {cartCount > 99 ? "99+" : cartCount}
+          </span>
+        )}
+      </div>
 
       {isOpen && (
         <div
-          className="absolute right-0 top-10 bg-white dark:bg-slate-800 shadow-lg rounded-xl border border-gray-100 dark:border-slate-700 w-52 py-2 z-50 animate-fadeIn"
+          className="absolute right-0 top-10 bg-white dark:bg-slate-800 shadow-lg rounded-xl border border-gray-100 dark:border-slate-700 w-56 py-2 z-50 animate-fadeIn"
           onMouseEnter={cancelClose}
           onMouseLeave={close}
         >
@@ -190,6 +197,7 @@ const UserDropdown = ({ user, navigate, onLogout }) => {
               <div className="px-4 py-3 border-b border-gray-100 dark:border-slate-700 font-bold text-gray-800 dark:text-slate-100 truncate">
                 {user.name}
               </div>
+
               {user.role === "admin" && (
                 <div
                   className="px-4 py-2.5 hover:bg-violet-50 dark:hover:bg-slate-700 hover:text-violet-700 dark:hover:text-violet-400 font-medium text-gray-700 dark:text-slate-300 cursor-pointer transition-colors flex items-center"
@@ -198,24 +206,51 @@ const UserDropdown = ({ user, navigate, onLogout }) => {
                   <i className="fa-solid fa-screwdriver-wrench mr-2 w-4 text-center"></i> {t("nav.dashboard", "Dashboard")}
                 </div>
               )}
+
               <div
                 className="px-4 py-2.5 hover:bg-violet-50 dark:hover:bg-slate-700 hover:text-violet-700 dark:hover:text-violet-400 font-medium text-gray-700 dark:text-slate-300 cursor-pointer transition-colors flex items-center"
                 onClick={() => handleItemClick(() => navigate("/profile"))}
               >
                 <i className="fa-solid fa-user-circle mr-2 w-4 text-center"></i> {t("nav.profile", "Profile")}
               </div>
+
               <div
                 className="px-4 py-2.5 hover:bg-violet-50 dark:hover:bg-slate-700 hover:text-violet-700 dark:hover:text-violet-400 font-medium text-gray-700 dark:text-slate-300 cursor-pointer transition-colors flex items-center"
                 onClick={() => handleItemClick(() => navigate("/profile?tab=orders"))}
               >
                 <i className="fa-solid fa-box-archive mr-2 w-4 text-center"></i> {t("nav.my_orders", "My Orders")}
               </div>
+
+              <div
+                className="px-4 py-2.5 hover:bg-violet-50 dark:hover:bg-slate-700 hover:text-violet-700 dark:hover:text-violet-400 font-medium text-gray-700 dark:text-slate-300 cursor-pointer transition-colors flex items-center justify-between"
+                onClick={() => handleItemClick(() => navigate("/search"))}
+              >
+                <div className="flex items-center">
+                  <i className="fa-solid fa-magnifying-glass mr-2 w-4 text-center"></i> {t("nav.search", "Tìm kiếm")}
+                </div>
+              </div>
+
+              <div
+                className="px-4 py-2.5 hover:bg-violet-50 dark:hover:bg-slate-700 hover:text-violet-700 dark:hover:text-violet-400 font-medium text-gray-700 dark:text-slate-300 cursor-pointer transition-colors flex items-center justify-between"
+                onClick={() => handleItemClick(() => navigate("/cart"))}
+              >
+                <div className="flex items-center">
+                  <i className="fa-solid fa-cart-shopping mr-2 w-4 text-center"></i> {t("nav.cart", "Giỏ hàng")}
+                </div>
+                {cartCount > 0 && (
+                  <span className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                    {cartCount > 99 ? "99+" : cartCount}
+                  </span>
+                )}
+              </div>
+
               <div
                 className="px-4 py-2.5 hover:bg-violet-50 dark:hover:bg-slate-700 hover:text-violet-700 dark:hover:text-violet-400 font-medium text-gray-700 dark:text-slate-300 cursor-pointer transition-colors flex items-center"
                 onClick={() => handleItemClick(() => navigate("/sales-policy"))}
               >
                 <i className="fa-solid fa-shield-halved mr-2 w-4 text-center"></i> {t("nav.sales_policy", "Sales Policy")}
               </div>
+              <div className="border-t border-gray-100 dark:border-slate-700 my-1"></div>
               <div
                 className="px-4 py-2.5 hover:bg-red-50 dark:hover:bg-red-900/30 text-red-600 font-medium cursor-pointer transition-colors flex items-center"
                 onClick={() => handleItemClick(onLogout)}
@@ -225,6 +260,29 @@ const UserDropdown = ({ user, navigate, onLogout }) => {
             </>
           ) : (
             <>
+              <div
+                className="px-4 py-2.5 hover:bg-violet-50 dark:hover:bg-slate-700 hover:text-violet-700 dark:hover:text-violet-400 font-medium text-gray-700 dark:text-slate-300 cursor-pointer transition-colors flex items-center justify-between"
+                onClick={() => handleItemClick(() => navigate("/search"))}
+              >
+                <div className="flex items-center">
+                  <i className="fa-solid fa-magnifying-glass mr-2 w-4 text-center"></i> {t("nav.search", "Tìm kiếm")}
+                </div>
+              </div>
+
+              <div
+                className="px-4 py-2.5 hover:bg-violet-50 dark:hover:bg-slate-700 hover:text-violet-700 dark:hover:text-violet-400 font-medium text-gray-700 dark:text-slate-300 cursor-pointer transition-colors flex items-center justify-between"
+                onClick={() => handleItemClick(() => navigate("/cart"))}
+              >
+                <div className="flex items-center">
+                  <i className="fa-solid fa-cart-shopping mr-2 w-4 text-center"></i> {t("nav.cart", "Giỏ hàng")}
+                </div>
+                {cartCount > 0 && (
+                  <span className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                    {cartCount > 99 ? "99+" : cartCount}
+                  </span>
+                )}
+              </div>
+
               <div
                 className="px-4 py-2.5 hover:bg-violet-50 dark:hover:bg-slate-700 hover:text-violet-700 dark:hover:text-violet-400 font-medium text-gray-700 dark:text-slate-300 cursor-pointer transition-colors flex items-center"
                 onClick={() => handleItemClick(() => navigate("/sales-policy"))}
@@ -259,7 +317,7 @@ const UserDropdown = ({ user, navigate, onLogout }) => {
 };
 
 // Renders the Mobile Drawer (Hidden on Desktop)
-const MobileMenu = ({ isOpen, onClose, user, menuData, navigate, onLogout }) => {
+const MobileMenu = ({ isOpen, onClose, user, menuData, navigate, onLogout, cartCount }: { isOpen: boolean; onClose: () => void; user: any; menuData: any; navigate: any; onLogout: () => void; cartCount: number }) => {
   const [expandedGender, setExpandedGender] = useState(null);
   const { t } = useLanguage();
   const { getLocalizedText } = useLanguage();
@@ -333,13 +391,38 @@ const MobileMenu = ({ isOpen, onClose, user, menuData, navigate, onLogout }) => 
           {/* Essential Quick Links (Mobile accessible!) */}
           <div className="grid grid-cols-2 gap-2.5 mb-3.5">
             <button
-              onClick={() => handleNav("/sales-policy")}
+              onClick={() => handleNav("/search")}
               className="flex items-center gap-2 px-2.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl text-slate-700 dark:text-slate-300 font-semibold text-xs hover:bg-violet-50 dark:hover:bg-violet-900/20 hover:text-violet-700 transition-all text-left"
             >
               <div className="w-7 h-7 rounded-lg bg-violet-100 dark:bg-violet-900/40 text-violet-600 dark:text-violet-400 flex items-center justify-center shrink-0">
+                <i className="fa-solid fa-magnifying-glass text-xs"></i>
+              </div>
+              <span className="min-w-0 flex-1 text-center leading-tight truncate">{t("nav.search", "Tìm kiếm")}</span>
+            </button>
+
+            <button
+              onClick={() => handleNav("/cart")}
+              className="flex items-center gap-2 px-2.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl text-slate-700 dark:text-slate-300 font-semibold text-xs hover:bg-violet-50 dark:hover:bg-violet-900/20 hover:text-violet-700 transition-all text-left relative"
+            >
+              <div className="w-7 h-7 rounded-lg bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 relative">
+                <i className="fa-solid fa-cart-shopping text-xs"></i>
+                {cartCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center border border-white">
+                    {cartCount > 99 ? "99+" : cartCount}
+                  </span>
+                )}
+              </div>
+              <span className="min-w-0 flex-1 text-center leading-tight truncate">{t("nav.cart", "Giỏ hàng")}</span>
+            </button>
+
+            <button
+              onClick={() => handleNav("/sales-policy")}
+              className="flex items-center gap-2 px-2.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl text-slate-700 dark:text-slate-300 font-semibold text-xs hover:bg-violet-50 dark:hover:bg-violet-900/20 hover:text-violet-700 transition-all text-left"
+            >
+              <div className="w-7 h-7 rounded-lg bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
                 <i className="fa-solid fa-shield-halved text-xs"></i>
               </div>
-              <span className="min-w-0 flex-1 text-center leading-tight">{t("nav.sales_policy", "Sales Policy")}</span>
+              <span className="min-w-0 flex-1 text-center leading-tight truncate">{t("nav.sales_policy", "Sales Policy")}</span>
             </button>
 
             {user ? (
@@ -350,7 +433,7 @@ const MobileMenu = ({ isOpen, onClose, user, menuData, navigate, onLogout }) => 
                 <div className="w-7 h-7 rounded-lg bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
                   <i className="fa-solid fa-box-archive text-xs"></i>
                 </div>
-                <span className="min-w-0 flex-1 text-center leading-tight">{t("nav.my_orders", "My Orders")}</span>
+                <span className="min-w-0 flex-1 text-center leading-tight truncate">{t("nav.my_orders", "My Orders")}</span>
               </button>
             ) : (
               <button
@@ -360,7 +443,7 @@ const MobileMenu = ({ isOpen, onClose, user, menuData, navigate, onLogout }) => 
                 <div className="w-7 h-7 rounded-lg bg-sky-100 dark:bg-sky-900/40 text-sky-600 dark:text-sky-400 flex items-center justify-center shrink-0">
                   <i className="fa-solid fa-truck-fast text-xs"></i>
                 </div>
-                <span className="min-w-0 flex-1 text-center leading-tight">{t("nav.track_order", "Track Order")}</span>
+                <span className="min-w-0 flex-1 text-center leading-tight truncate">{t("nav.track_order", "Track Order")}</span>
               </button>
             )}
           </div>
@@ -451,6 +534,8 @@ export default function Navbar() {
   const menuData = useCategoryData();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+  const cartCount = cart.reduce((total, item) => total + item.quantity, 0);
+
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
@@ -498,26 +583,8 @@ export default function Navbar() {
               {isDark ? <Sun size={18} className="text-amber-400 sm:w-5 sm:h-5" /> : <Moon size={18} className="text-slate-700 sm:w-5 sm:h-5" />}
             </button>
 
-            {/* Search Icon */}
-            <div className="p-1 sm:p-1.5 cursor-pointer" onClick={() => navigate("/search")}>
-              <i className="fa-solid fa-magnifying-glass text-lg sm:text-xl text-gray-600 dark:text-slate-300 hover:text-violet-600 transition-colors"></i>
-            </div>
-
-            {/* Cart Icon */}
-            <div
-              className="relative cursor-pointer p-1 sm:p-1.5"
-              onClick={() => navigate("/cart")}
-            >
-              <i className="fa-solid fa-cart-shopping text-lg sm:text-xl text-gray-600 dark:text-slate-300 hover:text-violet-600 transition-colors"></i>
-              {cart.reduce((total, item) => total + item.quantity, 0) > 0 && (
-                <span className="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center border border-white">
-                  {cart.reduce((total, item) => total + item.quantity, 0) > 99 ? "99+" : cart.reduce((total, item) => total + item.quantity, 0)}
-                </span>
-              )}
-            </div>
-
             {/* Desktop User Dropdown */}
-            <UserDropdown user={user} navigate={navigate} onLogout={handleLogout} />
+            <UserDropdown user={user} navigate={navigate} onLogout={handleLogout} cartCount={cartCount} />
 
             {/* Mobile Hamburger Button */}
             <button
@@ -542,6 +609,7 @@ export default function Navbar() {
         menuData={menuData}
         navigate={navigate}
         onLogout={handleLogout}
+        cartCount={cartCount}
       />
     </>
   );

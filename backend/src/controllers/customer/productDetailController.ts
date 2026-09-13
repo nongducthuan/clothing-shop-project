@@ -66,6 +66,7 @@ export const getProductDetail = async (req: Request, res: Response): Promise<voi
       name: product.name,
       name_vi: product.name_vi,
       name_en: product.name_en,
+      description: product.description,
       description_vi: product.description_vi,
       description_en: product.description_en,
       price: product.price,

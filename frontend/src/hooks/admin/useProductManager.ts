@@ -148,13 +148,18 @@ export default function useProductManager() {
       return;
     }
 
+    const descVi = (form.description_vi || "").trim();
+    const descEn = (form.description_en || "").trim();
+    const baseDesc = descVi || descEn;
+
     const payload = {
       ...form,
       name: cleanName,
       name_vi: (form.name_vi || "").trim() || cleanName,
       name_en: (form.name_en || "").trim() || cleanName,
-      description_vi: (form.description_vi || "").trim(),
-      description_en: (form.description_en || "").trim(),
+      description: baseDesc,
+      description_vi: descVi || baseDesc,
+      description_en: descEn || baseDesc,
       import_price: form.import_price ? +form.import_price : 0,
       price: +form.price
     };
@@ -178,8 +183,8 @@ export default function useProductManager() {
       name: p.name || "",
       name_vi: p.name_vi || p.name || "",
       name_en: p.name_en || p.name || "",
-      description_vi: p.description_vi || "",
-      description_en: p.description_en || "",
+      description_vi: p.description_vi || p.description || "",
+      description_en: p.description_en || p.description || "",
       import_price: p.import_price || "",
       price: p.price,
       image_url: p.image_url || "",

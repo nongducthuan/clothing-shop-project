@@ -20,6 +20,7 @@ export function useCategoryPage() {
   const [currentCategory, setCurrentCategory] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [totalProducts, setTotalProducts] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -50,6 +51,7 @@ export function useCategoryPage() {
       const safeProducts = Array.isArray(productsResponse.data) ? productsResponse.data : productsResponse.data?.data || [];
       setProducts(safeProducts);
       setTotalPages(productsResponse.data?.totalPages || 1);
+      setTotalProducts(productsResponse.data?.totalProducts || safeProducts.length);
 
       // Process Categories
       const categoryList = Array.isArray(categoriesResponse.data) ? categoriesResponse.data : categoriesResponse.data?.data || [];
@@ -102,6 +104,7 @@ export function useCategoryPage() {
       currentCategory,
       currentPage,
       totalPages,
+      totalProducts,
       isLoading,
       error,
       activeVoucher,

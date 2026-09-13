@@ -36,18 +36,20 @@ export const getProducts = async (req: Request, res: Response): Promise<void> =>
 
 export const addProduct = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { name, name_vi, name_en, description_vi, description_en, price, import_price, image_url, gender, category_id } = req.body;
+        const { name, name_vi, name_en, description, description_vi, description_en, price, import_price, image_url, gender, category_id } = req.body;
         
         // name is the canonical display name (NOT NULL). Falls back to either localized name.
         const baseName = name || name_vi || name_en;
+        const baseDescription = description || description_vi || description_en || '';
         
         const product = await prisma.product.create({
             data: {
                 name: baseName,
                 name_vi: name_vi || baseName || null,
                 name_en: name_en || baseName || null,
-                description_vi: description_vi || null,
-                description_en: description_en || null,
+                description: baseDescription,
+                description_vi: description_vi || baseDescription || null,
+                description_en: description_en || baseDescription || null,
                 price,
                 import_price: import_price || 0,
                 image_url: image_url || null,
@@ -66,10 +68,11 @@ export const addProduct = async (req: Request, res: Response): Promise<void> => 
 export const editProduct = async (req: Request, res: Response): Promise<void> => {
     try {
         const { id } = req.params;
-        const { name, name_vi, name_en, description_vi, description_en, price, import_price, image_url, gender, category_id } = req.body;
+        const { name, name_vi, name_en, description, description_vi, description_en, price, import_price, image_url, gender, category_id } = req.body;
         
-        // Only touch names that were provided; derive canonical name if missing.
+        // Only touch names/descriptions that were provided; derive canonical name/description if missing.
         const baseName = name || name_vi || name_en;
+        const baseDescription = description !== undefined ? description : (description_vi || description_en);
         
         const product = await prisma.product.update({
             where: { id: Number(id) },
@@ -77,8 +80,9 @@ export const editProduct = async (req: Request, res: Response): Promise<void> =>
                 name: baseName || undefined,
                 name_vi: name_vi !== undefined ? (name_vi || baseName || null) : undefined,
                 name_en: name_en !== undefined ? (name_en || baseName || null) : undefined,
-                description_vi: description_vi !== undefined ? (description_vi || null) : undefined,
-                description_en: description_en !== undefined ? (description_en || null) : undefined,
+                description: baseDescription !== undefined ? (baseDescription || '') : undefined,
+                description_vi: description_vi !== undefined ? (description_vi || baseDescription || null) : undefined,
+                description_en: description_en !== undefined ? (description_en || baseDescription || null) : undefined,
                 price,
                 import_price: import_price || 0,
                 image_url: image_url || null,
