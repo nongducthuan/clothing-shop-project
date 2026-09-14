@@ -13,7 +13,7 @@ export default function CategoryForm({
   recommendNames,
   categoryImages,
 }) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
 
   return (
     <div className="flex flex-col h-full">
@@ -59,16 +59,20 @@ export default function CategoryForm({
                 {t("admin.suggested_categories")}
               </p>
               <div className="flex flex-wrap gap-2">
-                {recommendNames.map((item, idx) => (
-                  <button
-                    key={idx}
-                    type="button"
-                    onClick={() => setForm((prev) => ({ ...prev, name: item.name, name_vi: item.name, name_en: item.name }))}
-                    className="px-4 py-1.5 bg-white dark:bg-slate-700 border border-violet-100 dark:border-violet-800 rounded-full shadow-sm hover:bg-violet-600 hover:text-white dark:hover:bg-violet-600 text-violet-700 dark:text-violet-300 text-sm font-semibold transition-colors duration-300"
-                  >
-                    {item.name}
-                  </button>
-                ))}
+                {recommendNames.map((item, idx) => {
+                  const displayName = language === "vi" ? (item.name_vi || item.name) : item.name;
+                  return (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => setForm((prev) => ({ ...prev, name: item.name, name_vi: item.name_vi || item.name, name_en: item.name }))}
+                      title={item.name_vi ? `${item.name_vi} (${item.name})` : item.name}
+                      className="px-4 py-1.5 bg-white dark:bg-slate-700 border border-violet-100 dark:border-violet-800 rounded-full shadow-sm hover:bg-violet-600 hover:text-white dark:hover:bg-violet-600 text-violet-700 dark:text-violet-300 text-sm font-semibold transition-colors duration-300"
+                    >
+                      {displayName}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           )}
