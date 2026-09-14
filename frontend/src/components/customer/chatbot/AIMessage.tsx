@@ -1,6 +1,8 @@
 import React from "react";
+import { useLanguage } from "../../../context/LanguageContext";
 
 export default function AIMessage({ role, content }) {
+  const { t } = useLanguage();
   const isUser = role === "user";
 
   return (
@@ -13,7 +15,7 @@ export default function AIMessage({ role, content }) {
         }`}
       >
         <span className="block text-[11px] font-medium uppercase tracking-wide text-white/60">
-          {isUser ? "You" : "AI"}
+          {isUser ? t("chat.you", "You") : "AI"}
         </span>
         <p className="mt-1 whitespace-pre-wrap">{content}</p>
       </div>

@@ -16,6 +16,18 @@ export const translations = {
     'nav.admin': 'Quản trị',
     'nav.search_placeholder': 'Tìm kiếm sản phẩm...',
     'nav.order_lookup': 'Tra cứu đơn hàng',
+    'nav.view_profile_orders': 'Xem hồ sơ & đơn hàng',
+
+    // Chat AI
+    'chat.title': 'Trợ lý AI',
+    'chat.delete_chat': 'Xóa trò chuyện',
+    'chat.ai_responding': 'AI đang trả lời...',
+    'chat.welcome_msg': 'Xin chào! Bạn có thể hỏi tôi bất cứ điều gì.',
+    'chat.placeholder': 'Hỏi AI...',
+    'chat.send': 'Gửi',
+    'chat.you': 'Bạn',
+    'chat.close': 'Đóng AI',
+    'chat.open': 'Mở AI',
 
     // Auth - Login
     'auth.login_title': 'Chào mừng trở lại',
@@ -867,6 +879,18 @@ export const translations = {
     'nav.admin': 'Admin Dashboard',
     'nav.search_placeholder': 'Search products...',
     'nav.order_lookup': 'Track Order',
+    'nav.view_profile_orders': 'View profile & orders',
+
+    // Chat AI
+    'chat.title': 'AI Assistance',
+    'chat.delete_chat': 'Delete Chat',
+    'chat.ai_responding': 'AI responding...',
+    'chat.welcome_msg': 'Hi! Feel free to ask me anything.',
+    'chat.placeholder': 'Ask AI...',
+    'chat.send': 'Send',
+    'chat.you': 'You',
+    'chat.close': 'Close AI',
+    'chat.open': 'Open AI',
 
     // Auth - Login
     'auth.login_title': 'Welcome back',

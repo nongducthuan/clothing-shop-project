@@ -31,12 +31,12 @@ export default function GiftItem({ gift, detail, helpers, onSelectVariant }) {
   return (
     <div className="bg-slate-50 dark:bg-slate-700/40 p-4 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center gap-4 relative overflow-hidden group border border-slate-200/60 dark:border-slate-600/60 shadow-sm">
       <div className="w-20 h-24 flex-shrink-0 rounded-xl overflow-hidden bg-white dark:bg-slate-700 shadow-sm border border-slate-100 dark:border-slate-600">
-        <img src={getImageUrl(colorImageUrl)} alt={detail.name} className="w-full h-full object-cover" />
+        <img src={getImageUrl(colorImageUrl)} alt={getLocalizedText(detail, 'name') || detail.name} className="w-full h-full object-cover" />
       </div>
 
       <div className="flex-grow z-10 space-y-2">
         <div className="flex items-center gap-2 flex-wrap">
-          <h4 className="font-medium text-slate-900 dark:text-slate-100 text-sm leading-tight">{detail.name}</h4>
+          <h4 className="font-medium text-slate-900 dark:text-slate-100 text-sm leading-tight">{getLocalizedText(detail, 'name') || detail.name}</h4>
           <span className="inline-flex items-center gap-1 bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-100 dark:border-rose-900/40 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
             <i className="fa-solid fa-gift text-rose-500"></i> {t("cart.free_gift", "Free Gift")} ({gift.promoName})
           </span>

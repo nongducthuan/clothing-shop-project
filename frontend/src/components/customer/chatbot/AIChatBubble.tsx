@@ -1,7 +1,9 @@
 import { useState } from "react";
+import { useLanguage } from "../../../context/LanguageContext";
 import AIChatWindow from "./AIChatWindow";
 
 export default function AIChatBubble() {
+  const { t } = useLanguage();
   const [open, setOpen] = useState(false);
 
   return (
@@ -11,7 +13,7 @@ export default function AIChatBubble() {
       <button
         type="button"
         className="fixed right-5 bottom-5 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-violet-700 to-violet-400 text-white shadow-lg transition-transform duration-150 ease-out hover:-translate-y-0.5 focus:outline-none focus:ring-4 focus:ring-indigo-300"
-        aria-label={open ? "Close AI" : "Open AI"}
+        aria-label={open ? t("chat.close", "Close AI") : t("chat.open", "Open AI")}
         onClick={() => setOpen((prev) => !prev)}
       >
         <span className="text-xl" aria-hidden="true">

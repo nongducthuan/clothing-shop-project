@@ -221,6 +221,8 @@ const UserDropdown = ({ user, navigate, onLogout, cartCount }: { user: any; navi
                 <i className="fa-solid fa-box-archive mr-2 w-4 text-center"></i> {t("nav.my_orders", "My Orders")}
               </div>
 
+              <div className="border-t border-gray-100 dark:border-slate-700 my-1"></div>
+
               <div
                 className="px-4 py-2.5 hover:bg-violet-50 dark:hover:bg-slate-700 hover:text-violet-700 dark:hover:text-violet-400 font-medium text-gray-700 dark:text-slate-300 cursor-pointer transition-colors flex items-center justify-between"
                 onClick={() => handleItemClick(() => navigate("/search"))}
@@ -285,15 +287,16 @@ const UserDropdown = ({ user, navigate, onLogout, cartCount }: { user: any; navi
 
               <div
                 className="px-4 py-2.5 hover:bg-violet-50 dark:hover:bg-slate-700 hover:text-violet-700 dark:hover:text-violet-400 font-medium text-gray-700 dark:text-slate-300 cursor-pointer transition-colors flex items-center"
-                onClick={() => handleItemClick(() => navigate("/sales-policy"))}
-              >
-                <i className="fa-solid fa-shield-halved mr-2 w-4 text-center"></i> {t("nav.sales_policy", "Sales Policy")}
-              </div>
-              <div
-                className="px-4 py-2.5 hover:bg-violet-50 dark:hover:bg-slate-700 hover:text-violet-700 dark:hover:text-violet-400 font-medium text-gray-700 dark:text-slate-300 cursor-pointer transition-colors flex items-center"
                 onClick={() => handleItemClick(() => navigate("/order"))}
               >
                 <i className="fa-solid fa-truck-fast mr-2 w-4 text-center"></i> {t("nav.track_order", "Track Order")}
+              </div>
+
+              <div
+                className="px-4 py-2.5 hover:bg-violet-50 dark:hover:bg-slate-700 hover:text-violet-700 dark:hover:text-violet-400 font-medium text-gray-700 dark:text-slate-300 cursor-pointer transition-colors flex items-center"
+                onClick={() => handleItemClick(() => navigate("/sales-policy"))}
+              >
+                <i className="fa-solid fa-shield-halved mr-2 w-4 text-center"></i> {t("nav.sales_policy", "Sales Policy")}
               </div>
               <div className="border-t border-gray-100 dark:border-slate-700 my-1"></div>
               <div
@@ -366,7 +369,7 @@ const MobileMenu = ({ isOpen, onClose, user, menuData, navigate, onLogout, cartC
                 <div className="flex-1 min-w-0 flex flex-col justify-center">
                   <p className="font-bold text-gray-900 dark:text-slate-100 text-base leading-snug truncate">{user.name}</p>
                   <p className="text-xs text-violet-600 dark:text-violet-400 font-semibold mt-0.5 flex items-center gap-1">
-                    View profile &amp; orders <i className="fa-solid fa-arrow-right text-[10px]"></i>
+                    {t("nav.view_profile_orders", "View profile & orders")} <i className="fa-solid fa-arrow-right text-[10px]"></i>
                   </p>
                 </div>
               </div>

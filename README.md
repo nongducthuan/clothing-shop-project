@@ -132,3 +132,23 @@ Sau khi chạy lệnh `npm run seed`, hệ thống tự động khởi tạo tà
 - **Email**: `admin@shop.com`
 - **Mật khẩu**: `123456`
 - **Quyền (Role)**: `admin`
+
+---
+
+## Tài Khoản Test Thanh Toán (Sandbox)
+
+### 1. MoMo (Test Card - ATM Nội địa)
+
+| Số thẻ | Tên chủ thẻ | Ngày phát hành | OTP |
+| --- | --- | --- | --- |
+| `9704198526191432198` | NGUYEN VAN A | 07/15 | `123456` |
+
+### 2. VNPay (Test Card - NCB Sandbox)
+
+| Tên chủ thẻ | Số thẻ | Hạn ghi trên thẻ | OTP |
+| --- | --- | --- | --- |
+| NGUYEN VAN A | `9704 0000 0000 0018` | 03/07 | OTP |
+
+> Lưu ý: Các thông tin thẻ trên chỉ dùng trong môi trường **Sandbox/Test**, không áp dụng cho giao dịch thật. Nếu MoMo/VNPay cập nhật lại bộ thẻ test, vui lòng tham khảo tài liệu chính thức:
+> MoMo Sandbox: https://developers.momo.vn/v3/vi/docs/payment/onboarding/test-instructions/
+> VNPay Sandbox: https://sandbox.vnpayment.vn/apis/docs/huong-dan-tich-hop/

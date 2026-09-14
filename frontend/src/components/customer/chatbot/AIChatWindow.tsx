@@ -2,10 +2,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useContext } from "react";
 import { X } from "lucide-react";
 import { AIChatContext } from "../../../context/AIChatContext";
+import { useLanguage } from "../../../context/LanguageContext";
 import AIMessage from "./AIMessage";
 
 export default function AIChatWindow({ onClose }) {
   const { messages, sendMessage, isSending, resetChat, error } = useContext(AIChatContext);
+  const { t } = useLanguage();
   const [inputValue, setInputValue] = useState("");
   const messagesEndRef = useRef(null);
 
@@ -28,21 +30,21 @@ export default function AIChatWindow({ onClose }) {
 
   const statusMessage = useMemo(() => {
     if (error) return error;
-    if (isSending) return "AI responding..";
-    if (!hasMessages) return "Hi! Feel free to ask me anything.";
+    if (isSending) return t("chat.ai_responding", "AI responding...");
+    if (!hasMessages) return t("chat.welcome_msg", "Hi! Feel free to ask me anything.");
     return null;
-  }, [error, isSending, hasMessages]);
+  }, [error, isSending, hasMessages, t]);
 
   return (
     <div
       className="fixed right-5 bottom-20 z-50 flex w-[min(420px,calc(100vw-2.5rem))] max-h-[72vh] flex-col overflow-hidden rounded-2xl border border-white/10 bg-slate-950/90 shadow-[0_20px_40px_rgba(0,0,0,0.35)] backdrop-blur-xl"
       role="dialog"
-      aria-label="AI chat"
+      aria-label={t("chat.title", "AI Assistance")}
       aria-modal="true"
     >
       <header className="flex items-start justify-between gap-4 border-b border-white/10 px-4 pt-4 pb-3">
         <div>
-          <strong className="block text-white text-base">AI Assistance</strong>
+          <strong className="block text-white text-base">{t("chat.title", "AI Assistance")}</strong>
         </div>
 
         <div className="flex gap-2">
@@ -51,13 +53,13 @@ export default function AIChatWindow({ onClose }) {
             className="rounded-lg bg-white/80 px-3 py-1 text-xs font-medium text-black shadow-sm transition-colors hover:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400"
             onClick={resetChat}
           >
-            Delete Chat
+            {t("chat.delete_chat", "Delete Chat")}
           </button>
           <button
             type="button"
             className="rounded-lg bg-white/80 p-1.5 text-black shadow-sm transition-colors hover:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400 flex items-center justify-center"
             onClick={onClose}
-            aria-label="Đóng chat"
+            aria-label={t("chat.close", "Close AI")}
           >
             <X size={16} />
           </button>
@@ -80,7 +82,7 @@ export default function AIChatWindow({ onClose }) {
         <textarea
           className="h-10 flex-1 resize-none rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-indigo-400"
           rows={1}
-          placeholder="Ask AI.."
+          placeholder={t("chat.placeholder", "Ask AI...")}
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           disabled={isSending}
@@ -90,7 +92,7 @@ export default function AIChatWindow({ onClose }) {
           className="inline-flex items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-sky-400 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
           disabled={isSending || !inputValue.trim()}
         >
-          Send
+          {t("chat.send", "Send")}
         </button>
       </form>
     </div>
