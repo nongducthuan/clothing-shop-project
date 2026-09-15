@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import bcrypt from 'bcryptjs';
 import { PrismaMariaDb } from '@prisma/adapter-mariadb';
-import { PrismaClient, Gender, UserRole, SizeEnum, InteractionType, ReturnStatus, OrderStatus } from '../src/generated/prisma/client';
+import { PrismaClient, Gender, UserRole, SizeEnum, InteractionType, ReturnStatus, OrderStatus, ApplyScope, PromotionStatus } from '../src/generated/prisma/client';
 
 const adapter = new PrismaMariaDb(process.env.DATABASE_URL!);
 const prisma = new PrismaClient({ adapter });
@@ -10,6 +10,13 @@ function daysAgo(n: number): Date {
   const d = new Date();
   d.setHours(0, 0, 0, 0);
   d.setDate(d.getDate() - n);
+  return d;
+}
+
+function daysFromNow(n: number): Date {
+  const d = new Date();
+  d.setHours(23, 59, 59, 999);
+  d.setDate(d.getDate() + n);
   return d;
 }
 
@@ -32,6 +39,14 @@ async function main() {
   await prisma.returnRequest.deleteMany();
   await prisma.orderItem.deleteMany();
   await prisma.order.deleteMany();
+  await prisma.promotionUsageHistory.deleteMany();
+  await prisma.buyXGetYPromotion.deleteMany();
+  await prisma.productVoucher.deleteMany();
+  await prisma.voucherCategory.deleteMany();
+  await prisma.voucher.deleteMany();
+  await prisma.productSale.deleteMany();
+  await prisma.saleCategory.deleteMany();
+  await prisma.sale.deleteMany();
   await prisma.productSize.deleteMany();
   await prisma.productColor.deleteMany();
   await prisma.product.deleteMany();
@@ -331,43 +346,180 @@ async function main() {
     data: [
       {
         image_url:   '/public/images/banner1.png',
-        title:       'Welcome to Clothing Shop',
+        title:       'WELCOME TO CLOTHING SHOP',
         title_vi:    'Chào Mừng Đến Với Clothing Shop',
         title_en:    'Welcome to Clothing Shop',
-        subtitle:    'The latest collection is here – Up to 50% off today!',
-        subtitle_vi: 'Bộ sưu tập mới nhất đã ra mắt – Giảm đến 50% hôm nay!',
-        subtitle_en: 'The latest collection is here – Up to 50% off today!',
+        subtitle:    'Nhập mã WELCOME10 giảm ngay 10% cho đơn hàng đầu tiên từ 300k!',
+        subtitle_vi: 'Nhập mã WELCOME10 giảm ngay 10% cho đơn hàng đầu tiên từ 300k!',
+        subtitle_en: 'Use code WELCOME10 for 10% off your first order from 300k!',
       },
       {
         image_url:   '/public/images/banner2.png',
-        title:       'New Style Every Day',
-        title_vi:    'Phong Cách Mới Mỗi Ngày',
-        title_en:    'New Style Every Day',
-        subtitle:    'Discover the hottest trending clothing models',
-        subtitle_vi: 'Khám phá những mẫu quần áo đang hot nhất hiện nay',
-        subtitle_en: 'Discover the hottest trending clothing models',
+        title:       'SIÊU SALE MÙA HÈ 2025',
+        title_vi:    'Đại Tiệc Sale Mùa Hè 2025',
+        title_en:    'Summer Grand Sale 2025',
+        subtitle:    'Giảm giá lên đến 20% cho toàn bộ các sản phẩm Áo & Quần!',
+        subtitle_vi: 'Giảm giá lên đến 20% cho toàn bộ các sản phẩm Áo & Quần!',
+        subtitle_en: 'Up to 20% off on all Shirts, T-shirts, Pants & Shorts!',
       },
       {
         image_url:   '/public/images/banner3.png',
-        title:       'New Arrivals Every Week',
-        title_vi:    'Hàng Mới Về Mỗi Tuần',
-        title_en:    'New Arrivals Every Week',
-        subtitle:    "Continuously updated – don't miss the latest trends",
-        subtitle_vi: 'Liên tục cập nhật – đừng bỏ lỡ xu hướng mới nhất',
-        subtitle_en: "Continuously updated – don't miss the latest trends",
+        title:       'MUA 2 TẶNG 1 ĐẶC BIỆT',
+        title_vi:    'Ưu Đãi Mua 2 Áo Thun Tặng 1 Quần Short',
+        title_en:    'Buy 2 T-shirts Get 1 Short Free',
+        subtitle:    'Thêm 2 Áo Thun bất kỳ vào giỏ hàng để nhận ngay 1 Quần Short cao cấp!',
+        subtitle_vi: 'Thêm 2 Áo Thun bất kỳ vào giỏ hàng để nhận ngay 1 Quần Short cao cấp!',
+        subtitle_en: 'Buy any 2 T-shirts and receive 1 Premium Short for free!',
       },
       {
         image_url:   '/public/images/banner4.png',
-        title:       'Special Weekend Offer',
-        title_vi:    'Ưu Đãi Cuối Tuần Đặc Biệt',
-        title_en:    'Special Weekend Offer',
-        subtitle:    'Get an extra 20% off your first order – Shop now!',
-        subtitle_vi: 'Giảm thêm 20% cho đơn hàng đầu tiên – Mua ngay!',
-        subtitle_en: 'Get an extra 20% off your first order – Shop now!',
+        title:       'ĐẶC QUYỀN HỘI VIÊN VIP',
+        title_vi:    'Đặc Quyền Nâng Hạng Hội Viên VIP',
+        title_en:    'VIP Membership Exclusive Rewards',
+        subtitle:    'Tích điểm nâng hạng Bạc/Vàng/Kim Cương – Giảm thêm lên đến 20%!',
+        subtitle_vi: 'Tích điểm nâng hạng Bạc/Vàng/Kim Cương – Giảm thêm lên đến 20% khi thanh toán!',
+        subtitle_en: 'Upgrade to Silver/Gold/Diamond for up to 20% extra discount!',
       },
     ],
   });
   console.log('✔ Banners');
+
+  // ============================================================
+  // 7.1 SALES
+  // ============================================================
+  await prisma.sale.create({
+    data: {
+      name: 'Summer Sale 2025',
+      name_vi: 'Đại Tiệc Sale Mùa Hè 2025',
+      name_en: 'Summer Grand Sale 2025',
+      discount_percent: 20,
+      apply_scope: ApplyScope.all,
+      start_date: daysAgo(15),
+      end_date: daysFromNow(45),
+      status: true,
+    },
+  });
+
+  await prisma.sale.create({
+    data: {
+      name: 'Shirt & Tee Flash Sale',
+      name_vi: 'Flash Sale Áo Sơ Mi & Áo Thun',
+      name_en: 'Shirt & Tee Flash Sale',
+      discount_percent: 15,
+      apply_scope: ApplyScope.category,
+      start_date: daysAgo(5),
+      end_date: daysFromNow(25),
+      status: true,
+      sale_categories: {
+        create: [
+          { category_id: 1 }, // Áo Sơ Mi Nam
+          { category_id: 4 }, // Áo Sơ Mi Nữ
+          { category_id: 5 }, // Áo Thun Nữ
+          { category_id: 7 }, // Áo Thun Unisex
+        ],
+      },
+    },
+  });
+  console.log('✔ Sales');
+
+  // ============================================================
+  // 7.2 VOUCHERS
+  // ============================================================
+  await prisma.voucher.createMany({
+    data: [
+      {
+        code: 'WELCOME10',
+        description_vi: 'Giảm 10% tối đa 50.000đ cho đơn hàng đầu tiên từ 300.000đ',
+        description_en: '10% off up to 50k for your first order from 300k',
+        discount_percent: 10,
+        max_discount_amount: 50000,
+        min_order_value: 300000,
+        usage_limit: 100,
+        used_count: 15,
+        start_date: daysAgo(30),
+        end_date: daysFromNow(60),
+        status: true,
+        apply_scope: ApplyScope.all,
+      },
+      {
+        code: 'SUMMER20',
+        description_vi: 'Giảm 20% tối đa 100.000đ cho đơn hàng từ 500.000đ',
+        description_en: '20% off up to 100k for orders from 500k',
+        discount_percent: 20,
+        max_discount_amount: 100000,
+        min_order_value: 500000,
+        usage_limit: 50,
+        used_count: 8,
+        start_date: daysAgo(10),
+        end_date: daysFromNow(30),
+        status: true,
+        apply_scope: ApplyScope.all,
+      },
+      {
+        code: 'FREESHIP50',
+        description_vi: 'Giảm 50.000đ trực tiếp cho đơn hàng từ 200.000đ',
+        description_en: 'Direct 50k discount for orders from 200k',
+        discount_percent: 15,
+        max_discount_amount: 50000,
+        min_order_value: 200000,
+        usage_limit: 200,
+        used_count: 42,
+        start_date: daysAgo(45),
+        end_date: daysFromNow(45),
+        status: true,
+        apply_scope: ApplyScope.all,
+      },
+    ],
+  });
+  console.log('✔ Vouchers');
+
+  // ============================================================
+  // 7.3 PROMOTIONS (BUY X GET Y)
+  // ============================================================
+  await prisma.buyXGetYPromotion.create({
+    data: {
+      name: 'Buy 2 T-Shirts Get 1 Short Free',
+      name_vi: 'Mua 2 Áo Thun Unisex Tặng 1 Quần Short',
+      name_en: 'Buy 2 Unisex T-shirts Get 1 Short Free',
+      description_vi: 'Mua 2 Áo Thun Unisex Phố Thị (ID 25) nhận ngay 1 Quần Short Nỉ Da Cá (ID 33) miễn phí',
+      description_en: 'Buy 2 Heavyweight Streetwear Unisex Tees (ID 25) get 1 French Terry Sweat Short (ID 33) free',
+      buy_product_id: 25,
+      buy_quantity: 2,
+      gift_product_id: 33,
+      gift_quantity: 1,
+      start_date: daysAgo(15),
+      end_date: daysFromNow(45),
+      max_gift_per_order: 2,
+      total_gift_limit: 50,
+      priority: 1,
+      is_stackable: true,
+      status: PromotionStatus.active,
+      is_active: true,
+    },
+  });
+
+  await prisma.buyXGetYPromotion.create({
+    data: {
+      name: 'Buy 1 Oxford Shirt Get 1 Chino Pants Free',
+      name_vi: 'Mua 1 Áo Sơ Mi Oxford Tặng 1 Quần Chino Nam',
+      name_en: 'Buy 1 Oxford Shirt Get 1 Chino Pants Free',
+      description_vi: 'Mua 1 Áo Sơ Mi Cotton Oxford (ID 1) nhận ngay 1 Quần Chino Nam (ID 5) miễn phí',
+      description_en: 'Buy 1 Premium Oxford Cotton Shirt (ID 1) get 1 Slim Tapered Chino Pants (ID 5) free',
+      buy_product_id: 1,
+      buy_quantity: 1,
+      gift_product_id: 5,
+      gift_quantity: 1,
+      start_date: daysAgo(10),
+      end_date: daysFromNow(30),
+      max_gift_per_order: 1,
+      total_gift_limit: 20,
+      priority: 2,
+      is_stackable: false,
+      status: PromotionStatus.active,
+      is_active: true,
+    },
+  });
+  console.log('✔ BuyXGetY Promotions');
 
   // ============================================================
   // 8. ORDERS & ORDER ITEMS

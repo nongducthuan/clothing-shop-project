@@ -84,6 +84,17 @@ export default function ProductList({
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {products.map((p) => {
               const genderColor = p.gender === "male" ? "bg-blue-500" : p.gender === "female" ? "bg-pink-500" : "bg-purple-500";
+              const sellingPrice = Number(p.price || 0);
+              const importPrice = Number(p.import_price || 0);
+              const profit = sellingPrice - importPrice;
+              const marginPercent = sellingPrice > 0 ? (profit / sellingPrice) * 100 : 0;
+
+              let profitBadgeStyle = "bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800/60";
+              if (profit <= 0) {
+                profitBadgeStyle = "bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-800/60";
+              } else if (marginPercent < 20) {
+                profitBadgeStyle = "bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-800/60";
+              }
 
               return (
                 <div
@@ -121,18 +132,24 @@ export default function ProductList({
                     {/* Action Footer: Căn ngang Giá bên trái, Nút bên phải */}
                     <div className="mt-auto flex flex-wrap gap-2 justify-between items-end pt-3 border-t border-slate-200/80 dark:border-slate-600/60">
 
-                      {/* Section 1: Thông tin Giá & Stock */}
+                      {/* Section 1: Thông tin Giá, Giá nhập, Lợi nhuận & Stock */}
                       <div className="flex flex-col gap-1 flex-1 min-w-0">
                         <div className="flex items-baseline gap-1 text-red-600 dark:text-rose-400 leading-none">
                           <span className="font-black text-lg">
-                            {Number(p.price).toLocaleString()}đ
+                            {sellingPrice.toLocaleString()}đ
                           </span>
                         </div>
                         <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-1">
                           <div className="flex items-center gap-1 text-[10px] text-slate-500 dark:text-slate-400">
                             <span className="font-medium opacity-70">{t("admin.import_price")}:</span>
-                            <span className="font-semibold">{Number(p.import_price || 0).toLocaleString()}đ</span>
+                            <span className="font-semibold">{importPrice.toLocaleString()}đ</span>
                           </div>
+                        </div>
+                        <div className="flex items-center gap-1 text-[10px] my-0.5">
+                          <span className="text-slate-500 dark:text-slate-400 font-medium opacity-70">{t("admin.profit")}:</span>
+                          <span className={`px-1.5 py-0.5 rounded-md text-[10px] font-bold border ${profitBadgeStyle}`}>
+                            {profit > 0 ? `+${profit.toLocaleString()}đ` : `${profit.toLocaleString()}đ`} ({marginPercent.toFixed(0)}%)
+                          </span>
                         </div>
                         <div className="text-[9px] font-bold text-slate-400 dark:text-slate-400 uppercase tracking-tighter">
                           {t("admin.stock_quantity")}: {p.total_stock || 0}

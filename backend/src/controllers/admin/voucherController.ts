@@ -177,13 +177,15 @@ export const getVoucherDetails = async (req: Request, res: Response): Promise<vo
         details = voucher.product_vouchers.map(pv => ({
             name: pv.product.name,
             name_vi: pv.product.name_vi,
-            name_en: pv.product.name_en
+            name_en: pv.product.name_en,
+            gender: pv.product.gender
         }));
     } else if (voucher.apply_scope === 'category') {
         details = voucher.voucher_categories.map(vc => ({
             name: vc.category.name,
             name_vi: vc.category.name_vi,
-            name_en: vc.category.name_en
+            name_en: vc.category.name_en,
+            gender: vc.category.gender
         }));
     }
 

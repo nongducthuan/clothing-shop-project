@@ -31,11 +31,13 @@ export default function VoucherDetailModal({ detailModal, onClose }) {
                 </div>
                 {item.gender && (
                   <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${
-                    item.gender === 'Men' || item.gender === 'Male' ? 'bg-blue-100 dark:bg-blue-950/40 text-blue-600 dark:text-blue-300' :
-                    item.gender === 'Women' || item.gender === 'Female' ? 'bg-pink-100 dark:bg-pink-950/40 text-pink-600 dark:text-pink-300' :
-                    'bg-gray-100 dark:bg-slate-600 text-gray-600 dark:text-slate-300'
+                    (item.gender || '').toLowerCase() === 'men' || (item.gender || '').toLowerCase() === 'male' ? 'bg-blue-100 dark:bg-blue-950/40 text-blue-600 dark:text-blue-300' :
+                    (item.gender || '').toLowerCase() === 'women' || (item.gender || '').toLowerCase() === 'female' ? 'bg-pink-100 dark:bg-pink-950/40 text-pink-600 dark:text-pink-300' :
+                    'bg-emerald-100 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-300'
                   }`}>
-                    {item.gender}
+                    {(item.gender || '').toLowerCase() === 'male' || (item.gender || '').toLowerCase() === 'men' ? t("gender.male", "Nam") :
+                     (item.gender || '').toLowerCase() === 'female' || (item.gender || '').toLowerCase() === 'women' ? t("gender.female", "Nữ") :
+                     t("gender.unisex", "Unisex")}
                   </span>
                 )}
               </div>

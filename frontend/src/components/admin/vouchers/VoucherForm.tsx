@@ -1,5 +1,6 @@
 import React, { useRef } from "react";
 import { useLanguage } from "../../../context/LanguageContext";
+import { formatDisplayDateTime } from "../../../utils/dateUtils";
 
 export default function VoucherForm({ formData, setFormData, onSubmit, editingId, onCancel }) {
   const { t } = useLanguage();
@@ -102,38 +103,46 @@ export default function VoucherForm({ formData, setFormData, onSubmit, editingId
 
             {/* Start Date */}
             <div
-              className="p-3 bg-slate-50 dark:bg-slate-700/60 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-2xl cursor-pointer transition-colors border border-slate-200/80 dark:border-slate-600 focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-500"
+              className="relative p-3 bg-slate-50 dark:bg-slate-700/60 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-2xl cursor-pointer transition-colors border border-slate-200/80 dark:border-slate-600 focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-500"
               onClick={() => startDateRef.current?.showPicker()}
             >
-              <label className="text-[10px] font-bold text-slate-400 dark:text-slate-400 uppercase block mb-1 cursor-pointer">{t("admin.start_label")}</label>
-              <div className="flex items-center justify-between">
-                <input
-                  ref={startDateRef}
-                  type="datetime-local"
-                  className="w-full bg-transparent border-none p-0 text-xs font-semibold text-slate-700 dark:text-slate-200 outline-none cursor-pointer"
-                  value={formData.start_date}
-                  onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
-                  required
-                />
+              <label className="text-[10px] font-bold text-slate-400 dark:text-slate-400 uppercase block mb-1 cursor-pointer pointer-events-none">{t("admin.start_label")}</label>
+              <div className="flex items-center justify-between pointer-events-none">
+                <span className={`text-xs font-semibold ${formData.start_date ? 'text-slate-700 dark:text-slate-200' : 'text-slate-400 dark:text-slate-400'}`}>
+                  {formatDisplayDateTime(formData.start_date)}
+                </span>
+                <i className="fa-regular fa-calendar text-slate-400 text-xs"></i>
               </div>
+              <input
+                ref={startDateRef}
+                type="datetime-local"
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                value={formData.start_date}
+                onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
+                required
+              />
             </div>
 
             {/* End Date */}
             <div
-              className="p-3 bg-slate-50 dark:bg-slate-700/60 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-2xl cursor-pointer transition-colors border border-slate-200/80 dark:border-slate-600 focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-500"
+              className="relative p-3 bg-slate-50 dark:bg-slate-700/60 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-2xl cursor-pointer transition-colors border border-slate-200/80 dark:border-slate-600 focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-500"
               onClick={() => endDateRef.current?.showPicker()}
             >
-              <label className="text-[10px] font-bold text-slate-400 dark:text-slate-400 uppercase block mb-1 cursor-pointer">{t("admin.end_label")}</label>
-              <div className="flex items-center justify-between">
-                <input
-                  ref={endDateRef}
-                  type="datetime-local"
-                  className="w-full bg-transparent border-none p-0 text-xs font-semibold text-slate-700 dark:text-slate-200 outline-none cursor-pointer"
-                  value={formData.end_date}
-                  onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
-                  required
-                />
+              <label className="text-[10px] font-bold text-slate-400 dark:text-slate-400 uppercase block mb-1 cursor-pointer pointer-events-none">{t("admin.end_label")}</label>
+              <div className="flex items-center justify-between pointer-events-none">
+                <span className={`text-xs font-semibold ${formData.end_date ? 'text-slate-700 dark:text-slate-200' : 'text-slate-400 dark:text-slate-400'}`}>
+                  {formatDisplayDateTime(formData.end_date)}
+                </span>
+                <i className="fa-regular fa-calendar text-slate-400 text-xs"></i>
               </div>
+              <input
+                ref={endDateRef}
+                type="datetime-local"
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                value={formData.end_date}
+                onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
+                required
+              />
             </div>
 
           </div>

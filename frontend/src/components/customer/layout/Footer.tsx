@@ -8,13 +8,13 @@ export default function Footer() {
   const { user } = useContext(AuthContext);
   const { t } = useLanguage();
 
-  // Hide footer on admin pages and auth pages
-  if (location.pathname.startsWith("/admin") || location.pathname === "/login" || location.pathname === "/register") {
+  // Hide footer on auth pages
+  if (location.pathname === "/login" || location.pathname === "/register") {
     return null;
   }
 
   return (
-    <footer className="bg-[#020617] text-slate-300 pt-16 pb-8 border-t border-slate-800/60 mt-20">
+    <footer className="bg-[#020617] text-slate-300 pt-16 pb-8 border-t border-slate-800/60 mt-10">
       <div className="max-w-7xl mx-auto px-6">
         {/* Dùng items-start để tất cả tiêu đề cột luôn bắt đầu từ cùng 1 độ cao */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 pb-12 border-b border-slate-800/80 items-start">

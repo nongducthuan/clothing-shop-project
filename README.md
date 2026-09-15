@@ -1,5 +1,12 @@
 # Đồ Án Website Bán Quần Áo (Clothing Shop Project)
 
+![Tests](https://img.shields.io/badge/tests-passing-brightgreen?logo=jest)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.8-3178C6?logo=typescript&logoColor=white)
+![Node.js](https://img.shields.io/badge/Node.js-Express%205-339933?logo=node.js&logoColor=white)
+![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
+![Prisma](https://img.shields.io/badge/Prisma-ORM-2D3748?logo=prisma&logoColor=white)
+![TailwindCSS](https://img.shields.io/badge/TailwindCSS-3.x-06B6D4?logo=tailwindcss&logoColor=white)
+
 Website thương mại điện tử chuyên bán quần áo và thời trang, tích hợp hệ thống quản lý bán hàng, gợi ý sản phẩm AI, xác thực OTP và thanh toán trực tuyến dành cho đồ án sinh viên.
 
 ---
@@ -10,7 +17,7 @@ Website thương mại điện tử chuyên bán quần áo và thời trang, t�
 - **Xem & Tìm kiếm sản phẩm**: Lọc theo danh mục, khuyến mãi, danh sách sản phẩm nổi bật.
 - **Tự động định vị & Nhập địa chỉ (Nominatim API)**: Tích hợp OpenStreetMap Nominatim API tự động lấy địa chỉ giao hàng chính xác qua GPS hoặc định vị IP.
 - **Giỏ hàng & Đặt hàng**: Thêm/xóa sản phẩm vào giỏ hàng, áp dụng Voucher giảm giá và tiến hành đặt hàng.
-- **Thanh toán trực tuyến đa kênh (MoMo / VNPay)**: Tích hợp cổng thanh toán MoMo và VNPay bên cạnh phương thức COD truyền thống.
+- **Thanh toán trực tuyến đa kênh (MoMo / VNPay)**: Tích hợp cổng thanh toán MoMo và VNPay-QR (Mobile Banking / NCB Sandbox).
 - **Tra cứu đơn hàng & Gửi mã OTP (Brevo API)**: Gửi mã xác nhận OTP tức thì qua Email thông qua dịch vụ Brevo HTTP API để tra cứu đơn hàng nhanh chóng mà không cần đăng nhập.
 - **Yêu cầu đổi trả hàng & Hủy yêu cầu (Return/Refund Request)**: Cho phép khách hàng gửi form yêu cầu đổi trả hàng (kèm ảnh bằng chứng & thông tin tài khoản ngân hàng hoàn tiền) hoặc hủy yêu cầu khi đang chờ xử lý (áp dụng cho cả Tài khoản thành viên và Khách tra cứu qua OTP).
 - **Chế độ Giao diện Sáng / Tối (Dark & Light Mode)**: Hỗ trợ chuyển đổi giao diện mượt mà giữa chế độ Tối (Dark) và Sáng (Light), tự động nhận diện theme hệ thống và ghi nhớ cài đặt qua `localStorage`.
@@ -27,6 +34,53 @@ Website thương mại điện tử chuyên bán quần áo và thời trang, t�
 
 ---
 
+## Kiến Trúc Hệ Thống
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        CLIENT BROWSER                           │
+│           React 19 + TypeScript + TailwindCSS + Vite            │
+│   ┌──────────────┐  ┌──────────────┐  ┌──────────────────────┐  │
+│   │  Customer UI │  │   Admin UI   │  │  Context API         │  │
+│   │  (Shop/Cart/ │  │  (Dashboard/ │  │  (Theme / i18n /     │  │
+│   │   Orders)    │  │   Products)  │  │   Auth)              │  │
+│   └──────────────┘  └──────────────┘  └──────────────────────┘  │
+└────────────────────────────┬────────────────────────────────────┘
+                             │ HTTP / REST API (Axios)
+                             │ JWT Bearer Token
+┌────────────────────────────▼────────────────────────────────────┐
+│                    BACKEND — Node.js + Express 5                 │
+│  ┌─────────────┐  ┌──────────────┐  ┌────────────────────────┐  │
+│  │   Routers   │→ │  Controllers │→ │   Prisma ORM Client    │  │
+│  │ /api/...    │  │  (customer/  │  │   (MySQL / MariaDB)    │  │
+│  │ /api/admin/ │  │   admin)     │  └────────────────────────┘  │
+│  └─────────────┘  └──────┬───────┘                              │
+│  ┌──────────────────────────────────────────────────────────┐   │
+│  │                    Middleware                            │   │
+│  │  authenticateToken │ requireAdmin │ Multer (upload)      │   │
+│  └──────────────────────────────────────────────────────────┘   │
+└──────────┬──────────────────┬───────────────────────────────────┘
+           │                  │ child_process.spawn
+           │            ┌─────▼──────────────┐
+           │            │  Python Recommender │
+           │            │  (AI/ML Engine)     │
+           │            └────────────────────┘
+           │
+┌──────────▼──────────────────────────────────────────────────────┐
+│                     EXTERNAL SERVICES                            │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌────────────────┐  │
+│  │  Brevo   │  │  MoMo    │  │  VNPay   │  │ Google Gemini  │  │
+│  │  (Email  │  │ Payment  │  │ Payment  │  │   AI Chatbot   │  │
+│  │   OTP)   │  │ Gateway  │  │ Gateway  │  │                │  │
+│  └──────────┘  └──────────┘  └──────────┘  └────────────────┘  │
+│  ┌──────────────────────────────────────────────────────────┐   │
+│  │         OpenStreetMap Nominatim (Geocoding API)           │   │
+│  └──────────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
 ## Công Nghệ Sử Dụng
 
 - **Frontend**: React.js (Vite), TypeScript, React Router, TailwindCSS, Bootstrap, Axios, Lucide Icons, Swiper, SweetAlert2, OpenStreetMap Nominatim API, React Context API (Theme Sáng/Tối & i18n Đa ngôn ngữ).
@@ -37,6 +91,39 @@ Website thương mại điện tử chuyên bán quần áo và thời trang, t�
   - **Google Gemini AI API**: Trợ lý tư vấn AI Chatbot tự động cho khách hàng.
   - **OpenStreetMap Nominatim**: Định vị vị trí và tự động chuyển đổi tọa độ GPS thành địa chỉ giao hàng.
   - **Python (Recommender System)**: Thuật toán gợi ý sản phẩm cá nhân hóa.
+
+---
+
+## Cấu Trúc Thư Mục
+
+```
+clothing-shop-project/
+├── backend/
+│   ├── prisma/                  # Schema CSDL & Seed data
+│   ├── src/
+│   │   ├── controllers/
+│   │   │   ├── admin/           # Controllers phía Admin
+│   │   │   └── customer/        # Controllers phía Customer
+│   │   ├── middleware/          # JWT Auth, Upload middleware
+│   │   ├── routes/              # Express routers
+│   │   ├── services/            # Business logic services
+│   │   ├── utils/               # MoMo, VNPay, Email services
+│   │   ├── ai_assistant/        # Google Gemini Chatbot
+│   │   ├── recommender/         # Python AI Recommender bridge
+│   │   └── __tests__/           # Unit tests (Jest + @swc/jest)
+│   └── uploads/                 # Ảnh sản phẩm upload
+└── frontend/
+    ├── src/
+    │   ├── pages/
+    │   │   ├── customer/        # Trang khách hàng
+    │   │   └── admin/           # Trang quản trị
+    │   ├── components/          # Shared components
+    │   ├── context/             # Theme & i18n Context
+    │   ├── hooks/               # Custom React Hooks
+    │   ├── services/            # API calls (Axios)
+    │   └── locales/             # File ngôn ngữ (vi/en)
+    └── public/                  # Assets tĩnh
+```
 
 ---
 
@@ -125,6 +212,45 @@ npm install
 
 ---
 
+### 3. (Tuỳ chọn) Cài đặt Python cho AI Recommender
+
+Hệ thống gợi ý sản phẩm chạy trên Python. Cần cài đặt thêm nếu muốn sử dụng tính năng này:
+
+```bash
+cd backend
+pip install -r requirements.txt
+```
+
+Sau đó cập nhật `PYTHON_PATH` trong `backend/.env` trỏ đúng đến file thực thi Python.
+
+---
+
+## Testing
+
+Project sử dụng **Jest** với **@swc/jest** transformer (hỗ trợ TypeScript 7), toàn bộ test dùng mock — không cần kết nối database hay file `.env` thật.
+
+```bash
+cd backend
+
+# Chạy toàn bộ unit tests
+npm test
+
+# Chạy kèm coverage report
+npm run test:coverage
+```
+
+**Kết quả:** `43 tests passed` across 5 test suites
+
+| Test Suite | Số tests | Module được test |
+| --- | --- | --- |
+| `authMiddleware.test.ts` | 10 | JWT verify, requireAdmin, optionalAuth |
+| `vnpayService.test.ts` | 12 | sortObject, verifyVnPayReturn, generateVnPayUrl |
+| `momoService.test.ts` | 5 | HMAC-SHA256 signature verification |
+| `authController.test.ts` | 8 | register, login (với Prisma mock) |
+| `voucherController.test.ts` | 8 | Validation, discount calculation |
+
+---
+
 ## Tài Khoản Admin Mặc Định
 
 Sau khi chạy lệnh `npm run seed`, hệ thống tự động khởi tạo tài khoản quản trị mặc định:
@@ -148,6 +274,7 @@ Sau khi chạy lệnh `npm run seed`, hệ thống tự động khởi tạo tà
 | Tên chủ thẻ | Số thẻ | Hạn ghi trên thẻ | OTP |
 | --- | --- | --- | --- |
 | NGUYEN VAN A | `9704 0000 0000 0018` | 03/07 | OTP |
+
 
 > Lưu ý: Các thông tin thẻ trên chỉ dùng trong môi trường **Sandbox/Test**, không áp dụng cho giao dịch thật. Nếu MoMo/VNPay cập nhật lại bộ thẻ test, vui lòng tham khảo tài liệu chính thức:
 > MoMo Sandbox: https://developers.momo.vn/v3/vi/docs/payment/onboarding/test-instructions/

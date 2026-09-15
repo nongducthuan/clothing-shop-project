@@ -1,5 +1,6 @@
 import React, { useRef } from "react";
 import { useLanguage } from "../../../context/LanguageContext";
+import { formatDisplayDateTime } from "../../../utils/dateUtils";
 
 interface PromotionFormData {
   name: string;
@@ -254,10 +255,16 @@ export default function PromotionForm({ state, actions, helpers }: PromotionForm
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <div
-              className="p-3 bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl cursor-pointer transition-colors border border-transparent focus-within:border-indigo-200 focus-within:ring-2 focus-within:ring-indigo-500"
+              className="relative p-3 bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl cursor-pointer transition-colors border border-transparent focus-within:border-indigo-200 focus-within:ring-2 focus-within:ring-indigo-500"
               onClick={() => startDateRef.current?.showPicker()}
             >
-              <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1 cursor-pointer">{t("admin.start_label")}</label>
+              <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1 cursor-pointer pointer-events-none">{t("admin.start_label")}</label>
+              <div className="flex items-center justify-between pointer-events-none">
+                <span className={`text-xs font-semibold ${formData.start_date ? 'text-slate-700 dark:text-slate-200' : 'text-slate-400 dark:text-slate-400'}`}>
+                  {formatDisplayDateTime(formData.start_date)}
+                </span>
+                <i className="fa-regular fa-calendar text-slate-400 text-xs"></i>
+              </div>
               <input
                 ref={startDateRef}
                 type="datetime-local"
@@ -265,15 +272,21 @@ export default function PromotionForm({ state, actions, helpers }: PromotionForm
                 required
                 value={formData.start_date}
                 onChange={handleInputChange}
-                className="w-full bg-transparent border-none p-0 text-sm font-medium text-slate-700 dark:text-slate-200 outline-none cursor-pointer"
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
               />
             </div>
 
             <div
-              className="p-3 bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl cursor-pointer transition-colors border border-transparent focus-within:border-indigo-200 focus-within:ring-2 focus-within:ring-indigo-500"
+              className="relative p-3 bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl cursor-pointer transition-colors border border-transparent focus-within:border-indigo-200 focus-within:ring-2 focus-within:ring-indigo-500"
               onClick={() => endDateRef.current?.showPicker()}
             >
-              <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1 cursor-pointer">{t("admin.end_label")}</label>
+              <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1 cursor-pointer pointer-events-none">{t("admin.end_label")}</label>
+              <div className="flex items-center justify-between pointer-events-none">
+                <span className={`text-xs font-semibold ${formData.end_date ? 'text-slate-700 dark:text-slate-200' : 'text-slate-400 dark:text-slate-400'}`}>
+                  {formatDisplayDateTime(formData.end_date)}
+                </span>
+                <i className="fa-regular fa-calendar text-slate-400 text-xs"></i>
+              </div>
               <input
                 ref={endDateRef}
                 type="datetime-local"
@@ -281,7 +294,7 @@ export default function PromotionForm({ state, actions, helpers }: PromotionForm
                 required
                 value={formData.end_date}
                 onChange={handleInputChange}
-                className="w-full bg-transparent border-none p-0 text-sm font-medium text-slate-700 dark:text-slate-200 outline-none cursor-pointer"
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
               />
             </div>
 

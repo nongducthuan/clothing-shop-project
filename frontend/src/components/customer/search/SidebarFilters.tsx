@@ -13,7 +13,7 @@ export default function SidebarFilters({ state, refs, actions }) {
 
   return (
     <div className="hidden md:block md:w-1/4 flex-shrink-0">
-      <div className="sticky top-24 bg-white dark:bg-slate-800 p-6 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm">
+      <div className="sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto bg-white dark:bg-slate-800 p-6 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm custom-scrollbar">
 
         <div className="flex justify-between items-center mb-6">
           <h3 className="font-black text-sm uppercase tracking-widest text-gray-400 dark:text-slate-400">{t("search.filters", "Filters")}</h3>

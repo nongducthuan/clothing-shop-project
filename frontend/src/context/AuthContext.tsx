@@ -65,8 +65,14 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           return updatedUser;
         });
       }
-    } catch (err) {
-      console.error("Refresh user error", err);
+    } catch (err: any) {
+      if (err?.response?.status === 401 || err?.response?.status === 404) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        setUser(null);
+      } else {
+        console.error("Refresh user error", err);
+      }
     }
   };
 

@@ -165,7 +165,8 @@ export const getSaleDetailsAdmin = async (req: Request, res: Response): Promise<
         details = productSales.map(ps => ({
             name: ps.product.name,
             name_vi: ps.product.name_vi,
-            name_en: ps.product.name_en
+            name_en: ps.product.name_en,
+            gender: ps.product.gender
         }));
     } else if (type === 'category') {
         const categorySales = await prisma.saleCategory.findMany({
@@ -175,7 +176,8 @@ export const getSaleDetailsAdmin = async (req: Request, res: Response): Promise<
         details = categorySales.map(cs => ({
             name: cs.category.name,
             name_vi: cs.category.name_vi,
-            name_en: cs.category.name_en
+            name_en: cs.category.name_en,
+            gender: cs.category.gender
         }));
     }
 
