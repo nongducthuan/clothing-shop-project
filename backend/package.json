@@ -38,21 +38,16 @@
         }
     },
     "dependencies": {
+        "@google/generative-ai": "^0.24.1",
         "@prisma/adapter-mariadb": "^7.9.1",
         "@prisma/client": "^7.9.1",
-        "@types/qs": "^6.15.1",
-        "bcrypt": "^6.0.0",
         "bcryptjs": "^3.0.2",
         "cors": "^2.8.5",
-        "crypto": "^1.0.1",
         "dotenv": "^17.4.2",
         "express": "^5.1.0",
         "jsonwebtoken": "^9.0.2",
         "mariadb": "^3.5.3",
         "multer": "^2.0.2",
-        "mysql2": "^3.23.1",
-        "node-cache": "^5.1.2",
-        "nodemailer": "^8.0.7",
         "qs": "^6.16.0",
         "tsx": "^4.23.1",
         "typescript": "^7.0.2"
@@ -67,12 +62,11 @@
         "@types/jsonwebtoken": "^9.0.10",
         "@types/multer": "^2.2.0",
         "@types/node": "^26.1.2",
-        "@types/nodemailer": "^8.0.1",
+        "@types/qs": "^6.15.1",
         "@types/supertest": "^7.2.1",
         "jest": "^30.5.1",
         "jest-mock-extended": "^4.0.1",
         "prisma": "^7.9.1",
-        "supertest": "^7.2.2",
-        "ts-jest": "^29.4.12"
+        "supertest": "^7.2.2"
     }
 }

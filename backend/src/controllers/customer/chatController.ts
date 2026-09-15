@@ -1,92 +1,56 @@
 import { Request, Response } from 'express';
-import { spawn } from 'child_process';
-import path from 'path';
+import { generateAiResponse, ChatMessageHistory } from '../../services/aiService';
 
 // Store chat sessions in memory
-const activeChatSessions: Record<string, any[]> = {};
+const activeChatSessions: Record<string, ChatMessageHistory[]> = {};
 
-const pythonEnginePath = path.join(__dirname, '../../ai_assistant/core_engine.py');
-const venvPythonPath = process.env.PYTHON_PATH || path.join(__dirname, '../../../../../../../env/Scripts/python.exe');
-const spawnOptions = {
-    env: { ...process.env, PYTHONIOENCODING: 'utf-8' }
-};
+export const handleChat = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { message } = req.body;
 
-export const handleChat = (req: Request, res: Response): void => {
-    const { message } = req.body;
-
-    if (!message) {
-        res.status(400).json({ error: "Message content is required." });
-        return;
-    }
-
-    const pythonProcess = spawn(venvPythonPath, [pythonEnginePath, message], spawnOptions);
-
-    let aiResponse = '';
-    let errorLog = '';
-
-    pythonProcess.stdout.on('data', (data) => {
-        aiResponse += data.toString('utf8');
-    });
-
-    pythonProcess.stderr.on('data', (data) => {
-        errorLog += data.toString('utf8');
-    });
-
-    pythonProcess.on('close', (code) => {
-        if (code === 0) {
-            res.status(200).json({ reply: aiResponse.trim() });
+        if (!message) {
+            res.status(400).json({ error: "Message content is required." });
             return;
         }
 
-        console.error(`[AI Engine Error]: ${errorLog}`);
+        const reply = await generateAiResponse(message);
+        res.status(200).json({ reply });
+    } catch (err: any) {
+        console.error(`[AI Engine Error]:`, err.message || err);
         res.status(500).json({ error: "Internal AI Engine error occurred." });
-    });
+    }
 };
 
-export const handleChatWithHistory = (req: Request, res: Response): void => {
-    const { message, sessionId } = req.body;
+export const handleChatWithHistory = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { message, sessionId } = req.body;
 
-    if (!message || !sessionId) {
-        res.status(400).json({ error: "Both message and sessionId are required." });
-        return;
-    }
-
-    if (!activeChatSessions[sessionId]) {
-        activeChatSessions[sessionId] = [];
-    }
-
-    const historyString = JSON.stringify(activeChatSessions[sessionId]);
-    const pythonProcess = spawn(venvPythonPath, [pythonEnginePath, message, historyString], spawnOptions);
-
-    let aiResponse = '';
-    let errorLog = '';
-
-    pythonProcess.stdout.on('data', (data) => {
-        aiResponse += data.toString('utf8');
-    });
-
-    pythonProcess.stderr.on('data', (data) => {
-        errorLog += data.toString('utf8');
-    });
-
-    pythonProcess.on('close', (code) => {
-        if (code === 0) {
-            const finalReply = aiResponse.trim();
-
-            activeChatSessions[sessionId].push({ role: 'user', content: message });
-            activeChatSessions[sessionId].push({ role: 'ai', content: finalReply });
-
-            if (activeChatSessions[sessionId].length > 8) {
-                activeChatSessions[sessionId] = activeChatSessions[sessionId].slice(-8);
-            }
-
-            res.status(200).json({ reply: finalReply });
+        if (!message || !sessionId) {
+            res.status(400).json({ error: "Both message and sessionId are required." });
             return;
         }
 
-        console.error(`[AI Engine Error]: ${errorLog}`);
+        if (!activeChatSessions[sessionId]) {
+            activeChatSessions[sessionId] = [];
+        }
+
+        const history = activeChatSessions[sessionId];
+        const reply = await generateAiResponse(message, history);
+
+        // Update session history
+        activeChatSessions[sessionId].push({ role: 'user', content: message });
+        activeChatSessions[sessionId].push({ role: 'ai', content: reply });
+
+        // Keep last 8 messages in session history
+        if (activeChatSessions[sessionId].length > 8) {
+            activeChatSessions[sessionId] = activeChatSessions[sessionId].slice(-8);
+        }
+
+        res.status(200).json({ reply });
+    } catch (err: any) {
+        console.error(`[AI Engine Error]:`, err.message || err);
         res.status(500).json({ error: "Internal AI Engine error occurred." });
-    });
+    }
 };
 
 export const clearChatHistory = (req: Request, res: Response): void => {
