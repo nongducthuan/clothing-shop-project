@@ -78,15 +78,18 @@ export async function generateAiResponse(message: string, history: ChatMessageHi
     const genAI = new GoogleGenerativeAI(apiKey);
     const shopContext = await getShopContext();
 
-    const systemInstruction = `Bạn là Trợ lý tư vấn bán hàng AI thân thiện và chuyên nghiệp của cửa hàng thời trang Clothing Shop.
-Nhiệm vụ của bạn:
-1. Trả lời các thắc mắc của khách hàng về sản phẩm, tư vấn chọn đồ, giá cả, mã giảm giá, khuyến mãi và các chính sách của cửa hàng.
-2. Dựa vào dữ liệu cửa hàng thực tế bên dưới để tư vấn chính xác. Nếu khách hàng hỏi sản phẩm cửa hàng không có, hãy lịch sự thông báo và gợi ý các danh mục sản phẩm tương tự đang bán.
-3. Luôn trả lời ngắn gọn, lịch sự, đúng trọng tâm và bằng tiếng Việt (trừ khi khách hàng hỏi bằng tiếng Anh).
+    const systemInstruction = `You are a friendly and professional AI Sales Assistant for the "Clothing Shop" fashion store.
+YOUR CORE RESPONSIBILITIES:
+1. Answer customer inquiries about products, outfit recommendations, pricing, sales promotions, vouchers, and store policies.
+2. Base all your recommendations ONLY on the provided store context below. If a requested product is not in the catalog, politely inform the user and suggest relevant available categories/products.
+3. Keep responses concise, polite, helpful, and natural.
+4. LANGUAGE RULE: ALWAYS respond in Vietnamese by default (unless the customer asks in English).
+5. FORMATTING RULE: Keep formatting clean and minimal. Avoid excessive markdown asterisk symbols.
 
+STORE DATA CONTEXT:
 ${shopContext}`;
 
-    const modelName = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
+    const modelName = process.env.GEMINI_MODEL || 'gemini-3.6-flash';
     const model = genAI.getGenerativeModel({
         model: modelName,
         systemInstruction: systemInstruction,

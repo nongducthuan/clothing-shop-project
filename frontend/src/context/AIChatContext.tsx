@@ -1,5 +1,6 @@
 import { createContext, useCallback, useEffect, useState, ReactNode } from "react";
 import { clearChatHistory, sendChatMessage } from "../services/aiService";
+import { useLanguage } from "./LanguageContext";
 import { ChatMessage } from "../types";
 
 const STORAGE_SESSION_KEY = "ai_chat_session_id";
@@ -25,6 +26,7 @@ interface AIChatProviderProps {
 export const AIChatContext = createContext<AIChatContextType | undefined>(undefined);
 
 export function AIChatProvider({ children }: AIChatProviderProps) {
+  const { t } = useLanguage();
   const [sessionId, setSessionId] = useState<string>(() => {
     const stored = localStorage.getItem(STORAGE_SESSION_KEY);
     return stored ?? crypto.randomUUID();
@@ -87,7 +89,7 @@ export function AIChatProvider({ children }: AIChatProviderProps) {
         const errorMessage: ChatMessage = {
           id: crypto.randomUUID(),
           role: "ai",
-          content: "Sorry, the system is experiencing issues. Please try again later.",
+          content: t("chat.error_msg", "Rất tiếc, hệ thống Trợ lý AI đang gặp sự cố. Vui lòng thử lại sau ít phút."),
           createdAt: new Date().toISOString(),
         };
         setMessages((prev) => [...prev, errorMessage]);
@@ -95,7 +97,7 @@ export function AIChatProvider({ children }: AIChatProviderProps) {
         setIsSending(false);
       }
     },
-    [sessionId]
+    [sessionId, t]
   );
 
   const resetChat = useCallback(async () => {

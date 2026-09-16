@@ -23,7 +23,7 @@ Website thương mại điện tử chuyên bán quần áo và thời trang, t�
 - **Chế độ Giao diện Sáng / Tối (Dark & Light Mode)**: Hỗ trợ chuyển đổi giao diện mượt mà giữa chế độ Tối (Dark) và Sáng (Light), tự động nhận diện theme hệ thống và ghi nhớ cài đặt qua `localStorage`.
 - **Hỗ trợ Đa ngôn ngữ (i18n & DB Localization)**: Chuyển đổi ngôn ngữ hiển thị linh hoạt cho cả giao diện tĩnh lẫn nội dung động trong CSDL.
 - **Tài khoản & Đăng nhập**: Đăng nhập & Đăng ký bảo mật qua JWT Auth (băm mật khẩu `bcryptjs`), hỗ trợ tích điểm hạng thành viên (Membership).
-- **Gợi ý sản phẩm thông minh (AI / Machine Learning)**: Gợi ý các sản phẩm phù hợp theo hành vi và lịch sử tương tác của người dùng (chạy trên môi trường Python).
+- **Gợi ý sản phẩm thông minh (AI / Machine Learning)**: Gợi ý các sản phẩm phù hợp theo hành vi và lịch sử tương tác của người dùng.
 - **Trợ lý AI Chatbot**: Tư vấn, giải đáp thắc mắc khách hàng trực tiếp sử dụng Google Gemini AI API.
 
 ### Dành Cho Quản Trị Viên (Admin)
@@ -56,15 +56,11 @@ Website thương mại điện tử chuyên bán quần áo và thời trang, t�
 │  │ /api/admin/ │  │   admin)     │  └────────────────────────┘  │
 │  └─────────────┘  └──────┬───────┘                              │
 │  ┌──────────────────────────────────────────────────────────┐   │
-│  │                    Middleware                            │   │
-│  │  authenticateToken │ requireAdmin │ Multer (upload)      │   │
+│  │                  Middleware / Services                   │   │
+│  │ authenticateToken │ requireAdmin │ Multer (upload)       │   │
+│  │ AI Service (Gemini SDK) │ Recommender Engine (Prisma/SQL)│   │
 │  └──────────────────────────────────────────────────────────┘   │
-└──────────┬──────────────────┬───────────────────────────────────┘
-           │                  │ child_process.spawn
-           │            ┌─────▼──────────────┐
-           │            │  Python Recommender │
-           │            │  (AI/ML Engine)     │
-           │            └────────────────────┘
+└──────────┬──────────────────────────────────────────────────────┘
            │
 ┌──────────▼──────────────────────────────────────────────────────┐
 │                     EXTERNAL SERVICES                            │
@@ -88,9 +84,9 @@ Website thương mại điện tử chuyên bán quần áo và thời trang, t�
 - **Dịch vụ tích hợp & AI**:
   - **Brevo API (Sendinblue)**: Gửi email giao dịch / mã OTP xác thực.
   - **Cổng thanh toán MoMo & VNPay**: Xử lý thanh toán trực tuyến qua MoMo và VNPay-QR (Mobile Banking / NCB Sandbox).
-  - **Google Gemini AI API**: Trợ lý tư vấn AI Chatbot tự động cho khách hàng.
+  - **Google Gemini AI API**: Trợ lý tư vấn AI Chatbot tự động cho khách hàng (sử dụng SDK `@google/generative-ai` trực tiếp trong TypeScript).
   - **OpenStreetMap Nominatim**: Định vị vị trí và tự động chuyển đổi tọa độ GPS thành địa chỉ giao hàng.
-  - **Python (Recommender System)**: Thuật toán gợi ý sản phẩm cá nhân hóa.
+  - **Gợi ý sản phẩm thông minh (Recommendation System)**: Thuật toán lọc cộng tác (Collaborative Filtering) tích hợp trực tiếp trong Backend Node.js / Prisma.
 
 ---
 
@@ -106,10 +102,8 @@ clothing-shop-project/
 │   │   │   └── customer/        # Controllers phía Customer
 │   │   ├── middleware/          # JWT Auth, Upload middleware
 │   │   ├── routes/              # Express routers
-│   │   ├── services/            # Business logic services
+│   │   ├── services/            # Business logic (AI Chatbot, Recommendations, Promotions)
 │   │   ├── utils/               # MoMo, VNPay, Email services
-│   │   ├── ai_assistant/        # Google Gemini Chatbot
-│   │   ├── recommender/         # Python AI Recommender bridge
 │   │   └── __tests__/           # Unit tests (Jest + @swc/jest)
 │   └── uploads/                 # Ảnh sản phẩm upload
 └── frontend/
@@ -148,7 +142,6 @@ clothing-shop-project/
 | `EMAIL_USER` | Email người gửi (đã verify trên Brevo Senders) | `your-email@gmail.com` |
 | `BREVO_API_KEY` | API Key kết nối Brevo HTTP API gửi OTP | `your_brevo_api_key` |
 | `GOOGLE_API_KEY` | API Key Google Gemini AI (dùng cho Chatbot / AI) | `your_google_gemini_api_key` |
-| `PYTHON_PATH` | Đường dẫn file thực thi `python` / `python.exe` dùng cho AI Chatbot | `python` hoặc `C:\path\to\venv\Scripts\python.exe` |
 
 ### 2. Frontend (`frontend/.env`)
 
@@ -212,19 +205,6 @@ npm install
 
 ---
 
-### 3. (Tuỳ chọn) Cài đặt Python cho AI Recommender
-
-Hệ thống gợi ý sản phẩm chạy trên Python. Cần cài đặt thêm nếu muốn sử dụng tính năng này:
-
-```bash
-cd backend
-pip install -r requirements.txt
-```
-
-Sau đó cập nhật `PYTHON_PATH` trong `backend/.env` trỏ đúng đến file thực thi Python.
-
----
-
 ## Testing
 
 Project sử dụng **Jest** với **@swc/jest** transformer (hỗ trợ TypeScript 7), toàn bộ test dùng mock — không cần kết nối database hay file `.env` thật.
@@ -274,7 +254,6 @@ Sau khi chạy lệnh `npm run seed`, hệ thống tự động khởi tạo tà
 | Tên chủ thẻ | Số thẻ | Hạn ghi trên thẻ | OTP |
 | --- | --- | --- | --- |
 | NGUYEN VAN A | `9704 0000 0000 0018` | 03/07 | OTP |
-
 
 > Lưu ý: Các thông tin thẻ trên chỉ dùng trong môi trường **Sandbox/Test**, không áp dụng cho giao dịch thật. Nếu MoMo/VNPay cập nhật lại bộ thẻ test, vui lòng tham khảo tài liệu chính thức:
 > MoMo Sandbox: https://developers.momo.vn/v3/vi/docs/payment/onboarding/test-instructions/

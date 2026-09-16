@@ -28,6 +28,7 @@ export const translations = {
     'chat.you': 'Bạn',
     'chat.close': 'Đóng AI',
     'chat.open': 'Mở AI',
+    'chat.error_msg': 'Rất tiếc, hệ thống Trợ lý AI đang gặp sự cố. Vui lòng thử lại sau ít phút.',
 
     // Auth - Login
     'auth.login_title': 'Chào mừng trở lại',
@@ -892,6 +893,7 @@ export const translations = {
     'chat.you': 'You',
     'chat.close': 'Close AI',
     'chat.open': 'Open AI',
+    'chat.error_msg': 'Sorry, the AI system is experiencing issues. Please try again later.',
 
     // Auth - Login
     'auth.login_title': 'Welcome back',

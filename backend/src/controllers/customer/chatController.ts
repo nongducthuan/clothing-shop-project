@@ -56,11 +56,14 @@ export const handleChatWithHistory = async (req: Request, res: Response): Promis
 export const clearChatHistory = (req: Request, res: Response): void => {
     const { sessionId } = req.body;
 
-    if (sessionId && activeChatSessions[sessionId]) {
-        delete activeChatSessions[sessionId];
-        res.status(200).json({ message: "Chat history cleared successfully." });
+    if (!sessionId) {
+        res.status(400).json({ error: "Session ID is required." });
         return;
     }
 
-    res.status(400).json({ error: "Session ID not found." });
+    if (activeChatSessions[sessionId]) {
+        delete activeChatSessions[sessionId];
+    }
+
+    res.status(200).json({ message: "Chat history cleared successfully." });
 };
