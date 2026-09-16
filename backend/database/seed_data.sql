@@ -1,5 +1,6 @@
 USE shopdb;
 
+-- Alter table columns if missing
 ALTER TABLE memberships ADD COLUMN IF NOT EXISTS name_vi VARCHAR(100) NULL;
 ALTER TABLE memberships ADD COLUMN IF NOT EXISTS name_en VARCHAR(100) NULL;
 ALTER TABLE categories ADD COLUMN IF NOT EXISTS name_vi VARCHAR(100) NULL;
@@ -15,37 +16,59 @@ ALTER TABLE banners ADD COLUMN IF NOT EXISTS title_en VARCHAR(255) NULL;
 ALTER TABLE banners ADD COLUMN IF NOT EXISTS subtitle_vi VARCHAR(500) NULL;
 ALTER TABLE banners ADD COLUMN IF NOT EXISTS subtitle_en VARCHAR(500) NULL;
 
+-- Disable FK checks for clean re-seeding
+SET FOREIGN_KEY_CHECKS = 0;
+TRUNCATE TABLE user_product_interaction;
+TRUNCATE TABLE return_requests;
+TRUNCATE TABLE order_items;
+TRUNCATE TABLE orders;
+TRUNCATE TABLE promotion_usage_history;
+TRUNCATE TABLE buy_x_get_y_promotions;
+TRUNCATE TABLE product_vouchers;
+TRUNCATE TABLE voucher_categories;
+TRUNCATE TABLE vouchers;
+TRUNCATE TABLE product_sales;
+TRUNCATE TABLE sale_categories;
+TRUNCATE TABLE sales;
+TRUNCATE TABLE product_sizes;
+TRUNCATE TABLE product_colors;
+TRUNCATE TABLE products;
+TRUNCATE TABLE categories;
+TRUNCATE TABLE banners;
+TRUNCATE TABLE users;
+TRUNCATE TABLE memberships;
+SET FOREIGN_KEY_CHECKS = 1;
+
+-- ============================================================
 -- 1. SEED MEMBERSHIPS
+-- ============================================================
+INSERT INTO memberships (id, name, min_spending, discount_percent, name_vi, name_en) VALUES
+(1, 'Normal', 0, 0, 'Thường', 'Normal'),
+(2, 'Bronze', 5000000, 5, 'Đồng', 'Bronze'),
+(3, 'Silver', 10000000, 10, 'Bạc', 'Silver'),
+(4, 'Gold', 15000000, 15, 'Vàng', 'Gold'),
+(5, 'Diamond', 20000000, 20, 'Kim Cương', 'Diamond');
 
-INSERT INTO memberships (name, min_spending, discount_percent, name_vi, name_en) VALUES
-
-('Normal', 0, 0, 'Thường', 'Normal'),
-('Bronze', 5000000, 5, 'Đồng', 'Bronze'),
-('Silver', 10000000, 10, 'Bạc', 'Silver'),
-('Gold', 15000000, 15, 'Vàng', 'Gold'),
-('Diamond', 20000000, 20, 'Kim Cương', 'Diamond');
-
-
+-- ============================================================
 -- 2. SEED USERS
-
+-- ============================================================
 INSERT INTO users (id, name, email, password, role) VALUES
+(3, 'Nguyễn Văn A', 'vana@example.com', '$2a$10$w8.3fVq7c3.j0k.k0k.k0k.k0k.k0k.k0k.k0k.k0k', 'customer'),
+(4, 'Trần Thị B', 'thib@example.com', '$2a$10$w8.3fVq7c3.j0k.k0k.k0k.k0k.k0k.k0k.k0k.k0k', 'customer'),
+(5, 'Lê Văn C', 'vanc@example.com', '$2a$10$w8.3fVq7c3.j0k.k0k.k0k.k0k.k0k.k0k.k0k.k0k', 'customer'),
+(6, 'Phạm Minh D', 'minhd@example.com', '$2a$10$w8.3fVq7c3.j0k.k0k.k0k.k0k.k0k.k0k.k0k.k0k', 'customer'),
+(7, 'Hoàng Lan E', 'lane@example.com', '$2a$10$w8.3fVq7c3.j0k.k0k.k0k.k0k.k0k.k0k.k0k.k0k', 'customer'),
+(8, 'Đỗ Hùng F', 'hungf@example.com', '$2a$10$w8.3fVq7c3.j0k.k0k.k0k.k0k.k0k.k0k.k0k.k0k', 'customer'),
+(9, 'Bùi Mai G', 'maig@example.com', '$2a$10$w8.3fVq7c3.j0k.k0k.k0k.k0k.k0k.k0k.k0k.k0k', 'customer'),
+(10, 'Ngô Quang H', 'quangh@example.com', '$2a$10$w8.3fVq7c3.j0k.k0k.k0k.k0k.k0k.k0k.k0k.k0k', 'customer'),
+(11, 'Vũ Hải I', 'haii@example.com', '$2a$10$w8.3fVq7c3.j0k.k0k.k0k.k0k.k0k.k0k.k0k.k0k', 'customer'),
+(12, 'Phan An K', 'ank@example.com', '$2a$10$w8.3fVq7c3.j0k.k0k.k0k.k0k.k0k.k0k.k0k.k0k', 'customer'),
+(13, 'Admin', 'admin@shop.com', '$2a$10$w8.3fVq7c3.j0k.k0k.k0k.k0k.k0k.k0k.k0k.k0k', 'admin');
 
-(3, 'Nguyễn Văn A', 'vana@example.com', 'password123', 'customer'),
-(4, 'Trần Thị B', 'thib@example.com', 'password123', 'customer'),
-(5, 'Lê Văn C', 'vanc@example.com', 'password123', 'customer'),
-(6, 'Phạm Minh D', 'minhd@example.com', 'password123', 'customer'),
-(7, 'Hoàng Lan E', 'lane@example.com', 'password123', 'customer'),
-(8, 'Đỗ Hùng F', 'hungf@example.com', 'password123', 'customer'),
-(9, 'Bùi Mai G', 'maig@example.com', 'password123', 'customer'),
-(10, 'Ngô Quang H', 'quangh@example.com', 'password123', 'customer'),
-(11, 'Vũ Hải I', 'haii@example.com', 'password123', 'customer'),
-(12, 'Phan An K', 'ank@example.com', 'password123', 'customer');
-
-
+-- ============================================================
 -- 3. SEED CATEGORIES
-
+-- ============================================================
 INSERT INTO categories (id, name, gender, image_url, name_vi, name_en) VALUES
-
 (1, 'Shirt', 'male', NULL, 'Áo Sơ Mi', 'Shirt'),
 (2, 'Trousers/Pants', 'male', NULL, 'Quần Dài', 'Trousers/Pants'),
 (3, 'Jacket/Hoodie', 'male', NULL, 'Áo Khoác', 'Jacket/Hoodie'),
@@ -56,11 +79,10 @@ INSERT INTO categories (id, name, gender, image_url, name_vi, name_en) VALUES
 (8, 'Trousers/Pants', 'unisex', NULL, 'Quần Dài', 'Trousers/Pants'),
 (9, 'Shorts', 'unisex', NULL, 'Quần Short', 'Shorts');
 
-
--- 4. SEED PRODUCTS
-
+-- ============================================================
+-- 4. SEED PRODUCTS (IDs 1 -> 36)
+-- ============================================================
 INSERT INTO products (id, name, description, price, import_price, image_url, category_id, gender, name_vi, name_en, description_vi, description_en) VALUES
-
 (1, 'Premium Oxford Cotton Shirt', 'High density Oxford cotton with button-down collar, perfect for business casual', 150000, 100000, '/public/images/ao-so-mi-nam-white.png', 1, 'male', 'Áo Sơ Mi Cotton Oxford Cao Cấp', 'Premium Oxford Cotton Shirt', 'Chất liệu Oxford cotton dày dặn, cổ đơm nút lịch lãm phù hợp đi làm và đi chơi', 'High density Oxford cotton with button-down collar, perfect for business casual'),
 (2, 'Ultra-Lightweight Linen Shirt', '100% natural linen, breathable and quick-drying for hot summer days', 150000, 100000, '/public/images/ao-so-mi-nam-blue.png', 1, 'male', 'Áo Sơ Mi Linen Siêu Nhẹ', 'Ultra-Lightweight Linen Shirt', '100% vải linen tự nhiên, thoáng khí và thấm hút cực tốt cho ngày hè', '100% natural linen, breathable and quick-drying for hot summer days'),
 (3, 'Classic Business Formal Shirt', 'Crisp spread collar, anti-wrinkle bamboo fabric for sharp office looks', 150000, 100000, '/public/images/ao-so-mi-nam-beige.png', 1, 'male', 'Áo Sơ Mi Công Sở Classic', 'Classic Business Formal Shirt', 'Áo cổ bẻ cứng cáp, vải sợi tre chống nhăn giữ phom dáng chuẩn công sở', 'Crisp spread collar, anti-wrinkle bamboo fabric for sharp office looks'),
@@ -98,89 +120,87 @@ INSERT INTO products (id, name, description, price, import_price, image_url, cat
 (35, 'Utility Multi-Pocket Trail Shorts', 'Built-in adjustable webbing belt and durable ripstop fabric', 250000, 170000, '/public/images/quan-short-unisex-green.png', 9, 'unisex', 'Quần Short Unisex Túi Hộp Đa Năng', 'Utility Multi-Pocket Trail Shorts', 'Đi kèm đai lưng dệt tiện lợi cùng chất liệu ripstop chống xé', 'Built-in adjustable webbing belt and durable ripstop fabric'),
 (36, 'Classic Cotton Twill Shorts', 'Tailored 7-inch inseam shorts with clean button closure', 250000, 170000, '/public/images/quan-short-unisex-navy.png', 9, 'unisex', 'Quần Short Unisex Cotton Twill Cổ Điển', 'Classic Cotton Twill Shorts', 'Chiều dài 7 inch vừa phải, chất vải twill mềm mịn thoải mái', 'Tailored 7-inch inseam shorts with clean button closure');
 
-
+-- ============================================================
 -- 5. SEED PRODUCT COLORS
+-- ============================================================
+INSERT INTO product_colors (id, product_id, color_name, color_code, image_url, color_name_vi, color_name_en) VALUES
+(1, 1, 'White', '#FFFFFF', '/public/images/ao-so-mi-nam-white.png', 'Trắng', 'White'),
+(2, 1, 'Sky Blue', '#87CEEB', '/public/images/ao-so-mi-nam-blue.png', 'Xanh Da Trời', 'Sky Blue'),
+(3, 2, 'White', '#FFFFFF', '/public/images/ao-so-mi-nam-white.png', 'Trắng', 'White'),
+(4, 2, 'Sky Blue', '#87CEEB', '/public/images/ao-so-mi-nam-blue.png', 'Xanh Da Trời', 'Sky Blue'),
+(5, 3, 'Beige', '#C3B091', '/public/images/ao-so-mi-nam-beige.png', 'Be', 'Beige'),
+(6, 3, 'Black', '#000000', '/public/images/ao-so-mi-nam-black.png', 'Đen', 'Black'),
+(7, 4, 'Beige', '#C3B091', '/public/images/ao-so-mi-nam-beige.png', 'Be', 'Beige'),
+(8, 4, 'Black', '#000000', '/public/images/ao-so-mi-nam-black.png', 'Đen', 'Black'),
+(9, 5, 'Beige', '#F5F5DC', '/public/images/quan-chino-nam-beige.png', 'Be', 'Beige'),
+(10, 5, 'Blue', '#0000FF', '/public/images/quan-chino-nam-blue.png', 'Xanh Dương', 'Blue'),
+(11, 6, 'Beige', '#F5F5DC', '/public/images/quan-chino-nam-beige.png', 'Be', 'Beige'),
+(12, 6, 'Blue', '#0000FF', '/public/images/quan-chino-nam-blue.png', 'Xanh Dương', 'Blue'),
+(13, 7, 'Light Blue', '#e5ecf6', '/public/images/quan-jean-nam-light-blue.png', 'Xanh Nhạt', 'Light Blue'),
+(14, 7, 'Dark Gray', '#232227', '/public/images/quan-jean-nam-dark-gray.png', 'Xám Đậm', 'Dark Gray'),
+(15, 8, 'Light Blue', '#e5ecf6', '/public/images/quan-jean-nam-light-blue.png', 'Xanh Nhạt', 'Light Blue'),
+(16, 8, 'Dark Gray', '#232227', '/public/images/quan-jean-nam-dark-gray.png', 'Xám Đậm', 'Dark Gray'),
+(17, 9, 'Green', '#6f7c6b', '/public/images/ao-hoodie-nam-green.png', 'Xanh Lá', 'Green'),
+(18, 9, 'Red', '#d74d55', '/public/images/ao-hoodie-nam-red.png', 'Đỏ', 'Red'),
+(19, 10, 'Green', '#6f7c6b', '/public/images/ao-hoodie-nam-green.png', 'Xanh Lá', 'Green'),
+(20, 10, 'Red', '#d74d55', '/public/images/ao-hoodie-nam-red.png', 'Đỏ', 'Red'),
+(21, 11, 'Blue', '#007bff', '/public/images/ao-khoac-nam-blue.png', 'Xanh Dương', 'Blue'),
+(22, 11, 'Yellow', '#d4a017', '/public/images/ao-khoac-nam-yellow.png', 'Vàng', 'Yellow'),
+(23, 12, 'Blue', '#007bff', '/public/images/ao-khoac-nam-blue.png', 'Xanh Dương', 'Blue'),
+(24, 12, 'Yellow', '#d4a017', '/public/images/ao-khoac-nam-yellow.png', 'Vàng', 'Yellow'),
+(25, 13, 'White', '#FFFFFF', '/public/images/ao-so-mi-nu-white.png', 'Trắng', 'White'),
+(26, 13, 'Green', '#A9E5BB', '/public/images/ao-so-mi-nu-green.png', 'Xanh Lá', 'Green'),
+(27, 14, 'White', '#FFFFFF', '/public/images/ao-so-mi-nu-white.png', 'Trắng', 'White'),
+(28, 14, 'Green', '#A9E5BB', '/public/images/ao-so-mi-nu-green.png', 'Xanh Lá', 'Green'),
+(29, 15, 'White', '#FFFFFF', '/public/images/ao-so-mi-nu-ke-soc-white.png', 'Trắng', 'White'),
+(30, 15, 'Sky Blue', '#87CEEB', '/public/images/ao-so-mi-nu-ke-soc-blue.png', 'Xanh Da Trời', 'Sky Blue'),
+(31, 16, 'White', '#FFFFFF', '/public/images/ao-so-mi-nu-ke-soc-white.png', 'Trắng', 'White'),
+(32, 16, 'Sky Blue', '#87CEEB', '/public/images/ao-so-mi-nu-ke-soc-blue.png', 'Xanh Da Trời', 'Sky Blue'),
+(33, 17, 'Sky Blue', '#dce2f0', '/public/images/ao-thun-co-tron-nu-blue.png', 'Xanh Da Trời', 'Sky Blue'),
+(34, 17, 'Navy', '#2b3b5d', '/public/images/ao-thun-co-tron-nu-navy.png', 'Xanh Navy', 'Navy'),
+(35, 18, 'Sky Blue', '#dce2f0', '/public/images/ao-thun-co-tron-nu-blue.png', 'Xanh Da Trời', 'Sky Blue'),
+(36, 18, 'Navy', '#2b3b5d', '/public/images/ao-thun-co-tron-nu-navy.png', 'Xanh Navy', 'Navy'),
+(37, 19, 'White', '#FFFFFF', '/public/images/ao-thun-vai-cotton-nu-white.png', 'Trắng', 'White'),
+(38, 19, 'Black', '#000000', '/public/images/ao-thun-vai-cotton-nu-black.png', 'Đen', 'Black'),
+(39, 20, 'White', '#FFFFFF', '/public/images/ao-thun-vai-cotton-nu-white.png', 'Trắng', 'White'),
+(40, 20, 'Black', '#000000', '/public/images/ao-thun-vai-cotton-nu-black.png', 'Đen', 'Black'),
+(41, 21, 'Beige', '#F5F5DC', '/public/images/quan-dai-gear-nu-beige.png', 'Be', 'Beige'),
+(42, 21, 'Dark Green', '#0A3D3B', '/public/images/quan-dai-gear-nu-green.png', 'Xanh Đậm', 'Dark Green'),
+(43, 22, 'Beige', '#F5F5DC', '/public/images/quan-dai-gear-nu-beige.png', 'Be', 'Beige'),
+(44, 22, 'Dark Green', '#0A3D3B', '/public/images/quan-dai-gear-nu-green.png', 'Xanh Đậm', 'Dark Green'),
+(45, 23, 'Beige', '#b6a498', '/public/images/quan-det-kim-nu-khaki.png', 'Be', 'Beige'),
+(46, 23, 'Gray', '#515055', '/public/images/quan-det-kim-nu-gray.png', 'Xám', 'Gray'),
+(47, 24, 'Beige', '#b6a498', '/public/images/quan-det-kim-nu-khaki.png', 'Be', 'Beige'),
+(48, 24, 'Gray', '#515055', '/public/images/quan-det-kim-nu-gray.png', 'Xám', 'Gray'),
+(49, 25, 'Gray', '#c0c8d3', '/public/images/ao-thun-tay-ngan-unisex-gray.png', 'Xám', 'Gray'),
+(50, 25, 'Dark Gray', '#474b4e', '/public/images/ao-thun-tay-ngan-unisex-dark-gray.png', 'Xám Đậm', 'Dark Gray'),
+(51, 26, 'Gray', '#c0c8d3', '/public/images/ao-thun-tay-ngan-unisex-gray.png', 'Xám', 'Gray'),
+(52, 26, 'Dark Gray', '#474b4e', '/public/images/ao-thun-tay-ngan-unisex-dark-gray.png', 'Xám Đậm', 'Dark Gray'),
+(53, 27, 'Dark Blue', '#2c3546', '/public/images/ao-thun-tay-dai-unisex-blue.png', 'Xanh Đậm', 'Dark Blue'),
+(54, 27, 'Light Green', '#b3b6af', '/public/images/ao-thun-tay-dai-unisex-green.png', 'Xanh Lá Nhạt', 'Light Green'),
+(55, 28, 'Dark Blue', '#2c3546', '/public/images/ao-thun-tay-dai-unisex-blue.png', 'Xanh Đậm', 'Dark Blue'),
+(56, 28, 'Light Green', '#b3b6af', '/public/images/ao-thun-tay-dai-unisex-green.png', 'Xanh Lá Nhạt', 'Light Green'),
+(57, 29, 'Green', '#5a6151', '/public/images/quan-dai-unisex-green.png', 'Xanh Lá', 'Green'),
+(58, 29, 'Beige', '#cab99f', '/public/images/quan-dai-unisex-beige.png', 'Be', 'Beige'),
+(59, 30, 'Green', '#5a6151', '/public/images/quan-dai-unisex-green.png', 'Xanh Lá', 'Green'),
+(60, 30, 'Beige', '#cab99f', '/public/images/quan-dai-unisex-beige.png', 'Be', 'Beige'),
+(61, 31, 'Blue', '#1B4F72', '/public/images/quan-jean-unisex-blue.png', 'Xanh Dương', 'Blue'),
+(62, 31, 'Black', '#333333', '/public/images/quan-jean-unisex-black.png', 'Đen', 'Black'),
+(63, 32, 'Blue', '#1B4F72', '/public/images/quan-jean-unisex-blue.png', 'Xanh Dương', 'Blue'),
+(64, 32, 'Black', '#333333', '/public/images/quan-jean-unisex-black.png', 'Đen', 'Black'),
+(65, 33, 'White', '#f1f0ee', '/public/images/quan-short-unisex-white.png', 'Trắng', 'White'),
+(66, 33, 'Gray', '#646b7d', '/public/images/quan-short-unisex-gray.png', 'Xám', 'Gray'),
+(67, 34, 'White', '#f1f0ee', '/public/images/quan-short-unisex-white.png', 'Trắng', 'White'),
+(68, 34, 'Gray', '#646b7d', '/public/images/quan-short-unisex-gray.png', 'Xám', 'Gray'),
+(69, 35, 'Green', '#696C52', '/public/images/quan-short-unisex-green.png', 'Xanh Lá', 'Green'),
+(70, 35, 'Navy', '#2C3243', '/public/images/quan-short-unisex-navy.png', 'Xanh Navy', 'Navy'),
+(71, 36, 'Green', '#696C52', '/public/images/quan-short-unisex-green.png', 'Xanh Lá', 'Green'),
+(72, 36, 'Navy', '#2C3243', '/public/images/quan-short-unisex-navy.png', 'Xanh Navy', 'Navy');
 
-INSERT INTO product_colors (product_id, color_name, color_code, image_url, color_name_vi, color_name_en) VALUES
-
-(1, 'White', '#FFFFFF', '/public/images/ao-so-mi-nam-white.png', 'Trắng', 'White'),
-(1, 'Sky Blue', '#87CEEB', '/public/images/ao-so-mi-nam-blue.png', 'Xanh Da Trời', 'Sky Blue'),
-(2, 'White', '#FFFFFF', '/public/images/ao-so-mi-nam-white.png', 'Trắng', 'White'),
-(2, 'Sky Blue', '#87CEEB', '/public/images/ao-so-mi-nam-blue.png', 'Xanh Da Trời', 'Sky Blue'),
-(3, 'Beige', '#C3B091', '/public/images/ao-so-mi-nam-beige.png', 'Be', 'Beige'),
-(3, 'Black', '#000000', '/public/images/ao-so-mi-nam-black.png', 'Đen', 'Black'),
-(4, 'Beige', '#C3B091', '/public/images/ao-so-mi-nam-beige.png', 'Be', 'Beige'),
-(4, 'Black', '#000000', '/public/images/ao-so-mi-nam-black.png', 'Đen', 'Black'),
-(5, 'Beige', '#F5F5DC', '/public/images/quan-chino-nam-beige.png', 'Be', 'Beige'),
-(5, 'Blue', '#0000FF', '/public/images/quan-chino-nam-blue.png', 'Xanh Dương', 'Blue'),
-(6, 'Beige', '#F5F5DC', '/public/images/quan-chino-nam-beige.png', 'Be', 'Beige'),
-(6, 'Blue', '#0000FF', '/public/images/quan-chino-nam-blue.png', 'Xanh Dương', 'Blue'),
-(7, 'Light Blue', '#e5ecf6', '/public/images/quan-jean-nam-light-blue.png', 'Xanh Nhạt', 'Light Blue'),
-(7, 'Dark Gray', '#232227', '/public/images/quan-jean-nam-dark-gray.png', 'Xám Đậm', 'Dark Gray'),
-(8, 'Light Blue', '#e5ecf6', '/public/images/quan-jean-nam-light-blue.png', 'Xanh Nhạt', 'Light Blue'),
-(8, 'Dark Gray', '#232227', '/public/images/quan-jean-nam-dark-gray.png', 'Xám Đậm', 'Dark Gray'),
-(9, 'Green', '#6f7c6b', '/public/images/ao-hoodie-nam-green.png', 'Xanh Lá', 'Green'),
-(9, 'Red', '#d74d55', '/public/images/ao-hoodie-nam-red.png', 'Đỏ', 'Red'),
-(10, 'Green', '#6f7c6b', '/public/images/ao-hoodie-nam-green.png', 'Xanh Lá', 'Green'),
-(10, 'Red', '#d74d55', '/public/images/ao-hoodie-nam-red.png', 'Đỏ', 'Red'),
-(11, 'Blue', '#007bff', '/public/images/ao-khoac-nam-blue.png', 'Xanh Dương', 'Blue'),
-(11, 'Yellow', '#d4a017', '/public/images/ao-khoac-nam-yellow.png', 'Vàng', 'Yellow'),
-(12, 'Blue', '#007bff', '/public/images/ao-khoac-nam-blue.png', 'Xanh Dương', 'Blue'),
-(12, 'Yellow', '#d4a017', '/public/images/ao-khoac-nam-yellow.png', 'Vàng', 'Yellow'),
-(13, 'White', '#FFFFFF', '/public/images/ao-so-mi-nu-white.png', 'Trắng', 'White'),
-(13, 'Green', '#A9E5BB', '/public/images/ao-so-mi-nu-green.png', 'Xanh Lá', 'Green'),
-(14, 'White', '#FFFFFF', '/public/images/ao-so-mi-nu-white.png', 'Trắng', 'White'),
-(14, 'Green', '#A9E5BB', '/public/images/ao-so-mi-nu-green.png', 'Xanh Lá', 'Green'),
-(15, 'White', '#FFFFFF', '/public/images/ao-so-mi-nu-ke-soc-white.png', 'Trắng', 'White'),
-(15, 'Sky Blue', '#87CEEB', '/public/images/ao-so-mi-nu-ke-soc-blue.png', 'Xanh Da Trời', 'Sky Blue'),
-(16, 'White', '#FFFFFF', '/public/images/ao-so-mi-nu-ke-soc-white.png', 'Trắng', 'White'),
-(16, 'Sky Blue', '#87CEEB', '/public/images/ao-so-mi-nu-ke-soc-blue.png', 'Xanh Da Trời', 'Sky Blue'),
-(17, 'Sky Blue', '#dce2f0', '/public/images/ao-thun-co-tron-nu-blue.png', 'Xanh Da Trời', 'Sky Blue'),
-(17, 'Navy', '#2b3b5d', '/public/images/ao-thun-co-tron-nu-navy.png', 'Xanh Navy', 'Navy'),
-(18, 'Sky Blue', '#dce2f0', '/public/images/ao-thun-co-tron-nu-blue.png', 'Xanh Da Trời', 'Sky Blue'),
-(18, 'Navy', '#2b3b5d', '/public/images/ao-thun-co-tron-nu-navy.png', 'Xanh Navy', 'Navy'),
-(19, 'White', '#FFFFFF', '/public/images/ao-thun-vai-cotton-nu-white.png', 'Trắng', 'White'),
-(19, 'Black', '#000000', '/public/images/ao-thun-vai-cotton-nu-black.png', 'Đen', 'Black'),
-(20, 'White', '#FFFFFF', '/public/images/ao-thun-vai-cotton-nu-white.png', 'Trắng', 'White'),
-(20, 'Black', '#000000', '/public/images/ao-thun-vai-cotton-nu-black.png', 'Đen', 'Black'),
-(21, 'Beige', '#F5F5DC', '/public/images/quan-dai-gear-nu-beige.png', 'Be', 'Beige'),
-(21, 'Dark Green', '#0A3D3B', '/public/images/quan-dai-gear-nu-green.png', 'Xanh Đậm', 'Dark Green'),
-(22, 'Beige', '#F5F5DC', '/public/images/quan-dai-gear-nu-beige.png', 'Be', 'Beige'),
-(22, 'Dark Green', '#0A3D3B', '/public/images/quan-dai-gear-nu-green.png', 'Xanh Đậm', 'Dark Green'),
-(23, 'Beige', '#b6a498', '/public/images/quan-det-kim-nu-khaki.png', 'Be', 'Beige'),
-(23, 'Gray', '#515055', '/public/images/quan-det-kim-nu-gray.png', 'Xám', 'Gray'),
-(24, 'Beige', '#b6a498', '/public/images/quan-det-kim-nu-khaki.png', 'Be', 'Beige'),
-(24, 'Gray', '#515055', '/public/images/quan-det-kim-nu-gray.png', 'Xám', 'Gray'),
-(25, 'Gray', '#c0c8d3', '/public/images/ao-thun-tay-ngan-unisex-gray.png', 'Xám', 'Gray'),
-(25, 'Dark Gray', '#474b4e', '/public/images/ao-thun-tay-ngan-unisex-dark-gray.png', 'Xám Đậm', 'Dark Gray'),
-(26, 'Gray', '#c0c8d3', '/public/images/ao-thun-tay-ngan-unisex-gray.png', 'Xám', 'Gray'),
-(26, 'Dark Gray', '#474b4e', '/public/images/ao-thun-tay-ngan-unisex-dark-gray.png', 'Xám Đậm', 'Dark Gray'),
-(27, 'Dark Blue', '#2c3546', '/public/images/ao-thun-tay-dai-unisex-blue.png', 'Xanh Đậm', 'Dark Blue'),
-(27, 'Light Green', '#b3b6af', '/public/images/ao-thun-tay-dai-unisex-green.png', 'Xanh Lá Nhạt', 'Light Green'),
-(28, 'Dark Blue', '#2c3546', '/public/images/ao-thun-tay-dai-unisex-blue.png', 'Xanh Đậm', 'Dark Blue'),
-(28, 'Light Green', '#b3b6af', '/public/images/ao-thun-tay-dai-unisex-green.png', 'Xanh Lá Nhạt', 'Light Green'),
-(29, 'Green', '#5a6151', '/public/images/quan-dai-unisex-green.png', 'Xanh Lá', 'Green'),
-(29, 'Beige', '#cab99f', '/public/images/quan-dai-unisex-beige.png', 'Be', 'Beige'),
-(30, 'Green', '#5a6151', '/public/images/quan-dai-unisex-green.png', 'Xanh Lá', 'Green'),
-(30, 'Beige', '#cab99f', '/public/images/quan-dai-unisex-beige.png', 'Be', 'Beige'),
-(31, 'Blue', '#1B4F72', '/public/images/quan-jean-unisex-blue.png', 'Xanh Dương', 'Blue'),
-(31, 'Black', '#333333', '/public/images/quan-jean-unisex-black.png', 'Đen', 'Black'),
-(32, 'Blue', '#1B4F72', '/public/images/quan-jean-unisex-blue.png', 'Xanh Dương', 'Blue'),
-(32, 'Black', '#333333', '/public/images/quan-jean-unisex-black.png', 'Đen', 'Black'),
-(33, 'White', '#f1f0ee', '/public/images/quan-short-unisex-white.png', 'Trắng', 'White'),
-(33, 'Gray', '#646b7d', '/public/images/quan-short-unisex-gray.png', 'Xám', 'Gray'),
-(34, 'White', '#f1f0ee', '/public/images/quan-short-unisex-white.png', 'Trắng', 'White'),
-(34, 'Gray', '#646b7d', '/public/images/quan-short-unisex-gray.png', 'Xám', 'Gray'),
-(35, 'Green', '#696C52', '/public/images/quan-short-unisex-green.png', 'Xanh Lá', 'Green'),
-(35, 'Navy', '#2C3243', '/public/images/quan-short-unisex-navy.png', 'Xanh Navy', 'Navy'),
-(36, 'Green', '#696C52', '/public/images/quan-short-unisex-green.png', 'Xanh Lá', 'Green'),
-(36, 'Navy', '#2C3243', '/public/images/quan-short-unisex-navy.png', 'Xanh Navy', 'Navy');
-
-
+-- ============================================================
 -- 6. SEED PRODUCT SIZES
-
+-- ============================================================
 INSERT INTO product_sizes (color_id, size, stock) VALUES
-
 (1, 'S', 10),(1, 'M', 20),(1, 'L', 15),
 (2, 'S', 8),(2, 'M', 18),(2, 'L', 12),
 (3, 'S', 10),(3, 'M', 15),(3, 'L', 12),
@@ -254,24 +274,36 @@ INSERT INTO product_sizes (color_id, size, stock) VALUES
 (71, 'S', 10),(71, 'M', 15),(71, 'L', 12),
 (72, 'S', 8),(72, 'M', 12),(72, 'L', 10);
 
-
+-- ============================================================
 -- 7. SEED BANNERS
+-- ============================================================
+INSERT INTO banners (id, image_url, title, subtitle, title_vi, title_en, subtitle_vi, subtitle_en) VALUES
+(1, '/public/images/banner1.png', 'WELCOME TO LOOM', 'Nhập mã LOOM10 giảm ngay 10% cho đơn hàng đầu tiên từ 300k!', 'Chào Mừng Đến Với LOOM', 'Welcome to LOOM', 'Nhập mã LOOM10 giảm ngay 10% cho đơn hàng đầu tiên từ 300k!', 'Use code LOOM10 for 10% off your first order from 300k!'),
+(2, '/public/images/banner2.png', 'LOOM SUMMER GRAND SALE', 'Giảm giá lên đến 20% cho toàn bộ các sản phẩm Áo & Quần!', 'Đại Tiệc Ưu Đãi Mùa Hè - LOOM', 'LOOM Summer Grand Sale', 'Giảm giá lên đến 20% cho toàn bộ các sản phẩm Áo & Quần!', 'Up to 20% off on all Shirts, T-shirts, Pants & Shorts!'),
+(3, '/public/images/banner3.png', 'MUA 2 TẶNG 1 ĐẶC BIỆT', 'Thêm 2 Áo Thun bất kỳ vào giỏ hàng để nhận ngay 1 Quần Short cao cấp!', 'Ưu Đãi Mua 2 Áo Thun Tặng 1 Quần Short', 'Buy 2 T-shirts Get 1 Short Free', 'Thêm 2 Áo Thun bất kỳ vào giỏ hàng để nhận ngay 1 Quần Short cao cấp!', 'Buy any 2 T-shirts and receive 1 Premium Short for free!'),
+(4, '/public/images/banner4.png', 'ĐẶC QUYỀN HỘI VIÊN LOOM VIP', 'Tích điểm nâng hạng Bạc/Vàng/Kim Cương – Giảm thêm lên đến 20%!', 'Đặc Quyền Nâng Hạng Hội Viên VIP', 'LOOM VIP Membership Rewards', 'Tích điểm nâng hạng Bạc/Vàng/Kim Cương – Giảm thêm lên đến 20% khi thanh toán!', 'Upgrade to Silver/Gold/Diamond for up to 20% extra discount!');
 
-INSERT INTO banners (image_url, title, subtitle, title_vi, title_en, subtitle_vi, subtitle_en) VALUES
+-- ============================================================
+-- 8. SEED SALES
+-- ============================================================
+INSERT INTO sales (id, name, name_vi, name_en, discount_percent, apply_scope, start_date, end_date, status) VALUES
+(1, 'LOOM Summer Sale 2025', 'Đại Tiệc Sale Mùa Hè LOOM 2025', 'LOOM Summer Grand Sale 2025', 20.00, 'all', DATE_SUB(CURDATE(), INTERVAL 15 DAY), DATE_ADD(CURDATE(), INTERVAL 45 DAY), 1);
 
-('/public/images/banner1.png', 'Welcome to Clothing Shop', 'The latest collection is here – Up to 50% off today!', 'Chào Mừng Đến Với Clothing Shop', 'Welcome to Clothing Shop', 'Bộ sưu tập mới nhất đã ra mắt – Giảm đến 50% hôm nay!', 'The latest collection is here – Up to 50% off today!'),
-('/public/images/banner2.png', 'New Style Every Day', 'Discover the hottest trending clothing models', 'Phong Cách Mới Mỗi Ngày', 'New Style Every Day', 'Khám phá những mẫu quần áo đang hot nhất hiện nay', 'Discover the hottest trending clothing models'),
-('/public/images/banner3.png', 'New Arrivals Every Week', 'Continuously updated – don\'t miss the latest trends', 'Hàng Mới Về Mỗi Tuần', 'New Arrivals Every Week', 'Liên tục cập nhật – đừng bỏ lỡ xu hướng mới nhất', 'Continuously updated – don\'t miss the latest trends'),
-('/public/images/banner4.png', 'Special Weekend Offer', 'Get an extra 20% off your first order – Shop now!', 'Ưu Đãi Cuối Tuần Đặc Biệt', 'Special Weekend Offer', 'Giảm thêm 20% cho đơn hàng đầu tiên – Mua ngay!', 'Get an extra 20% off your first order – Shop now!');
+-- ============================================================
+-- 9. SEED VOUCHERS
+-- ============================================================
+INSERT INTO vouchers (id, code, description_vi, description_en, discount_percent, max_discount_amount, min_order_value, usage_limit, used_count, start_date, end_date, status, apply_scope) VALUES
+(1, 'LOOM10', 'Giảm 10% tối đa 50.000đ cho đơn hàng từ 300.000đ', '10% off up to 50k for orders from 300k', 10.00, 50000.00, 300000.00, 100, 15, DATE_SUB(CURDATE(), INTERVAL 30 DAY), DATE_ADD(CURDATE(), INTERVAL 60 DAY), 1, 'all');
 
+-- ============================================================
+-- 10. SEED PROMOTIONS (BUY X GET Y)
+-- ============================================================
+INSERT INTO buy_x_get_y_promotions (id, name, name_vi, name_en, description_vi, description_en, buy_product_id, buy_quantity, gift_product_id, gift_quantity, start_date, end_date, max_gift_per_order, total_gift_limit, priority, is_stackable, status, is_active) VALUES
+(1, 'Buy 2 T-Shirts Get 1 Short Free', 'Mua 2 Áo Thun Unisex Tặng 1 Quần Short', 'Buy 2 Unisex T-shirts Get 1 Short Free', 'Mua 2 Áo Thun Unisex Phố Thị (ID 25) nhận ngay 1 Quần Short Nỉ Da Cá (ID 33) miễn phí', 'Buy 2 Heavyweight Streetwear Unisex Tees (ID 25) get 1 French Terry Sweat Short (ID 33) free', 25, 2, 33, 1, DATE_SUB(CURDATE(), INTERVAL 15 DAY), DATE_ADD(CURDATE(), INTERVAL 45 DAY), 2, 50, 1, 1, 'active', 1);
 
--- 8. SEED ORDERS & ITEMS
-
-SET FOREIGN_KEY_CHECKS = 0;
-TRUNCATE TABLE order_items;
-TRUNCATE TABLE orders;
-SET FOREIGN_KEY_CHECKS = 1;
-
+-- ============================================================
+-- 11. SEED ORDERS & ORDER ITEMS
+-- ============================================================
 INSERT INTO orders (id, name, email, phone, address, total_price, status, created_at) VALUES
 (200, 'Nguyễn Văn A', 'a@test.com', '0901', 'Hà Nội', 0, 'Delivered', DATE_SUB(CURDATE(), INTERVAL 6 DAY)),
 (201, 'Trần Thị B', 'b@test.com', '0902', 'TP HCM', 0, 'Delivered', DATE_SUB(CURDATE(), INTERVAL 5 DAY)),
@@ -316,10 +348,9 @@ INSERT INTO order_items (order_id, product_id, quantity, price) VALUES
 
 UPDATE orders o SET total_price = (SELECT SUM(quantity * price) FROM order_items WHERE order_id = o.id);
 
-
-
--- 9. SEED RETURN REQUESTS
-
+-- ============================================================
+-- 12. SEED RETURN REQUESTS
+-- ============================================================
 INSERT INTO return_requests (order_id, reason_code, status) VALUES
 (301, 'Damaged', 'Pending'),
 (302, 'Wrong item', 'Pending'),
@@ -334,10 +365,9 @@ INSERT INTO return_requests (order_id, reason_code, status) VALUES
 (311, 'Change mind', 'Rejected'),
 (312, 'Not as described', 'Rejected');
 
-
-
--- 10. SEED USER INTERACTIONS
-
+-- ============================================================
+-- 13. SEED USER PRODUCT INTERACTIONS
+-- ============================================================
 INSERT INTO user_product_interaction (user_id, product_id, interaction_type) VALUES
 (3, 1, 'view'), (3, 1, 'add_to_cart'), (3, 1, 'purchase'),
 (3, 5, 'view'), (3, 5, 'purchase'),

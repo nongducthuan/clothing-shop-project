@@ -22,7 +22,6 @@ async function getShopContext(): Promise<string> {
         const [products, categories, promotions, vouchers] = await Promise.all([
             prisma.product.findMany({
                 where: { is_active: true },
-                take: 30,
                 orderBy: { created_at: 'desc' },
                 include: { category: true }
             }),
