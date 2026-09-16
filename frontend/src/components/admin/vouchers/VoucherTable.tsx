@@ -41,7 +41,7 @@ export default function VoucherTable({ vouchers, onShowDetail, onDelete, onEdit 
                     </span>
                   </td>
                   <td className="py-4 px-4">
-                    <span className="bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 px-3 py-1 rounded-full text-[11px] font-black uppercase border border-emerald-200 dark:border-emerald-900/50">
+                    <span className="bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 px-3 py-1 rounded-full text-[11px] font-black uppercase border border-emerald-200 dark:border-emerald-900/50 whitespace-nowrap inline-block">
                       {t("admin.vt_discount_badge").replace("{percent}", String(Number(item.discount_percent)))}
                     </span>
                     <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 font-medium">

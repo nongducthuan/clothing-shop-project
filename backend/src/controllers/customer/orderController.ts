@@ -22,6 +22,9 @@ export const sendOtpController = async (req: Request, res: Response): Promise<vo
         res.status(400).json({ message: "Email is required" });
         return;
     }
+    const lang = (req.headers['accept-language'] || req.headers['language'] || 'vi') as string;
+    const isEnglish = lang.startsWith('en');
+    const emailLang = isEnglish ? 'en' : 'vi';
 
     try {
         const oneMinuteAgo = new Date(Date.now() - 60 * 1000);
@@ -44,7 +47,7 @@ export const sendOtpController = async (req: Request, res: Response): Promise<vo
             });
         });
 
-        const emailResult = await sendEmail(email, "Your OTP Code", `Your verification code is: ${code}`);
+        const emailResult = await sendEmail(email, "Your OTP Code", `Your verification code is: ${code}`, emailLang);
         if (!emailResult.success) {
             res.status(500).json({ message: "Failed to send OTP email: " + emailResult.error });
             return;
@@ -354,11 +357,18 @@ export const createOrderController = async (req: Request, res: Response): Promis
             orderId = newOrder.id;
         });
 
+        const lang = (req.headers['accept-language'] || req.headers['language'] || 'vi') as string;
+        const isEnglish = lang.startsWith('en');
+        const emailLang = isEnglish ? 'en' : 'vi';
+
         // Outside transaction: Emails, Analytics, MoMo
         sendEmail(
             email || (req.user ? req.user.email : ''),
-            "Order Confirmation",
-            `Thank you! Order #${orderId} has been placed successfully. Total: ${finalTotal.toLocaleString()} VND`
+            isEnglish ? "Order Confirmation" : "Xác nhận đơn hàng",
+            isEnglish 
+                ? `Thank you! Order #${orderId} has been placed successfully. Total: ${finalTotal.toLocaleString()} VND`
+                : `Cảm ơn bạn! Đơn hàng #${orderId} đã được đặt thành công. Tổng cộng: ${finalTotal.toLocaleString()} VNĐ`,
+            emailLang
         ).catch(e => console.error("Email error:", e));
 
         if (userId) {
@@ -551,6 +561,56 @@ export const momoCallback = async (req: Request, res: Response): Promise<void> =
     } catch (error: any) {
         console.error("FULL IPN ERROR LOG:", error);
         res.status(500).json({ message: "IPN Webhook Error", error: error.message });
+    }
+};
+
+export const momoReturn = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const query = req.query;
+        const { orderId, resultCode } = query as any;
+
+        if (!orderId) {
+            res.status(400).json({ success: false, message: "Missing orderId in query" });
+            return;
+        }
+
+        const isValid = verifyMomoSignature(query);
+        if (!isValid) {
+            console.warn(`MoMo Return: Invalid signature for orderId=${orderId}`);
+            res.status(400).json({ success: false, message: "Invalid signature" });
+            return;
+        }
+
+        const parts = String(orderId).split('_');
+        const realOrderId = String(orderId).startsWith('REPAY') ? Number(parts[1]) : Number(parts[0]);
+
+        if (String(resultCode) === '0') {
+            await prisma.order.update({
+                where: { id: realOrderId },
+                data: { payment_status: 'Paid' }
+            });
+
+            try {
+                await changeOrderStatusLogic(realOrderId, 'Confirmed');
+            } catch (orderError: any) {
+                console.error("Order Status Update Error (MoMo Return):", orderError.message);
+            }
+
+            res.status(200).json({
+                success: true,
+                orderId: realOrderId,
+                message: "MoMo payment successful!"
+            });
+        } else {
+            res.status(200).json({
+                success: false,
+                orderId: realOrderId,
+                message: (query.message as string) || "MoMo payment was cancelled or failed."
+            });
+        }
+    } catch (error: any) {
+        console.error("MOMO RETURN ERROR:", error);
+        res.status(500).json({ success: false, message: "Error verifying MoMo transaction" });
     }
 };
 

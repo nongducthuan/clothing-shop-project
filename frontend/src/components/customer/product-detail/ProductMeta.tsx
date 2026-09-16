@@ -1,10 +1,10 @@
 import React from "react";
 import { useLanguage } from "../../../context/LanguageContext";
+import { formatCurrency } from "../../../utils/currencyUtils";
 
 export default function ProductMeta({ state, helpers }) {
   const { product, isSale, salePrice } = state;
-  const { formatPrice } = helpers;
-  const { getLocalizedText } = useLanguage();
+  const { getLocalizedText, language } = useLanguage();
 
   const productName = getLocalizedText(product, 'name');
   const categoryName = getLocalizedText(product, 'category_name') || product.category_name;
@@ -22,15 +22,15 @@ export default function ProductMeta({ state, helpers }) {
         {isSale ? (
           <div className="flex items-center gap-4 flex-wrap">
             <p className="text-2xl font-medium text-rose-500">
-              {formatPrice(salePrice)} đ
+              {formatCurrency(salePrice, language)}
             </p>
             <p className="text-lg text-slate-400 dark:text-slate-500 line-through decoration-slate-300 dark:decoration-slate-600">
-              {formatPrice(product.price)} đ
+              {formatCurrency(product.price, language)}
             </p>
           </div>
         ) : (
           <p className="text-2xl font-medium text-slate-900 dark:text-slate-100">
-            {formatPrice(product.price)} đ
+            {formatCurrency(product.price, language)}
           </p>
         )}
       </div>

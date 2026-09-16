@@ -26,7 +26,7 @@ interface AIChatProviderProps {
 export const AIChatContext = createContext<AIChatContextType | undefined>(undefined);
 
 export function AIChatProvider({ children }: AIChatProviderProps) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [sessionId, setSessionId] = useState<string>(() => {
     const stored = localStorage.getItem(STORAGE_SESSION_KEY);
     return stored ?? crypto.randomUUID();
@@ -69,7 +69,7 @@ export function AIChatProvider({ children }: AIChatProviderProps) {
       setError(null);
 
       try {
-        const { reply } = await sendChatMessage({ message: trimmed, sessionId });
+        const { reply } = await sendChatMessage({ message: trimmed, sessionId, language });
 
         const aiMessage: ChatMessage = {
           id: crypto.randomUUID(),

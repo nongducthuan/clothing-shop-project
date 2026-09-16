@@ -53,6 +53,7 @@ router.delete('/orders/:id/return', optionalAuthenticateToken, orderController.c
 
 // MoMo & VNPay Webhooks & Callbacks
 router.post('/orders/momo-callback', orderController.momoCallback);
+router.get('/orders/momo-return', orderController.momoReturn);
 router.get('/orders/vnpay-ipn', orderController.vnpayIpn);
 router.post('/orders/vnpay-ipn', orderController.vnpayIpn);
 router.get('/orders/vnpay-return', orderController.vnpayReturn);

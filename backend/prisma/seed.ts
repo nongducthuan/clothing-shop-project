@@ -346,18 +346,18 @@ async function main() {
     data: [
       {
         image_url:   '/public/images/banner1.png',
-        title:       'WELCOME TO CLOTHING SHOP',
-        title_vi:    'Chào Mừng Đến Với Clothing Shop',
-        title_en:    'Welcome to Clothing Shop',
-        subtitle:    'Nhập mã WELCOME10 giảm ngay 10% cho đơn hàng đầu tiên từ 300k!',
-        subtitle_vi: 'Nhập mã WELCOME10 giảm ngay 10% cho đơn hàng đầu tiên từ 300k!',
-        subtitle_en: 'Use code WELCOME10 for 10% off your first order from 300k!',
+        title:       'WELCOME TO LOOM',
+        title_vi:    'Chào Mừng Đến Với LOOM',
+        title_en:    'Welcome to LOOM',
+        subtitle:    'Nhập mã LOOM10 giảm ngay 10% cho đơn hàng đầu tiên từ 300k!',
+        subtitle_vi: 'Nhập mã LOOM10 giảm ngay 10% cho đơn hàng đầu tiên từ 300k!',
+        subtitle_en: 'Use code LOOM10 for 10% off your first order from 300k!',
       },
       {
         image_url:   '/public/images/banner2.png',
-        title:       'SIÊU SALE MÙA HÈ 2025',
-        title_vi:    'Đại Tiệc Sale Mùa Hè 2025',
-        title_en:    'Summer Grand Sale 2025',
+        title:       'LOOM SUMMER GRAND SALE',
+        title_vi:    'Đại Tiệc Ưu Đãi Mùa Hè - LOOM',
+        title_en:    'LOOM Summer Grand Sale',
         subtitle:    'Giảm giá lên đến 20% cho toàn bộ các sản phẩm Áo & Quần!',
         subtitle_vi: 'Giảm giá lên đến 20% cho toàn bộ các sản phẩm Áo & Quần!',
         subtitle_en: 'Up to 20% off on all Shirts, T-shirts, Pants & Shorts!',
@@ -373,9 +373,9 @@ async function main() {
       },
       {
         image_url:   '/public/images/banner4.png',
-        title:       'ĐẶC QUYỀN HỘI VIÊN VIP',
+        title:       'ĐẶC QUYỀN HỘI VIÊN LOOM VIP',
         title_vi:    'Đặc Quyền Nâng Hạng Hội Viên VIP',
-        title_en:    'VIP Membership Exclusive Rewards',
+        title_en:    'LOOM VIP Membership Rewards',
         subtitle:    'Tích điểm nâng hạng Bạc/Vàng/Kim Cương – Giảm thêm lên đến 20%!',
         subtitle_vi: 'Tích điểm nâng hạng Bạc/Vàng/Kim Cương – Giảm thêm lên đến 20% khi thanh toán!',
         subtitle_en: 'Upgrade to Silver/Gold/Diamond for up to 20% extra discount!',
@@ -389,9 +389,9 @@ async function main() {
   // ============================================================
   await prisma.sale.create({
     data: {
-      name: 'Summer Sale 2025',
-      name_vi: 'Đại Tiệc Sale Mùa Hè 2025',
-      name_en: 'Summer Grand Sale 2025',
+      name: 'LOOM Summer Sale 2025',
+      name_vi: 'Đại Tiệc Sale Mùa Hè LOOM 2025',
+      name_en: 'LOOM Summer Grand Sale 2025',
       discount_percent: 20,
       apply_scope: ApplyScope.all,
       start_date: daysAgo(15),
@@ -399,77 +399,26 @@ async function main() {
       status: true,
     },
   });
-
-  await prisma.sale.create({
-    data: {
-      name: 'Shirt & Tee Flash Sale',
-      name_vi: 'Flash Sale Áo Sơ Mi & Áo Thun',
-      name_en: 'Shirt & Tee Flash Sale',
-      discount_percent: 15,
-      apply_scope: ApplyScope.category,
-      start_date: daysAgo(5),
-      end_date: daysFromNow(25),
-      status: true,
-      sale_categories: {
-        create: [
-          { category_id: 1 }, // Áo Sơ Mi Nam
-          { category_id: 4 }, // Áo Sơ Mi Nữ
-          { category_id: 5 }, // Áo Thun Nữ
-          { category_id: 7 }, // Áo Thun Unisex
-        ],
-      },
-    },
-  });
   console.log('✔ Sales');
 
   // ============================================================
   // 7.2 VOUCHERS
   // ============================================================
-  await prisma.voucher.createMany({
-    data: [
-      {
-        code: 'WELCOME10',
-        description_vi: 'Giảm 10% tối đa 50.000đ cho đơn hàng đầu tiên từ 300.000đ',
-        description_en: '10% off up to 50k for your first order from 300k',
-        discount_percent: 10,
-        max_discount_amount: 50000,
-        min_order_value: 300000,
-        usage_limit: 100,
-        used_count: 15,
-        start_date: daysAgo(30),
-        end_date: daysFromNow(60),
-        status: true,
-        apply_scope: ApplyScope.all,
-      },
-      {
-        code: 'SUMMER20',
-        description_vi: 'Giảm 20% tối đa 100.000đ cho đơn hàng từ 500.000đ',
-        description_en: '20% off up to 100k for orders from 500k',
-        discount_percent: 20,
-        max_discount_amount: 100000,
-        min_order_value: 500000,
-        usage_limit: 50,
-        used_count: 8,
-        start_date: daysAgo(10),
-        end_date: daysFromNow(30),
-        status: true,
-        apply_scope: ApplyScope.all,
-      },
-      {
-        code: 'FREESHIP50',
-        description_vi: 'Giảm 50.000đ trực tiếp cho đơn hàng từ 200.000đ',
-        description_en: 'Direct 50k discount for orders from 200k',
-        discount_percent: 15,
-        max_discount_amount: 50000,
-        min_order_value: 200000,
-        usage_limit: 200,
-        used_count: 42,
-        start_date: daysAgo(45),
-        end_date: daysFromNow(45),
-        status: true,
-        apply_scope: ApplyScope.all,
-      },
-    ],
+  await prisma.voucher.create({
+    data: {
+      code: 'LOOM10',
+      description_vi: 'Giảm 10% tối đa 50.000đ cho đơn hàng từ 300.000đ',
+      description_en: '10% off up to 50k for orders from 300k',
+      discount_percent: 10,
+      max_discount_amount: 50000,
+      min_order_value: 300000,
+      usage_limit: 100,
+      used_count: 15,
+      start_date: daysAgo(30),
+      end_date: daysFromNow(60),
+      status: true,
+      apply_scope: ApplyScope.all,
+    },
   });
   console.log('✔ Vouchers');
 
@@ -493,28 +442,6 @@ async function main() {
       total_gift_limit: 50,
       priority: 1,
       is_stackable: true,
-      status: PromotionStatus.active,
-      is_active: true,
-    },
-  });
-
-  await prisma.buyXGetYPromotion.create({
-    data: {
-      name: 'Buy 1 Oxford Shirt Get 1 Chino Pants Free',
-      name_vi: 'Mua 1 Áo Sơ Mi Oxford Tặng 1 Quần Chino Nam',
-      name_en: 'Buy 1 Oxford Shirt Get 1 Chino Pants Free',
-      description_vi: 'Mua 1 Áo Sơ Mi Cotton Oxford (ID 1) nhận ngay 1 Quần Chino Nam (ID 5) miễn phí',
-      description_en: 'Buy 1 Premium Oxford Cotton Shirt (ID 1) get 1 Slim Tapered Chino Pants (ID 5) free',
-      buy_product_id: 1,
-      buy_quantity: 1,
-      gift_product_id: 5,
-      gift_quantity: 1,
-      start_date: daysAgo(10),
-      end_date: daysFromNow(30),
-      max_gift_per_order: 1,
-      total_gift_limit: 20,
-      priority: 2,
-      is_stackable: false,
       status: PromotionStatus.active,
       is_active: true,
     },

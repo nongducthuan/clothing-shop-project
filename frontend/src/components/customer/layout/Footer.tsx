@@ -8,8 +8,12 @@ export default function Footer() {
   const { user } = useContext(AuthContext);
   const { t } = useLanguage();
 
-  // Hide footer on auth pages
-  if (location.pathname === "/login" || location.pathname === "/register") {
+  // Hide footer on auth pages and admin pages
+  if (
+    location.pathname === "/login" ||
+    location.pathname === "/register" ||
+    location.pathname.startsWith("/admin")
+  ) {
     return null;
   }
 
@@ -21,9 +25,9 @@ export default function Footer() {
           
           {/* Cột 1: Brand Info */}
           <div className="flex flex-col items-start space-y-5">
-            <div className="border-b-2 border-white pb-1">
-              <Link to="/" className="font-black text-2xl text-white tracking-tighter no-underline inline-block">
-                CLOTHING<span className="text-violet-500">SHOP</span>
+            <div className="border-b-2 border-violet-500/50 pb-1">
+              <Link to="/" className="font-black text-2xl text-violet-700 dark:text-violet-400 tracking-wider no-underline inline-flex items-center gap-1">
+                <span>LOOM</span>
               </Link>
             </div>
             <p className="text-slate-400 text-sm leading-relaxed text-left m-0">
@@ -112,7 +116,7 @@ export default function Footer() {
 
         {/* Bottom copyright */}
         <div className="pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-[11px] text-slate-500 uppercase tracking-widest">
-          <p>© {new Date().getFullYear()} Clothing Shop. {t("footer.rights_reserved", "All Rights Reserved.")}</p>
+          <p>© {new Date().getFullYear()} LOOM. {t("footer.rights_reserved", "All Rights Reserved.")}</p>
           <div className="flex items-center gap-5 text-slate-500 text-lg">
             <i className="fa-brands fa-cc-visa hover:text-white transition-colors cursor-pointer"></i>
             <i className="fa-brands fa-cc-mastercard hover:text-white transition-colors cursor-pointer"></i>

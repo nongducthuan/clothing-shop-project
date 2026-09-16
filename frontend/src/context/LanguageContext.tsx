@@ -10,6 +10,7 @@ interface LanguageContextType {
   getOrderStatusLabel: (status?: string | null) => string;
   getReturnStatusLabel: (status?: string | null) => string;
   getReturnReasonLabel: (reason?: string | null) => string;
+  translateApiMessage: (msg?: string | null) => string;
 }
 
 export type LabelType = "orderStatus" | "returnStatus" | "returnReason";
@@ -27,6 +28,12 @@ const LABEL_MAPS: Record<LabelType, Record<string, string>> = {
     Shipping: "order_status.shipping",
     Delivered: "order_status.delivered",
     Cancelled: "order_status.cancelled",
+    "Return Requested": "order_status.return_requested",
+    "Return_Requested": "order_status.return_requested",
+    "Return Approved": "order_status.return_approved",
+    "Return_Approved": "order_status.return_approved",
+    "Return Rejected": "order_status.return_rejected",
+    "Return_Rejected": "order_status.return_rejected",
   },
   returnStatus: {
     Pending: "order_status.return_pending",
@@ -39,6 +46,7 @@ const LABEL_MAPS: Record<LabelType, Record<string, string>> = {
     "Change mind": "return_reason.change_mind",
     "Change of mind": "return_reason.change_mind",
     "Not as described": "return_reason.not_as_described",
+    "Defective": "return_reason.defective",
     "Other": "return_reason.other",
   },
 };
@@ -66,7 +74,16 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     if (dict && (key in dict)) {
       return (dict as any)[key];
     }
+    const apiMsgKey = `api_msg.${key}`;
+    if (dict && (apiMsgKey in dict)) {
+      return (dict as any)[apiMsgKey];
+    }
     return fallback || key;
+  };
+
+  const translateApiMessage = (msg?: string | null): string => {
+    if (!msg) return "";
+    return t(msg);
   };
 
   /**
@@ -110,7 +127,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     getLocalizedLabel("returnReason", reason);
 
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, t, getLocalizedText, getLocalizedLabel, getOrderStatusLabel, getReturnStatusLabel, getReturnReasonLabel }}>
+    <LanguageContext.Provider value={{ language, setLanguage, t, getLocalizedText, getLocalizedLabel, getOrderStatusLabel, getReturnStatusLabel, getReturnReasonLabel, translateApiMessage }}>
       {children}
     </LanguageContext.Provider>
   );

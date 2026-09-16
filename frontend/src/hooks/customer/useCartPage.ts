@@ -8,7 +8,7 @@ import { getImageUrl } from "../../utils/imageUtils";
 export function useCartPage() {
   const { cart, removeFromCart, updateQuantity } = useContext(CartContext);
   const { user, discount, tier } = useContext(AuthContext);
-  const { t } = useLanguage();
+  const { t, getLocalizedText } = useLanguage();
 
   const [voucherCode, setVoucherCode] = useState("");
   const [appliedVoucher, setAppliedVoucher] = useState(null);
@@ -67,7 +67,8 @@ export function useCartPage() {
 
           gifts.push({
             promoId: promo.id,
-            promoName: promo.name,
+            promoName: getLocalizedText(promo, 'name') || promo.name,
+            promo: promo,
             giftProductId: giftProdId,
             quantity: totalGiftQty,
             color_id: colorId,
@@ -78,7 +79,7 @@ export function useCartPage() {
     });
 
     return gifts;
-  }, [cart, activePromotions, selectedGiftVariants, giftProductsDetails]);
+  }, [cart, activePromotions, selectedGiftVariants, giftProductsDetails, getLocalizedText]);
 
   const handleSelectGiftVariant = (giftProductId, colorId, sizeId) => {
     setSelectedGiftVariants(prev => ({

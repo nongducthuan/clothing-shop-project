@@ -3,6 +3,7 @@ import API from "./apiClient";
 interface SendChatMessageParams {
   message: string;
   sessionId: string;
+  language?: string;
 }
 
 interface ChatMessageResponse {
@@ -12,10 +13,12 @@ interface ChatMessageResponse {
 export const sendChatMessage = async ({
   message,
   sessionId,
+  language
 }: SendChatMessageParams): Promise<ChatMessageResponse> => {
   const res = await API.post("/chat/history", {
     message,
     sessionId,
+    language
   });
   return res.data;
 };

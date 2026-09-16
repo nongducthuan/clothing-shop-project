@@ -69,7 +69,7 @@ Chính sách cửa hàng:
     }
 }
 
-export async function generateAiResponse(message: string, history: ChatMessageHistory[] = []): Promise<string> {
+export async function generateAiResponse(message: string, history: ChatMessageHistory[] = [], language: string = 'vi'): Promise<string> {
     const apiKey = process.env.GOOGLE_API_KEY;
     if (!apiKey) {
         throw new Error("GOOGLE_API_KEY is not configured in backend environment variables.");
@@ -78,12 +78,15 @@ export async function generateAiResponse(message: string, history: ChatMessageHi
     const genAI = new GoogleGenerativeAI(apiKey);
     const shopContext = await getShopContext();
 
+    const defaultLanguage = language === 'en' ? 'English' : 'Vietnamese';
+    const languageInstruction = `MATCH the language of the user's input. If the user writes in Vietnamese, reply in Vietnamese. If the user writes in English, reply in English. If the user's language is unclear, default to responding in ${defaultLanguage}.`;
+
     const systemInstruction = `You are a friendly and professional AI Sales Assistant for the "Clothing Shop" fashion store.
 YOUR CORE RESPONSIBILITIES:
 1. Answer customer inquiries about products, outfit recommendations, pricing, sales promotions, vouchers, and store policies.
 2. Base all your recommendations ONLY on the provided store context below. If a requested product is not in the catalog, politely inform the user and suggest relevant available categories/products.
 3. Keep responses concise, polite, helpful, and natural.
-4. LANGUAGE RULE: ALWAYS respond in Vietnamese by default (unless the customer asks in English).
+4. LANGUAGE RULE: ${languageInstruction}
 5. FORMATTING RULE: Keep formatting clean and minimal. Avoid excessive markdown asterisk symbols.
 
 STORE DATA CONTEXT:

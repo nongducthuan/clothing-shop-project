@@ -56,7 +56,7 @@ export default function HeroCarousel({ banners = [] }) {
         }}
       >
         {slides.map((banner, idx) => {
-          const title = banner ? getLocalizedText(banner, "title") : t("home.hero_fallback_title", "Welcome to Clothing Shop");
+          const title = banner ? getLocalizedText(banner, "title") : t("home.hero_fallback_title", "Welcome to LOOM");
           const subtitle = banner
             ? getLocalizedText(banner, "subtitle")
             : t("home.hero_fallback_subtitle", "The latest collection is here – Up to 50% off today!");

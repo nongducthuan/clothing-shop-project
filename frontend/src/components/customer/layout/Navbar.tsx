@@ -1,6 +1,6 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import { useContext, useState, useEffect, useRef } from "react";
-import { Sun, Moon, Globe, Menu, X } from "lucide-react";
+import { Sun, Moon, Globe, Menu, X, ShieldCheck, PackageCheck, Truck } from "lucide-react";
 import { AuthContext } from "../../../context/AuthContext";
 import { CartContext } from "../../../context/CartContext";
 import { useTheme } from "../../../context/ThemeContext";
@@ -162,9 +162,10 @@ const DesktopNav = ({ menuData, navigate }) => {
 };
 
 // Renders the User Icon and Dropdown (Desktop)
-const UserDropdown = ({ user, navigate, onLogout, cartCount }: { user: any; navigate: any; onLogout: any; cartCount: number }) => {
+const UserDropdown = ({ user, navigate, onLogout }: { user: any; navigate: any; onLogout: any }) => {
   const { isOpen, open, close, closeImmediately, cancelClose } = useHoverDelay();
-  const { t } = useLanguage();
+  const { t, language, setLanguage } = useLanguage();
+  const { isDark, toggleTheme } = useTheme();
 
   const handleItemClick = (action: () => void) => {
     closeImmediately();
@@ -179,11 +180,6 @@ const UserDropdown = ({ user, navigate, onLogout, cartCount }: { user: any; navi
             user ? "text-violet-600" : "text-gray-700 dark:text-slate-300 hover:text-violet-600"
           }`}
         ></i>
-        {cartCount > 0 && (
-          <span className="absolute -top-1 -right-2 bg-red-500 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center border border-white">
-            {cartCount > 99 ? "99+" : cartCount}
-          </span>
-        )}
       </div>
 
       {isOpen && (
@@ -223,27 +219,28 @@ const UserDropdown = ({ user, navigate, onLogout, cartCount }: { user: any; navi
 
               <div className="border-t border-gray-100 dark:border-slate-700 my-1"></div>
 
+              {/* Language Switcher */}
               <div
                 className="px-4 py-2.5 hover:bg-violet-50 dark:hover:bg-slate-700 hover:text-violet-700 dark:hover:text-violet-400 font-medium text-gray-700 dark:text-slate-300 cursor-pointer transition-colors flex items-center justify-between"
-                onClick={() => handleItemClick(() => navigate("/search"))}
+                onClick={() => handleItemClick(() => setLanguage(language === "vi" ? "en" : "vi"))}
               >
                 <div className="flex items-center">
-                  <i className="fa-solid fa-magnifying-glass mr-2 w-4 text-center"></i> {t("nav.search", "Tìm kiếm")}
+                  <i className="fa-solid fa-globe mr-2 w-4 text-center"></i> {language === "vi" ? "English" : "Tiếng Việt"}
                 </div>
+                <span className="text-[11px] font-bold px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
+                  {language === "vi" ? "EN" : "VI"}
+                </span>
               </div>
 
+              {/* Theme Toggle */}
               <div
                 className="px-4 py-2.5 hover:bg-violet-50 dark:hover:bg-slate-700 hover:text-violet-700 dark:hover:text-violet-400 font-medium text-gray-700 dark:text-slate-300 cursor-pointer transition-colors flex items-center justify-between"
-                onClick={() => handleItemClick(() => navigate("/cart"))}
+                onClick={() => handleItemClick(toggleTheme)}
               >
                 <div className="flex items-center">
-                  <i className="fa-solid fa-cart-shopping mr-2 w-4 text-center"></i> {t("nav.cart", "Giỏ hàng")}
+                  <i className={`fa-solid ${isDark ? "fa-sun text-amber-400" : "fa-moon text-slate-600"} mr-2 w-4 text-center`}></i>
+                  {isDark ? t("common.theme_light", "Giao diện sáng") : t("common.theme_dark", "Giao diện tối")}
                 </div>
-                {cartCount > 0 && (
-                  <span className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
-                    {cartCount > 99 ? "99+" : cartCount}
-                  </span>
-                )}
               </div>
 
               <div
@@ -262,27 +259,28 @@ const UserDropdown = ({ user, navigate, onLogout, cartCount }: { user: any; navi
             </>
           ) : (
             <>
+              {/* Language Switcher */}
               <div
                 className="px-4 py-2.5 hover:bg-violet-50 dark:hover:bg-slate-700 hover:text-violet-700 dark:hover:text-violet-400 font-medium text-gray-700 dark:text-slate-300 cursor-pointer transition-colors flex items-center justify-between"
-                onClick={() => handleItemClick(() => navigate("/search"))}
+                onClick={() => handleItemClick(() => setLanguage(language === "vi" ? "en" : "vi"))}
               >
                 <div className="flex items-center">
-                  <i className="fa-solid fa-magnifying-glass mr-2 w-4 text-center"></i> {t("nav.search", "Tìm kiếm")}
+                  <i className="fa-solid fa-globe mr-2 w-4 text-center"></i> {language === "vi" ? "English" : "Tiếng Việt"}
                 </div>
+                <span className="text-[11px] font-bold px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
+                  {language === "vi" ? "EN" : "VI"}
+                </span>
               </div>
 
+              {/* Theme Toggle */}
               <div
                 className="px-4 py-2.5 hover:bg-violet-50 dark:hover:bg-slate-700 hover:text-violet-700 dark:hover:text-violet-400 font-medium text-gray-700 dark:text-slate-300 cursor-pointer transition-colors flex items-center justify-between"
-                onClick={() => handleItemClick(() => navigate("/cart"))}
+                onClick={() => handleItemClick(toggleTheme)}
               >
                 <div className="flex items-center">
-                  <i className="fa-solid fa-cart-shopping mr-2 w-4 text-center"></i> {t("nav.cart", "Giỏ hàng")}
+                  <i className={`fa-solid ${isDark ? "fa-sun text-amber-400" : "fa-moon text-slate-600"} mr-2 w-4 text-center`}></i>
+                  {isDark ? t("common.theme_light", "Giao diện sáng") : t("common.theme_dark", "Giao diện tối")}
                 </div>
-                {cartCount > 0 && (
-                  <span className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
-                    {cartCount > 99 ? "99+" : cartCount}
-                  </span>
-                )}
               </div>
 
               <div
@@ -322,7 +320,8 @@ const UserDropdown = ({ user, navigate, onLogout, cartCount }: { user: any; navi
 // Renders the Mobile Drawer (Hidden on Desktop)
 const MobileMenu = ({ isOpen, onClose, user, menuData, navigate, onLogout, cartCount }: { isOpen: boolean; onClose: () => void; user: any; menuData: any; navigate: any; onLogout: () => void; cartCount: number }) => {
   const [expandedGender, setExpandedGender] = useState(null);
-  const { t } = useLanguage();
+  const { language, setLanguage, t } = useLanguage();
+  const { isDark, toggleTheme } = useTheme();
   const { getLocalizedText } = useLanguage();
 
   useEffect(() => {
@@ -391,62 +390,49 @@ const MobileMenu = ({ isOpen, onClose, user, menuData, navigate, onLogout, cartC
             )}
           </div>
 
-          {/* Essential Quick Links (Mobile accessible!) */}
+          {/* Language & Theme Controls Mobile */}
           <div className="grid grid-cols-2 gap-2.5 mb-3.5">
             <button
-              onClick={() => handleNav("/search")}
-              className="flex items-center gap-2 px-2.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl text-slate-700 dark:text-slate-300 font-semibold text-xs hover:bg-violet-50 dark:hover:bg-violet-900/20 hover:text-violet-700 transition-all text-left"
+              onClick={() => setLanguage(language === "vi" ? "en" : "vi")}
+              className="flex items-center justify-center gap-2 px-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl text-slate-700 dark:text-slate-300 font-semibold text-xs hover:bg-violet-50 dark:hover:bg-violet-900/20 transition-all text-center"
             >
-              <div className="w-7 h-7 rounded-lg bg-violet-100 dark:bg-violet-900/40 text-violet-600 dark:text-violet-400 flex items-center justify-center shrink-0">
-                <i className="fa-solid fa-magnifying-glass text-xs"></i>
-              </div>
-              <span className="min-w-0 flex-1 text-center leading-tight truncate">{t("nav.search", "Tìm kiếm")}</span>
+              <Globe size={15} className="text-violet-600 dark:text-violet-400 shrink-0" />
+              <span>{language === "vi" ? "English (EN)" : "Tiếng Việt (VI)"}</span>
             </button>
-
             <button
-              onClick={() => handleNav("/cart")}
-              className="flex items-center gap-2 px-2.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl text-slate-700 dark:text-slate-300 font-semibold text-xs hover:bg-violet-50 dark:hover:bg-violet-900/20 hover:text-violet-700 transition-all text-left relative"
+              onClick={toggleTheme}
+              className="flex items-center justify-center gap-2 px-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl text-slate-700 dark:text-slate-300 font-semibold text-xs hover:bg-violet-50 dark:hover:bg-violet-900/20 transition-all text-center"
             >
-              <div className="w-7 h-7 rounded-lg bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 relative">
-                <i className="fa-solid fa-cart-shopping text-xs"></i>
-                {cartCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center border border-white">
-                    {cartCount > 99 ? "99+" : cartCount}
-                  </span>
-                )}
-              </div>
-              <span className="min-w-0 flex-1 text-center leading-tight truncate">{t("nav.cart", "Giỏ hàng")}</span>
+              {isDark ? <Sun size={15} className="text-amber-400 shrink-0" /> : <Moon size={15} className="text-slate-700 dark:text-slate-300 shrink-0" />}
+              <span>{isDark ? t("common.theme_light", "Sáng") : t("common.theme_dark", "Tối")}</span>
             </button>
+          </div>
 
+          {/* Essential Quick Links */}
+          <div className="grid grid-cols-2 gap-2.5 mb-3.5">
             <button
               onClick={() => handleNav("/sales-policy")}
-              className="flex items-center gap-2 px-2.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl text-slate-700 dark:text-slate-300 font-semibold text-xs hover:bg-violet-50 dark:hover:bg-violet-900/20 hover:text-violet-700 transition-all text-left"
+              className="flex items-center justify-center gap-2 px-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl text-slate-700 dark:text-slate-300 font-semibold text-xs hover:bg-violet-50 dark:hover:bg-violet-900/20 transition-all text-center"
             >
-              <div className="w-7 h-7 rounded-lg bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
-                <i className="fa-solid fa-shield-halved text-xs"></i>
-              </div>
-              <span className="min-w-0 flex-1 text-center leading-tight truncate">{t("nav.sales_policy", "Sales Policy")}</span>
+              <ShieldCheck size={15} className="text-purple-600 dark:text-purple-400 shrink-0" />
+              <span className="leading-tight">{t("nav.sales_policy", "Sales Policy")}</span>
             </button>
 
             {user ? (
               <button
                 onClick={() => handleNav("/profile?tab=orders")}
-                className="flex items-center gap-2 px-2.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl text-slate-700 dark:text-slate-300 font-semibold text-xs hover:bg-violet-50 dark:hover:bg-violet-900/20 hover:text-violet-700 transition-all text-left"
+                className="flex items-center justify-center gap-2 px-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl text-slate-700 dark:text-slate-300 font-semibold text-xs hover:bg-violet-50 dark:hover:bg-violet-900/20 transition-all text-center"
               >
-                <div className="w-7 h-7 rounded-lg bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
-                  <i className="fa-solid fa-box-archive text-xs"></i>
-                </div>
-                <span className="min-w-0 flex-1 text-center leading-tight truncate">{t("nav.my_orders", "My Orders")}</span>
+                <PackageCheck size={15} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
+                <span className="leading-tight">{t("nav.my_orders", "My Orders")}</span>
               </button>
             ) : (
               <button
                 onClick={() => handleNav("/order")}
-                className="flex items-center gap-2 px-2.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl text-slate-700 dark:text-slate-300 font-semibold text-xs hover:bg-violet-50 dark:hover:bg-violet-900/20 hover:text-violet-700 transition-all text-left"
+                className="flex items-center justify-center gap-2 px-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl text-slate-700 dark:text-slate-300 font-semibold text-xs hover:bg-violet-50 dark:hover:bg-violet-900/20 transition-all text-center"
               >
-                <div className="w-7 h-7 rounded-lg bg-sky-100 dark:bg-sky-900/40 text-sky-600 dark:text-sky-400 flex items-center justify-center shrink-0">
-                  <i className="fa-solid fa-truck-fast text-xs"></i>
-                </div>
-                <span className="min-w-0 flex-1 text-center leading-tight truncate">{t("nav.track_order", "Track Order")}</span>
+                <Truck size={15} className="text-sky-600 dark:text-sky-400 shrink-0" />
+                <span className="leading-tight">{t("nav.track_order", "Track Order")}</span>
               </button>
             )}
           </div>
@@ -530,8 +516,7 @@ const MobileMenu = ({ isOpen, onClose, user, menuData, navigate, onLogout, cartC
 export default function Navbar() {
   const { user, setUser } = useContext(AuthContext);
   const { cart } = useContext(CartContext);
-  const { isDark, toggleTheme } = useTheme();
-  const { language, setLanguage, t } = useLanguage();
+  const { t } = useLanguage();
   const navigate = useNavigate();
 
   const menuData = useCategoryData();
@@ -555,9 +540,9 @@ export default function Navbar() {
           <div className="shrink-0">
             <NavLink
               to="/"
-              className="font-black text-violet-700 dark:text-violet-400 tracking-tighter text-lg sm:text-xl md:text-2xl whitespace-nowrap drop-shadow-xs no-underline"
+              className="font-black text-violet-700 dark:text-violet-400 tracking-wider text-xl sm:text-2xl md:text-3xl whitespace-nowrap drop-shadow-xs no-underline flex items-center gap-1"
             >
-              CLOTHING<span className="text-gray-900 dark:text-slate-100">SHOP</span>
+              <span>LOOM</span>
             </NavLink>
           </div>
 
@@ -565,29 +550,33 @@ export default function Navbar() {
           <DesktopNav menuData={menuData} navigate={navigate} />
 
           {/* Icons & Actions */}
-          <div className="flex items-center justify-end gap-1.5 sm:gap-3 md:gap-4 shrink-0">
+          <div className="flex items-center justify-end gap-1 sm:gap-2 shrink-0">
 
-            {/* Language Switcher Button */}
+            {/* Search Button */}
             <button
-              onClick={() => setLanguage(language === "vi" ? "en" : "vi")}
-              className="px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-[11px] sm:text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors flex items-center gap-1 sm:gap-1.5 border border-slate-200 dark:border-slate-700"
-              title="Switch Language"
+              onClick={() => navigate("/search")}
+              className="p-2 rounded-full text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-violet-600 dark:hover:text-violet-400 transition-colors flex items-center justify-center"
+              title={t("nav.search", "Search")}
             >
-              <Globe size={13} className="text-violet-600 dark:text-violet-400 shrink-0" />
-              <span>{language.toUpperCase()}</span>
+              <i className="fa-solid fa-magnifying-glass text-lg"></i>
             </button>
 
-            {/* Dark / Light Theme Toggle Button */}
+            {/* Cart Button */}
             <button
-              onClick={toggleTheme}
-              className="p-1 sm:p-1.5 rounded-full text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-              title={isDark ? t("common.theme_light") : t("common.theme_dark")}
+              onClick={() => navigate("/cart")}
+              className="relative p-2 rounded-full text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-violet-600 dark:hover:text-violet-400 transition-colors flex items-center justify-center"
+              title={t("nav.cart", "Cart")}
             >
-              {isDark ? <Sun size={18} className="text-amber-400 sm:w-5 sm:h-5" /> : <Moon size={18} className="text-slate-700 sm:w-5 sm:h-5" />}
+              <i className="fa-solid fa-cart-shopping text-lg"></i>
+              {cartCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[9px] font-bold min-w-[17px] h-[17px] px-1 rounded-full flex items-center justify-center border-2 border-white dark:border-slate-900 leading-none shadow-xs">
+                  {cartCount > 99 ? "99+" : cartCount}
+                </span>
+              )}
             </button>
 
             {/* Desktop User Dropdown */}
-            <UserDropdown user={user} navigate={navigate} onLogout={handleLogout} cartCount={cartCount} />
+            <UserDropdown user={user} navigate={navigate} onLogout={handleLogout} />
 
             {/* Mobile Hamburger Button */}
             <button

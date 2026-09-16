@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { useSearchParams, useNavigate, Link } from "react-router-dom";
 import API from "../../services/apiClient";
 import PaymentBadge from "../../components/common/PaymentBadge";
 import ChangePaymentModal from "../../components/customer/common/ChangePaymentModal";
+import { AuthContext } from "../../context/AuthContext";
 
 export default function PaymentReturn() {
+  const { user } = useContext(AuthContext);
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -19,6 +21,8 @@ export default function PaymentReturn() {
     message: "Verifying payment...",
   });
 
+  const isMomo = Boolean(searchParams.get("partnerCode") || searchParams.get("resultCode"));
+
   useEffect(() => {
     const verifyPayment = async () => {
       try {
@@ -29,12 +33,13 @@ export default function PaymentReturn() {
           return;
         }
 
-        const res = await API.get(`/orders/vnpay-return?${query}`);
+        const endpoint = isMomo ? `/orders/momo-return?${query}` : `/orders/vnpay-return?${query}`;
+        const res = await API.get(endpoint);
         if (res.data.success) {
           setStatus({
             success: true,
             orderId: res.data.orderId,
-            message: "Payment successful via VNPay!",
+            message: isMomo ? "Payment successful via MoMo!" : "Payment successful via VNPay!",
           });
         } else {
           setStatus({
@@ -44,10 +49,10 @@ export default function PaymentReturn() {
           });
         }
       } catch (err: any) {
-        console.error("VNPay verification error:", err);
+        console.error("Payment verification error:", err);
         setStatus({
           success: false,
-          message: err.response?.data?.message || "Error verifying VNPay transaction.",
+          message: err.response?.data?.message || "Error verifying payment transaction.",
         });
       } finally {
         setLoading(false);
@@ -55,7 +60,7 @@ export default function PaymentReturn() {
     };
 
     verifyPayment();
-  }, [searchParams]);
+  }, [searchParams, isMomo]);
 
   const handleRepayConfirm = async (newMethod: string) => {
     if (!status.orderId) return;
@@ -73,7 +78,7 @@ export default function PaymentReturn() {
       } else {
         alert(res.data?.message || "Payment method updated successfully!");
         setShowChangeModal(false);
-        navigate("/profile?tab=orders");
+        navigate(user ? "/profile?tab=orders" : "/order");
       }
     } catch (e: any) {
       alert(e.response?.data?.message || "Unable to change payment method right now.");
@@ -82,11 +87,15 @@ export default function PaymentReturn() {
     }
   };
 
-  const responseCode = searchParams.get("vnp_ResponseCode");
-  const txnRef = searchParams.get("vnp_TxnRef") || status.orderId;
-  const amount = searchParams.get("vnp_Amount");
-  const bankCode = searchParams.get("vnp_BankCode");
-  const formattedAmount = amount ? (Number(amount) / 100).toLocaleString("vi-VN") + " đ" : null;
+  const responseCode = searchParams.get("vnp_ResponseCode") || searchParams.get("resultCode");
+  const rawOrderId = searchParams.get("orderId");
+  const parsedMoMoOrderId = rawOrderId ? (rawOrderId.startsWith("REPAY") ? rawOrderId.split("_")[1] : rawOrderId.split("_")[0]) : null;
+  const txnRef = searchParams.get("vnp_TxnRef") || parsedMoMoOrderId || status.orderId;
+  const rawAmount = searchParams.get("amount") || searchParams.get("vnp_Amount");
+  const bankCode = searchParams.get("vnp_BankCode") || searchParams.get("payType");
+  const formattedAmount = rawAmount
+    ? (isMomo ? Number(rawAmount) : Number(rawAmount) / 100).toLocaleString("vi-VN") + " đ"
+    : null;
 
   return (
     <div className="min-h-[70vh] bg-slate-50 dark:bg-slate-900 flex items-center justify-center py-12 px-4">
@@ -94,7 +103,7 @@ export default function PaymentReturn() {
         {loading ? (
           <div className="py-12 flex flex-col items-center gap-4">
             <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-            <p className="text-slate-600 dark:text-slate-300 font-medium">Verifying VNPay transaction...</p>
+            <p className="text-slate-600 dark:text-slate-300 font-medium">Verifying transaction...</p>
           </div>
         ) : status.success ? (
           <div className="space-y-6">
@@ -114,12 +123,12 @@ export default function PaymentReturn() {
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-slate-500 dark:text-slate-400">Payment Method:</span>
-                <PaymentBadge method="vnpay" badgeStyle={true} />
+                <PaymentBadge method={isMomo ? "momo" : "vnpay"} badgeStyle={true} />
               </div>
               {bankCode && (
                 <div className="flex justify-between">
-                  <span className="text-slate-500 dark:text-slate-400">Bank:</span>
-                  <span className="font-medium text-slate-800 dark:text-slate-200">{bankCode}</span>
+                  <span className="text-slate-500 dark:text-slate-400">Channel / Bank:</span>
+                  <span className="font-medium text-slate-800 dark:text-slate-200 uppercase">{bankCode}</span>
                 </div>
               )}
               {formattedAmount && (
@@ -132,7 +141,7 @@ export default function PaymentReturn() {
 
             <div className="flex flex-col gap-3">
               <Link
-                to="/profile"
+                to={user ? "/profile?tab=orders" : "/order"}
                 className="w-full py-3.5 bg-slate-900 dark:bg-slate-700 hover:bg-slate-800 dark:hover:bg-slate-600 text-white font-semibold rounded-2xl transition-all shadow-md"
               >
                 View My Orders
@@ -169,7 +178,7 @@ export default function PaymentReturn() {
                 </button>
               )}
               <Link
-                to="/profile"
+                to={user ? "/profile?tab=orders" : "/order"}
                 className="w-full py-3 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-medium rounded-2xl transition-colors"
               >
                 Back to Order History

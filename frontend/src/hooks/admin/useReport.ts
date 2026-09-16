@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import API from "../../services/apiClient";
 import { useLanguage } from "../../context/LanguageContext";
+import { formatCurrency as formatCurrencyUtil } from "../../utils/currencyUtils";
 
 export function useReport() {
-  const { getLocalizedText, getLocalizedLabel, t } = useLanguage();
+  const { getLocalizedText, getLocalizedLabel, t, language } = useLanguage();
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -21,8 +22,8 @@ export function useReport() {
     fetchStats();
   }, []);
 
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('vi-VN').format(amount || 0) + 'đ';
+  const formatCurrency = (amount: number | string | null | undefined) => {
+    return formatCurrencyUtil(amount, language);
   };
 
   // Nếu đang loading hoặc lỗi thì chưa cần map data

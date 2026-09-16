@@ -95,7 +95,7 @@ export function CheckoutSummary({ state, helpers }) {
                 </h4>
                 {variantText && <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{variantText}</p>}
                 <span className="inline-flex items-center gap-1 bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 text-[10px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider mt-1">
-                  <i className="fa-solid fa-gift text-rose-500 dark:text-rose-400"></i> {t("cart.free_gift", "Free Gift")} ({gift.promoName})
+                  <i className="fa-solid fa-gift text-rose-500 dark:text-rose-400"></i> {t("cart.free_gift", "Free Gift")} ({gift.promo ? (getLocalizedText(gift.promo, 'name') || gift.promoName) : gift.promoName})
                 </span>
                 <p className="text-sm font-medium text-slate-900 dark:text-slate-100 mt-1">{t("checkout.free", "Free")}</p>
               </div>

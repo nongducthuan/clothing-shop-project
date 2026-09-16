@@ -229,7 +229,7 @@ export function useCheckoutPage() {
       } else {
         setIsStatusSuccess(true);
         setStatusMessage(t("checkout.success", "Order placed successfully!"));
-        setTimeout(() => navigate(user ? "/profile" : "/"), 2000);
+        setTimeout(() => navigate(user ? "/profile?tab=orders" : "/order"), 2000);
       }
     } catch (err) {
       setIsStatusSuccess(false);

@@ -31,7 +31,7 @@ export async function getMomoPayUrl(
     const amountString = amountNumber.toString();
     const requestId = `${orderId}_${Date.now()}`;
     const momoOrderId = requestId;
-    const redirectUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/profile`;
+    const redirectUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/payment-return`;
     const baseUrl = process.env.BACKEND_URL?.replace(/\/+$/, '').replace(/\/api$/, '') || 'http://localhost:5000';
     const ipnUrl = `${baseUrl}/api/orders/momo-callback`;
     const requestType = "payWithATM";

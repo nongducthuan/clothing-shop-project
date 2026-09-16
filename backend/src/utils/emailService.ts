@@ -1,7 +1,8 @@
 export const sendEmail = async (
   to: string,
   subject: string,
-  text: string
+  text: string,
+  language: string = 'vi'
 ): Promise<{ success: boolean; data?: any; error?: string }> => {
   try {
     const otpMatch = text.match(/\d+/);
@@ -13,6 +14,31 @@ export const sendEmail = async (
     if (!apiKey) {
       throw new Error("BREVO_API_KEY is not defined in environment variables");
     }
+
+    const isEnglish = language === 'en';
+    const emailSubject = isEnglish ? "Order Verification Code" : "Mã xác thực đơn hàng";
+    
+    const htmlContent = isEnglish 
+      ? `
+          <div style="font-family: sans-serif; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
+            <h2 style="color: #7c3aed;">Order Verification Code</h2>
+            <p>Hello,</p>
+            <p>Your OTP code is: <strong style="font-size: 24px; color: #7c3aed;">${otp}</strong></p>
+            <p>This code will expire in 5 minutes.</p>
+            <hr />
+            <p style="font-size: 12px; color: #888;">If you did not request this, please ignore this email.</p>
+          </div>
+        `
+      : `
+          <div style="font-family: sans-serif; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
+            <h2 style="color: #7c3aed;">Mã xác thực đơn hàng</h2>
+            <p>Chào bạn,</p>
+            <p>Mã OTP của bạn là: <strong style="font-size: 24px; color: #7c3aed;">${otp}</strong></p>
+            <p>Mã này sẽ hết hạn sau 5 phút.</p>
+            <hr />
+            <p style="font-size: 12px; color: #888;">Nếu bạn không thực hiện yêu cầu này, hãy bỏ qua email này.</p>
+          </div>
+        `;
 
     const response = await fetch('https://api.brevo.com/v3/smtp/email', {
       method: 'POST',
@@ -31,17 +57,8 @@ export const sendEmail = async (
             email: to
           }
         ],
-        subject: subject,
-        htmlContent: `
-          <div style="font-family: sans-serif; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
-            <h2 style="color: #7c3aed;">Mã xác thực đơn hàng</h2>
-            <p>Chào bạn,</p>
-            <p>Mã OTP của bạn là: <strong style="font-size: 24px; color: #7c3aed;">${otp}</strong></p>
-            <p>Mã này sẽ hết hạn sau 5 phút.</p>
-            <hr />
-            <p style="font-size: 12px; color: #888;">Nếu bạn không thực hiện yêu cầu này, hãy bỏ qua email này.</p>
-          </div>
-        `
+        subject: emailSubject,
+        htmlContent: htmlContent
       })
     });
 

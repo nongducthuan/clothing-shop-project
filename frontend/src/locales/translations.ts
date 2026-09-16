@@ -149,7 +149,7 @@ export const translations = {
 
     // Home
     'home.hero_title': 'Thời Trang Đẳng Cấp & Phong Cách',
-    'home.hero_fallback_title': 'Chào mừng đến với Cửa hàng Thời Trang',
+    'home.hero_fallback_title': 'Chào mừng đến với LOOM',
     'home.hero_fallback_subtitle': 'Bộ sưu tập mới nhất đã có mặt – Giảm tới 50% hôm nay!',
     'home.recommended': 'Gợi Ý Dành Cho Bạn',
     'home.featured': 'Bộ Sưu Tập Nổi Bật',
@@ -647,7 +647,18 @@ export const translations = {
     'return_reason.wrong_item': 'Nhận nhầm sản phẩm',
     'return_reason.change_mind': 'Đổi ý không mua nữa',
     'return_reason.not_as_described': 'Không giống mô tả',
+    'return_reason.defective': 'Lỗi từ nhà sản xuất',
     'return_reason.other': 'Khác',
+
+    'api_msg.Empty Cart': 'Giỏ hàng đang trống',
+    'api_msg.Invalid voucher code': 'Mã voucher không hợp lệ',
+    'api_msg.Voucher is expired or invalid': 'Voucher đã hết hạn hoặc không hợp lệ',
+    'api_msg.Voucher applied successfully!': 'Áp dụng mã giảm giá thành công!',
+    'api_msg.Server connection error': 'Lỗi kết nối máy chủ',
+    'api_msg.Order not found': 'Không tìm thấy đơn hàng',
+    'api_msg.Invalid signature': 'Chữ ký không hợp lệ',
+    'api_msg.Password updated successfully': 'Đã cập nhật mật khẩu thành công',
+    'api_msg.Incorrect current password': 'Mật khẩu hiện tại không chính xác',
 
     'payment_status.pending': 'Chờ thanh toán',
     'payment_status.unpaid': 'Chưa thanh toán',
@@ -865,6 +876,15 @@ export const translations = {
     'voucher.remaining': 'Còn lại',
 
     'voucher.left': 'lượt',
+
+    // Shipping Zones
+    'shipping.zone.inner_city': 'Nội thành (TP.HCM / Hà Nội)',
+    'shipping.zone.nearby': 'Tỉnh lân cận',
+    'shipping.zone.south': 'Miền Nam',
+    'shipping.zone.central': 'Miền Trung',
+    'shipping.zone.north': 'Miền Bắc',
+    'shipping.zone.remote': 'Vùng xa / Đảo / Tây Nguyên',
+    'shipping.zone.default': 'Giao hàng tiêu chuẩn',
   },
   en: {
     // Nav
@@ -1510,7 +1530,18 @@ export const translations = {
     'return_reason.wrong_item': 'Wrong item received',
     'return_reason.change_mind': 'Change of mind',
     'return_reason.not_as_described': 'Not as described',
+    'return_reason.defective': 'Defective product',
     'return_reason.other': 'Other',
+
+    'api_msg.Empty Cart': 'Empty Cart',
+    'api_msg.Invalid voucher code': 'Invalid voucher code',
+    'api_msg.Voucher is expired or invalid': 'Voucher is expired or invalid',
+    'api_msg.Voucher applied successfully!': 'Voucher applied successfully!',
+    'api_msg.Server connection error': 'Server connection error',
+    'api_msg.Order not found': 'Order not found',
+    'api_msg.Invalid signature': 'Invalid signature',
+    'api_msg.Password updated successfully': 'Password updated successfully',
+    'api_msg.Incorrect current password': 'Incorrect current password',
 
     'payment_status.pending': 'Unpaid',
     'payment_status.unpaid': 'Unpaid',
@@ -1727,6 +1758,15 @@ export const translations = {
     'voucher.max_discount': 'Max discount',
     'voucher.remaining': 'Remaining',
     'voucher.left': 'left',
+
+    // Shipping Zones
+    'shipping.zone.inner_city': 'Inner City (HCMC / Hanoi)',
+    'shipping.zone.nearby': 'Nearby Provinces',
+    'shipping.zone.south': 'Southern Region',
+    'shipping.zone.central': 'Central Region',
+    'shipping.zone.north': 'Northern Region',
+    'shipping.zone.remote': 'Remote Area / Island / Highlands',
+    'shipping.zone.default': 'Standard Shipping',
   },
 };
 

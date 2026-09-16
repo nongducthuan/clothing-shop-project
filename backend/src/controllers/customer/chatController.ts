@@ -6,14 +6,15 @@ const activeChatSessions: Record<string, ChatMessageHistory[]> = {};
 
 export const handleChat = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { message } = req.body;
+        const { message, language } = req.body;
+        const lang = language || (req.headers['accept-language'] || req.headers['language'] || 'vi');
 
         if (!message) {
             res.status(400).json({ error: "Message content is required." });
             return;
         }
 
-        const reply = await generateAiResponse(message);
+        const reply = await generateAiResponse(message, [], lang as string);
         res.status(200).json({ reply });
     } catch (err: any) {
         console.error(`[AI Engine Error]:`, err.message || err);
@@ -23,7 +24,8 @@ export const handleChat = async (req: Request, res: Response): Promise<void> => 
 
 export const handleChatWithHistory = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { message, sessionId } = req.body;
+        const { message, sessionId, language } = req.body;
+        const lang = language || (req.headers['accept-language'] || req.headers['language'] || 'vi');
 
         if (!message || !sessionId) {
             res.status(400).json({ error: "Both message and sessionId are required." });
@@ -35,7 +37,7 @@ export const handleChatWithHistory = async (req: Request, res: Response): Promis
         }
 
         const history = activeChatSessions[sessionId];
-        const reply = await generateAiResponse(message, history);
+        const reply = await generateAiResponse(message, history, lang as string);
 
         // Update session history
         activeChatSessions[sessionId].push({ role: 'user', content: message });

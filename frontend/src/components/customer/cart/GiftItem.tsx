@@ -38,7 +38,7 @@ export default function GiftItem({ gift, detail, helpers, onSelectVariant }) {
         <div className="flex items-center gap-2 flex-wrap">
           <h4 className="font-medium text-slate-900 dark:text-slate-100 text-sm leading-tight">{getLocalizedText(detail, 'name') || detail.name}</h4>
           <span className="inline-flex items-center gap-1 bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-100 dark:border-rose-900/40 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
-            <i className="fa-solid fa-gift text-rose-500"></i> {t("cart.free_gift", "Free Gift")} ({gift.promoName})
+            <i className="fa-solid fa-gift text-rose-500"></i> {t("cart.free_gift", "Free Gift")} ({gift.promo ? (getLocalizedText(gift.promo, 'name') || gift.promoName) : gift.promoName})
           </span>
         </div>
 
@@ -78,12 +78,17 @@ export default function GiftItem({ gift, detail, helpers, onSelectVariant }) {
         </div>
       </div>
 
-      <div className="text-right hidden sm:block z-10 pr-4">
-        <span className="text-xs text-slate-400 dark:text-slate-500 line-through block">{formatPrice(detail.price)}</span>
-        <span className="font-bold text-emerald-600 dark:text-emerald-400 text-sm">{t("checkout.free", "Free")}</span>
+      <div className="flex sm:flex-col items-end justify-between sm:justify-center w-full sm:w-auto z-10 sm:pr-4 whitespace-nowrap flex-shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-200/60 dark:border-slate-600/60 gap-2 sm:gap-0">
+        <div className="text-left sm:text-right">
+          <span className="text-xs text-slate-400 dark:text-slate-500 line-through block whitespace-nowrap">{formatPrice(detail.price)}</span>
+          <span className="font-bold text-emerald-600 dark:text-emerald-400 text-sm whitespace-nowrap">{t("checkout.free", "Free")}</span>
+        </div>
+        <div className="font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-700 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-600 text-xs shadow-sm sm:hidden">
+          x{gift.quantity}
+        </div>
       </div>
 
-      <div className="font-semibold text-slate-700 dark:text-slate-200 z-10 pr-2 self-end sm:self-center bg-white dark:bg-slate-700 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-600 text-xs shadow-sm">
+      <div className="font-semibold text-slate-700 dark:text-slate-200 z-10 pr-2 self-center bg-white dark:bg-slate-700 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-600 text-xs shadow-sm hidden sm:block">
         x{gift.quantity}
       </div>
     </div>

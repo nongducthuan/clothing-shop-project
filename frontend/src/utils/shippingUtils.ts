@@ -264,3 +264,8 @@ export function calculateShippingFee(
 
   return baseFee + extraFee;
 }
+
+export function getShippingZoneKey(province: string): string {
+  const zone = getProvinceZone(province);
+  return `shipping.zone.${zone}`;
+}
