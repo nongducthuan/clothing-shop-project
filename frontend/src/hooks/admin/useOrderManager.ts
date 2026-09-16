@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import API from "../../services/apiClient";
 import { useToast } from "../../context/ToastContext";
 import { useLanguage } from "../../context/LanguageContext";
+import { formatCurrency as formatCurrencyUtil } from "../../utils/currencyUtils";
 
 // ==========================================
 // CONSTANTS (Declared outside to prevent re-creation on every render)
@@ -53,7 +54,7 @@ const PAYMENT_STATUS_COLORS = {
 export default function useOrderManager() {
   // --- STATE MANAGEMENT ---
   const { showToast } = useToast();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [orders, setOrders] = useState([]);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [confirmAction, setConfirmAction] = useState(false);
@@ -66,8 +67,8 @@ export default function useOrderManager() {
   }, []);
 
   const formatCurrency = useCallback((amount) => {
-    return Number(amount).toLocaleString("vi-VN") + "đ";
-  }, []);
+    return formatCurrencyUtil(amount, language);
+  }, [language]);
 
   const getOrderStatusColor = useCallback((status) => {
     return ORDER_STATUS_COLORS[status] || "#6c757d";

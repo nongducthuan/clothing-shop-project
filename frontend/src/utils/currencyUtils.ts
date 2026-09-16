@@ -7,11 +7,8 @@
 export const formatCurrency = (amount: number | string | null | undefined, language: string = 'vi'): string => {
   const validAmount = Number(amount) || 0;
   if (language === 'en') {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'VND',
-    }).format(validAmount);
+    return 'VND ' + new Intl.NumberFormat('en-US').format(validAmount);
   }
   
-  return new Intl.NumberFormat('vi-VN').format(validAmount) + ' d';
+  return new Intl.NumberFormat('vi-VN').format(validAmount) + ' ₫';
 };

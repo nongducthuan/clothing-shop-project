@@ -86,14 +86,14 @@ export default function HeroCarousel({ banners = [] }) {
         <>
           <button
             onClick={prev}
-            aria-label="Previous slide"
+            aria-label={t("home.prev_slide", "Previous slide")}
             className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/40 hover:bg-black/65 text-white flex items-center justify-center transition-all opacity-0 group-hover:opacity-100 focus:opacity-100"
           >
             <ChevronLeft size={22} />
           </button>
           <button
             onClick={next}
-            aria-label="Next slide"
+            aria-label={t("home.next_slide", "Next slide")}
             className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/40 hover:bg-black/65 text-white flex items-center justify-center transition-all opacity-0 group-hover:opacity-100 focus:opacity-100"
           >
             <ChevronRight size={22} />

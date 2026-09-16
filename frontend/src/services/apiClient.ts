@@ -12,6 +12,8 @@ API.interceptors.request.use((config) => {
     // Ensure the Authorization header follows the "Bearer <token>" format
     config.headers.Authorization = `Bearer ${token}`;
   }
+  const lang = localStorage.getItem("language") || "vi";
+  config.headers["Accept-Language"] = lang;
   return config;
 });
 

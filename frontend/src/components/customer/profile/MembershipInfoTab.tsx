@@ -174,7 +174,7 @@ export default function MembershipInfoTab({ state, actions, helpers }) {
                     type="button"
                     onClick={() => setShowCurrent(!showCurrent)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 p-1"
-                    aria-label="Toggle current password"
+                    aria-label={t("profile.toggle_current_password", "Toggle current password")}
                   >
                     <i className={`fa-solid ${showCurrent ? "fa-eye-slash" : "fa-eye"} text-xs sm:text-sm`}></i>
                   </button>
@@ -197,7 +197,7 @@ export default function MembershipInfoTab({ state, actions, helpers }) {
                     type="button"
                     onClick={() => setShowNew(!showNew)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 p-1"
-                    aria-label="Toggle new password"
+                    aria-label={t("profile.toggle_new_password", "Toggle new password")}
                   >
                     <i className={`fa-solid ${showNew ? "fa-eye-slash" : "fa-eye"} text-xs sm:text-sm`}></i>
                   </button>
@@ -220,7 +220,7 @@ export default function MembershipInfoTab({ state, actions, helpers }) {
                     type="button"
                     onClick={() => setShowConfirm(!showConfirm)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 p-1"
-                    aria-label="Toggle confirm password"
+                    aria-label={t("profile.toggle_confirm_password", "Toggle confirm password")}
                   >
                     <i className={`fa-solid ${showConfirm ? "fa-eye-slash" : "fa-eye"} text-xs sm:text-sm`}></i>
                   </button>

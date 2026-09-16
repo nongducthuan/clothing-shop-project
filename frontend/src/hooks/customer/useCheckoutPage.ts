@@ -10,6 +10,7 @@ import {
   calculateShippingFee,
   FREE_SHIPPING_THRESHOLD,
 } from "../../utils/shippingUtils";
+import { formatCurrency } from "../../utils/currencyUtils";
 
 // --- HELPER HOOK: GEOLOCATION ---
 const useGeolocation = () => {
@@ -89,7 +90,7 @@ export function useCheckoutPage() {
   const routeLocation = useLocation();
   const { cart, setCart } = useContext(CartContext);
   const { user, discount, tier } = useContext(AuthContext);
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { fetchCurrentLocation, isLocating, locationError } = useGeolocation();
 
   // State Management
@@ -237,7 +238,7 @@ export function useCheckoutPage() {
     }
   };
 
-  const formatPrice = (n) => Number(n).toLocaleString("vi-VN") + " đ";
+  const formatPrice = (n) => formatCurrency(n, language);
 
   return {
     state: {

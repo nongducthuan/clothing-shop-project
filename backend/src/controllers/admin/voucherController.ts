@@ -44,7 +44,7 @@ export const createVoucherAdmin = async (req: Request, res: Response): Promise<v
   } catch (error: any) {
     console.error("BACKEND ERROR:", error.message);
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
-      res.status(400).json({ success: false, message: "Mã voucher (code) này đã tồn tại. Vui lòng nhập mã khác!" });
+      res.status(400).json({ success: false, message: "Mã voucher này đã tồn tại. Vui lòng nhập mã khác!" });
       return;
     }
     res.status(500).json({ success: false, message: "Server error creating voucher" });

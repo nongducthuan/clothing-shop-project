@@ -582,7 +582,7 @@ export default function Navbar() {
             <button
               className="md:hidden text-gray-700 dark:text-slate-200 focus:outline-none p-1 shrink-0"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              aria-label="Toggle menu"
+              aria-label={t("nav.toggle_menu", "Toggle menu")}
             >
               {isMobileMenuOpen
                 ? <X size={22} className="text-violet-700 dark:text-violet-400" />

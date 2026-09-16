@@ -4,9 +4,12 @@ import API from "../../services/apiClient";
 import PaymentBadge from "../../components/common/PaymentBadge";
 import ChangePaymentModal from "../../components/customer/common/ChangePaymentModal";
 import { AuthContext } from "../../context/AuthContext";
+import { useLanguage } from "../../context/LanguageContext";
+import { formatCurrency } from "../../utils/currencyUtils";
 
 export default function PaymentReturn() {
   const { user } = useContext(AuthContext);
+  const { t, translateApiMessage, language } = useLanguage();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -18,7 +21,7 @@ export default function PaymentReturn() {
     message: string;
   }>({
     success: false,
-    message: "Verifying payment...",
+    message: t("payment_return.verifying", "Verifying transaction..."),
   });
 
   const isMomo = Boolean(searchParams.get("partnerCode") || searchParams.get("resultCode"));
@@ -28,7 +31,7 @@ export default function PaymentReturn() {
       try {
         const query = searchParams.toString();
         if (!query) {
-          setStatus({ success: false, message: "No payment parameters found." });
+          setStatus({ success: false, message: t("payment_return.no_params", "No payment parameters found.") });
           setLoading(false);
           return;
         }
@@ -39,20 +42,25 @@ export default function PaymentReturn() {
           setStatus({
             success: true,
             orderId: res.data.orderId,
-            message: isMomo ? "Payment successful via MoMo!" : "Payment successful via VNPay!",
+            message: isMomo
+              ? t("payment_return.momo_success", "Payment successful via MoMo!")
+              : t("payment_return.vnpay_success", "Payment successful via VNPay!"),
           });
         } else {
           setStatus({
             success: false,
             orderId: res.data.orderId,
-            message: res.data.message || "Payment was unsuccessful or cancelled.",
+            message: res.data.message
+              ? translateApiMessage(res.data.message)
+              : t("payment_return.unsuccessful_or_cancelled", "Payment was unsuccessful or cancelled."),
           });
         }
       } catch (err: any) {
         console.error("Payment verification error:", err);
+        const errMsg = err.response?.data?.message;
         setStatus({
           success: false,
-          message: err.response?.data?.message || "Error verifying payment transaction.",
+          message: errMsg ? translateApiMessage(errMsg) : t("payment_return.verify_error", "Error verifying payment transaction."),
         });
       } finally {
         setLoading(false);
@@ -60,7 +68,7 @@ export default function PaymentReturn() {
     };
 
     verifyPayment();
-  }, [searchParams, isMomo]);
+  }, [searchParams, isMomo, t, translateApiMessage]);
 
   const handleRepayConfirm = async (newMethod: string) => {
     if (!status.orderId) return;
@@ -76,12 +84,12 @@ export default function PaymentReturn() {
       if (res.data?.payUrl) {
         window.location.href = res.data.payUrl;
       } else {
-        alert(res.data?.message || "Payment method updated successfully!");
+        alert(res.data?.message ? translateApiMessage(res.data.message) : t("lookup.payment_updated", "Payment method updated successfully!"));
         setShowChangeModal(false);
         navigate(user ? "/profile?tab=orders" : "/order");
       }
     } catch (e: any) {
-      alert(e.response?.data?.message || "Unable to change payment method right now.");
+      alert(e.response?.data?.message ? translateApiMessage(e.response.data.message) : t("lookup.payment_error", "Error initiating payment"));
     } finally {
       setRepayLoading(false);
     }
@@ -94,7 +102,7 @@ export default function PaymentReturn() {
   const rawAmount = searchParams.get("amount") || searchParams.get("vnp_Amount");
   const bankCode = searchParams.get("vnp_BankCode") || searchParams.get("payType");
   const formattedAmount = rawAmount
-    ? (isMomo ? Number(rawAmount) : Number(rawAmount) / 100).toLocaleString("vi-VN") + " đ"
+    ? formatCurrency(isMomo ? Number(rawAmount) : Number(rawAmount) / 100, language)
     : null;
 
   return (
@@ -103,7 +111,9 @@ export default function PaymentReturn() {
         {loading ? (
           <div className="py-12 flex flex-col items-center gap-4">
             <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-            <p className="text-slate-600 dark:text-slate-300 font-medium">Verifying transaction...</p>
+            <p className="text-slate-600 dark:text-slate-300 font-medium">
+              {t("payment_return.verifying", "Verifying transaction...")}
+            </p>
           </div>
         ) : status.success ? (
           <div className="space-y-6">
@@ -112,28 +122,32 @@ export default function PaymentReturn() {
             </div>
 
             <div>
-              <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Payment Successful!</h2>
-              <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Thank you for your purchase. Your order has been confirmed.</p>
+              <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+                {t("payment_return.success_title", "Payment Successful!")}
+              </h2>
+              <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
+                {t("payment_return.success_desc", "Thank you for your purchase. Your order has been confirmed.")}
+              </p>
             </div>
 
             <div className="bg-slate-50 dark:bg-slate-700/40 p-4 rounded-2xl border border-slate-200 dark:border-slate-600 text-left text-sm space-y-2">
               <div className="flex justify-between">
-                <span className="text-slate-500 dark:text-slate-400">Order ID:</span>
+                <span className="text-slate-500 dark:text-slate-400">{t("payment_return.order_id", "Order ID:")}</span>
                 <span className="font-semibold text-slate-900 dark:text-slate-100">#{txnRef}</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-slate-500 dark:text-slate-400">Payment Method:</span>
+                <span className="text-slate-500 dark:text-slate-400">{t("payment_return.payment_method", "Payment Method:")}</span>
                 <PaymentBadge method={isMomo ? "momo" : "vnpay"} badgeStyle={true} />
               </div>
               {bankCode && (
                 <div className="flex justify-between">
-                  <span className="text-slate-500 dark:text-slate-400">Channel / Bank:</span>
+                  <span className="text-slate-500 dark:text-slate-400">{t("payment_return.channel_bank", "Channel / Bank:")}</span>
                   <span className="font-medium text-slate-800 dark:text-slate-200 uppercase">{bankCode}</span>
                 </div>
               )}
               {formattedAmount && (
                 <div className="flex justify-between pt-2 border-t border-slate-200 dark:border-slate-600">
-                  <span className="font-semibold text-slate-700 dark:text-slate-200">Total Amount:</span>
+                  <span className="font-semibold text-slate-700 dark:text-slate-200">{t("payment_return.total_amount", "Total Amount:")}</span>
                   <span className="font-bold text-blue-600 dark:text-blue-400">{formattedAmount}</span>
                 </div>
               )}
@@ -144,13 +158,13 @@ export default function PaymentReturn() {
                 to={user ? "/profile?tab=orders" : "/order"}
                 className="w-full py-3.5 bg-slate-900 dark:bg-slate-700 hover:bg-slate-800 dark:hover:bg-slate-600 text-white font-semibold rounded-2xl transition-all shadow-md"
               >
-                View My Orders
+                {t("payment_return.view_orders", "View My Orders")}
               </Link>
               <Link
                 to="/"
                 className="w-full py-3 bg-transparent hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-medium rounded-2xl transition-colors"
               >
-                Continue Shopping
+                {t("payment_return.continue_shopping", "Continue Shopping")}
               </Link>
             </div>
           </div>
@@ -161,7 +175,9 @@ export default function PaymentReturn() {
             </div>
 
             <div>
-              <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Payment Failed</h2>
+              <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+                {t("payment_return.failed_title", "Payment Failed")}
+              </h2>
               <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">{status.message}</p>
               {responseCode && (
                 <p className="text-xs text-rose-500 mt-2 font-mono">VNPay Error Code: {responseCode}</p>
@@ -174,14 +190,14 @@ export default function PaymentReturn() {
                   onClick={() => setShowChangeModal(true)}
                   className="w-full py-3.5 bg-slate-900 dark:bg-slate-700 hover:bg-slate-800 dark:hover:bg-slate-600 text-white font-semibold rounded-2xl transition-all shadow-md text-center"
                 >
-                  Pay / Change Payment Method
+                  {t("payment_return.repay_or_change", "Pay / Change Payment Method")}
                 </button>
               )}
               <Link
                 to={user ? "/profile?tab=orders" : "/order"}
                 className="w-full py-3 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-medium rounded-2xl transition-colors"
               >
-                Back to Order History
+                {t("payment_return.back_to_history", "Back to Order History")}
               </Link>
             </div>
           </div>
@@ -200,3 +216,4 @@ export default function PaymentReturn() {
     </div>
   );
 }
+

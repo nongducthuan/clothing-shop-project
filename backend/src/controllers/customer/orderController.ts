@@ -17,13 +17,14 @@ const ENUM_TO_DISPLAY_STATUS: Record<string, string> = {
 // ─── OTP ──────────────────────────────────────────────────────────────────────
 
 export const sendOtpController = async (req: Request, res: Response): Promise<void> => {
-    const { email } = req.body;
+    const { email, lang: bodyLang, language: bodyLanguage } = req.body;
     if (!email) {
         res.status(400).json({ message: "Email is required" });
         return;
     }
-    const lang = (req.headers['accept-language'] || req.headers['language'] || 'vi') as string;
-    const isEnglish = lang.startsWith('en');
+    const headerLang = (req.headers['accept-language'] || req.headers['language'] || 'vi') as string;
+    const rawLang = ((bodyLang || bodyLanguage || headerLang) as string).toLowerCase();
+    const isEnglish = rawLang.startsWith('en');
     const emailLang = isEnglish ? 'en' : 'vi';
 
     try {

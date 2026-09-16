@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useLanguage } from "../../../context/LanguageContext";
+import { formatCurrency } from "../../../utils/currencyUtils";
 
 interface ChangePaymentModalProps {
   isOpen: boolean;
@@ -16,7 +17,7 @@ export default function ChangePaymentModal({
   onConfirm,
   loading = false,
 }: ChangePaymentModalProps) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [selectedMethod, setSelectedMethod] = useState<string>("momo");
 
   useEffect(() => {
@@ -77,7 +78,7 @@ export default function ChangePaymentModal({
             <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 mt-0.5">
               {t('order_details.title', 'Đơn hàng')} #{order.id} • {t('cart.total', 'Tổng tiền')}:{" "}
               <span className="font-bold text-slate-900 dark:text-slate-100">
-                {Number(order.total_price).toLocaleString("vi-VN")}đ
+                {formatCurrency(order.total_price, language)}
               </span>
             </p>
           </div>

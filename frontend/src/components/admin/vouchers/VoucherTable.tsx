@@ -1,6 +1,7 @@
 import React from "react";
 import EmptyState from "../../common/EmptyState";
 import { useLanguage } from "../../../context/LanguageContext";
+import { formatCurrency } from "../../../utils/currencyUtils";
 
 export default function VoucherTable({ vouchers, onShowDetail, onDelete, onEdit }) {
   const { t, language } = useLanguage();
@@ -45,7 +46,7 @@ export default function VoucherTable({ vouchers, onShowDetail, onDelete, onEdit 
                       {t("admin.vt_discount_badge").replace("{percent}", String(Number(item.discount_percent)))}
                     </span>
                     <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 font-medium">
-                      {t("admin.vt_max").replace("{amount}", `${Number(item.max_discount_amount).toLocaleString()}đ`)}
+                      {t("admin.vt_max").replace("{amount}", formatCurrency(item.max_discount_amount, language))}
                     </div>
                   </td>
                   <td className="py-4 px-4">
@@ -63,7 +64,7 @@ export default function VoucherTable({ vouchers, onShowDetail, onDelete, onEdit 
                   </td>
                   <td className="py-4 px-4">
                     <div className="text-xs text-slate-600 dark:text-slate-400">
-                      {t("admin.vt_min_spend")} <span className="font-bold text-slate-800 dark:text-slate-200">{Number(item.min_order_value).toLocaleString()}đ</span>
+                      {t("admin.vt_min_spend")} <span className="font-bold text-slate-800 dark:text-slate-200">{formatCurrency(item.min_order_value, language)}</span>
                     </div>
                     <div className="text-[11px] text-pink-500 dark:text-pink-400 font-bold mt-1">
                       {item.usage_limit === null

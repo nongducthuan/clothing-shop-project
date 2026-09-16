@@ -239,7 +239,7 @@ function StatCard({ title, value, color }) {
   return (
     <div className="bg-white dark:bg-slate-800 p-6 md:p-8 shadow-sm rounded-[2rem] border border-slate-200/80 dark:border-slate-700 transition-all duration-300 hover:-translate-y-1 hover:shadow-md hover:border-indigo-100 dark:hover:border-indigo-700 flex flex-col justify-center gap-2">
       <p className="text-[10px] font-bold text-slate-400 dark:text-slate-400 uppercase tracking-widest">{title}</p>
-      <h3 className={`text-2xl sm:text-3xl font-black ${color} truncate`}>{value}</h3>
+      <h3 className={`text-lg sm:text-xl xl:text-2xl font-black ${color} truncate`} title={String(value)}>{value}</h3>
     </div>
   );
 }

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { getImageUrl } from "../../../utils/imageUtils";
 import EmptyState from "../../common/EmptyState";
 import { useLanguage } from "../../../context/LanguageContext";
+import { formatCurrency } from "../../../utils/currencyUtils";
 
 export default function ProductList({
   products,
@@ -17,7 +18,7 @@ export default function ProductList({
   handleDelete,
 }) {
   const navigate = useNavigate();
-  const { t, getLocalizedText } = useLanguage();
+  const { t, getLocalizedText, language } = useLanguage();
   const genders = ["all", "male", "female", "unisex"];
 
   return (
@@ -136,19 +137,19 @@ export default function ProductList({
                       <div className="flex flex-col gap-1 flex-1 min-w-0">
                         <div className="flex items-baseline gap-1 text-red-600 dark:text-rose-400 leading-none">
                           <span className="font-black text-lg">
-                            {sellingPrice.toLocaleString()}đ
+                            {formatCurrency(sellingPrice, language)}
                           </span>
                         </div>
                         <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-1">
                           <div className="flex items-center gap-1 text-[10px] text-slate-500 dark:text-slate-400">
                             <span className="font-medium opacity-70">{t("admin.import_price")}:</span>
-                            <span className="font-semibold">{importPrice.toLocaleString()}đ</span>
+                            <span className="font-semibold">{formatCurrency(importPrice, language)}</span>
                           </div>
                         </div>
                         <div className="flex items-center gap-1 text-[10px] my-0.5">
                           <span className="text-slate-500 dark:text-slate-400 font-medium opacity-70">{t("admin.profit")}:</span>
                           <span className={`px-1.5 py-0.5 rounded-md text-[10px] font-bold border ${profitBadgeStyle}`}>
-                            {profit > 0 ? `+${profit.toLocaleString()}đ` : `${profit.toLocaleString()}đ`} ({marginPercent.toFixed(0)}%)
+                            {profit > 0 ? `+${formatCurrency(profit, language)}` : formatCurrency(profit, language)} ({marginPercent.toFixed(0)}%)
                           </span>
                         </div>
                         <div className="text-[9px] font-bold text-slate-400 dark:text-slate-400 uppercase tracking-tighter">

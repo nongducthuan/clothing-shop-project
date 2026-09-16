@@ -5,6 +5,7 @@ import API from "../../services/apiClient.js";
 import { getImageUrl } from "../../utils/imageUtils";
 import { useToast } from "../../context/ToastContext";
 import { useLanguage } from "../../context/LanguageContext";
+import { formatCurrency as formatCurrencyUtil } from "../../utils/currencyUtils";
 
 const TIER_CONFIG = {
   Normal: { next: 5000000, color: "text-slate-400", bg: "bg-slate-100", icon: "fa-shield-halved", label: "Bronze" },
@@ -25,7 +26,7 @@ const INITIAL_RETURN_DATA = {
 
 export function useProfilePage() {
   const { showToast } = useToast();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { user, logout, tier, refreshUser } = useContext(AuthContext);
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -211,7 +212,7 @@ export function useProfilePage() {
   };
 
   const handleReturnDataChange = (field, value) => setReturnData((prev) => ({ ...prev, [field]: value }));
-  const formatCurrency = (val) => Number(val).toLocaleString("vi-VN") + "đ";
+  const formatCurrency = (val) => formatCurrencyUtil(val, language);
   const getImgUrl = (path) => getImageUrl(path);
 
   const updateProfile = async () => {

@@ -3,14 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { getImageUrl, PLACEHOLDER_IMG } from "../../../utils/imageUtils";
 import { useLanguage } from "../../../context/LanguageContext";
 
+import { formatCurrency } from "../../../utils/currencyUtils";
+
 const GENDER_CONFIG = {
   male: { label: "Male", colorClass: "bg-blue-50 text-blue-600 border-blue-100 dark:bg-blue-950/50 dark:text-blue-400 dark:border-blue-800" },
   female: { label: "Female", colorClass: "bg-rose-50 text-rose-600 border-rose-100 dark:bg-rose-950/50 dark:text-rose-400 dark:border-rose-800" },
   unisex: { label: "Unisex", colorClass: "bg-emerald-50 text-emerald-600 border-emerald-100 dark:bg-emerald-950/50 dark:text-emerald-400 dark:border-emerald-800" },
 };
-
-const formatCurrency = (amount: number) => Number(amount).toLocaleString("vi-VN") + "đ";
-
 
 interface ProductCardProps {
   product: {
@@ -34,7 +33,7 @@ interface ProductCardProps {
 
 export default function ProductCard({ product, promotion }: ProductCardProps) {
   const navigate = useNavigate();
-  const { getLocalizedText, t } = useLanguage();
+  const { getLocalizedText, t, language } = useLanguage();
 
   const isSale = product.sale_percent > 0;
   const salePrice = product.price * (1 - product.sale_percent / 100);
@@ -97,15 +96,15 @@ export default function ProductCard({ product, promotion }: ProductCardProps) {
           {isSale ? (
             <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
               <span className="text-base sm:text-lg font-semibold text-rose-500">
-                {formatCurrency(salePrice)}
+                {formatCurrency(salePrice, language)}
               </span>
               <span className="text-xs sm:text-sm font-medium text-slate-400 dark:text-slate-500 line-through decoration-slate-300 dark:decoration-slate-600">
-                {formatCurrency(product.price)}
+                {formatCurrency(product.price, language)}
               </span>
             </div>
           ) : (
             <span className="text-base sm:text-lg font-semibold text-slate-900 dark:text-slate-100">
-              {formatCurrency(product.price)}
+              {formatCurrency(product.price, language)}
             </span>
           )}
         </div>

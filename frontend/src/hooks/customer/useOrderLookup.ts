@@ -2,12 +2,13 @@ import { useState } from "react";
 import API from "../../services/apiClient";
 import { useToast } from "../../context/ToastContext";
 import { useLanguage } from "../../context/LanguageContext";
+import { formatCurrency as formatCurrencyUtil } from "../../utils/currencyUtils";
 
 type AxiosErr = { response?: { data?: { message?: string } } };
 
 export function useOrderLookup() {
   const { showToast } = useToast();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [step, setStep] = useState(1);
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
@@ -45,7 +46,7 @@ export function useOrderLookup() {
     e.preventDefault();
     setLoading(true);
     try {
-      await API.post("/orders/otp/send", { email });
+      await API.post("/orders/otp/send", { email, lang: language });
       setStep(2);
     } catch (err: unknown) {
       showToast(t("lookup.otp_send_error"), "error");
@@ -218,7 +219,7 @@ export function useOrderLookup() {
   /**
    * Formats a number into Vietnamese Dong currency format.
    */
-  const formatCurrency = (val: number | string) => Number(val).toLocaleString("vi-VN") + "đ";
+  const formatCurrency = (val: number | string) => formatCurrencyUtil(val, language);
 
   // Reset function to go back to the very beginning
   const resetLookup = () => {
