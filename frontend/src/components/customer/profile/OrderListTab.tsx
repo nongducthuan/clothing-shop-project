@@ -133,7 +133,7 @@ function OrderCard({
             <span>{t("orders.pay_change", "Pay / Change")}</span>
             {isOnlinePendingUnpaid && countdown && (
               <span className="text-[10px] font-medium opacity-80 mt-0.5">
-                {language === 'vi' ? `Tự hủy sau ${countdown}` : `Cancels in ${countdown}`}
+                {t('orders.auto_cancel_warning', 'Tự hủy sau {time}').replace('{time}', countdown)}
               </span>
             )}
           </button>

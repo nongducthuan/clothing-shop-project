@@ -329,7 +329,7 @@ export default function OrderDetailModal({ order, onClose, onOpenPaymentModal, h
               <span>{t('order_details.pay_change', 'Thanh toán / Đổi phương thức')}</span>
               {isOnlinePendingUnpaid && countdown && (
                 <span className="text-[10px] font-medium opacity-80 mt-0.5">
-                  {language === 'vi' ? `Tự hủy sau ${countdown}` : `Cancels in ${countdown}`}
+                  {t('orders.auto_cancel_warning', 'Tự hủy sau {time}').replace('{time}', countdown)}
                 </span>
               )}
             </button>
