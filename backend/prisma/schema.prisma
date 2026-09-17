@@ -268,6 +268,7 @@ model Order {
   phone                   String                  @db.VarChar(20)
   address                 String                  @db.Text
   total_price             Decimal                 @default(0.00) @db.Decimal(10, 2)
+  shipping_fee            Decimal                 @default(0.00) @db.Decimal(10, 2)
   status                  OrderStatus             @default(Pending)
   payment_method          PaymentMethod           @default(cod)
   payment_status          PaymentStatus           @default(Unpaid)
@@ -295,12 +296,14 @@ model OrderItem {
   size_id              Int?
   quantity             Int
   price                Decimal              @db.Decimal(10, 2)
+  discount_amount      Decimal              @default(0.00) @db.Decimal(10, 2)
+  payable_amount       Decimal?             @db.Decimal(10, 2)
   is_gift              Boolean              @default(false)
   promotion_id         Int?
   color                ProductColor?        @relation(fields: [color_id], references: [id])
   order                Order                @relation(fields: [order_id], references: [id], onDelete: Cascade)
   product              Product              @relation(fields: [product_id], references: [id])
-  promotion            BuyXGetYPromotion?   @relation(fields: [promotion_id], references: [id])
+  promotion            BuyXGetYPromotion?   @relation(fields: [promotion_id], references: [id], onDelete: Restrict)
   size                 ProductSize?         @relation(fields: [size_id], references: [id])
   return_request_items ReturnRequestItem[]
 

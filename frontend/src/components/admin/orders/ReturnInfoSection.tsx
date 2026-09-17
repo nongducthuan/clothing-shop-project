@@ -123,15 +123,23 @@ export default function ReturnInfoSection({
           <div className="space-y-1.5">
             {order.return_items.map((ri: any, idx: number) => {
               const orderItem = ri.order_item;
-              const pName = getLocalizedText(orderItem?.product, "name") || orderItem?.product?.name || `Item #${ri.order_item_id}`;
-              const isGift = Boolean(orderItem?.is_gift);
+              const pName = getLocalizedText(orderItem?.product, "name") || orderItem?.product?.name || getLocalizedText(orderItem, "product_name") || orderItem?.product_name || `Item #${ri.order_item_id}`;
+              const cName = getLocalizedText(orderItem, "color_name") || orderItem?.color_name;
+              const sizeName = orderItem?.size;
+              const variantInfo = [cName, sizeName].filter(Boolean).join(" | ");
+              const isGift = Boolean(orderItem?.is_gift || ri.is_gift);
 
               return (
-                <div key={idx} className="bg-white dark:bg-slate-700 px-3 py-2 rounded-xl text-xs flex justify-between items-center border border-amber-100 dark:border-slate-600 shadow-xs">
-                  <div className="flex items-center gap-2 min-w-0 flex-1">
-                    <span className="font-semibold text-slate-800 dark:text-slate-100 truncate">
+                <div key={idx} className="bg-white dark:bg-slate-700 px-3 py-2.5 rounded-xl text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2 border border-amber-100 dark:border-slate-600 shadow-xs">
+                  <div className="flex items-center gap-2 min-w-0 flex-1 flex-wrap">
+                    <span className="font-semibold text-slate-800 dark:text-slate-100 leading-snug break-words">
                       {pName}
                     </span>
+                    {variantInfo && (
+                      <span className="text-[11px] font-normal text-slate-500 dark:text-slate-400">
+                        ({variantInfo})
+                      </span>
+                    )}
                     {isGift && (
                       <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded bg-rose-100 dark:bg-rose-900/60 text-rose-700 dark:text-rose-300 shrink-0">
                         <i className="fa-solid fa-gift" />
@@ -139,9 +147,9 @@ export default function ReturnInfoSection({
                       </span>
                     )}
                   </div>
-                  <span className="text-slate-600 dark:text-slate-300 font-mono text-[11px] shrink-0 ml-2">
+                  <div className="text-slate-600 dark:text-slate-300 font-mono text-[11px] shrink-0 bg-slate-50 dark:bg-slate-800/60 px-2 py-1 rounded-lg border border-slate-100 dark:border-slate-600/80 sm:ml-auto">
                     {t("admin.qty_short", "SL")}: x{ri.return_quantity} | {t("admin.refund_short", "Hoàn")}: {formatCurrency ? formatCurrency(ri.refund_amount) : `${Number(ri.refund_amount).toLocaleString()}đ`}
-                  </span>
+                  </div>
                 </div>
               );
             })}

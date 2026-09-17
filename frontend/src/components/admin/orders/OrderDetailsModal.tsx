@@ -38,8 +38,12 @@ export default function OrderDetailsModal({ order, onClose, formatCurrency }) {
 
           {/* Footer Total */}
           {(() => {
-            const itemsSubtotal = order.items?.reduce((sum: number, item: any) => sum + (Number(item.price || 0) * (item.quantity || 1)), 0) || 0;
-            const shippingFee = Math.max(0, Number(order.total_price || 0) - itemsSubtotal);
+            const itemsSubtotal = order.items?.reduce((sum: number, item: any) => {
+              if (item.is_gift) return sum;
+              return sum + (Number(item.price || 0) * (item.quantity || 1));
+            }, 0) || 0;
+            const voucherCode = order.voucher?.code || order.voucher_code;
+            const discountAmount = Math.max(0, itemsSubtotal - Number(order.total_price || 0));
 
             return (
               <div className="pt-4 mt-2 border-t border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-700/30 p-5 rounded-2xl space-y-2 text-xs sm:text-sm">
@@ -47,10 +51,13 @@ export default function OrderDetailsModal({ order, onClose, formatCurrency }) {
                   <span>{t("admin.items_subtotal", "Tiền hàng")}:</span>
                   <span className="font-semibold text-slate-800 dark:text-slate-200">{formatCurrency(itemsSubtotal)}</span>
                 </div>
-                {shippingFee > 0 && (
-                  <div className="flex justify-between items-center text-slate-500 dark:text-slate-400">
-                    <span>{t("admin.shipping_fee", "Phí vận chuyển")}:</span>
-                    <span className="font-semibold text-slate-800 dark:text-slate-200">{formatCurrency(shippingFee)}</span>
+                {discountAmount > 0 && (
+                  <div className="flex justify-between items-center text-emerald-600 dark:text-emerald-400 font-medium">
+                    <span className="flex items-center gap-1.5">
+                      <i className="fa-solid fa-ticket text-xs"></i>
+                      {t("checkout.discount", "Giảm giá")}{voucherCode ? ` (${voucherCode})` : ""}:
+                    </span>
+                    <span className="font-bold">-{formatCurrency(discountAmount)}</span>
                   </div>
                 )}
                 <div className="flex justify-between items-center pt-3 border-t border-slate-200/60 dark:border-slate-600">

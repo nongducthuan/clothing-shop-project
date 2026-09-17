@@ -1,7 +1,13 @@
-import React from "react";
+import React, { useContext, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { ModernStatusBadge, PaymentStatusBadge } from "./OrderBadges";
 import { PaymentBadge } from "../../common/PaymentBadge";
 import { useLanguage } from "../../../context/LanguageContext";
+import { useToast } from "../../../context/ToastContext";
+import { CartContext } from "../../../context/CartContext.jsx";
+import { buyAgainFromOrder, applySubstitutions, SubstitutionSuggestion, VariantChoice } from "../../../utils/buyAgainUtils";
+import BuyAgainVariantModal from "../common/BuyAgainVariantModal";
+import { useAutoCancelCountdown } from "../../../hooks/useAutoCancelCountdown";
 
 // Format datetime deterministically as "HH:mm:ss dd/mm/yyyy" (Vietnamese style).
 // Avoids locale/browser-dependent output like mm/dd/yyyy (en-US).
@@ -14,14 +20,76 @@ const formatOrderDateTime = (dateString) => {
 };
 
 export default function OrderDetailModal({ order, onClose, onOpenPaymentModal, helpers }) {
-  const { t, getLocalizedText, getLocalizedLabel } = useLanguage();
+  const { t, getLocalizedText, getLocalizedLabel, language } = useLanguage();
+  const { showToast } = useToast();
+  const navigate = useNavigate();
+  const { setCart } = useContext(CartContext);
+  const [buyingAgain, setBuyingAgain] = useState(false);
+  const [substitutions, setSubstitutions] = useState<SubstitutionSuggestion[] | null>(null);
+
+  // Countdown for Pending+Unpaid online orders (hook must be called unconditionally)
+  const isOnlinePendingUnpaid =
+    order?.payment_status === "Unpaid" &&
+    order?.status === "Pending" &&
+    ["momo", "vnpay"].includes(order?.payment_method ?? "");
+  const countdown = useAutoCancelCountdown(isOnlinePendingUnpaid ? order?.created_at : null);
+
   if (!order) return null;
   const { formatCurrency, getImgUrl } = helpers;
 
-  const itemsSubtotal = order.items?.reduce((sum: number, item: any) => sum + (Number(item.price || 0) * (item.quantity || 1)), 0) || 0;
-  const shippingFee = Math.max(0, Number(order.total_price || 0) - itemsSubtotal);
+  // "Buy Again": re-add this order's items (current prices/stock) into the cart
+  const handleBuyAgain = async () => {
+    if (!order) return;
+    setBuyingAgain(true);
+    try {
+      const summary = await buyAgainFromOrder(order, setCart);
+      if (summary.addedCount > 0) {
+        if (summary.skippedNames.length > 0) {
+          showToast(t("orders.buy_again_partial").replace("{count}", String(summary.addedCount)).replace("{skipped}", summary.skippedNames.join(", ")), "warning");
+        } else {
+          showToast(t("orders.buy_again_success").replace("{count}", String(summary.addedCount)), "success");
+        }
+      }
+      if (summary.substitutions.length > 0) {
+        // Mở modal cho khách chọn variant thay thế — điều hướng giỏ hàng sau khi xác nhận
+        setSubstitutions(summary.substitutions);
+        return;
+      }
+      if (summary.addedCount === 0) {
+        showToast(summary.skippedNames.length ? t("orders.buy_again_none") : t("orders.buy_again_empty"), "warning");
+        return;
+      }
+      onClose();
+      navigate("/cart");
+    } catch (error) {
+      console.error("Buy again error:", error);
+      showToast(t("orders.buy_again_none"), "error");
+    } finally {
+      setBuyingAgain(false);
+    }
+  };
+
+  // Xác nhận các variant thay thế đã chọn trong BuyAgainVariantModal
+  const handleConfirmSubstitutions = (selections: Array<{ suggestion: SubstitutionSuggestion; choice: VariantChoice }>) => {
+    applySubstitutions(setCart, selections);
+    if (selections.length > 0) {
+      showToast(t("orders.buy_again_substituted", "Đã thêm sản phẩm thay thế vào giỏ hàng"), "success");
+    }
+    setSubstitutions(null);
+    onClose();
+    navigate("/cart");
+  };
+
+  const itemsSubtotal = order.items?.reduce((sum: number, item: any) => {
+    if (item.is_gift) return sum;
+    return sum + (Number(item.price || 0) * (item.quantity || 1));
+  }, 0) || 0;
+  const shippingFee = Number(order.shipping_fee || 0);
+  const voucherCode = order.voucher?.code || order.voucher_code;
+  const discountAmount = Math.max(0, (itemsSubtotal + shippingFee) - Number(order.total_price || 0));
 
   return (
+    <>
     <div
       className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 animate-in fade-in"
       onClick={onClose}
@@ -97,6 +165,11 @@ export default function OrderDetailModal({ order, onClose, onOpenPaymentModal, h
                       <span className="bg-white dark:bg-slate-700 border border-slate-200/80 dark:border-slate-600 px-1.5 py-0.5 rounded text-slate-600 dark:text-slate-300">
                         {t('order_details.size_label', 'Size')}: {item.size || item.size_name || "N/A"}
                       </span>
+                      {item.is_gift && (
+                         <span className="bg-amber-100 dark:bg-amber-900/60 border border-amber-200/80 dark:border-amber-700 px-1.5 py-0.5 rounded text-amber-700 dark:text-amber-300 flex items-center gap-1">
+                           <i className="fa-solid fa-gift" /> {t("lookup.gift_item_badge", "Quà tặng")}
+                         </span>
+                      )}
                     </div>
                   </div>
 
@@ -144,11 +217,28 @@ export default function OrderDetailModal({ order, onClose, onOpenPaymentModal, h
               </span>
             </div>
 
-            {shippingFee > 0 && (
+            {shippingFee > 0 ? (
               <div className="flex justify-between items-center gap-3">
                 <span className="text-slate-500 dark:text-slate-400 shrink-0">{t('order_details.shipping_fee', 'Phí vận chuyển')}</span>
                 <span className="font-medium text-slate-900 dark:text-slate-100">
                   {formatCurrency(shippingFee)}
+                </span>
+              </div>
+            ) : (
+              <div className="flex justify-between items-center gap-3">
+                <span className="text-slate-500 dark:text-slate-400 shrink-0">{t('order_details.shipping_fee', 'Phí vận chuyển')}</span>
+                <span className="font-medium text-emerald-600 dark:text-emerald-400">{t('checkout.free', 'Miễn phí')}</span>
+              </div>
+            )}
+
+            {discountAmount > 0 && (
+              <div className="flex justify-between items-center gap-3 text-emerald-600 dark:text-emerald-400 font-medium">
+                <span className="flex items-center gap-1.5 shrink-0">
+                  <i className="fa-solid fa-ticket text-xs"></i>
+                  {t('checkout.discount', 'Giảm giá')}{voucherCode ? ` (${voucherCode})` : ''}:
+                </span>
+                <span className="font-bold whitespace-nowrap">
+                  -{formatCurrency(discountAmount)}
                 </span>
               </div>
             )}
@@ -214,6 +304,17 @@ export default function OrderDetailModal({ order, onClose, onOpenPaymentModal, h
                   {formatCurrency(order.return_request.refund_amount || 0)}
                 </span>
               </div>
+
+              {order.return_request.admin_response && (
+                <div className="mt-2 bg-white/60 dark:bg-slate-800/60 p-2.5 rounded-lg border border-amber-100 dark:border-amber-900/30">
+                  <span className="text-[11px] font-semibold text-amber-800 dark:text-amber-300 block mb-0.5">
+                    {t('order_details.admin_response', 'Phản hồi từ Admin:')}
+                  </span>
+                  <p className="text-xs text-slate-700 dark:text-slate-300">
+                    {order.return_request.admin_response}
+                  </p>
+                </div>
+              )}
             </div>
           )}
 
@@ -223,14 +324,46 @@ export default function OrderDetailModal({ order, onClose, onOpenPaymentModal, h
                 onClose();
                 onOpenPaymentModal(order);
               }}
-              className="w-full py-3 bg-slate-900 dark:bg-slate-100 hover:bg-slate-800 dark:hover:bg-white text-white dark:text-slate-900 rounded-xl font-semibold text-xs sm:text-sm transition-colors shadow-md text-center"
+              className="w-full py-3 bg-slate-900 dark:bg-slate-100 hover:bg-slate-800 dark:hover:bg-white text-white dark:text-slate-900 rounded-xl font-semibold text-xs sm:text-sm transition-colors shadow-md text-center flex flex-col items-center justify-center leading-tight"
             >
-              {t('order_details.pay_change', 'Thanh toán / Đổi phương thức')}
+              <span>{t('order_details.pay_change', 'Thanh toán / Đổi phương thức')}</span>
+              {isOnlinePendingUnpaid && countdown && (
+                <span className="text-[10px] font-medium opacity-80 mt-0.5">
+                  {language === 'vi' ? `Tự hủy sau ${countdown}` : `Cancels in ${countdown}`}
+                </span>
+              )}
+            </button>
+          )}
+
+          {/* Buy again (for cancelled / delivered orders) */}
+          {["Cancelled", "Delivered"].includes(order.status) && (
+            <button
+              onClick={handleBuyAgain}
+              disabled={buyingAgain}
+              className="w-full py-3 bg-slate-900 dark:bg-slate-100 hover:bg-slate-800 dark:hover:bg-white text-white dark:text-slate-900 rounded-xl font-semibold text-xs sm:text-sm transition-colors shadow-md text-center flex items-center justify-center gap-2 disabled:opacity-60"
+            >
+              {buyingAgain ? (
+                <i className="fa-solid fa-circle-notch fa-spin"></i>
+              ) : (
+                <>
+                  <i className="fa-solid fa-cart-plus"></i> {t('orders.buy_again', 'Mua lại')}
+                </>
+              )}
             </button>
           )}
 
         </div>
       </div>
     </div>
+
+      {/* Variant replacement modal */}
+      {substitutions && substitutions.length > 0 && (
+        <BuyAgainVariantModal
+          substitutions={substitutions}
+          onConfirm={handleConfirmSubstitutions}
+          onClose={() => setSubstitutions(null)}
+        />
+      )}
+    </>
   );
 }

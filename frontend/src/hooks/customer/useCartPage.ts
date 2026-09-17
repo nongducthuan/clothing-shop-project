@@ -9,7 +9,7 @@ import { getImageUrl } from "../../utils/imageUtils";
 export function useCartPage() {
   const { cart, removeFromCart, updateQuantity } = useContext(CartContext);
   const { user, discount, tier } = useContext(AuthContext);
-  const { t, getLocalizedText, language } = useLanguage();
+  const { t, getLocalizedText, language, translateApiMessage } = useLanguage();
 
   const [voucherCode, setVoucherCode] = useState("");
   const [appliedVoucher, setAppliedVoucher] = useState(null);
@@ -132,6 +132,15 @@ export function useCartPage() {
     };
   }, [cart, user, discount, appliedVoucher]);
 
+  // Lỗi áp dụng voucher: nếu backend kèm min_order_value → dựng thông báo song ngữ có số tiền
+  const buildVoucherErrorText = (data: any): string => {
+    if (data?.min_order_value != null) {
+      return t('api_msg.Minimum order value not met', 'Minimum order value of {min} not met')
+        .replace('{min}', formatCurrency(Number(data.min_order_value), language));
+    }
+    return translateApiMessage(data?.message) || t("cart.server_error", "Server connection error");
+  };
+
   // Logic: Apply Voucher
   const handleApplyVoucher = async () => {
     if (!voucherCode.trim()) return;
@@ -150,14 +159,14 @@ export function useCartPage() {
 
       if (data.success) {
         setAppliedVoucher(data.data);
-        setVoucherMessage({ type: 'success', text: data.message });
+        setVoucherMessage({ type: 'success', text: translateApiMessage(data.message) });
       } else {
         setAppliedVoucher(null);
-        setVoucherMessage({ type: 'error', text: data.message });
+        setVoucherMessage({ type: 'error', text: buildVoucherErrorText(data) });
       }
     } catch (error) {
       setAppliedVoucher(null);
-       setVoucherMessage({ type: 'error', text: error.response?.data?.message || t("cart.server_error", "Server connection error") });
+      setVoucherMessage({ type: 'error', text: buildVoucherErrorText(error.response?.data) });
     } finally {
       setIsApplying(false);
     }

@@ -90,7 +90,7 @@ export function useCheckoutPage() {
   const routeLocation = useLocation();
   const { cart, setCart } = useContext(CartContext);
   const { user, discount, tier } = useContext(AuthContext);
-  const { t, language } = useLanguage();
+  const { t, language, translateApiMessage } = useLanguage();
   const { fetchCurrentLocation, isLocating, locationError } = useGeolocation();
 
   // State Management
@@ -234,7 +234,15 @@ export function useCheckoutPage() {
       }
     } catch (err) {
       setIsStatusSuccess(false);
-      setStatusMessage(`Error: ${err.response?.data?.message || err.message}`);
+      const data = err.response?.data;
+      if (data?.min_order_value != null) {
+        setStatusMessage(
+          t('api_msg.Minimum order value not met', 'Minimum order value of {min} not met')
+            .replace('{min}', formatPrice(Number(data.min_order_value)))
+        );
+      } else {
+        setStatusMessage(`Error: ${translateApiMessage(data?.message) || data?.error || err.message}`);
+      }
     }
   };
 

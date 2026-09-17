@@ -77,7 +77,12 @@ export const applyVoucherCustomer = async (req: Request, res: Response): Promise
     }
     
     if (Number(orderTotal) < Number(voucher.min_order_value)) {
-      res.status(400).json({ success: false, message: `Minimum order value of ${Number(voucher.min_order_value).toLocaleString()}đ not met` });
+      // message cố định + min_order_value riêng để frontend dịch được (số tiền là động)
+      res.status(400).json({
+        success: false,
+        message: "Minimum order value not met",
+        min_order_value: Number(voucher.min_order_value)
+      });
       return;
     }
     

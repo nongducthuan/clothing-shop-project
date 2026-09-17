@@ -6,6 +6,7 @@ import OtpStep from "../../components/customer/order-lookup/OtpStep";
 import OrdersStep from "../../components/customer/order-lookup/OrdersStep";
 import ReturnFormStep from "../../components/customer/order-lookup/ReturnFormStep";
 import ChangePaymentModal from "../../components/customer/common/ChangePaymentModal";
+import BuyAgainVariantModal from "../../components/customer/common/BuyAgainVariantModal";
 
 export default function GuestOrderTracking() {
   const { state, actions, helpers } = useOrderLookup();
@@ -53,6 +54,8 @@ export default function GuestOrderTracking() {
               loading={state.loading}
               openReturnForm={actions.openReturnForm}
               handleCancelReturn={actions.handleCancelReturn}
+              handleCancelOrder={actions.handleCancelOrder}
+              handleBuyAgain={actions.handleBuyAgain}
               onReset={actions.resetLookup}
             />
           )}
@@ -78,6 +81,12 @@ export default function GuestOrderTracking() {
         onClose={actions.handleClosePaymentModal}
         onConfirm={(newMethod) => actions.handleRepay(state.paymentModalOrder, newMethod)}
         loading={state.loading}
+      />
+
+      <BuyAgainVariantModal
+        substitutions={state.buyAgainSuggestions ?? []}
+        onConfirm={actions.handleConfirmBuyAgainSubstitutions}
+        onClose={actions.handleCloseBuyAgainModal}
       />
     </div>
   );

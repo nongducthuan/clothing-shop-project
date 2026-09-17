@@ -1,5 +1,12 @@
 import React from "react";
 import { useLanguage } from "../../../context/LanguageContext";
+import { getItemUnitPayableAmount } from "../../../utils/currencyUtils";
+import {
+  getPromotionBuyProductIds,
+  isPromotionBuyItem,
+  getLinkedBuyItems,
+  isGiftAutoReturned,
+} from "../../../utils/promotionUtils";
 
 export default function ReturnFormStep({
   returnForm, setReturnForm, selectedOrder, formatCurrency,
@@ -11,7 +18,13 @@ export default function ReturnFormStep({
   const items = selectedOrder?.items || [];
   const selectedItems = returnForm.selectedItems || {};
 
-  const handleToggleItem = (itemId: number, maxQty: number) => {
+  // Buy X Get Y: chỉ sản phẩm X (promotion.buy_product_id) mới bị ràng buộc hoàn trả toàn bộ
+  // số lượng và mới kéo theo quà tặng Y. Các sản phẩm khác hoàn trả 1 phần bình thường.
+  const buyProductIds = getPromotionBuyProductIds(items);
+  const isItemSelected = (item: any) => !!selectedItems[item.id]?.selected;
+  const hasGiftItems = items.some((i: any) => i.is_gift);
+
+  const handleToggleItem = (itemId: number, maxQty: number, forceFullQty: boolean = false) => {
     const current = selectedItems[itemId] || { selected: false, return_quantity: maxQty };
     const nextSelected = !current.selected;
     setReturnForm({
@@ -20,7 +33,9 @@ export default function ReturnFormStep({
         ...selectedItems,
         [itemId]: {
           selected: nextSelected,
-          return_quantity: nextSelected ? (current.return_quantity || maxQty) : maxQty
+          return_quantity: nextSelected
+            ? (forceFullQty ? maxQty : (current.return_quantity || maxQty))
+            : maxQty
         }
       }
     });
@@ -66,12 +81,11 @@ export default function ReturnFormStep({
     const sel = selectedItems[item.id];
     if (sel?.selected && !item.is_gift) {
       const qty = Number(sel.return_quantity) || 0;
-      return sum + Number(item.price || 0) * qty;
+      // Đơn giá hoàn trả = payable_amount / quantity (đã trừ Voucher & Membership phân bổ)
+      return sum + getItemUnitPayableAmount(item) * qty;
     }
     return sum;
   }, 0);
-
-  const hasBuyXGetYGift = items.some((i: any) => i.is_gift);
 
   return (
     <form onSubmit={handleReturnSubmit} className="space-y-4">
@@ -87,10 +101,10 @@ export default function ReturnFormStep({
             {t("lookup.select_items_title", "Chọn sản phẩm muốn trả")}
           </label>
 
-          {hasBuyXGetYGift && (
+          {hasGiftItems && (
             <div className="p-2.5 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/50 rounded-lg text-xs text-amber-700 dark:text-amber-300 flex items-start gap-2">
               <i className="fa-solid fa-circle-info text-amber-500 mt-0.5 shrink-0"></i>
-              <span>{t("lookup.gift_must_return_notice", "Quà tặng đi kèm (Buy X Get Y) sẽ được tự động gom trả cùng sản phẩm mua.")}</span>
+              <span>{t("lookup.gift_must_return_notice", "Sản phẩm mua để nhận quà (X) chỉ có thể hoàn trả toàn bộ số lượng. Quà tặng (Y) chỉ được hoàn kèm khi bạn chọn trả sản phẩm X tương ứng.")}</span>
             </div>
           )}
 
@@ -98,6 +112,57 @@ export default function ReturnFormStep({
             {items.map((item: any) => {
               const sel = selectedItems[item.id] || { selected: false, return_quantity: item.quantity };
               const isGift = item.is_gift;
+
+              // Gift items (Y): không thể trả độc lập, chỉ hoàn kèm khi sản phẩm X tương ứng được chọn
+              if (isGift) {
+                const linkedBuyItems = getLinkedBuyItems(item, items);
+                const isAutoReturned = isGiftAutoReturned(item, items, isItemSelected);
+                const linkedBuyName = linkedBuyItems.length > 0
+                  ? (getLocalizedText(linkedBuyItems[0], "product_name") || linkedBuyItems[0].product_name || "")
+                  : "";
+                return (
+                  <div
+                    key={item.id}
+                    className="p-2.5 rounded-xl border border-dashed border-amber-300 dark:border-amber-700 bg-amber-50/60 dark:bg-amber-950/30 flex items-center justify-between gap-3 opacity-80"
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                      <i className="fa-solid fa-gift text-amber-500 w-4 text-center shrink-0"></i>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <p className="text-xs font-semibold text-gray-800 dark:text-slate-100 line-clamp-2 leading-snug">
+                            {getLocalizedText(item, "product_name") || item.product_name}
+                          </p>
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-900/60 text-amber-700 dark:text-amber-300 shrink-0">
+                            <i className="fa-solid fa-gift" />
+                            {t("lookup.gift_item_badge", "Quà tặng")}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-gray-500 dark:text-slate-400 mt-0.5">
+                          {(() => {
+                            const colorName = getLocalizedText(item, "color_name") || item.color_name_vi || item.color_name || item.color;
+                            return colorName ? `${colorName} | ` : "";
+                          })()}
+                          {item.size ? `${item.size} | ` : ""}
+                          <span className="font-medium">0đ</span>
+                        </p>
+                      </div>
+                    </div>
+                    <span
+                      className={`text-[10px] font-semibold shrink-0 italic text-right max-w-[45%] ${
+                        isAutoReturned
+                          ? "text-amber-600 dark:text-amber-400"
+                          : "text-slate-400 dark:text-slate-500"
+                      }`}
+                    >
+                      {isAutoReturned
+                        ? t("lookup.auto_included", "Tự động hoàn trả")
+                        : linkedBuyItems.length > 0
+                          ? t("lookup.gift_return_with_buy", "Sẽ hoàn trả kèm: {name}").replace("{name}", linkedBuyName)
+                          : t("lookup.gift_return_with_purchased", "Sẽ hoàn trả kèm sản phẩm mua")}
+                    </span>
+                  </div>
+                );
+              }
 
               return (
                 <div
@@ -113,7 +178,7 @@ export default function ReturnFormStep({
                       type="checkbox"
                       disabled={isGift}
                       checked={sel.selected}
-                      onChange={() => handleToggleItem(item.id, item.quantity)}
+                      onChange={() => handleToggleItem(item.id, item.quantity, isPromotionBuyItem(item, buyProductIds))}
                       className="w-4 h-4 rounded border-gray-300 text-violet-600 focus:ring-violet-500 cursor-pointer disabled:cursor-not-allowed"
                     />
                     <div className="min-w-0 flex-1">
@@ -134,13 +199,24 @@ export default function ReturnFormStep({
                           return colorName ? `${colorName} | ` : "";
                         })()}
                         {item.size ? `${item.size} | ` : ""}
-                        <span className="font-medium">{isGift ? "0đ" : formatCurrency(item.price)}</span>
+                        {isGift ? (
+                          <span className="font-medium">0đ</span>
+                        ) : (
+                          <span className="font-medium">
+                            {formatCurrency(getItemUnitPayableAmount(item))}
+                            {getItemUnitPayableAmount(item) < Number(item.price || 0) && (
+                              <span className="ml-1 text-[10px] text-gray-400 dark:text-slate-500 line-through">
+                                {formatCurrency(item.price)}
+                              </span>
+                            )}
+                          </span>
+                        )}
                       </p>
                     </div>
                   </div>
 
-                  {/* Quantity Input */}
-                  {sel.selected && !isGift && (
+                  {/* Quantity Input: chỉ ẩn với sản phẩm X của Buy X Get Y (X luôn hoàn full) */}
+                  {sel.selected && !isGift && !isPromotionBuyItem(item, buyProductIds) && (
                     <div className="flex items-center gap-1 shrink-0 self-center pl-2 border-l border-gray-200 dark:border-slate-700">
                       <span className="text-[11px] text-gray-400 font-medium">{t("lookup.return_qty_label", "SL:")}</span>
                       <input
@@ -154,6 +230,12 @@ export default function ReturnFormStep({
                       />
                       <span className="text-[11px] text-gray-400">/{item.quantity}</span>
                     </div>
+                  )}
+                  {/* Buy X Get Y: hiển thị "x{qty}" thay vì input */}
+                  {sel.selected && !isGift && isPromotionBuyItem(item, buyProductIds) && (
+                    <span className="text-[11px] font-bold text-violet-600 dark:text-violet-400 shrink-0 pl-2 border-l border-gray-200 dark:border-slate-700">
+                      x{item.quantity}
+                    </span>
                   )}
                 </div>
               );

@@ -8,6 +8,7 @@ import OrderListTab from "../../components/customer/profile/OrderListTab";
 import OrderDetailModal from "../../components/customer/profile/OrderDetailModal";
 import ReturnRequestModal from "../../components/customer/profile/ReturnRequestModal";
 import ChangePaymentModal from "../../components/customer/common/ChangePaymentModal";
+import BuyAgainVariantModal from "../../components/customer/common/BuyAgainVariantModal";
 
 export default function Profile() {
   const { state, actions, helpers } = useProfilePage();
@@ -64,6 +65,12 @@ export default function Profile() {
         onClose={actions.handleClosePaymentModal}
         onConfirm={(newMethod) => actions.handleRepay(state.paymentModalOrder, newMethod)}
         loading={state.repayLoading}
+      />
+
+      <BuyAgainVariantModal
+        substitutions={state.buyAgainSuggestions ?? []}
+        onConfirm={actions.handleConfirmBuyAgainSubstitutions}
+        onClose={actions.handleCloseBuyAgainModal}
       />
 
     </div>

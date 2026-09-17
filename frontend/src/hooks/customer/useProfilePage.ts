@@ -6,6 +6,9 @@ import { getImageUrl } from "../../utils/imageUtils";
 import { useToast } from "../../context/ToastContext";
 import { useLanguage } from "../../context/LanguageContext";
 import { formatCurrency as formatCurrencyUtil } from "../../utils/currencyUtils";
+import { getPromotionBuyProductIds, isPromotionBuyItem } from "../../utils/promotionUtils";
+import { CartContext } from "../../context/CartContext.jsx";
+import { buyAgainFromOrder, applySubstitutions, SubstitutionSuggestion } from "../../utils/buyAgainUtils";
 
 const TIER_CONFIG = {
   Normal: { next: 5000000, color: "text-slate-400", bg: "bg-slate-100", icon: "fa-shield-halved", label: "Bronze" },
@@ -29,6 +32,7 @@ export function useProfilePage() {
   const { showToast } = useToast();
   const { t, language } = useLanguage();
   const { user, logout, tier, refreshUser } = useContext(AuthContext);
+  const { setCart } = useContext(CartContext);
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -55,6 +59,15 @@ export function useProfilePage() {
   // Change Payment Modal State
   const [paymentModalOrder, setPaymentModalOrder] = useState(null);
   const [repayLoading, setRepayLoading] = useState(false);
+
+  // Cancel Order State (track which order is being cancelled to disable its button)
+  const [cancellingOrderId, setCancellingOrderId] = useState<number | null>(null);
+
+  // Buy Again State (track which order is being re-added to the cart)
+  const [buyingAgainId, setBuyingAgainId] = useState<number | null>(null);
+
+  // Buy Again substitution suggestions (variant replacement modal)
+  const [buyAgainSuggestions, setBuyAgainSuggestions] = useState<SubstitutionSuggestion[] | null>(null);
 
   // --- Derived Variables ---
   const currentConfig = TIER_CONFIG[tier] || TIER_CONFIG.Normal;
@@ -187,15 +200,22 @@ export function useProfilePage() {
     }
 
     // Build returnItems list
+    const buyProductIds = getPromotionBuyProductIds(currentOrder?.items);
     const returnItems: { order_item_id: number; return_quantity: number }[] = [];
     if (selectedItems) {
       Object.entries(selectedItems).forEach(([itemIdStr, val]: [string, any]) => {
-        const qty = Number(val.return_quantity) || 1;
-        if (val.selected && qty > 0) {
-          returnItems.push({
-            order_item_id: Number(itemIdStr),
-            return_quantity: qty
-          });
+        if (val.selected) {
+          // Chỉ sản phẩm X của Buy X Get Y mới bắt buộc hoàn trả toàn bộ số lượng
+          const itemInOrder = (currentOrder?.items || []).find((i: any) => i.id === Number(itemIdStr));
+          const qty = isPromotionBuyItem(itemInOrder, buyProductIds)
+            ? (itemInOrder?.quantity || Number(val.return_quantity) || 1)
+            : (Number(val.return_quantity) || 1);
+          if (qty > 0) {
+            returnItems.push({
+              order_item_id: Number(itemIdStr),
+              return_quantity: qty
+            });
+          }
         }
       });
     }
@@ -254,6 +274,83 @@ export function useProfilePage() {
       showToast(error.response?.data?.message || t("lookup.cancel_return_error"), "error");
     }
   };
+
+  // Customer cancels their own order (allowed only while Pending/Confirmed)
+  // Backend handles: stock restore, revenue guard, and marks 'Refunded' for paid online orders
+  const handleCancelOrder = async (orderId) => {
+    if (!window.confirm(t("lookup.cancel_order_confirm"))) return;
+    setCancellingOrderId(orderId);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await API.put(
+        "/orders/status",
+        { order_id: orderId, new_status: "Cancelled" },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (res.data?.payment_status === "Refunded") {
+        showToast(t("lookup.cancel_order_refund_note"), "success");
+      } else {
+        showToast(t("lookup.cancel_order_success"), "success");
+      }
+      setOrders((prevOrders: any[]) =>
+        prevOrders.map((o) =>
+          o.id === orderId
+            ? { ...o, status: "Cancelled", payment_status: res.data?.payment_status || o.payment_status }
+            : o
+        )
+      );
+      fetchOrders();
+    } catch (error: any) {
+      showToast(error.response?.data?.message || t("lookup.cancel_order_error"), "error");
+    } finally {
+      setCancellingOrderId(null);
+    }
+  };
+
+  // "Buy Again": re-add this order's items (current prices/stock) into the cart
+  const handleBuyAgain = async (order: any) => {
+    setBuyingAgainId(order.id);
+    try {
+      const summary = await buyAgainFromOrder(order, setCart);
+      if (summary.addedCount > 0) {
+        if (summary.skippedNames.length > 0) {
+          showToast(
+            t("orders.buy_again_partial").replace("{count}", String(summary.addedCount)).replace("{skipped}", summary.skippedNames.join(", ")),
+            "warning"
+          );
+        } else {
+          showToast(t("orders.buy_again_success").replace("{count}", String(summary.addedCount)), "success");
+        }
+      }
+      if (summary.substitutions.length > 0) {
+        // Mở modal cho khách chọn variant thay thế — điều hướng giỏ hàng sau khi xác nhận
+        setBuyAgainSuggestions(summary.substitutions);
+        return;
+      }
+      if (summary.addedCount === 0) {
+        showToast(summary.skippedNames.length ? t("orders.buy_again_none") : t("orders.buy_again_empty"), "warning");
+        return;
+      }
+      navigate("/cart");
+    } catch (error) {
+      console.error("Buy again error:", error);
+      showToast(t("orders.buy_again_none"), "error");
+    } finally {
+      setBuyingAgainId(null);
+    }
+  };
+
+  // Xác nhận các variant thay thế đã chọn trong BuyAgainVariantModal
+  const handleConfirmBuyAgainSubstitutions = (selections: Array<{ suggestion: SubstitutionSuggestion; choice: any }>) => {
+    applySubstitutions(setCart, selections);
+    if (selections.length > 0) {
+      showToast(t("orders.buy_again_substituted", "Đã thêm sản phẩm thay thế vào giỏ hàng"), "success");
+    }
+    setBuyAgainSuggestions(null);
+    navigate("/cart");
+  };
+
+  const handleCloseBuyAgainModal = () => setBuyAgainSuggestions(null);
 
   const handleReturnDataChange = (field, value) => setReturnData((prev) => ({ ...prev, [field]: value }));
   const formatCurrency = (val) => formatCurrencyUtil(val, language);
@@ -319,13 +416,14 @@ export function useProfilePage() {
       user, tier, phone, activeTab, orders, loadingOrders, selectedOrder,
       showReturnModal, returnOrderId, returnOrder, returnData, currentConfig, totalSpent, safeProgress,
       currentPassword, newPassword, confirmPassword, isChangingPassword,
-      paymentModalOrder, repayLoading
+      paymentModalOrder, repayLoading, cancellingOrderId, buyingAgainId, buyAgainSuggestions
     },
     actions: {
       setActiveTab, setPhone, logout, setSelectedOrder,
       handleOpenPaymentModal, handleClosePaymentModal, handleRepay,
       handleOpenReturnModal, setShowReturnModal,
       handleSubmitReturn, handleCancelReturn, handleReturnDataChange, updateProfile,
+      handleCancelOrder, handleBuyAgain, handleConfirmBuyAgainSubstitutions, handleCloseBuyAgainModal,
       setCurrentPassword, setNewPassword, setConfirmPassword, changePassword
     },
     helpers: {

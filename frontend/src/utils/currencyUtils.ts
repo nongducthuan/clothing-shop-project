@@ -12,3 +12,22 @@ export const formatCurrency = (amount: number | string | null | undefined, langu
   
   return new Intl.NumberFormat('vi-VN').format(validAmount) + ' ₫';
 };
+
+/**
+ * Đơn giá thực tế khách phải trả cho 1 đơn vị sản phẩm trong đơn hàng.
+ * Ưu tiên `payable_amount` (đã trừ Voucher/Membership được phân bổ pro-rata) do Backend trả về,
+ * fallback về `price` đối với các đơn hàng cũ chưa có trường payable_amount.
+ */
+export const getItemUnitPayableAmount = (item: {
+  price?: number | string | null;
+  quantity?: number | string | null;
+  payable_amount?: number | string | null;
+} | null | undefined): number => {
+  if (!item) return 0;
+  const quantity = Number(item.quantity) || 1;
+  if (item.payable_amount !== undefined && item.payable_amount !== null && item.payable_amount !== '') {
+    return (Number(item.payable_amount) || 0) / quantity;
+  }
+  return Number(item.price) || 0;
+};
+

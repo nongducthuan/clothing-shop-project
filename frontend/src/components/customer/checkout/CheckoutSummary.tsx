@@ -113,11 +113,6 @@ export function CheckoutSummary({ state, helpers }) {
         <div className="flex justify-between text-slate-600 dark:text-slate-400 text-sm">
           <span className="flex items-center gap-1.5">
             {t("checkout.shipping_label", "Shipping")}
-            {isFreeShipping && (
-              <span className="inline-flex items-center gap-1 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider">
-                <Sparkles size={11} className="text-emerald-500 dark:text-emerald-400" /> {t("checkout.free_badge", "FREE")}
-              </span>
-            )}
           </span>
           {isFreeShipping ? (
             <span className="font-medium text-emerald-600 dark:text-emerald-400">{t("checkout.free", "Free")}</span>

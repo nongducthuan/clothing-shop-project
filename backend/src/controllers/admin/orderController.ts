@@ -17,6 +17,9 @@ export const getOrders = async (req: Request, res: Response): Promise<void> => {
                     user: {
                         select: { name: true, email: true }
                     },
+                    voucher: {
+                        select: { id: true, code: true, discount_percent: true, max_discount_amount: true }
+                    },
                     return_request: {
                         include: {
                             items: {
@@ -79,6 +82,7 @@ export const getOrders = async (req: Request, res: Response): Promise<void> => {
                 status: ENUM_TO_DISPLAY_STATUS[order.status] || order.status,
                 user_name: order.user?.name || order.name,
                 user_email: order.user?.email || order.email,
+                shipping_fee: Number(order.shipping_fee || 0),
                 reason_code: rr?.reason_code,
                 description: rr?.description,
                 refund_bank_info: bankInfo,
@@ -86,6 +90,13 @@ export const getOrders = async (req: Request, res: Response): Promise<void> => {
                 return_status: rr?.status,
                 refund_amount: rr ? Number(rr.refund_amount) : 0,
                 return_items: rr?.items || [],
+                voucher: order.voucher ? {
+                    id: order.voucher.id,
+                    code: order.voucher.code,
+                    discount_percent: order.voucher.discount_percent ? Number(order.voucher.discount_percent) : null,
+                    max_discount_amount: order.voucher.max_discount_amount ? Number(order.voucher.max_discount_amount) : null
+                } : null,
+                voucher_code: order.voucher?.code || null,
                 items,
                 user: undefined,
                 return_request: undefined

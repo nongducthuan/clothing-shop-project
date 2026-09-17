@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import prisma from '../../../prisma/client';
 import { sendEmail } from '../../utils/emailService';
 import { recordInteraction } from '../../services/interactionService';
+import { allocateItemDiscounts } from '../../services/discountAllocationService';
 import https from 'https';
 import crypto from 'crypto';
 import { changeOrderStatusLogic } from '../admin/orderController';
@@ -117,8 +118,12 @@ export const verifyOtpAndGetOrders = async (req: Request, res: Response): Promis
                         }
                     }
                 },
+                voucher: {
+                    select: { id: true, code: true, discount_percent: true, max_discount_amount: true }
+                },
                 items: {
                     include: {
+                        promotion: { select: { id: true, buy_product_id: true, gift_product_id: true, buy_quantity: true, gift_quantity: true } },
                         product: { select: { name: true, name_vi: true, name_en: true, image_url: true } },
                         color: { select: { color_name: true, color_name_vi: true, color_name_en: true, image_url: true } },
                         size: { select: { size: true } }
@@ -134,10 +139,18 @@ export const verifyOtpAndGetOrders = async (req: Request, res: Response): Promis
             phone: order.phone,
             address: order.address,
             total_price: Number(order.total_price),
+            shipping_fee: Number(order.shipping_fee || 0),
             status: ENUM_TO_DISPLAY_STATUS[order.status] || order.status,
             payment_method: order.payment_method,
             payment_status: order.payment_status,
             created_at: order.created_at,
+            voucher: order.voucher ? {
+                id: order.voucher.id,
+                code: order.voucher.code,
+                discount_percent: order.voucher.discount_percent ? Number(order.voucher.discount_percent) : null,
+                max_discount_amount: order.voucher.max_discount_amount ? Number(order.voucher.max_discount_amount) : null
+            } : null,
+            voucher_code: order.voucher?.code || null,
             return_request: order.return_request ? {
                 id: order.return_request.id,
                 status: order.return_request.status,
@@ -164,8 +177,17 @@ export const verifyOtpAndGetOrders = async (req: Request, res: Response): Promis
                 product_id: item.product_id,
                 quantity: item.quantity,
                 price: Number(item.price),
+                discount_amount: Number(item.discount_amount || 0),
+                payable_amount: item.payable_amount !== null ? Number(item.payable_amount) : Number(item.price) * item.quantity,
                 is_gift: item.is_gift,
                 promotion_id: item.promotion_id ?? null,
+                promotion: item.promotion ? {
+                    id: item.promotion.id,
+                    buy_product_id: item.promotion.buy_product_id,
+                    gift_product_id: item.promotion.gift_product_id,
+                    buy_quantity: item.promotion.buy_quantity,
+                    gift_quantity: item.promotion.gift_quantity
+                } : null,
                 product_name: item.product?.name ?? null,
                 product_name_vi: item.product?.name_vi ?? null,
                 product_name_en: item.product?.name_en ?? null,
@@ -175,6 +197,8 @@ export const verifyOtpAndGetOrders = async (req: Request, res: Response): Promis
                 color_name_vi: item.color?.color_name_vi ?? null,
                 color_name_en: item.color?.color_name_en ?? null,
                 size: item.size?.size ?? null,
+                color_id: item.color_id,
+                size_id: item.size_id,
             }))
         }));
 
@@ -218,6 +242,22 @@ export const createOrderController = async (req: Request, res: Response): Promis
                 const hasSizes = product.colors.some(c => c.sizes.length > 0);
                 if (hasSizes && !item.size_id && !isGift) {
                     throw new Error(`Please select a size for product "${product.name}"`);
+                }
+
+                // Buy X Get Y: a gift item must carry a valid promotion_id so the return flow
+                // can always resolve X (promotion.buy_product_id) for that gift.
+                let giftPromotion: { id: number; gift_product_id: number } | null = null;
+                if (isGift) {
+                    if (!item.promotion_id) {
+                        throw new Error(`Gift item "${product.name}" is missing promotion reference.`);
+                    }
+                    giftPromotion = await tx.buyXGetYPromotion.findUnique({
+                        where: { id: Number(item.promotion_id) },
+                        select: { id: true, gift_product_id: true }
+                    });
+                    if (!giftPromotion || giftPromotion.gift_product_id !== product.id) {
+                        throw new Error(`Buy X Get Y promotion is invalid for gift item "${product.name}".`);
+                    }
                 }
 
                 // Fix 10: status: true (Boolean) thay vì status: 1
@@ -269,25 +309,29 @@ export const createOrderController = async (req: Request, res: Response): Promis
                     quantity: Number(item.quantity),
                     price: finalItemPrice,
                     is_gift: isGift,
-                    promotion_id: item.promotion_id ? Number(item.promotion_id) : null
+                    promotion_id: giftPromotion ? giftPromotion.id : null
                 });
             }
 
             // 2. Membership Discount
+            let totalMembershipDiscount = 0;
             if (userId) {
                 const user = await tx.user.findUnique({
                     where: { id: userId },
                     include: { membership: true }
                 });
                 if (user?.membership && Number(user.membership.discount_percent) > 0) {
-                    const discount = (serverCalculatedTotal * Number(user.membership.discount_percent)) / 100;
-                    serverCalculatedTotal -= discount;
+                    totalMembershipDiscount = (serverCalculatedTotal * Number(user.membership.discount_percent)) / 100;
+                    serverCalculatedTotal -= totalMembershipDiscount;
                 }
             }
 
             finalTotal = serverCalculatedTotal;
 
-            // Fix 8 + Fix 9: Re-validate voucher, tính discount trên eligible items
+            // 3. Voucher Discount
+            let totalVoucherDiscount = 0;
+            let eligibleProductIds: number[] = [];
+
             if (voucher_id) {
                 const voucher = await tx.voucher.findUnique({
                     where: { id: Number(voucher_id) },
@@ -307,17 +351,21 @@ export const createOrderController = async (req: Request, res: Response): Promis
                     throw new Error('Voucher has expired.');
                 }
                 if (finalTotal < Number(voucher.min_order_value)) {
-                    throw new Error(`Minimum order value of ${Number(voucher.min_order_value).toLocaleString()}đ not met.`);
+                    // Lỗi nghiệp vụ có dữ liệu kèm theo → catch bên dưới trả 400 để frontend dịch
+                    const minOrderError: any = new Error("Minimum order value not met");
+                    minOrderError.min_order_value = Number(voucher.min_order_value);
+                    throw minOrderError;
                 }
 
-                // Fix 9: Tính discount chỉ trên phần eligible items (đồng bộ với applyVoucherCustomer)
                 let eligibleTotal = 0;
                 const nonGiftItems = itemsToSave.filter(i => !i.is_gift);
 
                 if (voucher.apply_scope === 'all') {
                     eligibleTotal = finalTotal;
+                    eligibleProductIds = nonGiftItems.map(i => i.product_id);
                 } else if (voucher.apply_scope === 'product') {
                     const allowedIds = voucher.product_vouchers.map(pv => pv.product_id);
+                    eligibleProductIds = nonGiftItems.filter(i => allowedIds.includes(i.product_id)).map(i => i.product_id);
                     eligibleTotal = nonGiftItems
                         .filter(i => allowedIds.includes(i.product_id))
                         .reduce((sum, i) => sum + (i.price * i.quantity), 0);
@@ -327,7 +375,7 @@ export const createOrderController = async (req: Request, res: Response): Promis
                         where: { id: { in: nonGiftItems.map(i => i.product_id) } },
                         select: { id: true, category_id: true }
                     });
-                    const eligibleProductIds = products
+                    eligibleProductIds = products
                         .filter(p => allowedCatIds.includes(p.category_id))
                         .map(p => p.id);
                     eligibleTotal = nonGiftItems
@@ -339,11 +387,11 @@ export const createOrderController = async (req: Request, res: Response): Promis
                     throw new Error('Voucher is not applicable to any products in this order.');
                 }
 
-                let voucherDiscount = (eligibleTotal * Number(voucher.discount_percent || 0)) / 100;
-                if (voucher.max_discount_amount && voucherDiscount > Number(voucher.max_discount_amount)) {
-                    voucherDiscount = Number(voucher.max_discount_amount);
+                totalVoucherDiscount = (eligibleTotal * Number(voucher.discount_percent || 0)) / 100;
+                if (voucher.max_discount_amount && totalVoucherDiscount > Number(voucher.max_discount_amount)) {
+                    totalVoucherDiscount = Number(voucher.max_discount_amount);
                 }
-                finalTotal = Math.max(0, finalTotal - voucherDiscount);
+                finalTotal = Math.max(0, finalTotal - totalVoucherDiscount);
 
                 // FIX RACE CONDITION: Atomic update cho Voucher limit
                 if (voucher.usage_limit !== null) {
@@ -368,7 +416,24 @@ export const createOrderController = async (req: Request, res: Response): Promis
                 }
             }
 
-            // 3. Apply shipping fee (validated from client)
+            // Pro-rata Allocation: Phân bổ Membership & Voucher discount cho từng OrderItem
+            // finalTotal tại thời điểm này = tiền hàng khách thực trả (đã trừ Membership + Voucher,
+            // CHƯA cộng phí vận chuyển). Làm tròn về 2 chữ số thập phân để khớp với tổng payable_amount.
+            finalTotal = Math.round(finalTotal * 100) / 100;
+
+            const itemAllocations = allocateItemDiscounts(itemsToSave, {
+                membershipDiscount: totalMembershipDiscount,
+                voucherDiscount: totalVoucherDiscount,
+                eligibleProductIds,
+                payableTotal: finalTotal
+            });
+
+            itemsToSave.forEach((item, index) => {
+                item.discount_amount = itemAllocations[index].discount_amount;
+                item.payable_amount = itemAllocations[index].payable_amount;
+            });
+
+            // 4. Apply shipping fee (validated from client)
             const MAX_SHIPPING_FEE = 100_000;
             const parsedShippingFee = Number(clientShippingFee) || 0;
             if (parsedShippingFee < 0 || parsedShippingFee > MAX_SHIPPING_FEE) {
@@ -386,6 +451,7 @@ export const createOrderController = async (req: Request, res: Response): Promis
                     phone,
                     address,
                     total_price: finalTotal,
+                    shipping_fee: parsedShippingFee,
                     payment_method: payment_method || 'cod',
                     items: { create: itemsToSave }
                 }
@@ -452,6 +518,14 @@ export const createOrderController = async (req: Request, res: Response): Promis
 
     } catch (error: any) {
         console.error("Order creation failed:", error.message);
+        // Lỗi nghiệp vụ có dữ liệu (VD: voucher min order value) → trả 400 + dữ liệu để frontend dịch
+        if (error?.min_order_value != null) {
+            res.status(400).json({
+                message: "Minimum order value not met",
+                min_order_value: error.min_order_value
+            });
+            return;
+        }
         res.status(500).json({ message: "Failed to create order", error: error.message });
     }
 };
@@ -485,8 +559,12 @@ export const getOrders = async (req: Request, res: Response): Promise<void> => {
                         }
                     }
                 },
+                voucher: {
+                    select: { id: true, code: true, discount_percent: true, max_discount_amount: true }
+                },
                 items: {
                     include: {
+                        promotion: { select: { id: true, buy_product_id: true, gift_product_id: true, buy_quantity: true, gift_quantity: true } },
                         product: { select: { name: true, name_vi: true, name_en: true, image_url: true } },
                         color: { select: { color_name: true, color_name_vi: true, color_name_en: true, image_url: true } },
                         size: { select: { size: true } }
@@ -502,10 +580,18 @@ export const getOrders = async (req: Request, res: Response): Promise<void> => {
             phone: order.phone,
             address: order.address,
             total_price: Number(order.total_price),
+            shipping_fee: Number(order.shipping_fee || 0),
             status: ENUM_TO_DISPLAY_STATUS[order.status] || order.status,
             payment_method: order.payment_method,
             payment_status: order.payment_status,
             created_at: order.created_at,
+            voucher: order.voucher ? {
+                id: order.voucher.id,
+                code: order.voucher.code,
+                discount_percent: order.voucher.discount_percent ? Number(order.voucher.discount_percent) : null,
+                max_discount_amount: order.voucher.max_discount_amount ? Number(order.voucher.max_discount_amount) : null
+            } : null,
+            voucher_code: order.voucher?.code || null,
             return_request: order.return_request ? {
                 id: order.return_request.id,
                 status: order.return_request.status,
@@ -532,8 +618,17 @@ export const getOrders = async (req: Request, res: Response): Promise<void> => {
                 product_id: item.product_id,
                 quantity: item.quantity,
                 price: Number(item.price),
+                discount_amount: Number(item.discount_amount || 0),
+                payable_amount: item.payable_amount !== null ? Number(item.payable_amount) : Number(item.price) * item.quantity,
                 is_gift: item.is_gift,
                 promotion_id: item.promotion_id ?? null,
+                promotion: item.promotion ? {
+                    id: item.promotion.id,
+                    buy_product_id: item.promotion.buy_product_id,
+                    gift_product_id: item.promotion.gift_product_id,
+                    buy_quantity: item.promotion.buy_quantity,
+                    gift_quantity: item.promotion.gift_quantity
+                } : null,
                 product_name: item.product?.name ?? null,
                 product_name_vi: item.product?.name_vi ?? null,
                 product_name_en: item.product?.name_en ?? null,
@@ -543,6 +638,8 @@ export const getOrders = async (req: Request, res: Response): Promise<void> => {
                 color_name_vi: item.color?.color_name_vi ?? null,
                 color_name_en: item.color?.color_name_en ?? null,
                 size: item.size?.size ?? null,
+                color_id: item.color_id,
+                size_id: item.size_id,
             }))
         }));
 
@@ -593,7 +690,19 @@ export const changeOrderStatus = async (req: Request, res: Response): Promise<vo
         }
 
         await changeOrderStatusLogic(Number(order_id), new_status);
-        res.json({ message: "Order cancelled successfully!" });
+
+        // Case đặc biệt: đơn đã thanh toán online (MoMo/VNPay thành công → Confirmed + Paid)
+        // Khi khách hủy, đánh dấu payment_status = 'Refunded' để admin biết cần hoàn tiền cho khách
+        let finalPaymentStatus: string = order.payment_status;
+        if (order.payment_status === 'Paid') {
+            await prisma.order.update({
+                where: { id: Number(order_id) },
+                data: { payment_status: 'Refunded' }
+            });
+            finalPaymentStatus = 'Refunded';
+        }
+
+        res.json({ message: "Order cancelled successfully!", payment_status: finalPaymentStatus });
     } catch (err: any) {
         res.status(500).json({ message: "Failed to update order status", error: err.message });
     }
@@ -617,15 +726,27 @@ export const momoCallback = async (req: Request, res: Response): Promise<void> =
             const parts = orderId.split('_');
             const realOrderId = orderId.startsWith('REPAY') ? Number(parts[1]) : Number(parts[0]);
 
-            await prisma.order.update({
-                where: { id: realOrderId },
-                data: { payment_status: 'Paid' }
-            });
+            const order = await prisma.order.findUnique({ where: { id: realOrderId } });
 
-            try {
-                await changeOrderStatusLogic(realOrderId, 'Confirmed');
-            } catch (orderError: any) {
-                console.error("Order Status Update Error (IPN):", orderError.message);
+            if (order?.status === 'Cancelled') {
+                // Thanh toán đến trễ sau khi đơn đã bị hủy (auto-cancel/khách hủy) →
+                // KHÔNG hồi sinh đơn, đánh dấu Refunded để admin hoàn tiền cho khách
+                console.warn(`⚠️ MoMo IPN: payment success for CANCELLED order #${realOrderId}. Marking as Refunded.`);
+                await prisma.order.update({
+                    where: { id: realOrderId },
+                    data: { payment_status: 'Refunded' }
+                });
+            } else {
+                await prisma.order.update({
+                    where: { id: realOrderId },
+                    data: { payment_status: 'Paid' }
+                });
+
+                try {
+                    await changeOrderStatusLogic(realOrderId, 'Confirmed');
+                } catch (orderError: any) {
+                    console.error("Order Status Update Error (IPN):", orderError.message);
+                }
             }
         }
         res.status(204).send();
@@ -656,6 +777,23 @@ export const momoReturn = async (req: Request, res: Response): Promise<void> => 
         const realOrderId = String(orderId).startsWith('REPAY') ? Number(parts[1]) : Number(parts[0]);
 
         if (String(resultCode) === '0') {
+            const order = await prisma.order.findUnique({ where: { id: realOrderId } });
+
+            if (order?.status === 'Cancelled') {
+                // Thanh toán đến trễ sau khi đơn đã bị hủy → đánh dấu Refunded, không hồi sinh đơn
+                console.warn(`⚠️ MoMo Return: payment success for CANCELLED order #${realOrderId}. Marking as Refunded.`);
+                await prisma.order.update({
+                    where: { id: realOrderId },
+                    data: { payment_status: 'Refunded' }
+                });
+                res.status(200).json({
+                    success: false,
+                    orderId: realOrderId,
+                    message: "Order was cancelled before payment completed. The paid amount will be refunded."
+                });
+                return;
+            }
+
             await prisma.order.update({
                 where: { id: realOrderId },
                 data: { payment_status: 'Paid' }
@@ -711,6 +849,17 @@ export const vnpayIpn = async (req: Request, res: Response): Promise<void> => {
             return;
         }
 
+        if (order.status === 'Cancelled') {
+            // Thanh toán đến trễ sau khi đơn đã bị hủy → đánh dấu Refunded, không hồi sinh đơn
+            console.warn(`⚠️ VNPay IPN: payment success for CANCELLED order #${realOrderId}. Marking as Refunded.`);
+            await prisma.order.update({
+                where: { id: realOrderId },
+                data: { payment_status: 'Refunded' }
+            });
+            res.status(200).json({ RspCode: '04', Message: 'Order was cancelled, refund required' });
+            return;
+        }
+
         if (verifyResult.responseCode === '00') {
             await prisma.order.update({
                 where: { id: realOrderId },
@@ -746,6 +895,16 @@ export const vnpayReturn = async (req: Request, res: Response): Promise<void> =>
 
         if (verifyResult.responseCode === '00') {
             const order = await prisma.order.findUnique({ where: { id: realOrderId } });
+            if (order && order.status === 'Cancelled') {
+                // Thanh toán đến trễ sau khi đơn đã bị hủy → đánh dấu Refunded, không hồi sinh đơn
+                console.warn(`⚠️ VNPay Return: payment success for CANCELLED order #${realOrderId}. Marking as Refunded.`);
+                await prisma.order.update({
+                    where: { id: realOrderId },
+                    data: { payment_status: 'Refunded' }
+                });
+                res.json({ success: false, orderId: realOrderId, message: "Order was cancelled before payment completed. The paid amount will be refunded." });
+                return;
+            }
             if (order && order.payment_status !== 'Paid') {
                 await prisma.order.update({
                     where: { id: realOrderId },
@@ -890,10 +1049,10 @@ export const submitReturnRequest = async (req: Request, res: Response): Promise<
             : [];
 
         await prisma.$transaction(async (tx) => {
-            // Lấy order và tất cả items (bao gồm thông tin promotion)
+            // Lấy order và tất cả items (bao gồm thông tin promotion để xác định sản phẩm X của Buy X Get Y)
             const order = await tx.order.findFirst({
                 where: { id: orderId, status: 'Delivered', payment_status: 'Paid' },
-                include: { items: true }
+                include: { items: { include: { promotion: true } } }
             });
             if (!order) {
                 throw new Error("The order is invalid, not delivered, or unpaid.");
@@ -921,6 +1080,17 @@ export const submitReturnRequest = async (req: Request, res: Response): Promise<
             // Map order items để tra cứu nhanh
             const orderItemMap = new Map(order.items.map(i => [i.id, i]));
 
+            // Buy X Get Y: xác định sản phẩm X (promotion.buy_product_id) của các quà tặng trong đơn.
+            // Quà tặng luôn được gắn promotion_id hợp lệ từ khâu tạo đơn (createOrderController).
+            const giftItems = order.items.filter(i => i.is_gift);
+            const promoBuyProductIds = new Set<number>(
+                giftItems
+                    .map(gift => gift.promotion?.buy_product_id)
+                    .filter((id): id is number => typeof id === 'number')
+            );
+            const isPromotionBuyItem = (orderItem: (typeof order.items)[number]) =>
+                promoBuyProductIds.has(orderItem.product_id);
+
             // Nếu không truyền returnItems → trả toàn bộ (backward-compatible)
             if (parsedReturnItems.length === 0) {
                 parsedReturnItems = order.items
@@ -933,8 +1103,6 @@ export const submitReturnRequest = async (req: Request, res: Response): Promise<
             }
 
             // Validate từng returnItem
-            const returnItemSet = new Set(parsedReturnItems.map(ri => ri.order_item_id));
-
             for (const ri of parsedReturnItems) {
                 const orderItem = orderItemMap.get(ri.order_item_id);
                 if (!orderItem) {
@@ -947,23 +1115,33 @@ export const submitReturnRequest = async (req: Request, res: Response): Promise<
                 if (ri.return_quantity <= 0 || ri.return_quantity > orderItem.quantity) {
                     throw new Error(`Invalid return quantity for item ID ${ri.order_item_id}. Must be between 1 and ${orderItem.quantity}.`);
                 }
+                // C2: Chỉ sản phẩm X của Buy X Get Y mới bắt buộc hoàn trả full số lượng
+                if (!orderItem.is_gift && isPromotionBuyItem(orderItem) && ri.return_quantity !== orderItem.quantity) {
+                    throw new Error(`Item ID ${ri.order_item_id} must be returned in full quantity (${orderItem.quantity}) because it is part of a Buy X Get Y promotion.`);
+                }
             }
 
-            // Phân loại gift items:
-            // - Có promotion_id: đơn mới (frontend chỉ gán promotion_id cho gift item, không gán cho sản phẩm mua)
-            // - Không có promotion_id: đơn cũ trước khi có field này
-            const linkedGiftItems = order.items.filter(i => i.is_gift && i.promotion_id);
-            const orphanGiftItems = order.items.filter(i => i.is_gift && !i.promotion_id);
-
             // Tính refund_amount
-            // - Non-gift items: item.price × return_quantity
-            // - Gift items (is_gift=true, price=0): refund = 0
+            // - Non-gift items: (payable_amount / quantity) * return_quantity (Pro-rata allocation)
+            // - Gift items (is_gift=true): refund = 0
             let totalRefundAmount = 0;
             const returnItemsToCreate: { order_item_id: number; return_quantity: number; refund_amount: number }[] = [];
 
             for (const ri of parsedReturnItems) {
                 const orderItem = orderItemMap.get(ri.order_item_id)!;
-                const itemRefund = orderItem.is_gift ? 0 : Number(orderItem.price) * ri.return_quantity;
+                let itemRefund = 0;
+
+                if (!orderItem.is_gift) {
+                    if (orderItem.payable_amount !== null && orderItem.payable_amount !== undefined) {
+                        const unitPayable = Number(orderItem.payable_amount) / orderItem.quantity;
+                        itemRefund = unitPayable * ri.return_quantity;
+                    } else {
+                        // Fallback cho đơn hàng cũ trước khi có trường payable_amount
+                        itemRefund = Number(orderItem.price) * ri.return_quantity;
+                    }
+                }
+
+                itemRefund = Math.round(itemRefund * 100) / 100;
                 totalRefundAmount += itemRefund;
                 returnItemsToCreate.push({
                     order_item_id: ri.order_item_id,
@@ -972,36 +1150,26 @@ export const submitReturnRequest = async (req: Request, res: Response): Promise<
                 });
             }
 
-            // Khi có ít nhất 1 non-gift item bị trả → tự động gom gift items vào
-            const hasNonGiftReturned = parsedReturnItems.some(ri => {
-                const orderItem = orderItemMap.get(ri.order_item_id);
-                return orderItem && !orderItem.is_gift;
-            });
-
-            if (hasNonGiftReturned) {
-                // B1: Gom tất cả gift items có promotion_id (đơn mới)
-                // Frontend chỉ gán promotion_id cho gift item, không gán cho sản phẩm mua
-                for (const giftItem of linkedGiftItems) {
-                    const alreadyAdded = returnItemsToCreate.some(r => r.order_item_id === giftItem.id);
-                    if (!alreadyAdded) {
-                        returnItemsToCreate.push({
-                            order_item_id: giftItem.id,
-                            return_quantity: giftItem.quantity,
-                            refund_amount: 0
-                        });
-                    }
+            // Gom quà tặng Y khi CHÍNH sản phẩm X (đã tạo ra quà đó) được trả
+            const returnedProductIds = new Set<number>();
+            for (const ri of parsedReturnItems) {
+                const returnedItem = orderItemMap.get(ri.order_item_id);
+                if (returnedItem && !returnedItem.is_gift) {
+                    returnedProductIds.add(returnedItem.product_id);
                 }
+            }
 
-                // B2 (Fallback): Gom tất cả orphan gift items (đơn cũ, promotion_id = NULL)
-                for (const giftItem of orphanGiftItems) {
-                    const alreadyAdded = returnItemsToCreate.some(r => r.order_item_id === giftItem.id);
-                    if (!alreadyAdded) {
-                        returnItemsToCreate.push({
-                            order_item_id: giftItem.id,
-                            return_quantity: giftItem.quantity,
-                            refund_amount: 0
-                        });
-                    }
+            for (const giftItem of giftItems) {
+                const buyProductId = giftItem.promotion?.buy_product_id;
+                if (!buyProductId || !returnedProductIds.has(buyProductId)) continue;
+
+                const alreadyAdded = returnItemsToCreate.some(r => r.order_item_id === giftItem.id);
+                if (!alreadyAdded) {
+                    returnItemsToCreate.push({
+                        order_item_id: giftItem.id,
+                        return_quantity: giftItem.quantity,
+                        refund_amount: 0
+                    });
                 }
             }
 

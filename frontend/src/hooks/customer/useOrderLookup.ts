@@ -1,14 +1,20 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
+import { useNavigate } from "react-router-dom";
 import API from "../../services/apiClient";
 import { useToast } from "../../context/ToastContext";
 import { useLanguage } from "../../context/LanguageContext";
 import { formatCurrency as formatCurrencyUtil } from "../../utils/currencyUtils";
+import { getPromotionBuyProductIds, isPromotionBuyItem } from "../../utils/promotionUtils";
+import { CartContext } from "../../context/CartContext";
+import { buyAgainFromOrder, applySubstitutions, SubstitutionSuggestion } from "../../utils/buyAgainUtils";
 
 type AxiosErr = { response?: { data?: { message?: string } } };
 
 export function useOrderLookup() {
   const { showToast } = useToast();
   const { t, language } = useLanguage();
+  const navigate = useNavigate();
+  const { setCart } = useContext(CartContext);
   const [step, setStep] = useState(1);
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
@@ -17,6 +23,9 @@ export function useOrderLookup() {
   const [expandedOrder, setExpandedOrder] = useState(null);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [paymentModalOrder, setPaymentModalOrder] = useState<any>(null);
+
+  // Buy Again substitution suggestions (variant replacement modal)
+  const [buyAgainSuggestions, setBuyAgainSuggestions] = useState<SubstitutionSuggestion[] | null>(null);
   const [returnForm, setReturnForm] = useState<{
     reason_code: string;
     description: string;
@@ -158,15 +167,22 @@ export function useOrderLookup() {
       formData.append("email", email); // Required to authenticate Guest
 
       // Build returnItems list
+      const buyProductIds = getPromotionBuyProductIds(selectedOrder?.items);
       const returnItems: { order_item_id: number; return_quantity: number }[] = [];
       if (returnForm.selectedItems) {
         Object.entries(returnForm.selectedItems).forEach(([itemIdStr, val]: [string, any]) => {
-          const qty = Number(val.return_quantity) || 1;
-          if (val.selected && qty > 0) {
-            returnItems.push({
-              order_item_id: Number(itemIdStr),
-              return_quantity: qty
-            });
+          if (val.selected) {
+            // Chỉ sản phẩm X của Buy X Get Y mới bắt buộc hoàn trả toàn bộ số lượng
+            const itemInOrder = (selectedOrder?.items || []).find((i: any) => i.id === Number(itemIdStr));
+            const qty = isPromotionBuyItem(itemInOrder, buyProductIds)
+              ? (itemInOrder?.quantity || Number(val.return_quantity) || 1)
+              : (Number(val.return_quantity) || 1);
+            if (qty > 0) {
+              returnItems.push({
+                order_item_id: Number(itemIdStr),
+                return_quantity: qty
+              });
+            }
           }
         });
       }
@@ -259,9 +275,91 @@ export function useOrderLookup() {
   };
 
   /**
+   * Guest cancels an order (allowed only while Pending/Confirmed).
+   * Backend verifies ownership via email and handles stock/revenue/refund flags.
+   */
+  const handleCancelOrder = async (orderId: number | string) => {
+    if (!window.confirm(t("lookup.cancel_order_confirm"))) return;
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await API.put(
+        "/orders/status",
+        { order_id: orderId, new_status: "Cancelled", email },
+        { headers: token ? { Authorization: `Bearer ${token}` } : {} }
+      );
+      if (res.data?.payment_status === "Refunded") {
+        showToast(t("lookup.cancel_order_refund_note"), "success");
+      } else {
+        showToast(t("lookup.cancel_order_success"), "success");
+      }
+      setOrders((prevOrders: any[]) =>
+        prevOrders.map((order) =>
+          order.id === orderId
+            ? { ...order, status: "Cancelled", payment_status: res.data?.payment_status || order.payment_status }
+            : order
+        )
+      );
+    } catch (err: unknown) {
+      const axErr = err as AxiosErr;
+      showToast(axErr.response?.data?.message || t("lookup.cancel_order_error"), "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /**
    * Formats a number into Vietnamese Dong currency format.
    */
   const formatCurrency = (val: number | string) => formatCurrencyUtil(val, language);
+
+  /**
+   * "Buy Again": re-add the order's non-gift items (current prices/stock) into
+   * the cart and navigate to the cart page.
+   */
+  const handleBuyAgain = async (order: any) => {
+    setLoading(true);
+    try {
+      const summary = await buyAgainFromOrder(order, setCart);
+      if (summary.addedCount > 0) {
+        if (summary.skippedNames.length > 0) {
+          showToast(
+            t("orders.buy_again_partial").replace("{count}", String(summary.addedCount)).replace("{skipped}", summary.skippedNames.join(", ")),
+            "warning"
+          );
+        } else {
+          showToast(t("orders.buy_again_success").replace("{count}", String(summary.addedCount)), "success");
+        }
+      }
+      if (summary.substitutions.length > 0) {
+        // Mở modal cho khách chọn variant thay thế — điều hướng giỏ hàng sau khi xác nhận
+        setBuyAgainSuggestions(summary.substitutions);
+        return;
+      }
+      if (summary.addedCount === 0) {
+        showToast(summary.skippedNames.length ? t("orders.buy_again_none") : t("orders.buy_again_empty"), "warning");
+        return;
+      }
+      navigate("/cart");
+    } catch (error) {
+      console.error("Buy again error:", error);
+      showToast(t("orders.buy_again_none"), "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Xác nhận các variant thay thế đã chọn trong BuyAgainVariantModal
+  const handleConfirmBuyAgainSubstitutions = (selections: Array<{ suggestion: SubstitutionSuggestion; choice: any }>) => {
+    applySubstitutions(setCart, selections);
+    if (selections.length > 0) {
+      showToast(t("orders.buy_again_substituted", "Đã thêm sản phẩm thay thế vào giỏ hàng"), "success");
+    }
+    setBuyAgainSuggestions(null);
+    navigate("/cart");
+  };
+
+  const handleCloseBuyAgainModal = () => setBuyAgainSuggestions(null);
 
   // Reset function to go back to the very beginning
   const resetLookup = () => {
@@ -273,11 +371,11 @@ export function useOrderLookup() {
 
   return {
     state: {
-      step, email, otp, orders, loading, expandedOrder, selectedOrder, returnForm, paymentModalOrder
+      step, email, otp, orders, loading, expandedOrder, selectedOrder, returnForm, paymentModalOrder, buyAgainSuggestions
     },
     actions: {
       setStep, setEmail, setOtp, setReturnForm,
-      toggleOrder, handleSendOtp, handleVerifyOtp, handleOpenPaymentModal, handleClosePaymentModal, handleRepay, openReturnForm, handleReturnSubmit, handleCancelReturn, resetLookup
+      toggleOrder, handleSendOtp, handleVerifyOtp, handleOpenPaymentModal, handleClosePaymentModal, handleRepay, openReturnForm, handleReturnSubmit, handleCancelReturn, handleCancelOrder, handleBuyAgain, handleConfirmBuyAgainSubstitutions, handleCloseBuyAgainModal, resetLookup
     },
     helpers: {
       formatCurrency

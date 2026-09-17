@@ -9,6 +9,9 @@ import path from 'path';
 import adminRoutes from './routes/admin';
 import customerRoutes from './routes/customer';
 
+// Scheduled jobs
+import { startAutoCancelJob } from './services/autoCancelService';
+
 const app = express();
 
 const allowedOrigins = [
@@ -41,7 +44,11 @@ app.use('/api', customerRoutes);
 // Health Check
 app.get('/', (req, res) => res.send("TS Server is running successfully!"));
 
+// Scheduled jobs
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`Server is running at port ${PORT}`);
 });
+
+// Tự động hủy đơn MoMo/VNPay quá hạn chưa thanh toán (nhả kho)
+startAutoCancelJob();

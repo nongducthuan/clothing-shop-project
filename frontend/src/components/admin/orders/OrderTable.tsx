@@ -243,8 +243,13 @@ export default function OrderTable({
 
                                 {/* Footer Total */}
                                 {(() => {
-                                  const itemsSubtotal = order.items?.reduce((sum: number, item: any) => sum + (Number(item.price || 0) * (item.quantity || 1)), 0) || 0;
-                                  const shippingFee = Math.max(0, Number(order.total_price || 0) - itemsSubtotal);
+                                  const itemsSubtotal = order.items?.reduce((sum: number, item: any) => {
+                                    if (item.is_gift) return sum;
+                                    return sum + (Number(item.price || 0) * (item.quantity || 1));
+                                  }, 0) || 0;
+                                  const shippingFee = Number(order.shipping_fee || 0);
+                                  const voucherCode = order.voucher?.code || order.voucher_code;
+                                  const discountAmount = Math.max(0, (itemsSubtotal + shippingFee) - Number(order.total_price || 0));
 
                                   return (
                                     <div className="pt-4 mt-2 border-t border-gray-100 dark:border-slate-700 bg-gray-50 dark:bg-slate-700/50 p-6 rounded-[1.5rem] space-y-2 text-xs sm:text-sm">
@@ -252,10 +257,21 @@ export default function OrderTable({
                                         <span>{t('order_details.subtotal', 'Tiền hàng')}:</span>
                                         <span className="font-semibold text-gray-800 dark:text-slate-200">{formatCurrency(itemsSubtotal)}</span>
                                       </div>
-                                      {shippingFee > 0 && (
-                                        <div className="flex justify-between items-center text-gray-500 dark:text-slate-400">
-                                          <span>{t('order_details.shipping_fee', 'Phí vận chuyển')}:</span>
+                                      <div className="flex justify-between items-center text-gray-500 dark:text-slate-400">
+                                        <span>{t('order_details.shipping_fee', 'Phí vận chuyển')}:</span>
+                                        {shippingFee > 0 ? (
                                           <span className="font-semibold text-gray-800 dark:text-slate-200">{formatCurrency(shippingFee)}</span>
+                                        ) : (
+                                          <span className="font-medium text-emerald-600 dark:text-emerald-400">{t('checkout.free', 'Miễn phí')}</span>
+                                        )}
+                                      </div>
+                                      {discountAmount > 0 && (
+                                        <div className="flex justify-between items-center text-emerald-600 dark:text-emerald-400 font-medium">
+                                          <span className="flex items-center gap-1.5">
+                                            <i className="fa-solid fa-ticket text-xs"></i>
+                                            {t("checkout.discount", "Giảm giá")}{voucherCode ? ` (${voucherCode})` : ""}:
+                                          </span>
+                                          <span className="font-bold">-{formatCurrency(discountAmount)}</span>
                                         </div>
                                       )}
                                       <div className="flex justify-between items-center pt-3 border-t border-gray-200/60 dark:border-slate-600">
