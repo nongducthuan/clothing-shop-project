@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { getImageUrl } from "../../../utils/imageUtils";
 import { PaymentBadge } from "../../common/PaymentBadge";
 import { useLanguage } from "../../../context/LanguageContext";
+import ReturnInfoSection from "./ReturnInfoSection";
 
 import { PAYMENT_OPTIONS, STATUS_OPTIONS } from "../../../hooks/admin/useOrderManager";
 
@@ -231,7 +232,7 @@ export default function OrderTable({
 
                                 {/* Return Info (Nếu có) */}
                                 {["Return Requested", "Return_Requested", "Return Approved", "Return_Approved", "Return Rejected", "Return_Rejected"].includes(order.status) && (
-                                  <ReturnInfoSection order={order} />
+                                  <ReturnInfoSection order={order} formatCurrency={formatCurrency} />
                                 )}
 
                                 {/* Giao hàng & Sản phẩm */}
@@ -241,12 +242,31 @@ export default function OrderTable({
                                 </div>
 
                                 {/* Footer Total */}
-                                <div className="flex justify-between items-center pt-6 mt-2 border-t border-gray-100 dark:border-slate-700 bg-gray-50 dark:bg-slate-700/50 p-6 rounded-[1.5rem]">
-                                  <span className="font-bold text-gray-500 dark:text-slate-400 uppercase tracking-widest text-sm">{t("cart.total")}</span>
-                                  <span className="text-3xl font-black text-red-600 dark:text-rose-400">
-                                    {formatCurrency(order.total_price)}
-                                  </span>
-                                </div>
+                                {(() => {
+                                  const itemsSubtotal = order.items?.reduce((sum: number, item: any) => sum + (Number(item.price || 0) * (item.quantity || 1)), 0) || 0;
+                                  const shippingFee = Math.max(0, Number(order.total_price || 0) - itemsSubtotal);
+
+                                  return (
+                                    <div className="pt-4 mt-2 border-t border-gray-100 dark:border-slate-700 bg-gray-50 dark:bg-slate-700/50 p-6 rounded-[1.5rem] space-y-2 text-xs sm:text-sm">
+                                      <div className="flex justify-between items-center text-gray-500 dark:text-slate-400">
+                                        <span>{t('order_details.subtotal', 'Tiền hàng')}:</span>
+                                        <span className="font-semibold text-gray-800 dark:text-slate-200">{formatCurrency(itemsSubtotal)}</span>
+                                      </div>
+                                      {shippingFee > 0 && (
+                                        <div className="flex justify-between items-center text-gray-500 dark:text-slate-400">
+                                          <span>{t('order_details.shipping_fee', 'Phí vận chuyển')}:</span>
+                                          <span className="font-semibold text-gray-800 dark:text-slate-200">{formatCurrency(shippingFee)}</span>
+                                        </div>
+                                      )}
+                                      <div className="flex justify-between items-center pt-3 border-t border-gray-200/60 dark:border-slate-600">
+                                        <span className="font-bold text-gray-700 dark:text-slate-300 uppercase tracking-widest text-sm">{t("cart.total")}</span>
+                                        <span className="text-2xl font-black text-red-600 dark:text-rose-400">
+                                          {formatCurrency(order.total_price)}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  );
+                                })()}
 
                               </div>
                             </div>
@@ -268,133 +288,6 @@ export default function OrderTable({
 // ==========================================
 // THÀNH PHẦN CHI TIẾT ĐƯỢC TÍCH HỢP TRỰC TIẾP
 // ==========================================
-
-const ReturnInfoSection = ({ order }) => {
-  const { t, getLocalizedLabel } = useLanguage();
-  const bankInfo = order.refund_bank_info;
-
-  const getReturnBadge = (status: string) => {
-    if (status === "Return Approved") {
-      return (
-        <span className="text-[10px] font-extrabold uppercase tracking-widest bg-emerald-100 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 px-2.5 py-1 rounded-full border border-emerald-300/40 dark:border-emerald-900/40 whitespace-nowrap inline-flex items-center shrink-0">
-          {t("admin.return_approved_badge")}
-        </span>
-      );
-    }
-    if (status === "Return Rejected") {
-      return (
-        <span className="text-[10px] font-extrabold uppercase tracking-widest bg-rose-100 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300 px-2.5 py-1 rounded-full border border-rose-300/40 dark:border-rose-900/40 whitespace-nowrap inline-flex items-center shrink-0">
-          {t("admin.return_rejected_badge")}
-        </span>
-      );
-    }
-    return (
-      <span className="text-[10px] font-extrabold uppercase tracking-widest bg-amber-200/60 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 px-2.5 py-1 rounded-full border border-amber-300/40 dark:border-amber-900/40 whitespace-nowrap inline-flex items-center shrink-0">
-        {t("admin.return_action_required")}
-      </span>
-    );
-  };
-
-  return (
-    <div className="bg-gradient-to-r from-amber-50/60 via-orange-50/40 to-amber-50/60 dark:from-amber-950/30 dark:via-orange-950/20 dark:to-amber-950/30 p-5 sm:p-6 rounded-[1.75rem] border border-amber-200/60 dark:border-amber-900/40 text-sm shadow-sm space-y-4">
-      <div className="flex items-center justify-between gap-2 flex-wrap">
-        <h5 className="font-extrabold text-amber-900 dark:text-amber-200 text-[11px] sm:text-xs uppercase tracking-wider flex items-center gap-2 m-0 leading-none whitespace-nowrap">
-          <span className="w-7 h-7 rounded-full bg-amber-100/80 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 flex items-center justify-center text-xs shadow-xs shrink-0">
-            <i className="fa-solid fa-rotate-left"></i>
-          </span>
-          {t("admin.return_request_details")}
-        </h5>
-        {getReturnBadge(order.status)}
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Lý do trả hàng */}
-        <div className="bg-white dark:bg-slate-700 p-5 rounded-2xl shadow-sm flex flex-col justify-between space-y-4">
-          <div>
-            <span className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-400 mb-1">
-              {t("admin.return_reason")}
-            </span>
-            <span className="inline-block bg-slate-100 dark:bg-slate-600 text-slate-800 dark:text-slate-200 text-xs font-extrabold px-3 py-1 rounded-lg border border-slate-200/60 dark:border-slate-500/60">
-              {getLocalizedLabel("returnReason", order.reason_code) || t("admin.not_specified")}
-            </span>
-          </div>
-
-          <div>
-            <span className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-400 mb-1">
-              {t("admin.customer_note")}
-            </span>
-            <div className="bg-slate-50 dark:bg-slate-600 rounded-xl p-3.5 text-xs text-slate-600 dark:text-slate-200 italic leading-relaxed min-h-[50px] flex items-center">
-              "{order.description || t("admin.no_description")}"
-            </div>
-          </div>
-        </div>
-
-        {/* Thẻ Ngân hàng ATM */}
-        <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 text-white p-4 rounded-2xl shadow-lg relative overflow-hidden flex flex-col gap-2">
-          <div className="absolute -right-4 -bottom-4 text-white/5 text-8xl pointer-events-none">
-            <i className="fa-solid fa-building-columns"></i>
-          </div>
-
-          <div className="flex justify-between items-center relative z-10">
-            <span className="text-[9px] uppercase font-bold text-slate-400 tracking-widest flex items-center gap-1.5">
-              <i className="fa-solid fa-credit-card text-indigo-400"></i> {t("admin.refund_account")}
-            </span>
-            <i className="fa-solid fa-wifi text-slate-500 text-xs rotate-90"></i>
-          </div>
-
-          {bankInfo ? (
-            <div className="relative z-10 space-y-0.5">
-              <p className="text-[10px] uppercase font-semibold text-slate-400 tracking-wider">
-                {bankInfo.name || bankInfo.bankName || t("admin.no_phone", "Bank Account")}
-              </p>
-              <p className="text-base font-mono font-bold tracking-[0.15em] text-indigo-200 drop-shadow-sm">
-                {bankInfo.acc || bankInfo.bankNumber || "•••• •••• ••••"}
-              </p>
-            </div>
-          ) : (
-            <p className="text-xs italic text-slate-400 relative z-10">{t("admin.missing_bank_info")}</p>
-          )}
-
-          <div className="relative z-10 pt-2 border-t border-white/10 flex justify-between items-center text-xs">
-            <span className="font-bold text-slate-200 uppercase tracking-wider truncate max-w-[70%]" title={bankInfo?.owner}>
-              {bankInfo?.owner || t("admin.no_phone", "N/A")}
-            </span>
-            <span className="text-[9px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-full font-mono uppercase tracking-wider">
-              {t("admin.verified")}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Hình ảnh bằng chứng */}
-      {order.return_images && order.return_images.length > 0 && (
-        <div className="pt-3 border-t border-amber-200/60 dark:border-amber-900/40">
-          <span className="block text-[10px] font-extrabold text-amber-900/70 dark:text-amber-200/70 uppercase mb-2.5 tracking-wider">
-            {t("admin.evidence_attachments")} ({order.return_images.length})
-          </span>
-          <div className="flex flex-wrap gap-3">
-            {order.return_images.map((img, idx) => {
-              const fullImgUrl = getImageUrl(img);
-              return (
-                <div key={idx} className="relative group">
-                  <img
-                    src={fullImgUrl}
-                    alt={`${t("admin.evidence_attachments")} ${idx + 1}`}
-                    className="w-20 h-20 object-cover rounded-xl border-2 border-white shadow-md cursor-pointer hover:scale-105 transition-transform duration-300"
-                    onClick={() => window.open(fullImgUrl, '_blank')}
-                  />
-                  <div className="absolute inset-0 bg-black/20 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
-                    <i className="fa-solid fa-magnifying-glass-plus text-white text-xs"></i>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
 
 const DeliveryInfoSection = ({ order }) => {
   const { t, language } = useLanguage();

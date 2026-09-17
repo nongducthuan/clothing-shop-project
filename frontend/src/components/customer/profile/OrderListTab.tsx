@@ -106,7 +106,7 @@ export default function OrderListTab({ state, actions, helpers }) {
 
               {order.status === "Delivered" && !order.return_request && (
                 <button
-                  onClick={(e) => { e.stopPropagation(); handleOpenReturnModal(order.id); }}
+                  onClick={(e) => { e.stopPropagation(); handleOpenReturnModal(order); }}
                   className="flex-1 py-2.5 bg-slate-900 dark:bg-slate-100 hover:bg-slate-800 dark:hover:bg-white text-white dark:text-slate-900 rounded-xl font-medium text-xs sm:text-sm transition-colors"
                 >
                   {t("orders.return", "Return")}

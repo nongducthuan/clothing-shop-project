@@ -102,7 +102,21 @@ export const verifyOtpAndGetOrders = async (req: Request, res: Response): Promis
             where: { email },
             orderBy: { created_at: 'desc' },
             include: {
-                return_request: { select: { id: true, status: true } },
+                return_request: {
+                    include: {
+                        items: {
+                            include: {
+                                order_item: {
+                                    include: {
+                                        product: { select: { name: true, name_vi: true, name_en: true } },
+                                        color: { select: { color_name: true, color_name_vi: true, color_name_en: true } },
+                                        size: { select: { size: true } }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
                 items: {
                     include: {
                         product: { select: { name: true, name_vi: true, name_en: true, image_url: true } },
@@ -124,13 +138,34 @@ export const verifyOtpAndGetOrders = async (req: Request, res: Response): Promis
             payment_method: order.payment_method,
             payment_status: order.payment_status,
             created_at: order.created_at,
-            return_request: order.return_request ?? null,
+            return_request: order.return_request ? {
+                id: order.return_request.id,
+                status: order.return_request.status,
+                reason_code: order.return_request.reason_code,
+                description: order.return_request.description,
+                refund_amount: Number(order.return_request.refund_amount),
+                items: order.return_request.items?.map(ri => ({
+                    id: ri.id,
+                    order_item_id: ri.order_item_id,
+                    return_quantity: ri.return_quantity,
+                    refund_amount: Number(ri.refund_amount),
+                    product_name: ri.order_item?.product?.name ?? null,
+                    product_name_vi: ri.order_item?.product?.name_vi ?? null,
+                    product_name_en: ri.order_item?.product?.name_en ?? null,
+                    color_name: ri.order_item?.color?.color_name ?? null,
+                    color_name_vi: ri.order_item?.color?.color_name_vi ?? null,
+                    color_name_en: ri.order_item?.color?.color_name_en ?? null,
+                    size: ri.order_item?.size?.size ?? null,
+                    is_gift: ri.order_item?.is_gift ?? false
+                })) ?? []
+            } : null,
             items: order.items.map(item => ({
                 id: item.id,
                 product_id: item.product_id,
                 quantity: item.quantity,
                 price: Number(item.price),
                 is_gift: item.is_gift,
+                promotion_id: item.promotion_id ?? null,
                 product_name: item.product?.name ?? null,
                 product_name_vi: item.product?.name_vi ?? null,
                 product_name_en: item.product?.name_en ?? null,
@@ -435,7 +470,21 @@ export const getOrders = async (req: Request, res: Response): Promise<void> => {
             where: { user_id: userId },
             orderBy: { created_at: 'desc' },
             include: {
-                return_request: { select: { id: true, status: true } },
+                return_request: {
+                    include: {
+                        items: {
+                            include: {
+                                order_item: {
+                                    include: {
+                                        product: { select: { name: true, name_vi: true, name_en: true } },
+                                        color: { select: { color_name: true, color_name_vi: true, color_name_en: true } },
+                                        size: { select: { size: true } }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
                 items: {
                     include: {
                         product: { select: { name: true, name_vi: true, name_en: true, image_url: true } },
@@ -457,13 +506,34 @@ export const getOrders = async (req: Request, res: Response): Promise<void> => {
             payment_method: order.payment_method,
             payment_status: order.payment_status,
             created_at: order.created_at,
-            return_request: order.return_request ?? null,
+            return_request: order.return_request ? {
+                id: order.return_request.id,
+                status: order.return_request.status,
+                reason_code: order.return_request.reason_code,
+                description: order.return_request.description,
+                refund_amount: Number(order.return_request.refund_amount),
+                items: order.return_request.items?.map(ri => ({
+                    id: ri.id,
+                    order_item_id: ri.order_item_id,
+                    return_quantity: ri.return_quantity,
+                    refund_amount: Number(ri.refund_amount),
+                    product_name: ri.order_item?.product?.name ?? null,
+                    product_name_vi: ri.order_item?.product?.name_vi ?? null,
+                    product_name_en: ri.order_item?.product?.name_en ?? null,
+                    color_name: ri.order_item?.color?.color_name ?? null,
+                    color_name_vi: ri.order_item?.color?.color_name_vi ?? null,
+                    color_name_en: ri.order_item?.color?.color_name_en ?? null,
+                    size: ri.order_item?.size?.size ?? null,
+                    is_gift: ri.order_item?.is_gift ?? false
+                })) ?? []
+            } : null,
             items: order.items.map(item => ({
                 id: item.id,
                 product_id: item.product_id,
                 quantity: item.quantity,
                 price: Number(item.price),
                 is_gift: item.is_gift,
+                promotion_id: item.promotion_id ?? null,
                 product_name: item.product?.name ?? null,
                 product_name_vi: item.product?.name_vi ?? null,
                 product_name_en: item.product?.name_en ?? null,
@@ -799,8 +869,19 @@ const parseBankInfo = (rawBank: any) => {
 // Fix 5: Tăng cường ownership check – JWT user_id ưu tiên hơn email
 export const submitReturnRequest = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { reason_code, description, email } = req.body;
+        const { reason_code, description, email, returnItems } = req.body;
         const orderId = Number(req.params.id);
+
+        // Parse returnItems (có thể gửi dưới dạng string JSON qua FormData)
+        let parsedReturnItems: { order_item_id: number; return_quantity: number }[] = [];
+        if (returnItems) {
+            try {
+                parsedReturnItems = typeof returnItems === 'string' ? JSON.parse(returnItems) : returnItems;
+            } catch {
+                res.status(400).json({ message: "Invalid returnItems format." });
+                return;
+            }
+        }
 
         const rawBank = req.body.refund_bank_info || req.body.bankInfo;
         const finalBankInfo = parseBankInfo(rawBank);
@@ -809,15 +890,16 @@ export const submitReturnRequest = async (req: Request, res: Response): Promise<
             : [];
 
         await prisma.$transaction(async (tx) => {
-            // Lấy order ra trước, kiểm tra status
-            const order = await tx.order.findFirst({ 
-                where: { id: orderId, status: 'Delivered', payment_status: 'Paid' } 
+            // Lấy order và tất cả items (bao gồm thông tin promotion)
+            const order = await tx.order.findFirst({
+                where: { id: orderId, status: 'Delivered', payment_status: 'Paid' },
+                include: { items: true }
             });
             if (!order) {
                 throw new Error("The order is invalid, not delivered, or unpaid.");
             }
 
-            // Fix 5: Kiểm tra ownership (hỗ trợ cả trường hợp user đã đăng nhập nhưng return đơn guest, và cho phép Admin)
+            // Fix 5: Kiểm tra ownership
             const isAdmin = req.user?.role === 'admin';
             if (order.user_id) {
                 if (!isAdmin && (!req.user || req.user.id !== order.user_id)) {
@@ -834,14 +916,110 @@ export const submitReturnRequest = async (req: Request, res: Response): Promise<
                 throw new Error("A return request has already been submitted for this order.");
             }
 
-            await tx.returnRequest.create({
+            // ─── Validate & Build ReturnRequestItems ─────────────────────────────
+
+            // Map order items để tra cứu nhanh
+            const orderItemMap = new Map(order.items.map(i => [i.id, i]));
+
+            // Nếu không truyền returnItems → trả toàn bộ (backward-compatible)
+            if (parsedReturnItems.length === 0) {
+                parsedReturnItems = order.items
+                    .filter(i => !i.is_gift) // Loại gift items khỏi default
+                    .map(i => ({ order_item_id: i.id, return_quantity: i.quantity }));
+            }
+
+            if (parsedReturnItems.length === 0) {
+                throw new Error("No items selected for return.");
+            }
+
+            // Validate từng returnItem
+            const returnItemSet = new Set(parsedReturnItems.map(ri => ri.order_item_id));
+
+            for (const ri of parsedReturnItems) {
+                const orderItem = orderItemMap.get(ri.order_item_id);
+                if (!orderItem) {
+                    throw new Error(`Item ID ${ri.order_item_id} does not belong to this order.`);
+                }
+                // C1: Không cho phép trả gift item độc lập
+                if (orderItem.is_gift) {
+                    throw new Error(`Gift items cannot be returned independently. Please include the associated purchased item.`);
+                }
+                if (ri.return_quantity <= 0 || ri.return_quantity > orderItem.quantity) {
+                    throw new Error(`Invalid return quantity for item ID ${ri.order_item_id}. Must be between 1 and ${orderItem.quantity}.`);
+                }
+            }
+
+            // Phân loại gift items:
+            // - Có promotion_id: đơn mới (frontend chỉ gán promotion_id cho gift item, không gán cho sản phẩm mua)
+            // - Không có promotion_id: đơn cũ trước khi có field này
+            const linkedGiftItems = order.items.filter(i => i.is_gift && i.promotion_id);
+            const orphanGiftItems = order.items.filter(i => i.is_gift && !i.promotion_id);
+
+            // Tính refund_amount
+            // - Non-gift items: item.price × return_quantity
+            // - Gift items (is_gift=true, price=0): refund = 0
+            let totalRefundAmount = 0;
+            const returnItemsToCreate: { order_item_id: number; return_quantity: number; refund_amount: number }[] = [];
+
+            for (const ri of parsedReturnItems) {
+                const orderItem = orderItemMap.get(ri.order_item_id)!;
+                const itemRefund = orderItem.is_gift ? 0 : Number(orderItem.price) * ri.return_quantity;
+                totalRefundAmount += itemRefund;
+                returnItemsToCreate.push({
+                    order_item_id: ri.order_item_id,
+                    return_quantity: ri.return_quantity,
+                    refund_amount: itemRefund
+                });
+            }
+
+            // Khi có ít nhất 1 non-gift item bị trả → tự động gom gift items vào
+            const hasNonGiftReturned = parsedReturnItems.some(ri => {
+                const orderItem = orderItemMap.get(ri.order_item_id);
+                return orderItem && !orderItem.is_gift;
+            });
+
+            if (hasNonGiftReturned) {
+                // B1: Gom tất cả gift items có promotion_id (đơn mới)
+                // Frontend chỉ gán promotion_id cho gift item, không gán cho sản phẩm mua
+                for (const giftItem of linkedGiftItems) {
+                    const alreadyAdded = returnItemsToCreate.some(r => r.order_item_id === giftItem.id);
+                    if (!alreadyAdded) {
+                        returnItemsToCreate.push({
+                            order_item_id: giftItem.id,
+                            return_quantity: giftItem.quantity,
+                            refund_amount: 0
+                        });
+                    }
+                }
+
+                // B2 (Fallback): Gom tất cả orphan gift items (đơn cũ, promotion_id = NULL)
+                for (const giftItem of orphanGiftItems) {
+                    const alreadyAdded = returnItemsToCreate.some(r => r.order_item_id === giftItem.id);
+                    if (!alreadyAdded) {
+                        returnItemsToCreate.push({
+                            order_item_id: giftItem.id,
+                            return_quantity: giftItem.quantity,
+                            refund_amount: 0
+                        });
+                    }
+                }
+            }
+
+
+
+            // Tạo ReturnRequest
+            const returnRequest = await tx.returnRequest.create({
                 data: {
                     order_id: orderId,
                     reason_code,
                     description: description || null,
                     images: JSON.stringify(images),
                     refund_bank_info: JSON.stringify(finalBankInfo),
-                    status: 'Pending'
+                    refund_amount: totalRefundAmount,
+                    status: 'Pending',
+                    items: {
+                        create: returnItemsToCreate
+                    }
                 }
             });
 
@@ -857,6 +1035,7 @@ export const submitReturnRequest = async (req: Request, res: Response): Promise<
         res.status(500).json({ message: error.message });
     }
 };
+
 
 export const cancelReturnRequest = async (req: Request, res: Response): Promise<void> => {
     try {

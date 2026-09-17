@@ -10,6 +10,7 @@ interface LanguageContextType {
   getOrderStatusLabel: (status?: string | null) => string;
   getReturnStatusLabel: (status?: string | null) => string;
   getReturnReasonLabel: (reason?: string | null) => string;
+  getLocalizedTierName: (tierName?: string | null) => string;
   translateApiMessage: (msg?: string | null) => string;
 }
 
@@ -126,8 +127,15 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const getReturnReasonLabel = (reason?: string | null): string =>
     getLocalizedLabel("returnReason", reason);
 
+  /** Helper de dich ten tier thanh vien. */
+  const getLocalizedTierName = (tierName?: string | null): string => {
+    if (!tierName) return "";
+    const key = `tier.${tierName.toLowerCase()}`;
+    return t(key, tierName);
+  };
+
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, t, getLocalizedText, getLocalizedLabel, getOrderStatusLabel, getReturnStatusLabel, getReturnReasonLabel, translateApiMessage }}>
+    <LanguageContext.Provider value={{ language, setLanguage, t, getLocalizedText, getLocalizedLabel, getOrderStatusLabel, getReturnStatusLabel, getReturnReasonLabel, getLocalizedTierName, translateApiMessage }}>
       {children}
     </LanguageContext.Provider>
   );

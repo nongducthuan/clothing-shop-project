@@ -16,7 +16,7 @@ import { formatCurrency } from "../../utils/currencyUtils";
 const useGeolocation = () => {
   const [isLocating, setIsLocating] = useState(false);
   const [locationError, setLocationError] = useState("");
-  const { t } = useLanguage();
+  const { t, translateApiMessage } = useLanguage();
 
   const getAddressFromCoords = async (lat, lon) => {
     try {
@@ -52,8 +52,8 @@ const useGeolocation = () => {
         try {
           const address = await getAddressFromCoords(pos.coords.latitude, pos.coords.longitude);
           onSuccess(address);
-        } catch (err) {
-          setLocationError(err.message);
+        } catch (err: any) {
+          setLocationError(translateApiMessage(err.message) || err.message);
         } finally {
           setIsLocating(false);
         }

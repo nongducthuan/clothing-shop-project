@@ -6,7 +6,7 @@ export default function MembershipInfoTab({ state, actions, helpers }) {
   const { user, phone, tier, currentConfig, totalSpent, safeProgress } = state;
   const { setPhone } = actions;
   const { formatCurrency } = helpers;
-  const { t } = useLanguage();
+  const { t, getLocalizedTierName } = useLanguage();
 
   const [showCurrent, setShowCurrent] = useState(false);
   const [showNew, setShowNew] = useState(false);
@@ -93,7 +93,7 @@ export default function MembershipInfoTab({ state, actions, helpers }) {
                   <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full ${currentConfig?.bg || "bg-slate-100"} flex items-center justify-center shrink-0`}>
                     <i className={`fa-solid ${currentConfig?.icon || "fa-shield-halved"} ${currentConfig?.color || "text-slate-500"} text-sm sm:text-lg`}></i>
                   </div>
-                  <span className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100 truncate">{tier}</span>
+                  <span className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100 truncate">{getLocalizedTierName(tier)}</span>
                 </div>
               </div>
               <div className="text-right shrink-0">
@@ -128,7 +128,7 @@ export default function MembershipInfoTab({ state, actions, helpers }) {
             {currentConfig?.next ? (
               <div>
                 <div className="flex justify-between text-[11px] sm:text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-2 gap-2">
-                  <span className="truncate">{t("profile.progress_to", "Progress to")} {currentConfig.label}</span>
+                  <span className="truncate">{t("profile.progress_to", "Progress to")} {getLocalizedTierName(currentConfig.label)}</span>
                   <span className="text-slate-900 dark:text-slate-100 font-extrabold shrink-0">{Math.round(safeProgress)}%</span>
                 </div>
                 <div className="w-full bg-slate-200/80 dark:bg-slate-700 rounded-full h-2.5 overflow-hidden border border-slate-300/60 dark:border-slate-600 shadow-inner">

@@ -5,22 +5,7 @@ import { Sparkles } from "lucide-react";
 export function CheckoutSummary({ state, helpers }) {
   const { cart, earnedGifts, giftDetails, subtotal, membershipDiscount, tier, voucherDiscount, appliedVoucher, shippingFee, isFreeShipping, finalTotal } = state;
   const { getImageUrl, formatPrice } = helpers;
-  const { t, getLocalizedText, language } = useLanguage();
-
-  const getLocalizedTierName = (tierName: string) => {
-    if (!tierName) return "";
-    if (language === "vi") {
-      const map: Record<string, string> = {
-        Normal: "Thường",
-        Bronze: "Đồng",
-        Silver: "Bạc",
-        Gold: "Vàng",
-        Diamond: "Kim Cương",
-      };
-      return map[tierName] || tierName;
-    }
-    return tierName;
-  };
+  const { t, getLocalizedText, getLocalizedTierName } = useLanguage();
 
   return (
     <div className="bg-slate-50 dark:bg-slate-800 p-8 rounded-[2rem]">

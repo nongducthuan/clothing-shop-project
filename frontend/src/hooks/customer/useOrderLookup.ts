@@ -24,12 +24,15 @@ export function useOrderLookup() {
     bank_acc: string;
     bank_owner: string;
     images?: File[];
+    selectedItems?: Record<number, { selected: boolean; return_quantity: number | string }>;
   }>({
     reason_code: "",
     description: "",
     bank_name: "",
     bank_acc: "",
-    bank_owner: ""
+    bank_owner: "",
+    images: [],
+    selectedItems: {}
   });
 
   /**
@@ -115,8 +118,26 @@ export function useOrderLookup() {
   /**
    * Opens the return form for a specific order.
    */
-  const openReturnForm = (order: { id: number | string }) => {
+  const openReturnForm = (order: { id: number | string; items?: any[] }) => {
     setSelectedOrder(order);
+    const initialSelectedItems: Record<number, { selected: boolean; return_quantity: number }> = {};
+    if (order?.items) {
+      order.items.forEach((item: any) => {
+        initialSelectedItems[item.id] = {
+          selected: !item.is_gift,
+          return_quantity: item.quantity || 1
+        };
+      });
+    }
+    setReturnForm({
+      reason_code: "",
+      description: "",
+      bank_name: "",
+      bank_acc: "",
+      bank_owner: "",
+      images: [],
+      selectedItems: initialSelectedItems
+    });
     setStep(4);
   };
 
@@ -136,6 +157,28 @@ export function useOrderLookup() {
       formData.append("description", returnForm.description);
       formData.append("email", email); // Required to authenticate Guest
 
+      // Build returnItems list
+      const returnItems: { order_item_id: number; return_quantity: number }[] = [];
+      if (returnForm.selectedItems) {
+        Object.entries(returnForm.selectedItems).forEach(([itemIdStr, val]: [string, any]) => {
+          const qty = Number(val.return_quantity) || 1;
+          if (val.selected && qty > 0) {
+            returnItems.push({
+              order_item_id: Number(itemIdStr),
+              return_quantity: qty
+            });
+          }
+        });
+      }
+
+      if (returnItems.length === 0) {
+        showToast(t("lookup.no_items_selected_err", "Vui lòng chọn ít nhất 1 sản phẩm để trả."), "warning");
+        setLoading(false);
+        return;
+      }
+
+      formData.append("returnItems", JSON.stringify(returnItems));
+
       // 3. Package bank info into JSON string and append
       const refund_bank_info = {
         name: returnForm.bank_name,
@@ -145,7 +188,6 @@ export function useOrderLookup() {
       formData.append("refund_bank_info", JSON.stringify(refund_bank_info));
 
       // 4. IMPORTANT: Iterate through images array and append each file to FormData
-      // Note: "images" key must match the backend upload configuration (Multer)
       if (returnForm.images && returnForm.images.length > 0) {
         returnForm.images.forEach((file) => {
           formData.append("images", file);

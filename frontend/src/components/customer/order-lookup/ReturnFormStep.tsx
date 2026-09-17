@@ -5,8 +5,73 @@ export default function ReturnFormStep({
   returnForm, setReturnForm, selectedOrder, formatCurrency,
   handleReturnSubmit, loading, onCancel
 }) {
-  const { t } = useLanguage();
+  const { t, getLocalizedText, language } = useLanguage();
   const inputCls = "w-full p-2.5 border border-gray-300 dark:border-slate-600 rounded-lg text-sm outline-none focus:ring-2 focus:ring-violet-500 bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500";
+
+  const items = selectedOrder?.items || [];
+  const selectedItems = returnForm.selectedItems || {};
+
+  const handleToggleItem = (itemId: number, maxQty: number) => {
+    const current = selectedItems[itemId] || { selected: false, return_quantity: maxQty };
+    const nextSelected = !current.selected;
+    setReturnForm({
+      ...returnForm,
+      selectedItems: {
+        ...selectedItems,
+        [itemId]: {
+          selected: nextSelected,
+          return_quantity: nextSelected ? (current.return_quantity || maxQty) : maxQty
+        }
+      }
+    });
+  };
+
+  const handleQtyChange = (itemId: number, rawVal: string, maxQty: number) => {
+    if (rawVal === "") {
+      setReturnForm({
+        ...returnForm,
+        selectedItems: {
+          ...selectedItems,
+          [itemId]: { ...selectedItems[itemId], selected: true, return_quantity: "" }
+        }
+      });
+      return;
+    }
+    const val = parseInt(rawVal, 10);
+    if (isNaN(val)) return;
+    const validQty = Math.min(val, maxQty);
+    setReturnForm({
+      ...returnForm,
+      selectedItems: {
+        ...selectedItems,
+        [itemId]: { ...selectedItems[itemId], selected: true, return_quantity: validQty < 1 ? "" : validQty }
+      }
+    });
+  };
+
+  const handleQtyBlur = (itemId: number) => {
+    const current = selectedItems[itemId]?.return_quantity;
+    if (!current || Number(current) < 1) {
+      setReturnForm({
+        ...returnForm,
+        selectedItems: {
+          ...selectedItems,
+          [itemId]: { ...selectedItems[itemId], selected: true, return_quantity: 1 }
+        }
+      });
+    }
+  };
+
+  const estimatedRefund = items.reduce((sum: number, item: any) => {
+    const sel = selectedItems[item.id];
+    if (sel?.selected && !item.is_gift) {
+      const qty = Number(sel.return_quantity) || 0;
+      return sum + Number(item.price || 0) * qty;
+    }
+    return sum;
+  }, 0);
+
+  const hasBuyXGetYGift = items.some((i: any) => i.is_gift);
 
   return (
     <form onSubmit={handleReturnSubmit} className="space-y-4">
@@ -14,6 +79,93 @@ export default function ReturnFormStep({
         <span>{t("lookup.order_code")} <strong>#{selectedOrder?.id}</strong></span>
         <span>{t("lookup.total")} <strong>{formatCurrency(selectedOrder?.total_price)}</strong></span>
       </div>
+
+      {/* Item Selection Section */}
+      {items.length > 0 && (
+        <div className="space-y-2.5 bg-gray-50 dark:bg-slate-700/40 p-3.5 rounded-xl border border-gray-200 dark:border-slate-600">
+          <label className="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider">
+            {t("lookup.select_items_title", "Chọn sản phẩm muốn trả")}
+          </label>
+
+          {hasBuyXGetYGift && (
+            <div className="p-2.5 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/50 rounded-lg text-xs text-amber-700 dark:text-amber-300 flex items-start gap-2">
+              <i className="fa-solid fa-circle-info text-amber-500 mt-0.5 shrink-0"></i>
+              <span>{t("lookup.gift_must_return_notice", "Quà tặng đi kèm (Buy X Get Y) sẽ được tự động gom trả cùng sản phẩm mua.")}</span>
+            </div>
+          )}
+
+          <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+            {items.map((item: any) => {
+              const sel = selectedItems[item.id] || { selected: false, return_quantity: item.quantity };
+              const isGift = item.is_gift;
+
+              return (
+                <div
+                  key={item.id}
+                  className={`p-2.5 rounded-xl border transition-all flex items-center justify-between gap-3 ${
+                    sel.selected
+                      ? "bg-white dark:bg-slate-800 border-violet-500 dark:border-violet-400 shadow-xs"
+                      : "bg-gray-100/70 dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 opacity-75"
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                    <input
+                      type="checkbox"
+                      disabled={isGift}
+                      checked={sel.selected}
+                      onChange={() => handleToggleItem(item.id, item.quantity)}
+                      className="w-4 h-4 rounded border-gray-300 text-violet-600 focus:ring-violet-500 cursor-pointer disabled:cursor-not-allowed"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <p className="text-xs font-semibold text-gray-800 dark:text-slate-100 line-clamp-2 leading-snug">
+                          {getLocalizedText(item, "product_name") || item.product_name}
+                        </p>
+                        {isGift && (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-900/60 text-amber-700 dark:text-amber-300 shrink-0">
+                            <i className="fa-solid fa-gift" />
+                            {t("lookup.gift_item_badge", "Quà tặng")}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[11px] text-gray-500 dark:text-slate-400 mt-0.5">
+                        {(() => {
+                          const colorName = getLocalizedText(item, "color_name") || item.color_name_vi || item.color_name || item.color;
+                          return colorName ? `${colorName} | ` : "";
+                        })()}
+                        {item.size ? `${item.size} | ` : ""}
+                        <span className="font-medium">{isGift ? "0đ" : formatCurrency(item.price)}</span>
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Quantity Input */}
+                  {sel.selected && !isGift && (
+                    <div className="flex items-center gap-1 shrink-0 self-center pl-2 border-l border-gray-200 dark:border-slate-700">
+                      <span className="text-[11px] text-gray-400 font-medium">{t("lookup.return_qty_label", "SL:")}</span>
+                      <input
+                        type="number"
+                        min={1}
+                        max={item.quantity}
+                        value={sel.return_quantity}
+                        onChange={(e) => handleQtyChange(item.id, e.target.value, item.quantity)}
+                        onBlur={() => handleQtyBlur(item.id)}
+                        className="w-10 text-center bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 text-gray-900 dark:text-slate-100 text-xs py-1 rounded-lg outline-none focus:border-violet-500 font-bold"
+                      />
+                      <span className="text-[11px] text-gray-400">/{item.quantity}</span>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="flex justify-between items-center bg-violet-100/70 dark:bg-violet-900/40 px-3 py-2 rounded-lg text-xs">
+            <span className="font-semibold text-violet-800 dark:text-violet-200">{t("lookup.estimated_refund", "Ước tính hoàn tiền:")}</span>
+            <span className="font-bold text-violet-900 dark:text-violet-100 text-sm">{formatCurrency(estimatedRefund)}</span>
+          </div>
+        </div>
+      )}
 
       <div>
         <label className="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase mb-1">{t("lookup.reason_label")}</label>

@@ -22,6 +22,7 @@ const INITIAL_RETURN_DATA = {
   bankNumber: "",
   accountHolder: "",
   images: [],
+  selectedItems: {} as Record<number, { selected: boolean; return_quantity: number }>,
 };
 
 export function useProfilePage() {
@@ -45,7 +46,11 @@ export function useProfilePage() {
   // Return Modal State
   const [showReturnModal, setShowReturnModal] = useState(false);
   const [returnOrderId, setReturnOrderId] = useState(null);
-  const [returnData, setReturnData] = useState(INITIAL_RETURN_DATA);
+  const [returnOrder, setReturnOrder] = useState<any>(null);
+  const [returnData, setReturnData] = useState<any>({
+    ...INITIAL_RETURN_DATA,
+    selectedItems: {}
+  });
 
   // Change Payment Modal State
   const [paymentModalOrder, setPaymentModalOrder] = useState(null);
@@ -142,23 +147,61 @@ export function useProfilePage() {
     }
   };
 
-  const handleOpenReturnModal = (orderId) => {
+  const handleOpenReturnModal = (orderOrId: any) => {
+    const targetOrder = typeof orderOrId === 'object' ? orderOrId : orders.find((o: any) => o.id === orderOrId);
+    const orderId = targetOrder ? targetOrder.id : orderOrId;
+
     setReturnOrderId(orderId);
-    setReturnData(INITIAL_RETURN_DATA);
+    setReturnOrder(targetOrder || null);
+
+    // Initial selectedItems: select all non-gift items by default
+    const initialSelectedItems: Record<number, { selected: boolean; return_quantity: number }> = {};
+    if (targetOrder?.items) {
+      targetOrder.items.forEach((item: any) => {
+        initialSelectedItems[item.id] = {
+          selected: !item.is_gift,
+          return_quantity: item.quantity || 1
+        };
+      });
+    }
+
+    setReturnData({
+      ...INITIAL_RETURN_DATA,
+      selectedItems: initialSelectedItems
+    });
     setShowReturnModal(true);
   };
 
   const handleSubmitReturn = async () => {
-    const { bankName, bankNumber, accountHolder, reason, note, images } = returnData;
+    const { bankName, bankNumber, accountHolder, reason, note, images, selectedItems } = returnData;
 
     if (!bankName || !bankNumber || !accountHolder) {
       showToast(t("profile.fill_bank"), "warning");
       return;
     }
 
-    const currentOrder = orders.find((o) => o.id === returnOrderId);
+    const currentOrder = returnOrder || orders.find((o: any) => o.id === returnOrderId);
     if (!currentOrder?.email) {
       showToast(t("profile.order_email_not_found"), "error");
+      return;
+    }
+
+    // Build returnItems list
+    const returnItems: { order_item_id: number; return_quantity: number }[] = [];
+    if (selectedItems) {
+      Object.entries(selectedItems).forEach(([itemIdStr, val]: [string, any]) => {
+        const qty = Number(val.return_quantity) || 1;
+        if (val.selected && qty > 0) {
+          returnItems.push({
+            order_item_id: Number(itemIdStr),
+            return_quantity: qty
+          });
+        }
+      });
+    }
+
+    if (returnItems.length === 0) {
+      showToast(t("lookup.no_items_selected_err", "Vui lòng chọn ít nhất 1 sản phẩm để trả."), "warning");
       return;
     }
 
@@ -167,9 +210,10 @@ export function useProfilePage() {
     formData.append("description", note);
     formData.append("email", currentOrder.email);
     formData.append("bankInfo", JSON.stringify({ name: bankName, acc: bankNumber, owner: accountHolder }));
+    formData.append("returnItems", JSON.stringify(returnItems));
 
     if (images?.length > 0) {
-      Array.from(images).forEach((file) => formData.append("images", file));
+      Array.from(images).forEach((file: any) => formData.append("images", file));
     }
 
     try {
@@ -184,7 +228,7 @@ export function useProfilePage() {
         setShowReturnModal(false);
         fetchOrders();
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Connection error:", error);
       showToast(error.response?.data?.message || t("profile.connect_error"), "error");
     }
@@ -273,7 +317,7 @@ export function useProfilePage() {
   return {
     state: {
       user, tier, phone, activeTab, orders, loadingOrders, selectedOrder,
-      showReturnModal, returnOrderId, returnData, currentConfig, totalSpent, safeProgress,
+      showReturnModal, returnOrderId, returnOrder, returnData, currentConfig, totalSpent, safeProgress,
       currentPassword, newPassword, confirmPassword, isChangingPassword,
       paymentModalOrder, repayLoading
     },

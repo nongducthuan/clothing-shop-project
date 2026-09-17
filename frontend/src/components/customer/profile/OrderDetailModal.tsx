@@ -14,9 +14,12 @@ const formatOrderDateTime = (dateString) => {
 };
 
 export default function OrderDetailModal({ order, onClose, onOpenPaymentModal, helpers }) {
-  const { t, getLocalizedText } = useLanguage();
+  const { t, getLocalizedText, getLocalizedLabel } = useLanguage();
   if (!order) return null;
   const { formatCurrency, getImgUrl } = helpers;
+
+  const itemsSubtotal = order.items?.reduce((sum: number, item: any) => sum + (Number(item.price || 0) * (item.quantity || 1)), 0) || 0;
+  const shippingFee = Math.max(0, Number(order.total_price || 0) - itemsSubtotal);
 
   return (
     <div
@@ -135,12 +138,84 @@ export default function OrderDetailModal({ order, onClose, onOpenPaymentModal, h
             </div>
 
             <div className="flex justify-between items-center gap-3 border-t border-slate-200/60 dark:border-slate-600 pt-2.5 sm:pt-3">
+              <span className="text-slate-500 dark:text-slate-400 shrink-0">{t('order_details.subtotal', 'Tiền hàng')}</span>
+              <span className="font-medium text-slate-900 dark:text-slate-100">
+                {formatCurrency(itemsSubtotal)}
+              </span>
+            </div>
+
+            {shippingFee > 0 && (
+              <div className="flex justify-between items-center gap-3">
+                <span className="text-slate-500 dark:text-slate-400 shrink-0">{t('order_details.shipping_fee', 'Phí vận chuyển')}</span>
+                <span className="font-medium text-slate-900 dark:text-slate-100">
+                  {formatCurrency(shippingFee)}
+                </span>
+              </div>
+            )}
+
+            <div className="flex justify-between items-center gap-3 border-t border-slate-200/60 dark:border-slate-600 pt-2 sm:pt-2.5">
               <span className="font-semibold text-slate-700 dark:text-slate-300">{t('order_details.total', 'Tổng tiền')}</span>
               <span className="font-bold text-slate-900 dark:text-slate-100 text-sm sm:text-base whitespace-nowrap">
                 {formatCurrency(order.total_price)}
               </span>
             </div>
           </div>
+
+          {/* Return Request Info Section (if exists) */}
+          {order.return_request && (
+            <div className="bg-amber-50/60 dark:bg-amber-950/40 p-3.5 sm:p-5 rounded-xl border border-amber-200/70 dark:border-amber-900/50 space-y-3 text-xs sm:text-sm">
+              <div className="flex justify-between items-center">
+                <p className="text-[11px] sm:text-xs font-semibold text-amber-700 dark:text-amber-400 uppercase tracking-wider">
+                  {t('order_details.return_summary', 'Thông tin yêu cầu đổi trả')}
+                </p>
+                {order.return_request.reason_code && (
+                  <span className="text-[11px] font-medium px-2 py-0.5 rounded bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-300">
+                    {getLocalizedLabel("returnReason", order.return_request.reason_code) || order.return_request.reason_code}
+                  </span>
+                )}
+              </div>
+
+              {/* Returned Items List */}
+              {order.return_request.items && order.return_request.items.length > 0 && (
+                <div className="space-y-1.5 border-t border-amber-200/60 dark:border-amber-900/50 pt-2">
+                  <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400">{t('order_details.returned_items_title', 'Sản phẩm yêu cầu trả:')}</p>
+                  {order.return_request.items.map((ri: any, rIdx: number) => {
+                    const pName = getLocalizedText(ri, "product_name") || ri.product_name || `Sản phẩm #${ri.order_item_id}`;
+                    const cName = getLocalizedText(ri, "color_name") || ri.color_name;
+                    return (
+                      <div key={rIdx} className="flex justify-between items-center text-xs bg-white/70 dark:bg-slate-800/70 p-2 rounded-lg border border-amber-100 dark:border-amber-900/30">
+                        <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                          <span className="font-medium text-slate-800 dark:text-slate-200 truncate">{pName}</span>
+                          {ri.is_gift && (
+                            <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-900/60 text-amber-700 dark:text-amber-300 shrink-0">
+                              <i className="fa-solid fa-gift" />
+                              {t("lookup.gift_item_badge", "Quà tặng")}
+                            </span>
+                          )}
+                          <span className="text-[11px] text-slate-400 shrink-0">
+                            ({cName ? `${cName} | ` : ""}{ri.size ? `${ri.size} | ` : ""}x{ri.return_quantity})
+                          </span>
+                        </div>
+                        <span className="font-semibold text-slate-700 dark:text-slate-300 shrink-0 ml-2">
+                          {formatCurrency(ri.refund_amount)}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              <div className="flex justify-between items-center border-t border-amber-200/60 dark:border-amber-900/50 pt-2">
+                <div>
+                  <span className="text-slate-600 dark:text-slate-400 font-medium block">{t('order_details.estimated_refund', 'Số tiền hoàn dự kiến:')}</span>
+                  <span className="text-[10px] text-slate-400 dark:text-slate-500 italic block">{t('lookup.no_shipping_refund_note', '*Không hoàn lại phí vận chuyển')}</span>
+                </div>
+                <span className="font-bold text-amber-700 dark:text-amber-300 text-sm">
+                  {formatCurrency(order.return_request.refund_amount || 0)}
+                </span>
+              </div>
+            </div>
+          )}
 
           {order.payment_status === "Unpaid" && order.status !== "Cancelled" && onOpenPaymentModal && (
             <button

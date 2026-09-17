@@ -288,20 +288,21 @@ model Order {
 }
 
 model OrderItem {
-  id           Int                @id @default(autoincrement())
-  order_id     Int
-  product_id   Int
-  color_id     Int?
-  size_id      Int?
-  quantity     Int
-  price        Decimal            @db.Decimal(10, 2)
-  is_gift      Boolean            @default(false)
-  promotion_id Int?
-  color        ProductColor?      @relation(fields: [color_id], references: [id])
-  order        Order              @relation(fields: [order_id], references: [id], onDelete: Cascade)
-  product      Product            @relation(fields: [product_id], references: [id])
-  promotion    BuyXGetYPromotion? @relation(fields: [promotion_id], references: [id])
-  size         ProductSize?       @relation(fields: [size_id], references: [id])
+  id                   Int                  @id @default(autoincrement())
+  order_id             Int
+  product_id           Int
+  color_id             Int?
+  size_id              Int?
+  quantity             Int
+  price                Decimal              @db.Decimal(10, 2)
+  is_gift              Boolean              @default(false)
+  promotion_id         Int?
+  color                ProductColor?        @relation(fields: [color_id], references: [id])
+  order                Order                @relation(fields: [order_id], references: [id], onDelete: Cascade)
+  product              Product              @relation(fields: [product_id], references: [id])
+  promotion            BuyXGetYPromotion?   @relation(fields: [promotion_id], references: [id])
+  size                 ProductSize?         @relation(fields: [size_id], references: [id])
+  return_request_items ReturnRequestItem[]
 
   @@index([color_id], map: "order_items_color_id_fkey")
   @@index([order_id], map: "order_items_order_id_fkey")
@@ -330,20 +331,35 @@ model PromotionUsageHistory {
 }
 
 model ReturnRequest {
-  id               Int          @id @default(autoincrement())
-  order_id         Int          @unique
-  reason_code      String       @db.VarChar(255)
-  description      String?      @db.Text
+  id               Int                  @id @default(autoincrement())
+  order_id         Int                  @unique
+  reason_code      String               @db.VarChar(255)
+  description      String?              @db.Text
   images           Json?
   refund_bank_info Json?
-  admin_response   String?      @db.Text
-  refund_amount    Decimal      @default(0.00) @db.Decimal(10, 2)
-  status           ReturnStatus @default(Pending)
-  created_at       DateTime     @default(now())
-  updated_at       DateTime     @updatedAt
-  order            Order        @relation(fields: [order_id], references: [id], onDelete: Cascade)
+  admin_response   String?              @db.Text
+  refund_amount    Decimal              @default(0.00) @db.Decimal(10, 2)
+  status           ReturnStatus         @default(Pending)
+  created_at       DateTime             @default(now())
+  updated_at       DateTime             @updatedAt
+  order            Order                @relation(fields: [order_id], references: [id], onDelete: Cascade)
+  items            ReturnRequestItem[]
 
   @@map("return_requests")
+}
+
+model ReturnRequestItem {
+  id                Int           @id @default(autoincrement())
+  return_request_id Int
+  order_item_id     Int
+  return_quantity   Int
+  refund_amount     Decimal       @default(0.00) @db.Decimal(10, 2)
+  return_request    ReturnRequest @relation(fields: [return_request_id], references: [id], onDelete: Cascade)
+  order_item        OrderItem     @relation(fields: [order_item_id], references: [id], onDelete: Cascade)
+
+  @@index([return_request_id], map: "return_request_items_return_request_id_fkey")
+  @@index([order_item_id], map: "return_request_items_order_item_id_fkey")
+  @@map("return_request_items")
 }
 
 model Revenue {

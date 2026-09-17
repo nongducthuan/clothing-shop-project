@@ -511,7 +511,6 @@ async function main() {
     const total = items.reduce((sum, i) => sum + i.quantity * i.price, 0);
     await prisma.order.update({ where: { id: orderId }, data: { total_price: total } });
   }
-  console.log('✔ Cập nhật total_price cho orders');
 
   // ============================================================
   // 9. RETURN REQUESTS

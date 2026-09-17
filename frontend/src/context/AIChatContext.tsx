@@ -26,7 +26,7 @@ interface AIChatProviderProps {
 export const AIChatContext = createContext<AIChatContextType | undefined>(undefined);
 
 export function AIChatProvider({ children }: AIChatProviderProps) {
-  const { t, language } = useLanguage();
+  const { t, language, translateApiMessage } = useLanguage();
   const [sessionId, setSessionId] = useState<string>(() => {
     const stored = localStorage.getItem(STORAGE_SESSION_KEY);
     return stored ?? crypto.randomUUID();
@@ -80,16 +80,17 @@ export function AIChatProvider({ children }: AIChatProviderProps) {
 
         setMessages((prev) => [...prev, aiMessage]);
       } catch (err: unknown) {
-        const errorMsg =
+        const rawMsg =
           (err as { response?: { data?: { error?: string } }; message?: string })
             ?.response?.data?.error ||
-          (err as { message?: string })?.message ||
-          "Error sending message";
-        setError(errorMsg);
+          (err as { message?: string })?.message;
+        const translated = translateApiMessage(rawMsg);
+        const finalMsg = translated || t("chat.error_msg", "Rất tiếc, hệ thống Trợ lý AI đang gặp sự cố. Vui lòng thử lại sau ít phút.");
+        setError(finalMsg);
         const errorMessage: ChatMessage = {
           id: crypto.randomUUID(),
           role: "ai",
-          content: t("chat.error_msg", "Rất tiếc, hệ thống Trợ lý AI đang gặp sự cố. Vui lòng thử lại sau ít phút."),
+          content: finalMsg,
           createdAt: new Date().toISOString(),
         };
         setMessages((prev) => [...prev, errorMessage]);
@@ -97,7 +98,7 @@ export function AIChatProvider({ children }: AIChatProviderProps) {
         setIsSending(false);
       }
     },
-    [sessionId, t]
+    [sessionId, t, translateApiMessage]
   );
 
   const resetChat = useCallback(async () => {

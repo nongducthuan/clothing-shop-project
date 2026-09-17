@@ -17,7 +17,19 @@ export const getOrders = async (req: Request, res: Response): Promise<void> => {
                     user: {
                         select: { name: true, email: true }
                     },
-                    return_request: true,
+                    return_request: {
+                        include: {
+                            items: {
+                                include: {
+                                    order_item: {
+                                        include: {
+                                            product: { select: { name: true, name_vi: true, name_en: true } }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
                     items: {
                         include: {
                             product: { select: { name: true, name_vi: true, name_en: true, image_url: true } },
@@ -72,6 +84,8 @@ export const getOrders = async (req: Request, res: Response): Promise<void> => {
                 refund_bank_info: bankInfo,
                 return_images: returnImages,
                 return_status: rr?.status,
+                refund_amount: rr ? Number(rr.refund_amount) : 0,
+                return_items: rr?.items || [],
                 items,
                 user: undefined,
                 return_request: undefined
@@ -276,7 +290,14 @@ export const approveReturn = async (req: Request, res: Response): Promise<void> 
     const orderId = Number(req.params.id);
     try {
         await prisma.$transaction(async (tx) => {
-            const existing = await tx.returnRequest.findUnique({ where: { order_id: orderId } });
+            const existing = await tx.returnRequest.findUnique({
+                where: { order_id: orderId },
+                include: {
+                    items: {
+                        include: { order_item: true }
+                    }
+                }
+            });
             if (existing) {
                 await tx.returnRequest.update({
                     where: { order_id: orderId },
@@ -293,8 +314,89 @@ export const approveReturn = async (req: Request, res: Response): Promise<void> 
                     }
                 });
             }
+
+            // ─── Partial Stock Restore ────────────────────────────────────────────
+            // Nếu có ReturnRequestItems → chỉ restore stock cho các item được trả
+            // Nếu không có (đơn cũ / manual approve) → restore toàn bộ như cũ
+            if (existing?.items && existing.items.length > 0) {
+                for (const retItem of existing.items) {
+                    const sizeId = retItem.order_item.size_id;
+                    if (!sizeId) continue;
+                    await tx.productSize.update({
+                        where: { id: sizeId },
+                        data: { stock: { increment: retItem.return_quantity } }
+                    });
+                }
+            }
+            // (Nếu không có items → changeOrderStatusLogic sẽ xử lý restore toàn bộ)
         });
-        await changeOrderStatusLogic(orderId, 'Return_Approved');
+
+        // ─── Status + Revenue/Spending Update ────────────────────────────────────
+        // Lấy refund_amount từ ReturnRequest để cập nhật revenue & spending chính xác
+        const returnReq = await prisma.returnRequest.findUnique({
+            where: { order_id: orderId },
+            include: { items: true }
+        });
+        const refundAmount = returnReq ? Number(returnReq.refund_amount) : null;
+
+        // Nếu có ReturnRequestItems (partial return) → cập nhật revenue/spending thủ công
+        // thay vì để changeOrderStatusLogic trừ toàn bộ total_price
+        if (refundAmount !== null && returnReq?.items && returnReq.items.length > 0) {
+            // Chạy changeOrderStatusLogic nhưng với flag để bỏ qua stock restore (đã làm ở trên)
+            // và bỏ qua revenue update (sẽ tự làm dưới)
+            await prisma.$transaction(async (tx) => {
+                const order = await tx.order.findUnique({ where: { id: orderId } });
+                if (!order) return;
+
+                // Update order status
+                await tx.order.update({
+                    where: { id: orderId },
+                    data: { status: 'Return_Approved' }
+                });
+
+                // Revenue & Spending: chỉ trừ refund_amount (không phải toàn bộ total_price)
+                if (order.user_id && refundAmount > 0) {
+                    const currentUser = await tx.user.findUnique({ where: { id: order.user_id } });
+                    if (currentUser) {
+                        const newTotalSpent = Math.max(0, Number(currentUser.total_spent) - refundAmount);
+                        await tx.user.update({
+                            where: { id: order.user_id },
+                            data: { total_spent: newTotalSpent }
+                        });
+                        const tier = await tx.membership.findFirst({
+                            where: { min_spending: { lte: newTotalSpent } },
+                            orderBy: { min_spending: 'desc' }
+                        });
+                        if (tier) {
+                            await tx.user.update({
+                                where: { id: order.user_id },
+                                data: { membership_id: tier.id }
+                            });
+                        }
+                    }
+                }
+
+                // Revenue: trừ refundAmount trên ngày giao hàng gốc
+                if (refundAmount > 0) {
+                    const revenueDate = order.delivered_at ? new Date(order.delivered_at) : new Date();
+                    revenueDate.setHours(0, 0, 0, 0);
+                    const existingRevenue = await tx.revenue.findUnique({ where: { report_date: revenueDate } });
+                    if (existingRevenue) {
+                        await tx.revenue.update({
+                            where: { report_date: revenueDate },
+                            data: {
+                                total_sales: { increment: -refundAmount },
+                                total_orders: { increment: 0 } // Partial return không trừ order count
+                            }
+                        });
+                    }
+                }
+            });
+        } else {
+            // Backward-compatible: manual approve hoặc full return → dùng logic cũ
+            await changeOrderStatusLogic(orderId, 'Return_Approved');
+        }
+
         res.status(200).json({ message: "Return request approved successfully!" });
     } catch (err: any) {
         console.error(err);
