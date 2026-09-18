@@ -51,6 +51,8 @@ export default function Profile() {
         order={state.selectedOrder}
         onClose={() => actions.setSelectedOrder(null)}
         onOpenPaymentModal={actions.handleOpenPaymentModal}
+        actions={actions}
+        state={state}
         helpers={helpers}
       />
 

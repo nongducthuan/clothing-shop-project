@@ -168,8 +168,7 @@ function OrderRow({
                   </div>
                   {discountAmount > 0 && (
                     <div className="flex justify-between items-center text-emerald-600 dark:text-emerald-400 font-medium">
-                      <span className="flex items-center gap-1 shrink-0">
-                        <i className="fa-solid fa-ticket text-xs"></i>
+                      <span className="shrink-0">
                         {t("checkout.discount", "Giảm giá")}{voucherCode ? ` (${voucherCode})` : ""}:
                       </span>
                       <span className="font-bold">-{formatCurrency(discountAmount)}</span>
@@ -183,128 +182,181 @@ function OrderRow({
               );
             })()}
 
-            {order.payment_status === 'Unpaid' && order.status !== 'Cancelled' && (
-              <button
-                onClick={() => handleOpenPaymentModal(order)}
-                disabled={loading}
-                className="w-full mt-3 bg-slate-900 dark:bg-violet-600 hover:bg-slate-800 dark:hover:bg-violet-700 text-white py-2.5 rounded-lg text-sm font-bold transition flex flex-col items-center justify-center"
-              >
-                {loading ? (
-                  <i className="fa-solid fa-circle-notch fa-spin"></i>
-                ) : (
-                  <>
-                    <span>{t("lookup.pay_or_change")}</span>
-                    {isOnlinePendingUnpaid && countdown && (
-                      <span className="text-[10px] font-medium opacity-80 mt-0.5">
-                        {t('orders.auto_cancel_warning', 'Tự hủy sau {time}').replace('{time}', countdown)}
-                      </span>
-                    )}
-                  </>
-                )}
-              </button>
-            )}
-            {order.status === 'Delivered' && !order.return_request && (
-              <button
-                onClick={() => openReturnForm(order)}
-                className="w-full mt-3 bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-700 py-2.5 rounded-lg text-sm font-bold hover:bg-orange-100 dark:hover:bg-orange-900/50 transition flex items-center justify-center gap-2"
-              >
-                <i className="fa-solid fa-rotate-left"></i> {t("lookup.request_return")}
-              </button>
-            )}
-            {(order.status === 'Return Requested' || order.return_request) && (
-              <div className="mt-3 space-y-2">
-                {order.return_request ? (
-                  <div className="p-3 bg-amber-50/70 dark:bg-amber-950/40 border border-amber-200/70 dark:border-amber-900/50 rounded-xl text-xs space-y-2">
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-2 min-w-0">
-                        <i className="fa-solid fa-rotate-left text-amber-600 dark:text-amber-400 shrink-0"></i>
-                        <span className="font-semibold text-amber-900 dark:text-amber-300 truncate">
-                          {t("order_details.return_summary", "Yêu cầu đổi trả")}
+            {/* Action Buttons Section */}
+            {(() => {
+              const showPay = order.payment_status === 'Unpaid' && order.status !== 'Cancelled';
+              const showCancelOrder = ["Pending", "Confirmed"].includes(order.status) && !order.return_request && Boolean(handleCancelOrder);
+              const showReturn = order.status === 'Delivered' && !order.return_request;
+              const showCancelReturn = (order.status === 'Return Requested' || Boolean(order.return_request)) && Boolean(handleCancelReturn);
+              const showBuyAgain = ["Cancelled", "Delivered"].includes(order.status) && Boolean(handleBuyAgain);
+
+              const renderPayBtn = (fullWidth = true) => (
+                <button
+                  key="pay"
+                  onClick={() => handleOpenPaymentModal(order)}
+                  disabled={loading}
+                  className={`${fullWidth ? "w-full mt-3" : "flex-1"} bg-slate-900 dark:bg-violet-600 hover:bg-slate-800 dark:hover:bg-violet-700 text-white py-2.5 rounded-lg text-sm font-bold transition flex flex-col items-center justify-center`}
+                >
+                  {loading ? (
+                    <i className="fa-solid fa-circle-notch fa-spin"></i>
+                  ) : (
+                    <>
+                      <span>{t("lookup.pay_or_change")}</span>
+                      {isOnlinePendingUnpaid && countdown && (
+                        <span className="text-[10px] font-medium opacity-80 mt-0.5">
+                          {t('orders.auto_cancel_warning', 'Tự hủy sau {time}').replace('{time}', countdown)}
                         </span>
-                        {order.return_request.reason_code && (
-                          <span className="text-[10px] font-medium px-2 py-0.5 rounded bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-300 shrink-0 hidden sm:inline-block">
-                            {getLocalizedLabel("returnReason", order.return_request.reason_code) || order.return_request.reason_code}
-                          </span>
-                        )}
-                      </div>
-                      <div className="text-right shrink-0">
-                        <span className="text-[11px] text-slate-500 dark:text-slate-400 mr-1.5 hidden sm:inline">{t("order_details.estimated_refund", "Hoàn dự kiến:")}</span>
-                        <span className="font-bold text-amber-700 dark:text-amber-300 text-xs sm:text-sm">
-                          {formatCurrency(order.return_request.refund_amount || 0)}
-                        </span>
-                      </div>
-                    </div>
-                    {order.return_request.items && order.return_request.items.length > 0 && (
-                      <div className="space-y-1.5 border-t border-amber-200/60 dark:border-amber-900/50 pt-2">
-                        <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400">{t('order_details.returned_items_title', 'Sản phẩm yêu cầu trả:')}</p>
-                        {order.return_request.items.map((ri: any, rIdx: number) => {
-                          const pName = getLocalizedText(ri, "product_name") || ri.product_name || `Sản phẩm #${ri.order_item_id}`;
-                          const cName = getLocalizedText(ri, "color_name") || ri.color_name;
-                          return (
-                            <div key={rIdx} className="flex justify-between items-center bg-white/70 dark:bg-slate-800/70 p-2 rounded-lg border border-amber-100 dark:border-amber-900/30">
-                              <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                                <span className="font-medium text-slate-800 dark:text-slate-200 truncate">{pName}</span>
-                                {ri.is_gift && (
-                                  <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-900/60 text-amber-700 dark:text-amber-300 shrink-0">
-                                    <i className="fa-solid fa-gift" />
-                                    {t("lookup.gift_item_badge", "Quà tặng")}
-                                  </span>
-                                )}
-                                <span className="text-[11px] text-slate-400 shrink-0">
-                                  ({cName ? `${cName} | ` : ""}{ri.size ? `${ri.size} | ` : ""}x{ri.return_quantity})
+                      )}
+                    </>
+                  )}
+                </button>
+              );
+
+              const renderCancelOrderBtn = (fullWidth = true) => (
+                <button
+                  key="cancelOrder"
+                  onClick={() => handleCancelOrder && handleCancelOrder(order.id)}
+                  disabled={loading}
+                  className={`${fullWidth ? "w-full mt-3" : "flex-1"} bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-700 py-2.5 rounded-lg text-xs sm:text-sm font-bold hover:bg-rose-100 dark:hover:bg-rose-900/50 transition flex items-center justify-center gap-1.5 disabled:opacity-60 disabled:cursor-not-allowed`}
+                >
+                  {loading ? (
+                    <i className="fa-solid fa-circle-notch fa-spin"></i>
+                  ) : (
+                    <><i className="fa-solid fa-xmark"></i> {t("lookup.cancel_order")}</>
+                  )}
+                </button>
+              );
+
+              const renderReturnBtn = (fullWidth = true) => (
+                <button
+                  key="return"
+                  onClick={() => openReturnForm(order)}
+                  className={`${fullWidth ? "w-full mt-3" : "flex-1"} bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-700 py-2.5 rounded-lg text-sm font-bold hover:bg-orange-100 dark:hover:bg-orange-900/50 transition flex items-center justify-center gap-2`}
+                >
+                  <i className="fa-solid fa-rotate-left"></i> {t("lookup.request_return")}
+                </button>
+              );
+
+              const renderBuyAgainBtn = (fullWidth = true) => (
+                <button
+                  key="buyAgain"
+                  onClick={() => handleBuyAgain && handleBuyAgain(order)}
+                  disabled={loading}
+                  className={`${fullWidth ? "w-full mt-3" : "flex-1"} bg-slate-900 dark:bg-slate-100 hover:bg-slate-800 dark:hover:bg-white text-white dark:text-slate-900 py-2.5 rounded-lg text-xs sm:text-sm font-bold transition flex items-center justify-center gap-1.5 disabled:opacity-60 disabled:cursor-not-allowed`}
+                >
+                  {loading ? (
+                    <i className="fa-solid fa-circle-notch fa-spin"></i>
+                  ) : (
+                    <><i className="fa-solid fa-cart-plus"></i> {t("orders.buy_again", "Mua lại")}</>
+                  )}
+                </button>
+              );
+
+              return (
+                <div className="space-y-2">
+                  {/* Return request status details if present */}
+                  {showCancelReturn && (
+                    <div className="mt-3 space-y-2">
+                      {order.return_request ? (
+                        <div className="p-3 bg-amber-50/70 dark:bg-amber-950/40 border border-amber-200/70 dark:border-amber-900/50 rounded-xl text-xs space-y-2">
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <i className="fa-solid fa-rotate-left text-amber-600 dark:text-amber-400 shrink-0"></i>
+                              <span className="font-semibold text-amber-900 dark:text-amber-300 truncate">
+                                {t("order_details.return_summary", "Yêu cầu đổi trả")}
+                              </span>
+                              {order.return_request.reason_code && (
+                                <span className="text-[10px] font-medium px-2 py-0.5 rounded bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-300 shrink-0 hidden sm:inline-block">
+                                  {getLocalizedLabel("returnReason", order.return_request.reason_code) || order.return_request.reason_code}
                                 </span>
-                              </div>
-                              <span className="font-semibold text-slate-700 dark:text-slate-300 shrink-0 ml-2">
-                                {formatCurrency(ri.refund_amount)}
+                              )}
+                            </div>
+                            <div className="text-right shrink-0">
+                              <span className="text-[11px] text-slate-500 dark:text-slate-400 mr-1.5 hidden sm:inline">{t("order_details.estimated_refund", "Hoàn dự kiến:")}</span>
+                              <span className="font-bold text-amber-700 dark:text-amber-300 text-xs sm:text-sm">
+                                {formatCurrency(order.return_request.refund_amount || 0)}
                               </span>
                             </div>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <div className="p-2.5 bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 text-center rounded-lg text-xs font-bold border border-orange-100 dark:border-orange-700 flex items-center justify-center gap-2">
-                    <i className="fa-solid fa-spinner animate-spin"></i> {t("lookup.return_processing")}
-                  </div>
-                )}
-                <button
-                  onClick={() => handleCancelReturn && handleCancelReturn(order.id)}
-                  disabled={loading}
-                  className="w-full bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-700 py-2 rounded-lg text-xs font-bold hover:bg-rose-100 dark:hover:bg-rose-900/50 transition flex items-center justify-center gap-1.5"
-                >
-                  <i className="fa-solid fa-xmark"></i> {t("lookup.cancel_return")}
-                </button>
-              </div>
-            )}
+                          </div>
+                          {order.return_request.items && order.return_request.items.length > 0 && (
+                            <div className="space-y-1.5 border-t border-amber-200/60 dark:border-amber-900/50 pt-2">
+                              <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400">{t('order_details.returned_items_title', 'Sản phẩm yêu cầu trả:')}</p>
+                              {order.return_request.items.map((ri: any, rIdx: number) => {
+                                const pName = getLocalizedText(ri, "product_name") || ri.product_name || `Sản phẩm #${ri.order_item_id}`;
+                                const cName = getLocalizedText(ri, "color_name") || ri.color_name;
+                                return (
+                                  <div key={rIdx} className="flex justify-between items-start bg-white/70 dark:bg-slate-800/70 p-2 rounded-lg border border-amber-100 dark:border-amber-900/30 gap-2">
+                                    <div className="flex flex-col gap-0.5 min-w-0 flex-1">
+                                      <div className="flex items-center gap-1.5 flex-wrap">
+                                        <span className="font-medium text-slate-800 dark:text-slate-200">{pName}</span>
+                                        {ri.is_gift && (
+                                          <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-900/60 text-amber-700 dark:text-amber-300 shrink-0">
+                                            <i className="fa-solid fa-gift" />
+                                            {t("lookup.gift_item_badge", "Quà tặng")}
+                                          </span>
+                                        )}
+                                      </div>
+                                      <span className="text-[11px] text-slate-400">
+                                        {[cName, ri.size, `x${ri.return_quantity}`].filter(Boolean).join(" | ")}
+                                      </span>
+                                    </div>
+                                    <span className="font-semibold text-slate-700 dark:text-slate-300 shrink-0">
+                                      {formatCurrency(ri.refund_amount)}
+                                    </span>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+                          {order.return_request.admin_response && (
+                            <div className="mt-2 bg-white/60 dark:bg-slate-800/60 p-2.5 rounded-lg border border-amber-100 dark:border-amber-900/30">
+                              <span className="text-[11px] font-semibold text-amber-800 dark:text-amber-300 block mb-0.5">
+                                {t('order_details.admin_response', 'Phản hồi từ Admin:')}
+                              </span>
+                              <p className="text-xs text-slate-700 dark:text-slate-300">
+                                {order.return_request.admin_response}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="p-2.5 bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 text-center rounded-lg text-xs font-bold border border-orange-100 dark:border-orange-700 flex items-center justify-center gap-2">
+                          <i className="fa-solid fa-spinner animate-spin"></i> {t("lookup.return_processing")}
+                        </div>
+                      )}
+                      <button
+                        onClick={() => handleCancelReturn && handleCancelReturn(order.id)}
+                        disabled={loading}
+                        className="w-full bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-700 py-2 rounded-lg text-xs font-bold hover:bg-rose-100 dark:hover:bg-rose-900/50 transition flex items-center justify-center gap-1.5"
+                      >
+                        <i className="fa-solid fa-xmark"></i> {t("lookup.cancel_return")}
+                      </button>
+                    </div>
+                  )}
 
-            {["Pending", "Confirmed"].includes(order.status) && !order.return_request && (
-              <button
-                onClick={() => handleCancelOrder && handleCancelOrder(order.id)}
-                disabled={loading}
-                className="w-full bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-700 py-2.5 rounded-lg text-xs sm:text-sm font-bold hover:bg-rose-100 dark:hover:bg-rose-900/50 transition flex items-center justify-center gap-1.5 disabled:opacity-60 disabled:cursor-not-allowed"
-              >
-                {loading ? (
-                  <i className="fa-solid fa-circle-notch fa-spin"></i>
-                ) : (
-                  <><i className="fa-solid fa-xmark"></i> {t("lookup.cancel_order")}</>
-                )}
-              </button>
-            )}
+                  {/* 2-button combinations (50:50 row) */}
+                  {showPay && showCancelOrder && (
+                    <div className="flex gap-2 mt-3">
+                      {renderPayBtn(false)}
+                      {renderCancelOrderBtn(false)}
+                    </div>
+                  )}
 
-            {["Cancelled", "Delivered"].includes(order.status) && (
-              <button
-                onClick={() => handleBuyAgain && handleBuyAgain(order)}
-                disabled={loading}
-                className="w-full bg-slate-900 dark:bg-slate-100 hover:bg-slate-800 dark:hover:bg-white text-white dark:text-slate-900 py-2.5 rounded-lg text-xs sm:text-sm font-bold transition flex items-center justify-center gap-1.5 disabled:opacity-60 disabled:cursor-not-allowed"
-              >
-                {loading ? (
-                  <i className="fa-solid fa-circle-notch fa-spin"></i>
-                ) : (
-                  <><i className="fa-solid fa-cart-plus"></i> {t("orders.buy_again", "Mua lại")}</>
-                )}
-              </button>
-            )}
+                  {showReturn && showBuyAgain && (
+                    <div className="flex gap-2 mt-3">
+                      {renderReturnBtn(false)}
+                      {renderBuyAgainBtn(false)}
+                    </div>
+                  )}
+
+                  {/* Single buttons */}
+                  {showPay && !showCancelOrder && renderPayBtn(true)}
+                  {showCancelOrder && !showPay && renderCancelOrderBtn(true)}
+                  {showReturn && !showBuyAgain && renderReturnBtn(true)}
+                  {showBuyAgain && !showReturn && renderBuyAgainBtn(true)}
+                </div>
+              );
+            })()}
           </div>
         </div>
       )}

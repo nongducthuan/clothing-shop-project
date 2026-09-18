@@ -157,8 +157,8 @@ export default function ReturnFormStep({
                       {isAutoReturned
                         ? t("lookup.auto_included", "Tự động hoàn trả")
                         : linkedBuyItems.length > 0
-                          ? t("lookup.gift_return_with_buy", "Sẽ hoàn trả kèm: {name}").replace("{name}", linkedBuyName)
-                          : t("lookup.gift_return_with_purchased", "Sẽ hoàn trả kèm sản phẩm mua")}
+                          ? t("lookup.gift_return_with_buy", "Chỉ hoàn kèm khi chọn: {name}").replace("{name}", linkedBuyName)
+                          : t("lookup.gift_return_with_purchased", "Chỉ hoàn kèm sản phẩm mua tương ứng")}
                     </span>
                   </div>
                 );

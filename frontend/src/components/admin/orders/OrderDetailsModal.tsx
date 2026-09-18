@@ -42,8 +42,9 @@ export default function OrderDetailsModal({ order, onClose, formatCurrency }) {
               if (item.is_gift) return sum;
               return sum + (Number(item.price || 0) * (item.quantity || 1));
             }, 0) || 0;
+            const shippingFee = Number(order.shipping_fee || 0);
             const voucherCode = order.voucher?.code || order.voucher_code;
-            const discountAmount = Math.max(0, itemsSubtotal - Number(order.total_price || 0));
+            const discountAmount = Math.max(0, (itemsSubtotal + shippingFee) - Number(order.total_price || 0));
 
             return (
               <div className="pt-4 mt-2 border-t border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-700/30 p-5 rounded-2xl space-y-2 text-xs sm:text-sm">
@@ -51,10 +52,17 @@ export default function OrderDetailsModal({ order, onClose, formatCurrency }) {
                   <span>{t("admin.items_subtotal", "Tiền hàng")}:</span>
                   <span className="font-semibold text-slate-800 dark:text-slate-200">{formatCurrency(itemsSubtotal)}</span>
                 </div>
+                <div className="flex justify-between items-center text-slate-500 dark:text-slate-400">
+                  <span>{t('order_details.shipping_fee', 'Phí vận chuyển')}:</span>
+                  {shippingFee > 0 ? (
+                    <span className="font-semibold text-slate-800 dark:text-slate-200">{formatCurrency(shippingFee)}</span>
+                  ) : (
+                    <span className="font-medium text-emerald-600 dark:text-emerald-400">{t('checkout.free', 'Miễn phí')}</span>
+                  )}
+                </div>
                 {discountAmount > 0 && (
                   <div className="flex justify-between items-center text-emerald-600 dark:text-emerald-400 font-medium">
                     <span className="flex items-center gap-1.5">
-                      <i className="fa-solid fa-ticket text-xs"></i>
                       {t("checkout.discount", "Giảm giá")}{voucherCode ? ` (${voucherCode})` : ""}:
                     </span>
                     <span className="font-bold">-{formatCurrency(discountAmount)}</span>
@@ -171,7 +179,7 @@ const OrderItemCard = ({ item, formatCurrency }) => {
 
         <p className="text-xs font-medium text-gray-500 dark:text-slate-400 mb-2">
           {(getLocalizedText(item, "color_name") || item.color_name) && `${t("admin.color_label")}: ${getLocalizedText(item, "color_name") || item.color_name}`}
-          {item.size && <span className="mx-1.5 text-gray-300 dark:text-slate-600">|</span>}
+          {(getLocalizedText(item, "color_name") || item.color_name) && item.size && <span className="mx-1.5 text-gray-300 dark:text-slate-600">|</span>}
           {item.size && `${t("admin.size_label")}: ${item.size}`}
         </p>
 

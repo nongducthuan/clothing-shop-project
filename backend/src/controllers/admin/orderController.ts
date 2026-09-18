@@ -85,6 +85,7 @@ export const getOrders = async (req: Request, res: Response): Promise<void> => {
                 shipping_fee: Number(order.shipping_fee || 0),
                 reason_code: rr?.reason_code,
                 description: rr?.description,
+                admin_response: rr?.admin_response,
                 refund_bank_info: bankInfo,
                 return_images: returnImages,
                 return_status: rr?.status,

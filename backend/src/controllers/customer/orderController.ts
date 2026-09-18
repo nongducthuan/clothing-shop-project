@@ -156,6 +156,7 @@ export const verifyOtpAndGetOrders = async (req: Request, res: Response): Promis
                 status: order.return_request.status,
                 reason_code: order.return_request.reason_code,
                 description: order.return_request.description,
+                admin_response: order.return_request.admin_response,
                 refund_amount: Number(order.return_request.refund_amount),
                 items: order.return_request.items?.map(ri => ({
                     id: ri.id,
@@ -597,6 +598,7 @@ export const getOrders = async (req: Request, res: Response): Promise<void> => {
                 status: order.return_request.status,
                 reason_code: order.return_request.reason_code,
                 description: order.return_request.description,
+                admin_response: order.return_request.admin_response,
                 refund_amount: Number(order.return_request.refund_amount),
                 items: order.return_request.items?.map(ri => ({
                     id: ri.id,

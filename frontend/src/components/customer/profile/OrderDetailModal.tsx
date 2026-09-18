@@ -19,7 +19,7 @@ const formatOrderDateTime = (dateString) => {
   return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())} ${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`;
 };
 
-export default function OrderDetailModal({ order, onClose, onOpenPaymentModal, helpers }) {
+export default function OrderDetailModal({ order, onClose, onOpenPaymentModal, actions, state, helpers }) {
   const { t, getLocalizedText, getLocalizedLabel, language } = useLanguage();
   const { showToast } = useToast();
   const navigate = useNavigate();
@@ -233,8 +233,7 @@ export default function OrderDetailModal({ order, onClose, onOpenPaymentModal, h
 
             {discountAmount > 0 && (
               <div className="flex justify-between items-center gap-3 text-emerald-600 dark:text-emerald-400 font-medium">
-                <span className="flex items-center gap-1.5 shrink-0">
-                  <i className="fa-solid fa-ticket text-xs"></i>
+                <span className="shrink-0">
                   {t('checkout.discount', 'Giảm giá')}{voucherCode ? ` (${voucherCode})` : ''}:
                 </span>
                 <span className="font-bold whitespace-nowrap">
@@ -273,20 +272,22 @@ export default function OrderDetailModal({ order, onClose, onOpenPaymentModal, h
                     const pName = getLocalizedText(ri, "product_name") || ri.product_name || `Sản phẩm #${ri.order_item_id}`;
                     const cName = getLocalizedText(ri, "color_name") || ri.color_name;
                     return (
-                      <div key={rIdx} className="flex justify-between items-center text-xs bg-white/70 dark:bg-slate-800/70 p-2 rounded-lg border border-amber-100 dark:border-amber-900/30">
-                        <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                          <span className="font-medium text-slate-800 dark:text-slate-200 truncate">{pName}</span>
-                          {ri.is_gift && (
-                            <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-900/60 text-amber-700 dark:text-amber-300 shrink-0">
-                              <i className="fa-solid fa-gift" />
-                              {t("lookup.gift_item_badge", "Quà tặng")}
-                            </span>
-                          )}
-                          <span className="text-[11px] text-slate-400 shrink-0">
-                            ({cName ? `${cName} | ` : ""}{ri.size ? `${ri.size} | ` : ""}x{ri.return_quantity})
+                      <div key={rIdx} className="flex justify-between items-start text-xs bg-white/70 dark:bg-slate-800/70 p-2 rounded-lg border border-amber-100 dark:border-amber-900/30 gap-2">
+                        <div className="flex flex-col gap-0.5 min-w-0 flex-1">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="font-medium text-slate-800 dark:text-slate-200">{pName}</span>
+                            {ri.is_gift && (
+                              <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-900/60 text-amber-700 dark:text-amber-300 shrink-0">
+                                <i className="fa-solid fa-gift" />
+                                {t("lookup.gift_item_badge", "Quà tặng")}
+                              </span>
+                            )}
+                          </div>
+                          <span className="text-[11px] text-slate-400">
+                            {[cName, ri.size, `x${ri.return_quantity}`].filter(Boolean).join(" | ")}
                           </span>
                         </div>
-                        <span className="font-semibold text-slate-700 dark:text-slate-300 shrink-0 ml-2">
+                        <span className="font-semibold text-slate-700 dark:text-slate-300 shrink-0">
                           {formatCurrency(ri.refund_amount)}
                         </span>
                       </div>
@@ -318,39 +319,121 @@ export default function OrderDetailModal({ order, onClose, onOpenPaymentModal, h
             </div>
           )}
 
-          {order.payment_status === "Unpaid" && order.status !== "Cancelled" && onOpenPaymentModal && (
-            <button
-              onClick={() => {
-                onClose();
-                onOpenPaymentModal(order);
-              }}
-              className="w-full py-3 bg-slate-900 dark:bg-slate-100 hover:bg-slate-800 dark:hover:bg-white text-white dark:text-slate-900 rounded-xl font-semibold text-xs sm:text-sm transition-colors shadow-md text-center flex flex-col items-center justify-center leading-tight"
-            >
-              <span>{t('order_details.pay_change', 'Thanh toán / Đổi phương thức')}</span>
-              {isOnlinePendingUnpaid && countdown && (
-                <span className="text-[10px] font-medium opacity-80 mt-0.5">
-                  {t('orders.auto_cancel_warning', 'Tự hủy sau {time}').replace('{time}', countdown)}
-                </span>
-              )}
-            </button>
-          )}
+          {/* Action Buttons Section */}
+          {(() => {
+            const showPay = order.payment_status === "Unpaid" && order.status !== "Cancelled" && Boolean(onOpenPaymentModal);
+            const showCancelOrder = ["Pending", "Confirmed"].includes(order.status) && !order.return_request && Boolean(actions?.handleCancelOrder);
+            const showReturn = order.status === "Delivered" && !order.return_request && Boolean(actions?.handleOpenReturnModal);
+            const showCancelReturn = order.status === "Return Requested" && Boolean(actions?.handleCancelReturn);
+            const showBuyAgain = ["Cancelled", "Delivered"].includes(order.status);
 
-          {/* Buy again (for cancelled / delivered orders) */}
-          {["Cancelled", "Delivered"].includes(order.status) && (
-            <button
-              onClick={handleBuyAgain}
-              disabled={buyingAgain}
-              className="w-full py-3 bg-slate-900 dark:bg-slate-100 hover:bg-slate-800 dark:hover:bg-white text-white dark:text-slate-900 rounded-xl font-semibold text-xs sm:text-sm transition-colors shadow-md text-center flex items-center justify-center gap-2 disabled:opacity-60"
-            >
-              {buyingAgain ? (
-                <i className="fa-solid fa-circle-notch fa-spin"></i>
-              ) : (
-                <>
-                  <i className="fa-solid fa-cart-plus"></i> {t('orders.buy_again', 'Mua lại')}
-                </>
-              )}
-            </button>
-          )}
+            const renderPayBtn = (fullWidth = true) => (
+              <button
+                key="pay"
+                onClick={() => {
+                  onClose();
+                  onOpenPaymentModal(order);
+                }}
+                className={`${fullWidth ? "w-full" : "flex-1"} py-3 bg-slate-900 dark:bg-slate-100 hover:bg-slate-800 dark:hover:bg-white text-white dark:text-slate-900 rounded-xl font-semibold text-xs sm:text-sm transition-colors shadow-md text-center flex flex-col items-center justify-center leading-tight`}
+              >
+                <span>{t('order_details.pay_change', 'Thanh toán / Đổi phương thức')}</span>
+                {isOnlinePendingUnpaid && countdown && (
+                  <span className="text-[10px] font-medium opacity-80 mt-0.5">
+                    {t('orders.auto_cancel_warning', 'Tự hủy sau {time}').replace('{time}', countdown)}
+                  </span>
+                )}
+              </button>
+            );
+
+            const renderCancelOrderBtn = (fullWidth = true) => (
+              <button
+                key="cancelOrder"
+                onClick={() => { onClose(); actions.handleCancelOrder(order.id); }}
+                disabled={state?.cancellingOrderId === order.id}
+                className={`${fullWidth ? "w-full" : "flex-1"} py-3 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-950/60 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-900/50 rounded-xl font-semibold text-xs sm:text-sm transition-colors text-center flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed`}
+              >
+                {state?.cancellingOrderId === order.id ? (
+                  <i className="fa-solid fa-circle-notch fa-spin" />
+                ) : (
+                  <><i className="fa-solid fa-ban" /> {t("lookup.cancel_order", "Hủy đơn hàng")}</>
+                )}
+              </button>
+            );
+
+            const renderReturnBtn = (fullWidth = true) => (
+              <button
+                key="return"
+                onClick={() => { onClose(); actions.handleOpenReturnModal(order); }}
+                className={`${fullWidth ? "w-full" : "flex-1"} py-3 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-100 rounded-xl font-semibold text-xs sm:text-sm transition-colors text-center flex items-center justify-center gap-2`}
+              >
+                <i className="fa-solid fa-rotate-left" /> {t("orders.return", "Đổi trả")}
+              </button>
+            );
+
+            const renderCancelReturnBtn = (fullWidth = true) => (
+              <button
+                key="cancelReturn"
+                onClick={() => { onClose(); actions.handleCancelReturn(order.id); }}
+                className={`${fullWidth ? "w-full" : "flex-1"} py-3 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-950/60 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-900/50 rounded-xl font-semibold text-xs sm:text-sm transition-colors text-center flex items-center justify-center gap-2`}
+              >
+                <i className="fa-solid fa-xmark" /> {t("orders.cancel_return", "Hủy yêu cầu đổi trả")}
+              </button>
+            );
+
+            const renderBuyAgainBtn = (fullWidth = true) => (
+              <button
+                key="buyAgain"
+                onClick={handleBuyAgain}
+                disabled={buyingAgain}
+                className={`${fullWidth ? "w-full" : "flex-1"} py-3 bg-slate-900 dark:bg-slate-100 hover:bg-slate-800 dark:hover:bg-white text-white dark:text-slate-900 rounded-xl font-semibold text-xs sm:text-sm transition-colors shadow-md text-center flex items-center justify-center gap-2 disabled:opacity-60`}
+              >
+                {buyingAgain ? (
+                  <i className="fa-solid fa-circle-notch fa-spin" />
+                ) : (
+                  <><i className="fa-solid fa-cart-plus" /> {t("orders.buy_again", "Mua lại")}</>
+                )}
+              </button>
+            );
+
+            // Pair 1: Unpaid + Pending/Confirmed -> Pay + Cancel Order
+            if (showPay && showCancelOrder) {
+              return (
+                <div className="flex gap-2">
+                  {renderPayBtn(false)}
+                  {renderCancelOrderBtn(false)}
+                </div>
+              );
+            }
+
+            // Pair 2: Delivered + No Return Request -> Return + Buy Again
+            if (showReturn && showBuyAgain) {
+              return (
+                <div className="flex gap-2">
+                  {renderReturnBtn(false)}
+                  {renderBuyAgainBtn(false)}
+                </div>
+              );
+            }
+
+            // Pair 3: Delivered + Cancel Return Requested -> Cancel Return + Buy Again
+            if (showCancelReturn && showBuyAgain) {
+              return (
+                <div className="flex gap-2">
+                  {renderCancelReturnBtn(false)}
+                  {renderBuyAgainBtn(false)}
+                </div>
+              );
+            }
+
+            // Single buttons
+            if (showPay) return renderPayBtn(true);
+            if (showCancelOrder) return renderCancelOrderBtn(true);
+            if (showReturn) return renderReturnBtn(true);
+            if (showCancelReturn) return renderCancelReturnBtn(true);
+            if (showBuyAgain) return renderBuyAgainBtn(true);
+
+            return null;
+          })()}
 
         </div>
       </div>

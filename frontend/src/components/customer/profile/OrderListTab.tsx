@@ -142,9 +142,10 @@ function OrderCard({
         {order.status === "Delivered" && !order.return_request && (
           <button
             onClick={(e) => { e.stopPropagation(); handleOpenReturnModal(order); }}
-            className="flex-1 py-2.5 bg-slate-900 dark:bg-slate-100 hover:bg-slate-800 dark:hover:bg-white text-white dark:text-slate-900 rounded-xl font-medium text-xs sm:text-sm transition-colors"
+            className="flex-1 py-2.5 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-100 rounded-xl font-semibold text-xs sm:text-sm transition-colors text-center"
           >
-            {t("orders.return", "Return")}
+            <i className="fa-solid fa-rotate-left mr-1"></i>
+            {t("orders.return", "Đổi trả")}
           </button>
         )}
 

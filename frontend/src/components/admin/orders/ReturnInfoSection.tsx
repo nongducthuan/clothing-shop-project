@@ -46,7 +46,7 @@ export default function ReturnInfoSection({
         {getReturnBadge(order.status)}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
         {/* Lý do trả hàng */}
         <div className="bg-white dark:bg-slate-700 p-5 rounded-2xl shadow-sm flex flex-col justify-between space-y-4">
           <div>
@@ -66,6 +66,17 @@ export default function ReturnInfoSection({
               "{order.description || t("admin.no_description", "Không có ghi chú")}"
             </div>
           </div>
+          
+          {order.admin_response && (
+            <div>
+              <span className="block text-[10px] font-extrabold uppercase tracking-wider text-amber-700 dark:text-amber-400 mb-1">
+                {t("admin.admin_response", "Phản hồi từ Admin")}
+              </span>
+              <div className="bg-amber-50 dark:bg-amber-900/30 rounded-xl p-3.5 text-xs text-amber-900 dark:text-amber-200 italic leading-relaxed min-h-[50px] flex items-center">
+                "{order.admin_response}"
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Thẻ Ngân hàng ATM */}
@@ -82,26 +93,40 @@ export default function ReturnInfoSection({
           </div>
 
           {bankInfo ? (
-            <div className="relative z-10 space-y-0.5">
-              <p className="text-[10px] uppercase font-semibold text-slate-400 tracking-wider">
-                {bankInfo.name || bankInfo.bankName || t("admin.bank_account", "Tài khoản ngân hàng")}
-              </p>
-              <p className="text-base font-mono font-bold tracking-[0.15em] text-indigo-200 drop-shadow-sm">
-                {bankInfo.acc || bankInfo.bankNumber || "•••• •••• ••••"}
-              </p>
+            <div className="relative z-10 flex flex-col gap-3">
+              <div>
+                <span className="block text-[9px] uppercase font-bold text-slate-500 tracking-widest mb-0.5">
+                  {t("admin.bank_name_label", "Ngân hàng")}
+                </span>
+                <p className="text-[11px] font-bold text-slate-300 tracking-wide">
+                  {bankInfo.name || bankInfo.bankName || "—"}
+                </p>
+              </div>
+              <div>
+                <span className="block text-[9px] uppercase font-bold text-slate-500 tracking-widest mb-0.5">
+                  {t("admin.account_number_label", "Số tài khoản")}
+                </span>
+                <p className="text-base font-mono font-bold tracking-[0.15em] text-indigo-200 drop-shadow-sm">
+                  {bankInfo.acc || bankInfo.bankNumber || "•••• •••• ••••"}
+                </p>
+              </div>
+              <div className="pt-2 border-t border-white/10 flex justify-between items-center text-xs">
+                <div>
+                  <span className="block text-[9px] uppercase font-bold text-slate-500 tracking-widest mb-0.5">
+                    {t("admin.account_owner_label", "Chủ tài khoản")}
+                  </span>
+                  <span className="font-bold text-slate-200 uppercase tracking-wider truncate max-w-[70%]" title={bankInfo.owner}>
+                    {bankInfo.owner || t("admin.not_available", "N/A")}
+                  </span>
+                </div>
+                <span className="text-[9px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-full font-mono uppercase tracking-wider shrink-0">
+                  {t("admin.verified", "Đã xác thực")}
+                </span>
+              </div>
             </div>
           ) : (
             <p className="text-xs italic text-slate-400 relative z-10">{t("admin.missing_bank_info", "Chưa cung cấp thông tin ngân hàng")}</p>
           )}
-
-          <div className="relative z-10 pt-2 border-t border-white/10 flex justify-between items-center text-xs">
-            <span className="font-bold text-slate-200 uppercase tracking-wider truncate max-w-[70%]" title={bankInfo?.owner}>
-              {bankInfo?.owner || t("admin.not_available", "N/A")}
-            </span>
-            <span className="text-[9px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-full font-mono uppercase tracking-wider">
-              {t("admin.verified", "Đã xác thực")}
-            </span>
-          </div>
         </div>
       </div>
 
