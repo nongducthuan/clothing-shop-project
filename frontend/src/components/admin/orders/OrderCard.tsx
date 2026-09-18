@@ -3,7 +3,7 @@ import { AlertTriangle, Check, X } from "lucide-react";
 import { PaymentBadge } from "../../common/PaymentBadge";
 import { useLanguage } from "../../../context/LanguageContext";
 
-import { PAYMENT_OPTIONS, STATUS_OPTIONS } from "../../../hooks/admin/useOrderManager";
+import { PAYMENT_OPTIONS, STATUS_OPTIONS, isStatusAllowed, isStatusFlowLocked } from "../../../utils/orderUtils";
 
 export default function OrderCard({
   orders,
@@ -84,7 +84,7 @@ export default function OrderCard({
         </div>
       ) : (
         displayedOrders.map((order) => {
-          const isReturnLocked = order.status === "Return Requested";
+          const isReturnLocked = ["Return Requested", "Return_Requested"].includes(order.status);
 
           return (
             <div key={order.id} className="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 flex flex-col gap-3.5">
@@ -155,12 +155,17 @@ export default function OrderCard({
                   <select
                     value={order.status}
                     onChange={(e) => handleOrderStatus(order.id, e.target.value)}
-                    disabled={isReturnLocked}
+                    disabled={isReturnLocked || isStatusFlowLocked(order.status)}
                     className="w-full min-w-0 text-xs font-bold text-white py-2.5 px-4 rounded-full outline-none text-center appearance-none shadow-sm disabled:opacity-60 cursor-pointer"
                     style={{ backgroundColor: getOrderStatusColor(order.status) }}
                   >
                     {STATUS_OPTIONS.map((s) => (
-                      <option key={s} value={s} className="bg-white text-gray-800 dark:bg-slate-800 dark:text-slate-100 text-center">
+                      <option
+                        key={s}
+                        value={s}
+                        disabled={!isStatusAllowed(order.status, s)}
+                        className="bg-white text-gray-800 dark:bg-slate-800 dark:text-slate-100 text-center disabled:text-gray-300 disabled:dark:text-slate-600 disabled:bg-gray-50 disabled:dark:bg-slate-900"
+                      >
                         {t(`order_status.${s.toLowerCase().replace(/\s+/g, '_')}`, s)}
                       </option>
                     ))}

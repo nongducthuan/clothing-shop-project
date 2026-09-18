@@ -10,18 +10,10 @@ import { formatCurrency as formatCurrencyUtil } from "../../utils/currencyUtils"
 
 const BASE_URL = import.meta.env.VITE_API_URL;
 
-export const PAYMENT_OPTIONS = ["Unpaid", "Paid", "Refunded"];
-
-export const STATUS_OPTIONS = [
-  "Pending",
-  "Confirmed",
-  "Shipping",
-  "Delivered",
-  "Cancelled",
-  "Return Requested",
-  "Return Rejected",
-  "Return Approved",
-];
+// Danh sách enum trạng thái (STATUS_OPTIONS, STANDARD_STATUSES, RETURN_STATUSES,
+// PAYMENT_OPTIONS) và luật chuyển trạng thái (isStatusAllowed / isStatusFlowLocked)
+// được khai báo DUY NHẤT trong utils/orderUtils → tránh lệch giữa desktop table,
+// mobile card và bộ lọc.
 
 const ORDER_STATUS_COLORS = {
   Pending: "#ffc107",
@@ -54,7 +46,7 @@ const PAYMENT_STATUS_COLORS = {
 export default function useOrderManager() {
   // --- STATE MANAGEMENT ---
   const { showToast } = useToast();
-  const { t, language } = useLanguage();
+  const { t, language, translateApiMessage } = useLanguage();
   const [orders, setOrders] = useState([]);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [confirmAction, setConfirmAction] = useState(false);
@@ -77,6 +69,14 @@ export default function useOrderManager() {
   const getPaymentStatusColor = useCallback((status) => {
     return PAYMENT_STATUS_COLORS[status] || "#6c757d";
   }, []);
+
+  /**
+   * Lấy đơn đang thao tác để biết ĐÃ THU TIỀN chưa (payment_status === "Paid").
+   * Việc có cần nhắc hoàn tiền hay không dựa trên "tiền đã thu chưa",
+   * KHÔNG dựa vào payment_method (COD giao xong vẫn đã thu tiền mặt).
+   */
+  const findOrderById = (orderId) =>
+    orders.find((o) => String(o.id) === String(orderId)) || selectedOrder;
 
   // --- DATA FETCHING ---
 
@@ -112,6 +112,17 @@ export default function useOrderManager() {
    * Updates the general delivery status of an order
    */
   const handleOrderStatus = async (orderId, status) => {
+    if (status === "Cancelled") {
+      // Hủy đơn luôn cộng lại kho; chỉ nhắc hoàn tiền khi đơn ĐÃ thu tiền
+      const needsRefund = findOrderById(orderId)?.payment_status === "Paid";
+      const messageKey = needsRefund
+        ? "admin.order.confirm_cancel_refund"
+        : "admin.order.confirm_cancel";
+      if (!window.confirm(t(messageKey))) {
+        return;
+      }
+    }
+
     try {
       await API.put(
         `/admin/orders/${orderId}/status`,
@@ -129,7 +140,11 @@ export default function useOrderManager() {
       showToast(t("admin.order.toast_status_updated", "Order status updated successfully!"));
     } catch (err: unknown) {
       const axErr = err as { response?: { data?: { message?: string } }; message?: string };
-      showToast(axErr.response?.data?.message || axErr.message || "Error", "error");
+      // Dịch message tiếng Anh từ backend qua api_msg.* để toast hiển thị song ngữ
+      showToast(
+        translateApiMessage(axErr.response?.data?.message) || axErr.message || "Error",
+        "error"
+      );
     }
   };
 
@@ -156,7 +171,17 @@ export default function useOrderManager() {
         setSelectedOrder((prev) => ({ ...prev, payment_status: newStatus }));
       }
 
-      showToast(`Payment status updated to ${newStatus}!`);
+      // Keep the payment toast bilingual, matching the rest of the admin order flow
+      const localizedPaymentStatus = t(
+        `payment_status.${String(newStatus).toLowerCase().replace(/\s+/g, "_")}`,
+        newStatus
+      );
+      showToast(
+        t("admin.order.toast_payment_updated", "Payment status updated to {status}!").replace(
+          "{status}",
+          localizedPaymentStatus
+        )
+      );
     } catch (err: unknown) {
       console.error(err);
       showToast(t("admin.order.toast_payment_failed", "Error updating payment"), "error");
@@ -167,7 +192,12 @@ export default function useOrderManager() {
    * Approves a customer's return request
    */
   const handleApproveReturn = async (orderId) => {
-    if (!window.confirm(t("admin.order.confirm_refunded", "Confirm that you have refunded the money? This will set status to 'Return Approved'."))) {
+    // Đổi trả luôn cộng lại kho; chỉ nhắc hoàn tiền khi đơn ĐÃ thu tiền
+    const needsRefund = findOrderById(orderId)?.payment_status === "Paid";
+    const messageKey = needsRefund
+      ? "admin.order.confirm_refunded"
+      : "admin.order.confirm_return_approved";
+    if (!window.confirm(t(messageKey))) {
       return;
     }
 

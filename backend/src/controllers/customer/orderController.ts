@@ -1052,12 +1052,16 @@ export const submitReturnRequest = async (req: Request, res: Response): Promise<
 
         await prisma.$transaction(async (tx) => {
             // Lấy order và tất cả items (bao gồm thông tin promotion để xác định sản phẩm X của Buy X Get Y)
+            // KHÔNG yêu cầu payment_status = 'Paid': đơn COD đã giao có thể vẫn 'Unpaid' nếu admin
+            // chưa đánh dấu thu tiền → vẫn phải cho khách đổi trả.
+            // Việc có cần hoàn tiền hay không quyết định sau, dựa trên payment_status
+            // (Paid → set 'Refunded' khi approve, Unpaid → không cần hoàn).
             const order = await tx.order.findFirst({
-                where: { id: orderId, status: 'Delivered', payment_status: 'Paid' },
+                where: { id: orderId, status: 'Delivered' },
                 include: { items: { include: { promotion: true } } }
             });
             if (!order) {
-                throw new Error("The order is invalid, not delivered, or unpaid.");
+                throw new Error("The order is invalid or not delivered.");
             }
 
             // Fix 5: Kiểm tra ownership

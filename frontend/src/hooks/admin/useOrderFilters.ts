@@ -1,8 +1,5 @@
 import { useState, useMemo } from "react";
-
-export const RETURN_STATUSES = ["Return Requested", "Return Rejected", "Return Approved"];
-export const STANDARD_STATUSES = ["Pending", "Confirmed", "Shipping", "Delivered", "Cancelled"];
-export const STATUS_OPTIONS = [...STANDARD_STATUSES, ...RETURN_STATUSES];
+import { RETURN_STATUSES, STANDARD_STATUSES } from "../../utils/orderUtils";
 
 export default function useOrderFilters(orders) {
   const [activeTab, setActiveTab] = useState("Standard"); // "Standard" | "Returns"

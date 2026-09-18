@@ -4,7 +4,10 @@ import { PaymentBadge } from "../../common/PaymentBadge";
 import { useLanguage } from "../../../context/LanguageContext";
 import ReturnInfoSection from "./ReturnInfoSection";
 
-import { PAYMENT_OPTIONS, STATUS_OPTIONS } from "../../../hooks/admin/useOrderManager";
+import { PAYMENT_OPTIONS, STATUS_OPTIONS, isStatusAllowed, isStatusFlowLocked } from "../../../utils/orderUtils";
+
+// Status-flow guard (Pending -> Confirmed -> Shipping -> Delivered | Cancelled)
+// lives in useOrderManager so the desktop table and the mobile cards share one rule set.
 
 export default function OrderTable({
   orders,
@@ -176,12 +179,17 @@ export default function OrderTable({
                             <select
                               value={order.status}
                               onChange={(e) => handleOrderStatus(order.id, e.target.value)}
-                              disabled={isReturnLocked}
+                              disabled={isReturnLocked || isStatusFlowLocked(order.status)}
                               className="w-full text-[11px] font-bold text-white py-2 pl-3.5 pr-7 rounded-full cursor-pointer outline-none focus:ring-4 focus:ring-blue-500/20 disabled:opacity-60 appearance-none text-left shadow-sm transition-all"
                               style={{ backgroundColor: getOrderStatusColor(order.status) }}
                             >
                               {STATUS_OPTIONS.map((status) => (
-                                <option key={status} value={status} className="text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-800">
+                                <option 
+                                  key={status} 
+                                  value={status} 
+                                  disabled={!isStatusAllowed(order.status, status)}
+                                  className="text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-800 disabled:text-gray-300 disabled:dark:text-slate-600 disabled:bg-gray-50 disabled:dark:bg-slate-900"
+                                >
                                   {t(`order_status.${status.toLowerCase().replace(/\s+/g, '_')}`, status)}
                                 </option>
                               ))}

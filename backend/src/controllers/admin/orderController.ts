@@ -146,6 +146,21 @@ const STATUS_DISPLAY_TO_ENUM: Record<string, string> = {
     "Return Approved":  "Return_Approved",
 };
 
+// Luồng trạng thái hợp lệ (khớp với frontend/src/utils/orderUtils.ts):
+// Pending → Confirmed → Shipping → Delivered, hoặc Cancelled ở bất kỳ bước nào.
+// Phải validate ở backend vì UI chỉ chặn được ở dropdown —
+// gọi API trực tiếp vẫn có thể nhảy bước và làm sai kho/doanh thu.
+const ALLOWED_STATUS_TRANSITIONS: Record<string, string[]> = {
+    Pending: ["Confirmed", "Cancelled"],
+    Confirmed: ["Shipping", "Cancelled"],
+    Shipping: ["Delivered", "Cancelled"],
+    Delivered: [],
+    Cancelled: [],
+};
+
+// 3 trạng thái đổi trả chỉ được đổi qua /return/approve hoặc /return/reject
+const RETURN_STATUS_ENUMS = ["Return_Requested", "Return_Approved", "Return_Rejected"];
+
 // Complex status change handling inventory and revenue
 export const changeOrderStatusLogic = async (orderId: number, newStatus: string) => {
     // Normalize: "Return Requested" → "Return_Requested" etc.
@@ -275,6 +290,15 @@ export const changeOrderStatusLogic = async (orderId: number, newStatus: string)
         const updateData: any = { status: normalizedStatus as any };
         if (deliveredAtUpdate) updateData.delivered_at = deliveredAtUpdate; // Fix 7
 
+        // 4. Cờ hoàn tiền: đơn ĐÃ thu tiền mà bị hủy / chấp nhận đổi trả → đánh dấu 'Refunded'
+        // để admin biết cần hoàn tiền cho khách.
+        // Quyết định dựa trên payment_status (tiền đã thu chưa), KHÔNG dựa vào payment_method
+        // (COD giao xong vẫn đã thu tiền mặt). Chỉ set khi thực sự chuyển vào trạng thái
+        // inactive → gọi lại nhiều lần cũng không ghi đè sai.
+        if (newIsInactive && !oldIsInactive && order.payment_status === 'Paid') {
+            updateData.payment_status = 'Refunded';
+        }
+
         await tx.order.update({
             where: { id: orderId },
             data: updateData
@@ -286,7 +310,39 @@ export const updateOrderStatus = async (req: Request, res: Response): Promise<vo
     const { id } = req.params;
     const { status } = req.body;
     try {
-        await changeOrderStatusLogic(Number(id), status);
+        const orderId = Number(id);
+
+        const order = await prisma.order.findUnique({
+            where: { id: orderId },
+            select: { status: true }
+        });
+        if (!order) {
+            res.status(404).json({ message: "Order not found." });
+            return;
+        }
+
+        const normalizedStatus = STATUS_DISPLAY_TO_ENUM[status] ?? status;
+
+        // Validate luồng: chặn nhảy bước / nhảy vào trạng thái đổi trả qua API này.
+        // Cho phép khi trạng thái không đổi (no-op) để không phá các lần bấm lặp.
+        if (normalizedStatus !== order.status) {
+            if (RETURN_STATUS_ENUMS.includes(normalizedStatus)) {
+                console.warn(`Blocked direct set of return status "${normalizedStatus}" on order #${orderId}`);
+                res.status(400).json({
+                    message: "Return statuses must be updated via the approve or reject return action."
+                });
+                return;
+            }
+
+            const allowedTargets = ALLOWED_STATUS_TRANSITIONS[order.status];
+            if (!allowedTargets || !allowedTargets.includes(normalizedStatus)) {
+                console.warn(`Blocked invalid status transition ${order.status} → ${normalizedStatus} on order #${orderId}`);
+                res.status(400).json({ message: "Invalid status transition for this order." });
+                return;
+            }
+        }
+
+        await changeOrderStatusLogic(orderId, status);
         res.json({ message: 'Order status updated successfully' });
     } catch (err: any) {
         console.error(err);
