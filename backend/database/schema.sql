@@ -3,6 +3,17 @@ CREATE DATABASE shopdb;
 USE shopdb;
 
 -- ==============================================================================
+-- LƯU Ý ĐỐI CHIẾU:
+--   Nguồn sự thật (source of truth) là prisma/schema.prisma (prisma db push/migrate).
+--   File này chỉ là bản tham chiếu để đọc nhanh.
+--   - Enum `orders.status` dùng giá trị DB CÓ DẤU CÁCH ('Return Requested', ...) —
+--     khớp @map(...) trong prisma. Code app dùng tên Prisma có dấu gạch dưới
+--     (Return_Requested) — 2 dạng này là CÙNG MỘT giá trị, không phải lỗi lệch.
+--   - Luồng trạng thái & undo: Pending → Confirmed → Shipping → Delivered | Cancelled;
+--     undo chỉ mở 3 cặp Delivered→Shipping, Cancelled→Pending, Return_Rejected→Delivered.
+-- ==============================================================================
+
+-- ==============================================================================
 -- 1. AUTHENTICATION & USERS
 -- ==============================================================================
 
@@ -60,7 +71,7 @@ CREATE TABLE products (
   name VARCHAR(255) NOT NULL,
   name_vi VARCHAR(255) NULL,
   name_en VARCHAR(255) NULL,
-  description TEXT NOT NULL,
+  description TEXT NULL,
   description_vi TEXT NULL,
   description_en TEXT NULL,
   price DECIMAL(10,2) NOT NULL CHECK (price >= 0),
@@ -91,7 +102,7 @@ CREATE TABLE product_sizes (
   color_id INT NOT NULL,
   size ENUM('XS','S','M','L','XL','XXL') NOT NULL,
   stock INT NOT NULL DEFAULT 0 CHECK (stock >= 0),
-  extra_price DECIMAL(10,2) DEFAULT 0,
+  extra_price DECIMAL(10,2) NOT NULL DEFAULT 0,
   FOREIGN KEY (color_id) REFERENCES product_colors(id) ON DELETE CASCADE
 );
 
@@ -145,9 +156,11 @@ CREATE TABLE sale_categories (
 CREATE TABLE vouchers (
   id INT AUTO_INCREMENT PRIMARY KEY,
   code VARCHAR(50) UNIQUE NOT NULL,
+  description_vi TEXT NULL,
+  description_en TEXT NULL,
   discount_percent DECIMAL(5,2) CHECK (discount_percent BETWEEN 0 AND 100),
   max_discount_amount DECIMAL(10,2) DEFAULT NULL,
-  min_order_value DECIMAL(10,2) DEFAULT 0,
+  min_order_value DECIMAL(10,2) NOT NULL DEFAULT 0,
   usage_limit INT DEFAULT NULL,
   used_count INT DEFAULT 0,
   start_date DATETIME,
@@ -180,6 +193,8 @@ CREATE TABLE buy_x_get_y_promotions (
     name VARCHAR(255) NOT NULL,
     name_vi VARCHAR(255) NULL,
     name_en VARCHAR(255) NULL,
+    description_vi TEXT NULL,
+    description_en TEXT NULL,
     buy_product_id INT NOT NULL,
     buy_quantity INT NOT NULL CHECK (buy_quantity > 0),
     gift_product_id INT NOT NULL,
@@ -242,7 +257,7 @@ CREATE TABLE order_items (
   FOREIGN KEY (product_id) REFERENCES products(id),
   FOREIGN KEY (color_id) REFERENCES product_colors(id),
   FOREIGN KEY (size_id) REFERENCES product_sizes(id),
-  FOREIGN KEY (promotion_id) REFERENCES buy_x_get_y_promotions(id) ON DELETE SET NULL
+  FOREIGN KEY (promotion_id) REFERENCES buy_x_get_y_promotions(id) ON DELETE RESTRICT
 );
 
 CREATE TABLE promotion_usage_history (
@@ -272,6 +287,20 @@ CREATE TABLE return_requests (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
     UNIQUE (order_id)
+);
+
+-- Items của yêu cầu đổi trả một phần (partial return) — khớp model ReturnRequestItem.
+-- Dùng bởi luồng approve/reject: chỉ hoàn kho + trừ doanh thu đúng các item được trả.
+CREATE TABLE return_request_items (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  return_request_id INT NOT NULL,
+  order_item_id INT NOT NULL,
+  return_quantity INT NOT NULL,
+  refund_amount DECIMAL(10,2) NOT NULL DEFAULT 0,
+  FOREIGN KEY (return_request_id) REFERENCES return_requests(id) ON DELETE CASCADE,
+  FOREIGN KEY (order_item_id) REFERENCES order_items(id) ON DELETE CASCADE,
+  INDEX return_request_items_return_request_id_fkey (return_request_id),
+  INDEX return_request_items_order_item_id_fkey (order_item_id)
 );
 
 CREATE TABLE revenues (

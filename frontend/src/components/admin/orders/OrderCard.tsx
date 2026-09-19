@@ -3,7 +3,7 @@ import { AlertTriangle, Check, X } from "lucide-react";
 import { PaymentBadge } from "../../common/PaymentBadge";
 import { useLanguage } from "../../../context/LanguageContext";
 
-import { PAYMENT_OPTIONS, STATUS_OPTIONS, isStatusAllowed, isStatusFlowLocked } from "../../../utils/orderUtils";
+import { PAYMENT_OPTIONS, STATUS_OPTIONS, isStatusAllowed, isStatusFlowLocked, isClosedOrderStatus } from "../../../utils/orderUtils";
 
 export default function OrderCard({
   orders,
@@ -147,7 +147,9 @@ export default function OrderCard({
                   >
                     {PAYMENT_OPTIONS.map((s) => (
                       <option key={s} value={s} className="text-gray-800 bg-white dark:text-slate-100 dark:bg-slate-800">
-                        {t(`payment_status.${s.toLowerCase().replace(/\s+/g, '_')}`, s)}
+                        {s === "Unpaid" && isClosedOrderStatus(order.status)
+                          ? t("payment_status.not_collected", "Chưa thu tiền")
+                          : t(`payment_status.${s.toLowerCase().replace(/\s+/g, '_')}`, s)}
                       </option>
                     ))}
                   </select>
@@ -155,7 +157,7 @@ export default function OrderCard({
                   <select
                     value={order.status}
                     onChange={(e) => handleOrderStatus(order.id, e.target.value)}
-                    disabled={isReturnLocked || isStatusFlowLocked(order.status)}
+                    disabled={isStatusFlowLocked(order.status)}
                     className="w-full min-w-0 text-xs font-bold text-white py-2.5 px-4 rounded-full outline-none text-center appearance-none shadow-sm disabled:opacity-60 cursor-pointer"
                     style={{ backgroundColor: getOrderStatusColor(order.status) }}
                   >

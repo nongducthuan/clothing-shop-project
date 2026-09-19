@@ -1,5 +1,6 @@
 import React from "react";
 import { useLanguage } from "../../../context/LanguageContext";
+import { isClosedOrderStatus } from "../../../utils/orderUtils";
 
 export function ModernStatusBadge({ status }: { status: string }) {
   const { t } = useLanguage();
@@ -33,16 +34,26 @@ export function ModernStatusBadge({ status }: { status: string }) {
   );
 }
 
-export function PaymentStatusBadge({ status }: { status: string }) {
+export function PaymentStatusBadge({ status, orderStatus }: { status: string; orderStatus?: string }) {
   const { t } = useLanguage();
   const normalizedKey = String(status || "").toLowerCase().replace(/\s+/g, "_");
   const isPaid = normalizedKey === "paid";
-  const translatedText = t(`payment_status.${normalizedKey}`, status);
+  const isRefunded = normalizedKey === "refunded";
+  // Đơn đã đóng (hủy/đổi trả) mà chưa thu tiền → "Chưa thu tiền" trung tính,
+  // KHÔNG dùng nhãn đỏ "Chưa thanh toán" (ngụ ý vẫn chờ khách trả tiền).
+  const showNotCollected = !isPaid && !isRefunded && !!orderStatus && isClosedOrderStatus(orderStatus);
+  const translatedText = showNotCollected
+    ? t("payment_status.not_collected", "Not collected")
+    : t(`payment_status.${normalizedKey}`, status);
 
   return (
     <span className={`px-2.5 py-1 text-[10px] font-bold rounded-full border uppercase tracking-wider whitespace-nowrap inline-flex items-center shrink-0 ${
-      isPaid 
-        ? "bg-emerald-50 text-emerald-600 border-emerald-200/60 dark:bg-emerald-950/50 dark:text-emerald-400 dark:border-emerald-800" 
+      isPaid
+        ? "bg-emerald-50 text-emerald-600 border-emerald-200/60 dark:bg-emerald-950/50 dark:text-emerald-400 dark:border-emerald-800"
+        : isRefunded
+        ? "bg-purple-50 text-purple-600 border-purple-200/60 dark:bg-purple-950/50 dark:text-purple-400 dark:border-purple-800"
+        : showNotCollected
+        ? "bg-slate-100 text-slate-600 border-slate-200/60 dark:bg-slate-700/50 dark:text-slate-300 dark:border-slate-600"
         : "bg-rose-50 text-rose-600 border-rose-200/60 dark:bg-rose-950/50 dark:text-rose-400 dark:border-rose-800"
     }`}>
       {translatedText}

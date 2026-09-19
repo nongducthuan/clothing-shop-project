@@ -348,6 +348,10 @@ INSERT INTO order_items (order_id, product_id, quantity, price) VALUES
 
 UPDATE orders o SET total_price = (SELECT SUM(quantity * price) FROM order_items WHERE order_id = o.id);
 
+-- Đồng bộ delivered_at cho đơn Delivered: khớp changeOrderStatusLogic —
+-- doanh thu được neo theo NGÀY GIAO (delivered_at), không phải ngày tạo đơn.
+UPDATE orders SET delivered_at = created_at WHERE status = 'Delivered' AND delivered_at IS NULL;
+
 -- ============================================================
 -- 12. SEED RETURN REQUESTS
 -- ============================================================

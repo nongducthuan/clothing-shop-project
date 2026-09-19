@@ -2,6 +2,7 @@ import React from "react";
 import { getImageUrl } from "../../../utils/imageUtils";
 import { PaymentBadge } from "../../common/PaymentBadge";
 import { useLanguage } from "../../../context/LanguageContext";
+import { isClosedOrderStatus } from "../../../utils/orderUtils";
 import ReturnInfoSection from "./ReturnInfoSection";
 
 export default function OrderDetailsModal({ order, onClose, formatCurrency }) {
@@ -120,6 +121,14 @@ const DeliveryInfoSection = ({ order }) => {
             {order.payment_status === "Paid" ? (
               <span className="text-green-600 dark:text-emerald-300 font-extrabold bg-green-50 dark:bg-emerald-950/50 px-2.5 py-1 rounded-full inline-flex items-center gap-1 text-[11px]">
                 <i className="fa-solid fa-check-circle"></i> {t("admin.paid_badge")}
+              </span>
+            ) : order.payment_status === "Refunded" ? (
+              <span className="text-purple-600 dark:text-purple-300 font-extrabold bg-purple-50 dark:bg-purple-950/50 px-2.5 py-1 rounded-full inline-flex items-center gap-1 text-[11px]">
+                <i className="fa-solid fa-rotate-left"></i> {t("admin.refunded_badge", "Đã hoàn tiền")}
+              </span>
+            ) : isClosedOrderStatus(order.status) ? (
+              <span className="text-slate-500 dark:text-slate-400 font-extrabold bg-slate-100 dark:bg-slate-700/50 px-2.5 py-1 rounded-full inline-flex items-center gap-1 text-[11px]">
+                <i className="fa-solid fa-circle-minus"></i> {t("payment_status.not_collected", "Chưa thu tiền")}
               </span>
             ) : (
               <span className="text-orange-600 dark:text-amber-300 font-extrabold bg-orange-50 dark:bg-amber-950/50 px-2.5 py-1 rounded-full inline-flex items-center gap-1 text-[11px]">

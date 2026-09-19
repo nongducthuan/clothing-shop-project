@@ -3,6 +3,7 @@ import API from "../../services/apiClient";
 import { useToast } from "../../context/ToastContext";
 import { useLanguage } from "../../context/LanguageContext";
 import { formatCurrency as formatCurrencyUtil } from "../../utils/currencyUtils";
+import { UNDO_TRANSITIONS } from "../../utils/orderUtils";
 
 // ==========================================
 // CONSTANTS (Declared outside to prevent re-creation on every render)
@@ -112,6 +113,21 @@ export default function useOrderManager() {
    * Updates the general delivery status of an order
    */
   const handleOrderStatus = async (orderId, status) => {
+    const currentStatus = findOrderById(orderId)?.status?.replace(/_/g, " ");
+    // UNDO có kiểm soát: quay lại đúng 1 bước (Delivered→Shipping, Cancelled→Pending,
+    // Return Rejected→Delivered). Luôn hỏi xác nhận vì đụng kho/doanh thu.
+    if (currentStatus && UNDO_TRANSITIONS[currentStatus] === status) {
+      const undoKey =
+        status === "Shipping"
+          ? "admin.order.confirm_undo_delivered"
+          : status === "Pending"
+          ? "admin.order.confirm_undo_cancelled"
+          : "admin.order.confirm_undo_return_rejected";
+      if (!window.confirm(t(undoKey))) {
+        return;
+      }
+    }
+
     if (status === "Cancelled") {
       // Hủy đơn luôn cộng lại kho; chỉ nhắc hoàn tiền khi đơn ĐÃ thu tiền
       const needsRefund = findOrderById(orderId)?.payment_status === "Paid";

@@ -243,18 +243,90 @@ Sau khi chạy lệnh `npm run seed`, hệ thống tự động khởi tạo tà
 
 ## Tài Khoản Test Thanh Toán (Sandbox)
 
-### 1. MoMo (Test Card - ATM Nội địa)
-
-| Số thẻ | Tên chủ thẻ | Ngày phát hành | OTP |
-| --- | --- | --- | --- |
-| `9704198526191432198` | NGUYEN VAN A | 07/15 | `123456` |
-
-### 2. VNPay (Test Card - NCB Sandbox)
+### 1. MoMo (Test Card - ATM Nội địa) 
 
 | Tên chủ thẻ | Số thẻ | Hạn ghi trên thẻ | OTP |
 | --- | --- | --- | --- |
 | NGUYEN VAN A | `9704 0000 0000 0018` | 03/07 | OTP |
 
+### 2. VNPay (Test Card - NCB Sandbox)
+
+| Số thẻ | Tên chủ thẻ | Ngày phát hành | OTP |
+| --- | --- | --- | --- |
+| `9704198526191432198` | NGUYEN VAN A | 07/15 | `123456` |
+
 > Lưu ý: Các thông tin thẻ trên chỉ dùng trong môi trường **Sandbox/Test**, không áp dụng cho giao dịch thật. Nếu MoMo/VNPay cập nhật lại bộ thẻ test, vui lòng tham khảo tài liệu chính thức:
 > MoMo Sandbox: https://developers.momo.vn/v3/vi/docs/payment/onboarding/test-instructions/
 > VNPay Sandbox: https://sandbox.vnpayment.vn/apis/docs/huong-dan-tich-hop/
+
+---
+
+## Runbook vận hành — Duyệt nhầm "Return Approved"
+
+> **Đây là trạng thái duy nhất không có nút Undo — do thiết kế, không phải thiếu sót.**
+> Hệ thống không biết tiền đã hoàn ra ngoài thật chưa, nên chỉ sau khi con người xác nhận
+> (gọi điện cho khách) mới đủ thông tin để sửa. Các cặp Undo có kiểm soát khác xem tại
+> `frontend/src/utils/orderUtils.ts` (`UNDO_TRANSITIONS`) và
+> `backend/src/controllers/admin/orderController.ts` (`isUndoTransition`).
+
+### Bước 1 — Liên hệ khách trước, chốt 2 dữ kiện
+
+| Câu hỏi cho khách | Trả lời "Chưa" | Trả lời "Rồi" |
+|---|---|---|
+| Hàng đã gửi trả về kho chưa? | Phải **trừ lại kho** (Bước 3 + 4c) | Giữ nguyên kho |
+| Tiền đã hoàn ra ngoài thật chưa? | Payment `Refunded` → `Paid` (Bước 2) | Giữ nguyên `Refunded` |
+
+### Bước 2 — Đồng bộ thanh toán (trong UI)
+
+Dropdown **Payment** của đơn: `Refunded` → `Paid` nếu chưa hoàn tiền thật; giữ `Refunded` nếu đã hoàn.
+
+### Bước 3 — Đồng bộ kho (trong UI, nếu hàng chưa về)
+
+**Quản lý sản phẩm** → trừ lại stock của size tương ứng (số lượng đã bị cộng nhầm lúc Approve).
+
+### Bước 4 — Đồng bộ doanh thu + trạng thái (SQL — phần duy nhất không có UI)
+
+Dành cho trường hợp **partial return** (yêu cầu đổi trả có danh sách items — trường hợp chính). Đổi `@order_id` rồi dán cả khối:
+
+```sql
+SET @order_id = 123;  -- ← đổi thành ID đơn cần khắc phục
+
+-- 4a. Cộng lại doanh thu đúng ngày giao gốc (số đã bị trừ lúc Approve)
+UPDATE revenues r
+JOIN orders o           ON DATE(o.delivered_at) = r.report_date AND o.id = @order_id
+JOIN return_requests rr ON rr.order_id = o.id
+SET r.total_sales = r.total_sales + rr.refund_amount;
+
+-- 4b. Cộng lại total_spent của khách (hạng membership tự cập nhật theo)
+UPDATE users u
+JOIN orders o           ON o.user_id = u.id AND o.id = @order_id
+JOIN return_requests rr ON rr.order_id = o.id
+SET u.total_spent = u.total_spent + rr.refund_amount;
+
+-- 4c. Trừ lại kho phần hàng đã cộng nhầm (bỏ qua nếu hàng đã về thật)
+UPDATE product_sizes ps
+JOIN order_items oi          ON oi.size_id = ps.id
+JOIN return_request_items ri ON ri.order_item_id = oi.id
+JOIN return_requests rr      ON rr.id = ri.return_request_id
+SET ps.stock = ps.stock - ri.return_quantity
+WHERE rr.order_id = @order_id;
+
+-- 4d. Trả nhãn trạng thái về Delivered
+UPDATE orders SET status = 'Delivered' WHERE id = @order_id;
+```
+
+**Kiểm tra sau khi chạy:**
+
+```sql
+SELECT status, payment_status FROM orders WHERE id = @order_id;
+-- Kỳ vọng: status = 'Delivered'; payment_status tuỳ Bước 2
+
+SELECT total_sales FROM revenues
+WHERE report_date = DATE((SELECT delivered_at FROM orders WHERE id = @order_id));
+-- Kỳ vọng: total_sales tăng đúng bằng refund_amount của yêu cầu đổi trả
+```
+
+> **Known issue (backlog):** luồng full-return — Approve trên yêu cầu đổi trả **không có items** —
+> hiện chưa trừ doanh thu (chỉ hoàn kho), nên dashboard vẫn tính tiền cho hàng đã thu hồi.
+> Khi đó Bước 4a/4b **không cần chạy**. Muốn khắc phục triệt để: chỉnh `approveReturn` trong
+> `backend/src/controllers/admin/orderController.ts`.

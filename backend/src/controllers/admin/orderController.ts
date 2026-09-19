@@ -161,8 +161,49 @@ const ALLOWED_STATUS_TRANSITIONS: Record<string, string[]> = {
 // 3 trạng thái đổi trả chỉ được đổi qua /return/approve hoặc /return/reject
 const RETURN_STATUS_ENUMS = ["Return_Requested", "Return_Approved", "Return_Rejected"];
 
+// ─── UNDO CÓ KIỂM SOÁT ───────────────────────────────────────────────────────
+// Admin bấm nhầm hay đổi ý: cho phép quay lại đúng 3 cặp an toàn, mỗi cặp có
+// hậu quả đảo chiều được changeOrderStatusLogic xử lý đối xứng:
+//   Delivered → Shipping        : trừ doanh thu/total_spent đúng ngày delivered_at
+//   Cancelled → Pending         : trừ lại kho (chặn nếu không đủ kho)
+//   Return_Rejected → Delivered : chỉ đổi nhãn (reject chưa đụng kho/tiền, doanh thu
+//                                 Delivered gốc vẫn nguyên) → phải skip financial
+// Mọi cặp khác vẫn bị chặn: Return_Approved → Delivered bị cấm vì tiền có thể
+// đã hoàn thật cho khách, undo sẽ làm sổ lệch ngoài hệ thống.
+const UNDO_TRANSITIONS: Record<string, string> = {
+    "Delivered": "Shipping",
+    "Cancelled": "Pending",
+    "Return_Rejected": "Delivered",
+};
+
+const isUndoTransition = (from: string, to: string): boolean =>
+    UNDO_TRANSITIONS[from] === to;
+
+// Rank tiến trình của luồng chính, dùng để CHỐNG ĐI LÙI trong changeOrderStatusLogic.
+// Webhook IPN (MoMo/VNPay) có thể đến TRỄ hoặc được gateway retry nhiều lần: nếu admin
+// đã đẩy đơn lên Shipping/Delivered mà IPN vẫn yêu cầu set về 'Confirmed' thì phải chặn,
+// nếu không doanh thu/total_spent sẽ bị trừ sai (Delivered → khác = -total_price).
+// - Cùng rank (IPN retry / no-op) → cho phép, idempotent.
+// - Cancelled và 3 trạng thái Return_* không nằm trong rank → luôn cho phép
+//   (hủy/đổi trả là luồng riêng; admin API còn có ALLOWED_STATUS_TRANSITIONS chặn trước).
+// - Guard chỉ chặn phần TRẠNG THÁI ĐƠN; payment_status do caller set TRƯỚC khi gọi
+//   hàm này nên tiền đã thu vẫn được ghi nhận bình thường.
+const STATUS_RANK: Record<string, number> = {
+    Pending: 1,
+    Confirmed: 2,
+    Shipping: 3,
+    Delivered: 4,
+    Return_Requested: 5,
+    Return_Rejected: 5,
+    Return_Approved: 5,
+};
+
 // Complex status change handling inventory and revenue
-export const changeOrderStatusLogic = async (orderId: number, newStatus: string) => {
+export const changeOrderStatusLogic = async (
+    orderId: number,
+    newStatus: string,
+    opts?: { isUndo?: boolean; skipFinancial?: boolean }
+) => {
     // Normalize: "Return Requested" → "Return_Requested" etc.
     const normalizedStatus = STATUS_DISPLAY_TO_ENUM[newStatus] ?? newStatus;
 
@@ -177,6 +218,23 @@ export const changeOrderStatusLogic = async (orderId: number, newStatus: string)
         const oldStatus = order.status;
         const totalPrice = Number(order.total_price);
         const userId = order.user_id;
+
+        // 0. Chống đi lùi: IPN đến trễ/retry hoặc caller nội bộ không được kéo đơn về
+        // trạng thái trước đó (VD: Delivered → Confirmed sẽ trừ doanh thu + total_spent).
+        // Normalize cả oldStatus để khớp cả 2 biến thể "Return Requested"/"Return_Requested".
+        // Ngoại lệ: opts.isUndo (chỉ updateOrderStatus khi khớp UNDO_TRANSITIONS) được phép
+        // quay lại đúng 1 bước có kiểm soát — hậu quả đảo chiều do chính logic này xử lý.
+        const oldEnum = STATUS_DISPLAY_TO_ENUM[oldStatus] ?? oldStatus;
+        const oldRank: number | undefined = STATUS_RANK[oldEnum];
+        const newRank: number | undefined = STATUS_RANK[normalizedStatus];
+        if (!opts?.isUndo && oldRank !== undefined && newRank !== undefined && newRank < oldRank) {
+            console.warn(
+                `⛔ Blocked status regression for order #${orderId}: ${oldStatus} → ${normalizedStatus}`
+            );
+            throw new Error(
+                `Invalid status transition: cannot move order #${orderId} from "${oldStatus}" back to "${normalizedStatus}"`
+            );
+        }
 
         // 1. Inventory Updates
         const inactiveSet = new Set(["Cancelled", "Return_Approved"]);
@@ -209,11 +267,16 @@ export const changeOrderStatusLogic = async (orderId: number, newStatus: string)
         }
 
         // 2. Financial Updates
+        // skipFinancial: dùng cho undo "Return_Rejected → Delivered" — reject chưa từng
+        // trừ kho/doanh thu, Delivered gốc vẫn được tính tiền nên KHÔNG được cộng lại,
+        // nếu không doanh thu + order count sẽ bị nhân đôi.
         let revenueChange = 0;
         let orderCountChange = 0;
         let deliveredAtUpdate: Date | null = null;
 
-        if (oldStatus !== "Delivered" && normalizedStatus === "Delivered") {
+        if (opts?.skipFinancial) {
+            // Không đụng doanh thu/spending/delivered_at — chỉ đổi nhãn trạng thái
+        } else if (oldStatus !== "Delivered" && normalizedStatus === "Delivered") {
             revenueChange = totalPrice;
             orderCountChange = 1;
             deliveredAtUpdate = new Date(); // Fix 7: ghi lại thời điểm giao hàng
@@ -323,9 +386,21 @@ export const updateOrderStatus = async (req: Request, res: Response): Promise<vo
 
         const normalizedStatus = STATUS_DISPLAY_TO_ENUM[status] ?? status;
 
+        // Undo có kiểm soát: bấm nhầm/đổi ý — chỉ 3 cặp chính xác được quay lại
+        // (Delivered→Shipping, Cancelled→Pending, Return_Rejected→Delivered).
+        // Mỗi cặp có hậu quả đảo chiều đã được xử lý đối xứng trong changeOrderStatusLogic;
+        // Return_Rejected→Delivered cần skipFinancial vì reject chưa hề trừ doanh thu.
+        const isUndo = isUndoTransition(
+            STATUS_DISPLAY_TO_ENUM[order.status] ?? order.status,
+            normalizedStatus
+        );
+        const skipFinancial =
+            (STATUS_DISPLAY_TO_ENUM[order.status] ?? order.status) === "Return_Rejected" &&
+            normalizedStatus === "Delivered";
+
         // Validate luồng: chặn nhảy bước / nhảy vào trạng thái đổi trả qua API này.
         // Cho phép khi trạng thái không đổi (no-op) để không phá các lần bấm lặp.
-        if (normalizedStatus !== order.status) {
+        if (normalizedStatus !== order.status && !isUndo) {
             if (RETURN_STATUS_ENUMS.includes(normalizedStatus)) {
                 console.warn(`Blocked direct set of return status "${normalizedStatus}" on order #${orderId}`);
                 res.status(400).json({
@@ -342,7 +417,7 @@ export const updateOrderStatus = async (req: Request, res: Response): Promise<vo
             }
         }
 
-        await changeOrderStatusLogic(orderId, status);
+        await changeOrderStatusLogic(orderId, status, { isUndo, skipFinancial });
         res.json({ message: 'Order status updated successfully' });
     } catch (err: any) {
         console.error(err);

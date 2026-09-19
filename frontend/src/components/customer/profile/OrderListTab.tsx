@@ -100,7 +100,7 @@ function OrderCard({
         <div className="bg-slate-50 dark:bg-slate-700/60 p-3.5 rounded-xl border border-slate-100/80 dark:border-slate-700 mb-4 space-y-2.5">
           {/* Hàng 1 */}
           <div className="flex justify-between items-center">
-            <PaymentStatusBadge status={order.payment_status} />
+            <PaymentStatusBadge status={order.payment_status} orderStatus={order.status} />
             <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
               {t("orders.total", "Total")}
             </span>

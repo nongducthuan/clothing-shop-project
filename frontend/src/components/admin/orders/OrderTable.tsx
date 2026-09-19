@@ -4,7 +4,7 @@ import { PaymentBadge } from "../../common/PaymentBadge";
 import { useLanguage } from "../../../context/LanguageContext";
 import ReturnInfoSection from "./ReturnInfoSection";
 
-import { PAYMENT_OPTIONS, STATUS_OPTIONS, isStatusAllowed, isStatusFlowLocked } from "../../../utils/orderUtils";
+import { PAYMENT_OPTIONS, STATUS_OPTIONS, isStatusAllowed, isStatusFlowLocked, isClosedOrderStatus } from "../../../utils/orderUtils";
 
 // Status-flow guard (Pending -> Confirmed -> Shipping -> Delivered | Cancelled)
 // lives in useOrderManager so the desktop table and the mobile cards share one rule set.
@@ -166,7 +166,9 @@ export default function OrderTable({
                             >
                               {PAYMENT_OPTIONS.map((status) => (
                                 <option key={status} value={status} className="text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-800">
-                                  {t(`payment_status.${status.toLowerCase().replace(/\s+/g, '_')}`, status)}
+                                  {status === "Unpaid" && isClosedOrderStatus(order.status)
+                                    ? t("payment_status.not_collected", "Chưa thu tiền")
+                                    : t(`payment_status.${status.toLowerCase().replace(/\s+/g, '_')}`, status)}
                                 </option>
                               ))}
                             </select>
@@ -179,7 +181,7 @@ export default function OrderTable({
                             <select
                               value={order.status}
                               onChange={(e) => handleOrderStatus(order.id, e.target.value)}
-                              disabled={isReturnLocked || isStatusFlowLocked(order.status)}
+                              disabled={isStatusFlowLocked(order.status)}
                               className="w-full text-[11px] font-bold text-white py-2 pl-3.5 pr-7 rounded-full cursor-pointer outline-none focus:ring-4 focus:ring-blue-500/20 disabled:opacity-60 appearance-none text-left shadow-sm transition-all"
                               style={{ backgroundColor: getOrderStatusColor(order.status) }}
                             >
@@ -276,7 +278,6 @@ export default function OrderTable({
                                       {discountAmount > 0 && (
                                         <div className="flex justify-between items-center text-emerald-600 dark:text-emerald-400 font-medium">
                                           <span className="flex items-center gap-1.5">
-                                            <i className="fa-solid fa-ticket text-xs"></i>
                                             {t("checkout.discount", "Giảm giá")}{voucherCode ? ` (${voucherCode})` : ""}:
                                           </span>
                                           <span className="font-bold">-{formatCurrency(discountAmount)}</span>

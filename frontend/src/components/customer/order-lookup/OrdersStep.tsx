@@ -2,6 +2,7 @@ import React from "react";
 import { getImageUrl } from "../../../utils/imageUtils";
 import { PaymentBadge } from "../../common/PaymentBadge";
 import { useLanguage } from "../../../context/LanguageContext";
+import { isClosedOrderStatus } from "../../../utils/orderUtils";
 import { useAutoCancelCountdown } from "../../../hooks/useAutoCancelCountdown";
 
 export default function OrdersStep({
@@ -106,9 +107,15 @@ function OrderRow({
           <span className={`text-[9px] px-2 py-0.5 rounded-md font-bold uppercase tracking-wider ${
             order.payment_status === 'Paid'
               ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-700'
+              : order.payment_status === 'Refunded'
+              ? 'bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-700'
+              : isClosedOrderStatus(order.status)
+              ? 'bg-slate-100 dark:bg-slate-700/60 text-slate-500 dark:text-slate-300 border border-slate-200 dark:border-slate-600'
               : 'bg-rose-100 dark:bg-rose-900/40 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-700'
           }`}>
-            {paymentLabels[order.payment_status] || order.payment_status || t('lookup.payment_unpaid')}
+            {order.payment_status === 'Unpaid' && isClosedOrderStatus(order.status)
+              ? t('lookup.payment_not_collected')
+              : paymentLabels[order.payment_status] || order.payment_status || t('lookup.payment_unpaid')}
           </span>
         </div>
       </div>

@@ -121,7 +121,7 @@ export default function OrderDetailModal({ order, onClose, onOpenPaymentModal, a
           {/* Status Badges */}
           <div className="flex flex-wrap gap-2 items-center">
             <ModernStatusBadge status={order.status} />
-            <PaymentStatusBadge status={order.payment_status} />
+            <PaymentStatusBadge status={order.payment_status} orderStatus={order.status} />
           </div>
 
           {/* Item List */}
