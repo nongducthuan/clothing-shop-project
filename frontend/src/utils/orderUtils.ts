@@ -47,15 +47,20 @@ export const ORDER_STATUS_FLOW: Record<string, string[]> = {
 /**
  * UNDO có kiểm soát: bấm nhầm / đổi ý — admin chỉ được quay lại ĐÚNG 1 bước với
  * 3 cặp an toàn (khớp với UNDO_TRANSITIONS ở backend admin/orderController.ts):
- *   Delivered → Shipping        : trừ doanh thu khỏi ngày đã ghi nhận (đối xứng lúc cộng)
- *   Cancelled → Pending         : kho bị TRỪ LẠI (backend chặn nếu không đủ kho)
- *   Return Rejected → Delivered : chỉ đổi nhãn — reject chưa hề đụng kho/tiền
+ *   Delivered → Shipping              : trừ doanh thu khỏi ngày đã ghi nhận (đối xứng lúc cộng)
+ *   Cancelled → Pending               : kho bị TRỪ LẠI (backend chặn nếu không đủ kho)
+ *   Return Rejected → Return Requested: chỉ đổi nhãn — reject chưa hề đụng kho/tiền, và
+ *                                       yêu cầu đổi trả được trả về Pending nên đơn phải
+ *                                       quay lại đúng vòng "Yêu cầu đổi trả" để admin
+ *                                       duyệt lại (KHÔNG về Delivered: yêu cầu còn mở thì
+ *                                       đơn không còn là "Đã giao", nếu không 2 chiều hoàn
+ *                                       tác — duyệt nhầm / từ chối nhầm — bị trùng nhau).
  * Return Approved KHÔNG được undo: tiền có thể đã hoàn thật cho khách.
  */
 export const UNDO_TRANSITIONS: Record<string, string> = {
   Delivered: "Shipping",
   Cancelled: "Pending",
-  "Return Rejected": "Delivered",
+  "Return Rejected": "Return Requested",
 };
 
 /**
@@ -87,6 +92,36 @@ export function isStatusFlowLocked(currentStatus: string): boolean {
   if (RETURN_STATUS_VARIANTS.includes(currentStatus)) return true;
   const allowedTargets = ORDER_STATUS_FLOW[currentStatus];
   return Array.isArray(allowedTargets) && allowedTargets.length === 0;
+}
+
+/**
+ * Luật chuyển payment_status — MIRROR của ALLOWED_PAYMENT_TRANSITIONS ở backend
+ * (admin/orderController.ts → confirmPayment):
+ *   Unpaid   → Paid | Refunded
+ *   Paid     → Refunded | Unpaid  (lỡ bấm Paid nhầm mà CHƯA thu tiền thật — COD;
+ *                                  MoMo/VNPay cần đối chiếu cổng trước, UI có confirm)
+ *   Refunded → Paid               (lỡ bấm hoàn nhầm mà chưa chuyển tiền thật)
+ * + Refunded chỉ hợp lệ khi đơn đã đóng (Cancelled / Return Approved).
+ * Dùng để disable các <option> sai luật trong dropdown thanh toán (giống isStatusAllowed
+ * làm với dropdown trạng thái đơn) — thay vì để chọn rồi mới báo "cập nhật thất bại".
+ *
+ * @param currentPayment payment_status hiện tại của đơn
+ * @param targetPayment  payment_status admin muốn chọn
+ * @param orderStatus    status hiện tại của đơn (để check điều kiện Refunded)
+ */
+export function isPaymentAllowed(currentPayment: string, targetPayment: string, orderStatus?: string): boolean {
+  if (currentPayment === targetPayment) return true;
+  const ALLOWED: Record<string, string[]> = {
+    Unpaid: ["Paid", "Refunded"],
+    Paid: ["Refunded", "Unpaid"],
+    Refunded: ["Paid"],
+  };
+  if (!ALLOWED[currentPayment]?.includes(targetPayment)) return false;
+  if (targetPayment === "Refunded" && currentPayment !== "Refunded") {
+    const normalized = (orderStatus || "").replace(/_/g, " ");
+    if (normalized !== "Cancelled" && normalized !== "Return Approved") return false;
+  }
+  return true;
 }
 
 /**

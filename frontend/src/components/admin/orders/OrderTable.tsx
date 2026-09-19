@@ -4,7 +4,7 @@ import { PaymentBadge } from "../../common/PaymentBadge";
 import { useLanguage } from "../../../context/LanguageContext";
 import ReturnInfoSection from "./ReturnInfoSection";
 
-import { PAYMENT_OPTIONS, STATUS_OPTIONS, isStatusAllowed, isStatusFlowLocked, isClosedOrderStatus } from "../../../utils/orderUtils";
+import { PAYMENT_OPTIONS, STATUS_OPTIONS, isStatusAllowed, isStatusFlowLocked, isClosedOrderStatus, isPaymentAllowed } from "../../../utils/orderUtils";
 
 // Status-flow guard (Pending -> Confirmed -> Shipping -> Delivered | Cancelled)
 // lives in useOrderManager so the desktop table and the mobile cards share one rule set.
@@ -18,6 +18,7 @@ export default function OrderTable({
   handleOrderStatus,
   handleApproveReturn,
   handleRejectReturn,
+  onUndoApproveReturn,
   filters // Nhận filters từ props
 }) {
   const { t, getLocalizedLabel } = useLanguage();
@@ -135,6 +136,13 @@ export default function OrderTable({
                 /* HIỂN THỊ DANH SÁCH ĐƠN HÀNG */
                 displayedOrders.map((order) => {
                   const isReturnLocked = ["Return Requested", "Return_Requested"].includes(order.status);
+                  const isReturnApproved = ["Return Approved", "Return_Approved"].includes(order.status);
+                  // Đơn đã hoàn tác duyệt nhầm: status về Delivered nhưng return_request còn
+                  // Pending (chờ duyệt lại) → hiện lại nút Chấp nhận/Từ chối.
+                  const isPendingRedo = order.status === "Delivered" && order.return_status === "Pending";
+                  // Nút Chấp nhận/Từ chối CHỈ nằm ở tab "Chờ duyệt đổi trả" — tab Quản lý Đơn
+                  // hàng giữ thuần luồng giao hàng, không trộn quyết định đổi trả vào.
+                  const showReturnActions = activeTab === "Returns" && (isReturnLocked || isPendingRedo);
                   const isExpanded = expandedOrderId === order.id;
 
                   return (
@@ -165,7 +173,12 @@ export default function OrderTable({
                               style={{ backgroundColor: getPaymentStatusColor(order.payment_status) }}
                             >
                               {PAYMENT_OPTIONS.map((status) => (
-                                <option key={status} value={status} className="text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-800">
+                                <option
+                                  key={status}
+                                  value={status}
+                                  disabled={!isPaymentAllowed(order.payment_status || "Unpaid", status, order.status)}
+                                  className="text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-800 disabled:text-gray-300 disabled:dark:text-slate-600 disabled:bg-gray-50 disabled:dark:bg-slate-900"
+                                >
                                   {status === "Unpaid" && isClosedOrderStatus(order.status)
                                     ? t("payment_status.not_collected", "Chưa thu tiền")
                                     : t(`payment_status.${status.toLowerCase().replace(/\s+/g, '_')}`, status)}
@@ -202,7 +215,7 @@ export default function OrderTable({
 
                         <td className="p-4 pr-6 text-center whitespace-nowrap">
                           <div className="flex items-center justify-center gap-2">
-                            {isReturnLocked && (
+                            {showReturnActions && (
                               <>
                                 <button onClick={() => handleApproveReturn(order.id)} title={t("admin.approve_return")} className="w-9 h-9 flex items-center justify-center bg-green-50 dark:bg-emerald-950/50 text-green-600 dark:text-emerald-400 rounded-full hover:bg-green-500 hover:text-white dark:hover:bg-emerald-600 dark:hover:text-white transition-colors shadow-sm">
                                   <i className="fa-solid fa-check text-sm"></i>
@@ -211,6 +224,15 @@ export default function OrderTable({
                                   <i className="fa-solid fa-xmark text-sm"></i>
                                 </button>
                               </>
+                            )}
+                            {isReturnApproved && (
+                              <button
+                                onClick={() => onUndoApproveReturn(order)}
+                                title={t("admin.undo_approve_btn", "Hoàn tác duyệt nhầm")}
+                                className="w-9 h-9 flex items-center justify-center bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 rounded-full hover:bg-amber-500 hover:text-white dark:hover:bg-amber-600 dark:hover:text-white transition-colors shadow-sm"
+                              >
+                                <i className="fa-solid fa-rotate-left text-sm"></i>
+                              </button>
                             )}
                             <button
                               onClick={() => toggleExpand(order.id)}
@@ -241,7 +263,7 @@ export default function OrderTable({
                                 </h4>
 
                                 {/* Return Info (Nếu có) */}
-                                {["Return Requested", "Return_Requested", "Return Approved", "Return_Approved", "Return Rejected", "Return_Rejected"].includes(order.status) && (
+                                {(["Return Requested", "Return_Requested", "Return Approved", "Return_Approved", "Return Rejected", "Return_Rejected"].includes(order.status) || order.return_status === "Pending") && (
                                   <ReturnInfoSection order={order} formatCurrency={formatCurrency} />
                                 )}
 
@@ -346,6 +368,14 @@ const DeliveryInfoSection = ({ order }) => {
             {order.payment_status === "Paid" ? (
               <span className="text-green-600 dark:text-emerald-400 font-extrabold bg-green-50 dark:bg-emerald-950/40 px-2.5 py-1 rounded-full inline-flex items-center gap-1 text-[11px] border border-green-100 dark:border-emerald-900/40">
                 <i className="fa-solid fa-check-circle"></i> {t("admin.paid_badge")}
+              </span>
+            ) : order.payment_status === "Refunded" ? (
+              <span className="text-purple-600 dark:text-purple-300 font-extrabold bg-purple-50 dark:bg-purple-950/50 px-2.5 py-1 rounded-full inline-flex items-center gap-1 text-[11px] border border-purple-100 dark:border-purple-900/40">
+                <i className="fa-solid fa-rotate-left"></i> {t("admin.refunded_badge", "Đã hoàn tiền")}
+              </span>
+            ) : isClosedOrderStatus(order.status) ? (
+              <span className="text-slate-500 dark:text-slate-400 font-extrabold bg-slate-100 dark:bg-slate-700/50 px-2.5 py-1 rounded-full inline-flex items-center gap-1 text-[11px] border border-slate-200 dark:border-slate-600">
+                <i className="fa-solid fa-circle-minus"></i> {t("payment_status.not_collected", "Chưa thu tiền")}
               </span>
             ) : (
               <span className="text-orange-600 dark:text-orange-400 font-extrabold bg-orange-50 dark:bg-orange-950/40 px-2.5 py-1 rounded-full inline-flex items-center gap-1 text-[11px] border border-orange-100 dark:border-orange-900/40">

@@ -3,7 +3,7 @@ import API from "../../services/apiClient";
 import { useToast } from "../../context/ToastContext";
 import { useLanguage } from "../../context/LanguageContext";
 import { formatCurrency as formatCurrencyUtil } from "../../utils/currencyUtils";
-import { UNDO_TRANSITIONS } from "../../utils/orderUtils";
+import { UNDO_TRANSITIONS, isClosedOrderStatus } from "../../utils/orderUtils";
 
 // ==========================================
 // CONSTANTS (Declared outside to prevent re-creation on every render)
@@ -115,7 +115,7 @@ export default function useOrderManager() {
   const handleOrderStatus = async (orderId, status) => {
     const currentStatus = findOrderById(orderId)?.status?.replace(/_/g, " ");
     // UNDO có kiểm soát: quay lại đúng 1 bước (Delivered→Shipping, Cancelled→Pending,
-    // Return Rejected→Delivered). Luôn hỏi xác nhận vì đụng kho/doanh thu.
+    // Return Rejected→Return Requested). Luôn hỏi xác nhận vì đụng kho/doanh thu.
     if (currentStatus && UNDO_TRANSITIONS[currentStatus] === status) {
       const undoKey =
         status === "Shipping"
@@ -168,6 +168,21 @@ export default function useOrderManager() {
    * Updates the payment status of an order
    */
   const handlePaymentStatus = async (orderId, newStatus) => {
+    // Undo "lỡ bấm Paid nhầm": chỉ khi tiền CHƯA thật sự thu (điển hình COD).
+    // Với MoMo/VNPay cần đối chiếu cổng thanh toán — confirm bắt buộc trước khi đổi.
+    // Nhãn "Unpaid" đổi theo trạng thái đơn cho KHỚP với badge trong dropdown:
+    // đơn ĐÓNG (hủy/đổi trả) = "Chưa thu tiền"; 4 trạng thái luồng giao hàng = "Chưa thanh toán".
+    const currentOrder = findOrderById(orderId);
+    const currentPayment = currentOrder?.payment_status || "Unpaid";
+    if (currentPayment === "Paid" && newStatus === "Unpaid") {
+      const unpaidLabel =
+        currentOrder && isClosedOrderStatus(currentOrder.status || "")
+          ? t("payment_status.not_collected", "Chưa thu tiền")
+          : t("payment_status.unpaid", "Chưa thanh toán");
+      if (!window.confirm(t("admin.order.confirm_paid_to_unpaid").replace("{label}", unpaidLabel))) {
+        return;
+      }
+    }
     try {
       await API.put(
         `/admin/orders/${orderId}/payment`,
@@ -288,6 +303,46 @@ export default function useOrderManager() {
     }
   };
 
+  /**
+   * Hoàn tác duyệt nhầm Return Approved — thay nút Undo bị cấm bằng modal 2 checkbox.
+   * Admin phải gọi điện xác nhận với khách trước rồi tick đúng thực tế:
+   *   - stockReturned: hàng đã về kho thật chưa? (chưa → backend trừ lại kho)
+   *   - moneyRefunded: tiền đã hoàn ra ngoài thật chưa? (chưa → Refunded → Paid)
+   */
+  const handleUndoApproveReturn = async (orderId, { stockReturned, moneyRefunded }) => {
+    const token = getToken();
+    if (!token) {
+      showToast(t("admin.order.toast_no_token", "Error: Authentication token not found!"), "error");
+      return false;
+    }
+
+    try {
+      const response = await fetch(`${BASE_URL}/admin/orders/${orderId}/return/undo-approve`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify({ stock_returned: stockReturned, money_refunded: moneyRefunded }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        showToast(t("admin.order.toast_undo_approved", "Đã hoàn tác duyệt nhầm. Đơn đã về lại \"Yêu cầu đổi trả\"."), "success");
+        fetchOrders();
+        setSelectedOrder(null); // Close modal if open
+        return true;
+      }
+      showToast(data.message || t("admin.order.toast_undo_approve_failed", "Hoàn tác thất bại"), "error");
+      return false;
+    } catch (error: unknown) {
+      console.error(error);
+      showToast(t("admin.order.toast_server_error", "Server connection error"), "error");
+      return false;
+    }
+  };
+
   // --- DERIVED STATE ---
 
   // Memoized to prevent recalculation on every re-render unless dependencies change
@@ -312,7 +367,8 @@ export default function useOrderManager() {
     handleOrderStatus,
     handlePaymentStatus,
     handleApproveReturn,
-    handleRejectReturn
+    handleRejectReturn,
+    handleUndoApproveReturn
   };
 }
 

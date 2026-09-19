@@ -1,10 +1,12 @@
 import OrderTable from "../../components/admin/orders/OrderTable.jsx";
 import OrderCard from "../../components/admin/orders/OrderCard.jsx";
 import OrderDetailsModal from "../../components/admin/orders/OrderDetailsModal.jsx";
+import UndoApproveModal from "../../components/admin/orders/UndoApproveModal.jsx";
 import useOrderManager from "../../hooks/admin/useOrderManager";
 import useOrderFilters from "../../hooks/admin/useOrderFilters";
 import EmptyState from "../../components/common/EmptyState";
 import { useLanguage } from "../../context/LanguageContext";
+import { useState } from "react";
 
 // --- SUB-COMPONENTS ---
 const PageHeader = () => {
@@ -35,9 +37,15 @@ export default function OrderManager() {
     handlePaymentStatus,
     handleApproveReturn,
     handleRejectReturn,
+    handleUndoApproveReturn,
   } = useOrderManager();
 
   const filters = useOrderFilters(orders);
+
+  // Modal hoàn tác duyệt nhầm (thay runbook SQL): mở khi bấm nút Undo trên đơn Return Approved
+  const [undoOrder, setUndoOrder] = useState(null);
+
+  const handleOpenUndoApprove = (order) => setUndoOrder(order);
 
   // Handler mở Modal (chỉ còn dùng cho Mobile / OrderCard)
   const handleOpenDetails = (order) => {
@@ -72,6 +80,7 @@ export default function OrderManager() {
               handleOrderStatus={handleOrderStatus}
               handleApproveReturn={handleApproveReturn}
               handleRejectReturn={handleRejectReturn}
+              onUndoApproveReturn={handleOpenUndoApprove}
               onViewDetails={handleOpenDetails}
               filters={filters}
             />
@@ -86,6 +95,7 @@ export default function OrderManager() {
               handleOrderStatus={handleOrderStatus}
               handleApproveReturn={handleApproveReturn}
               handleRejectReturn={handleRejectReturn}
+              onUndoApproveReturn={handleOpenUndoApprove}
               filters={filters}
             />
           </>
@@ -96,6 +106,14 @@ export default function OrderManager() {
       <OrderDetailsModal
         order={selectedOrder}
         onClose={() => setSelectedOrder(null)}
+        formatCurrency={formatCurrency}
+      />
+
+      {/* Undo Approve Modal — hoàn tác duyệt nhầm Return Approved (thay runbook SQL) */}
+      <UndoApproveModal
+        order={undoOrder}
+        onClose={() => setUndoOrder(null)}
+        onConfirm={handleUndoApproveReturn}
         formatCurrency={formatCurrency}
       />
     </div>

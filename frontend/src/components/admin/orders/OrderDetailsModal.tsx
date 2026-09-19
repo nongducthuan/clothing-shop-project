@@ -9,7 +9,7 @@ export default function OrderDetailsModal({ order, onClose, formatCurrency }) {
   const { t } = useLanguage();
   if (!order) return null;
 
-  const isReturnRequest = ["Return Requested", "Return_Requested", "Return Approved", "Return_Approved", "Return Rejected", "Return_Rejected"].includes(order.status);
+  const isReturnRequest = ["Return Requested", "Return_Requested", "Return Approved", "Return_Approved", "Return Rejected", "Return_Rejected"].includes(order.status) || order.return_status === "Pending";
 
   return (
     <div className="fixed inset-0 z-[100] flex justify-center items-center p-4 bg-slate-900/60 dark:bg-black/70 backdrop-blur-xs">

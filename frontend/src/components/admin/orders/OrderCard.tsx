@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import { AlertTriangle, Check, X } from "lucide-react";
+import { AlertTriangle, Check, X, RotateCcw } from "lucide-react";
 import { PaymentBadge } from "../../common/PaymentBadge";
 import { useLanguage } from "../../../context/LanguageContext";
 
-import { PAYMENT_OPTIONS, STATUS_OPTIONS, isStatusAllowed, isStatusFlowLocked, isClosedOrderStatus } from "../../../utils/orderUtils";
+import { PAYMENT_OPTIONS, STATUS_OPTIONS, isStatusAllowed, isStatusFlowLocked, isClosedOrderStatus, isPaymentAllowed } from "../../../utils/orderUtils";
 
 export default function OrderCard({
   orders,
@@ -15,6 +15,7 @@ export default function OrderCard({
   onViewDetails,
   handleApproveReturn,
   handleRejectReturn,
+  onUndoApproveReturn,
   filters // Nhận filters từ props
 }) {
   const { t } = useLanguage();
@@ -85,6 +86,14 @@ export default function OrderCard({
       ) : (
         displayedOrders.map((order) => {
           const isReturnLocked = ["Return Requested", "Return_Requested"].includes(order.status);
+          const isReturnApproved = ["Return Approved", "Return_Approved"].includes(order.status);
+          // Đơn đã hoàn tác duyệt nhầm: status về Delivered nhưng return_request còn Pending
+          // (return_status từ payload admin: Pending/Approved/Rejected) → hiện lại nút duyệt.
+          const isPendingRedo = order.status === "Delivered" && order.return_status === "Pending";
+          // Nút Chấp nhận/Từ chối CHỈ nằm ở tab "Chờ duyệt đổi trả" — tab Quản lý Đơn hàng
+          // giữ thuần luồng giao hàng, không trộn quyết định đổi trả vào (kể cả đơn Delivered
+          // chờ duyệt lại sau undo). Đơn Return Requested chỉ tồn tại ở tab Returns nên không ảnh hưởng.
+          const showReturnActions = activeTab === "Returns" && (isReturnLocked || isPendingRedo);
 
           return (
             <div key={order.id} className="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 flex flex-col gap-3.5">
@@ -106,11 +115,11 @@ export default function OrderCard({
                 <p className="text-xs text-gray-400 dark:text-slate-400 mt-0.5">{order.phone || t("admin.no_phone")}</p>
               </div>
 
-              {/* Return Action Section */}
-              {isReturnLocked && (
+              {/* Return Action Section — CHỈ ở tab "Chờ duyệt đổi trả" */}
+              {showReturnActions && (
                 <div className="p-3.5 bg-orange-50 dark:bg-orange-500/10 rounded-xl border border-orange-100 dark:border-orange-500/30">
                   <p className="text-[10px] font-bold text-orange-600 dark:text-orange-400 uppercase mb-2.5 text-center tracking-wider flex items-center justify-center gap-1">
-                    <AlertTriangle size={14} /> {t("order_status.return_requested")}
+                    <AlertTriangle size={14} /> {isReturnLocked ? t("order_status.return_requested") : t("admin.return_pending_redo")}
                   </p>
                   <div className="flex gap-2.5">
                     <button
@@ -126,6 +135,21 @@ export default function OrderCard({
                       <X size={12} /> {t("admin.reject_return")}
                     </button>
                   </div>
+                </div>
+              )}
+
+              {/* Undo Approve Section — duyệt nhầm Return Approved (mở modal 2 checkbox) */}
+              {isReturnApproved && (
+                <div className="p-3.5 bg-amber-50 dark:bg-amber-500/10 rounded-xl border border-amber-100 dark:border-amber-500/30">
+                  <p className="text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase mb-2.5 text-center tracking-wider flex items-center justify-center gap-1">
+                    <AlertTriangle size={14} /> {t("admin.undo_approve_title")}
+                  </p>
+                  <button
+                    onClick={() => onUndoApproveReturn(order)}
+                    className="w-full bg-amber-500 text-white py-2.5 rounded-full text-[10px] font-bold uppercase tracking-wider hover:bg-amber-600 shadow-sm transition-colors flex items-center justify-center gap-1"
+                  >
+                    <RotateCcw size={12} /> {t("admin.undo_approve_btn")}
+                  </button>
                 </div>
               )}
 
@@ -146,7 +170,12 @@ export default function OrderCard({
                     style={{ backgroundColor: getPaymentStatusColor(order.payment_status) }}
                   >
                     {PAYMENT_OPTIONS.map((s) => (
-                      <option key={s} value={s} className="text-gray-800 bg-white dark:text-slate-100 dark:bg-slate-800">
+                      <option
+                        key={s}
+                        value={s}
+                        disabled={!isPaymentAllowed(order.payment_status || "Unpaid", s, order.status)}
+                        className="text-gray-800 bg-white dark:text-slate-100 dark:bg-slate-800 disabled:text-gray-300 disabled:dark:text-slate-600 disabled:bg-gray-50 disabled:dark:bg-slate-900"
+                      >
                         {s === "Unpaid" && isClosedOrderStatus(order.status)
                           ? t("payment_status.not_collected", "Chưa thu tiền")
                           : t(`payment_status.${s.toLowerCase().replace(/\s+/g, '_')}`, s)}

@@ -316,13 +316,15 @@ export const createOrderController = async (req: Request, res: Response): Promis
 
             // 2. Membership Discount
             let totalMembershipDiscount = 0;
+            let userMembershipPercent = 0;
             if (userId) {
                 const user = await tx.user.findUnique({
                     where: { id: userId },
                     include: { membership: true }
                 });
                 if (user?.membership && Number(user.membership.discount_percent) > 0) {
-                    totalMembershipDiscount = (serverCalculatedTotal * Number(user.membership.discount_percent)) / 100;
+                    userMembershipPercent = Number(user.membership.discount_percent);
+                    totalMembershipDiscount = (serverCalculatedTotal * userMembershipPercent) / 100;
                     serverCalculatedTotal -= totalMembershipDiscount;
                 }
             }
@@ -361,6 +363,12 @@ export const createOrderController = async (req: Request, res: Response): Promis
                 let eligibleTotal = 0;
                 const nonGiftItems = itemsToSave.filter(i => !i.is_gift);
 
+                // Voucher tính trên giá SAU membership (khách thực phải trả),
+                // không phải giá gốc — nếu không voucher scope product/category sẽ
+                // giảm nhiều hơn kỳ vọng khi đi kèm hạng thành viên.
+                const membershipRate = userMembershipPercent > 0 ? userMembershipPercent / 100 : 0;
+                const priceAfterMembership = (gross: number) => gross * (1 - membershipRate);
+
                 if (voucher.apply_scope === 'all') {
                     eligibleTotal = finalTotal;
                     eligibleProductIds = nonGiftItems.map(i => i.product_id);
@@ -369,7 +377,7 @@ export const createOrderController = async (req: Request, res: Response): Promis
                     eligibleProductIds = nonGiftItems.filter(i => allowedIds.includes(i.product_id)).map(i => i.product_id);
                     eligibleTotal = nonGiftItems
                         .filter(i => allowedIds.includes(i.product_id))
-                        .reduce((sum, i) => sum + (i.price * i.quantity), 0);
+                        .reduce((sum, i) => sum + priceAfterMembership(i.price * i.quantity), 0);
                 } else if (voucher.apply_scope === 'category') {
                     const allowedCatIds = voucher.voucher_categories.map(vc => vc.category_id);
                     const products = await tx.product.findMany({
@@ -381,7 +389,7 @@ export const createOrderController = async (req: Request, res: Response): Promis
                         .map(p => p.id);
                     eligibleTotal = nonGiftItems
                         .filter(i => eligibleProductIds.includes(i.product_id))
-                        .reduce((sum, i) => sum + (i.price * i.quantity), 0);
+                        .reduce((sum, i) => sum + priceAfterMembership(i.price * i.quantity), 0);
                 }
 
                 if (eligibleTotal === 0) {
@@ -1227,7 +1235,10 @@ export const cancelReturnRequest = async (req: Request, res: Response): Promise<
             }
 
             const isReturnRequested = ['Return_Requested', 'Return Requested'].includes(order.status as string);
-            if (!isReturnRequested) {
+            // Sau khi admin hoàn tác quyết định nhầm (approve/reject), đơn về Delivered nhưng
+            // return_request còn Pending (chờ duyệt lại) — khách vẫn được rút yêu cầu của mình.
+            const isPendingRedo = order.status === 'Delivered' && order.return_request?.status === 'Pending';
+            if (!isReturnRequested && !isPendingRedo) {
                 throw new Error(`Order #${orderId} is not in Return Requested status (current status: '${order.status}').`);
             }
 

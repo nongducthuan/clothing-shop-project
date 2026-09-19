@@ -19,7 +19,7 @@ const TIER_CONFIG = {
 };
 
 const INITIAL_RETURN_DATA = {
-  reason: "Change mind",
+  reason: "",
   note: "",
   bankName: "",
   bankNumber: "",
@@ -190,6 +190,16 @@ export function useProfilePage() {
 
     if (!bankName || !bankNumber || !accountHolder) {
       showToast(t("profile.fill_bank"), "warning");
+      return;
+    }
+
+    if (!reason) {
+      showToast(t("lookup.no_reason_selected_err", "Vui lòng chọn lý do đổi trả."), "warning");
+      return;
+    }
+
+    if (!note || !String(note).trim()) {
+      showToast(t("lookup.desc_required_err", "Vui lòng mô tả chi tiết vấn đề."), "warning");
       return;
     }
 

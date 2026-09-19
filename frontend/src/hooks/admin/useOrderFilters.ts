@@ -17,8 +17,13 @@ export default function useOrderFilters(orders) {
         if (RETURN_STATUSES.includes(normStatus)) return false;
         return filterStandard === "All" || normStatus === filterStandard || order.status === filterStandard;
       } else {
-        if (!RETURN_STATUSES.includes(normStatus)) return false;
-        return filterReturn === "All" || normStatus === filterReturn || order.status === filterReturn;
+        // Đơn đã hoàn tác duyệt nhầm: status = Delivered nhưng return_request còn Pending
+        // (chờ admin quyết định lại) → hiển thị ở tab Returns như "Return Requested".
+        const tabStatus = normStatus === "Delivered" && order.return_status === "Pending"
+          ? "Return Requested"
+          : normStatus;
+        if (!RETURN_STATUSES.includes(tabStatus)) return false;
+        return filterReturn === "All" || tabStatus === filterReturn || order.status === filterReturn;
       }
     });
   }, [orders, activeTab, filterStandard, filterReturn]);

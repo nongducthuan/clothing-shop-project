@@ -264,20 +264,23 @@ export default function ReturnRequestModal({ state, actions }: { state: any; act
           <div>
             <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-2 ml-1">{t("lookup.reason_label", "Lý do đổi trả")}</label>
             <select
+              required
               className="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-900 dark:text-slate-100 rounded-2xl p-4 text-sm outline-none focus:border-slate-900 dark:focus:border-slate-400 transition-colors"
               value={returnData.reason}
               onChange={(e) => handleReturnDataChange("reason", e.target.value)}
             >
-              <option value="Change mind">{getReturnReasonLabel("Change mind")}</option>
+              <option value="">{t("lookup.reason_placeholder", "Chọn lý do")}</option>
               <option value="Damaged">{getReturnReasonLabel("Damaged")}</option>
               <option value="Wrong item">{getReturnReasonLabel("Wrong item")}</option>
               <option value="Not as described">{getReturnReasonLabel("Not as described")}</option>
+              <option value="Change mind">{getReturnReasonLabel("Change mind")}</option>
             </select>
           </div>
 
           <div>
             <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-2 ml-1">{t("lookup.desc_label", "Ghi chú thêm")}</label>
             <textarea
+              required
               rows={3}
               className="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 rounded-2xl p-4 text-sm outline-none focus:border-slate-900 dark:focus:border-slate-400 transition-colors resize-none"
               placeholder={t("lookup.desc_placeholder", "Mô tả vấn đề...")}

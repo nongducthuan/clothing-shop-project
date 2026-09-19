@@ -10,7 +10,9 @@ USE shopdb;
 --     khớp @map(...) trong prisma. Code app dùng tên Prisma có dấu gạch dưới
 --     (Return_Requested) — 2 dạng này là CÙNG MỘT giá trị, không phải lỗi lệch.
 --   - Luồng trạng thái & undo: Pending → Confirmed → Shipping → Delivered | Cancelled;
---     undo chỉ mở 3 cặp Delivered→Shipping, Cancelled→Pending, Return_Rejected→Delivered.
+--     undo chỉ mở 3 cặp Delivered→Shipping, Cancelled→Pending, Return_Rejected→Return_Requested.
+--     Dữ liệu CŨ do bản trước ghi (orders.status='Delivered' + return_requests.status='Pending')
+--     vẫn được xử lý như nhánh legacy khi admin hoàn tác từ chối nhầm.
 -- ==============================================================================
 
 -- ==============================================================================
@@ -282,11 +284,26 @@ CREATE TABLE return_requests (
     refund_bank_info JSON,
     admin_response TEXT,
     refund_amount DECIMAL(10, 2) DEFAULT 0,
+    shipping_refund DECIMAL(10, 2) DEFAULT 0,
     status ENUM('Pending', 'Approved', 'Rejected') DEFAULT 'Pending',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
     UNIQUE (order_id)
+);
+
+-- Audit log cho mọi lần đổi payment_status (admin tay / hệ thống tự động).
+CREATE TABLE payment_status_logs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    order_id INT NOT NULL,
+    from_status ENUM('Unpaid', 'Paid', 'Refunded') NOT NULL,
+    to_status ENUM('Unpaid', 'Paid', 'Refunded') NOT NULL,
+    changed_by INT NULL,
+    note VARCHAR(255) NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
+    FOREIGN KEY (changed_by) REFERENCES users(id) ON DELETE SET NULL,
+    INDEX payment_status_logs_order_id_fkey (order_id)
 );
 
 -- Items của yêu cầu đổi trả một phần (partial return) — khớp model ReturnRequestItem.

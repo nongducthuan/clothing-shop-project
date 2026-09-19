@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import rateLimit from 'express-rate-limit';
 import { authenticateToken, requireAdmin } from '../../middleware/authMiddleware';
 
 // Import Admin Controllers
@@ -59,6 +60,17 @@ router.put('/orders/:id/status', orderController.updateOrderStatus);
 router.put('/orders/:id/payment', orderController.confirmPayment);
 router.post('/orders/:id/return/approve', orderController.approveReturn);
 router.post('/orders/:id/return/reject', orderController.rejectReturn);
+
+// Hoàn tác duyệt nhầm Return Approved — hành động nguy hiểm (đụng kho/tiền/sổ),
+// chống double-click / retry làm trừ kho 2 lần.
+const undoApproveLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    max: 5,
+    standardHeaders: 'draft-8',
+    legacyHeaders: false,
+    message: { message: 'Too many undo attempts. Please wait a minute and try again.' },
+});
+router.post('/orders/:id/return/undo-approve', undoApproveLimiter, orderController.undoApproveReturn);
 
 // --- Promotions (Buy X Get Y) ---
 router.get('/promotions', promotionController.getAdminPromotions);

@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import rateLimit from 'express-rate-limit';
 import { authenticateToken, optionalAuthenticateToken } from '../../middleware/authMiddleware';
 import { upload } from '../../middleware/uploadMiddleware';
 
@@ -42,8 +43,25 @@ router.delete('/chat/history', chatController.clearChatHistory);
 router.get('/memberships', membershipController.getMemberships);
 
 // --- Orders ---
-router.post('/orders/otp/send', orderController.sendOtpController);
-router.post('/orders/otp/verify', orderController.verifyOtpAndGetOrders);
+// OTP tra cứu đơn: Brevo chỉ gửi mail, KHÔNG giới hạn ai gọi API.
+// Không có 2 limiter này, 1 IP có thể spam 1000 email khác nhau/phút
+// (đốt tiền Brevo + liệt mail server) hoặc brute-force mã OTP.
+const otpSendLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 5, // 5 lượt gửi / IP / 15 phút
+    standardHeaders: 'draft-8',
+    legacyHeaders: false,
+    message: { message: 'Too many OTP requests. Please try again in 15 minutes.' },
+});
+const otpVerifyLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 10, // 10 lượt verify / IP / 15 phút
+    standardHeaders: 'draft-8',
+    legacyHeaders: false,
+    message: { message: 'Too many OTP attempts. Please try again in 15 minutes.' },
+});
+router.post('/orders/otp/send', otpSendLimiter, orderController.sendOtpController);
+router.post('/orders/otp/verify', otpVerifyLimiter, orderController.verifyOtpAndGetOrders);
 router.post('/orders', optionalAuthenticateToken, orderController.createOrderController); // Note: might use req.user if auth token present
 router.get('/orders', authenticateToken, orderController.getOrders);
 router.put('/orders/status', optionalAuthenticateToken, orderController.changeOrderStatus);

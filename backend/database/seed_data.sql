@@ -304,26 +304,32 @@ INSERT INTO buy_x_get_y_promotions (id, name, name_vi, name_en, description_vi, 
 -- ============================================================
 -- 11. SEED ORDERS & ORDER ITEMS
 -- ============================================================
-INSERT INTO orders (id, name, email, phone, address, total_price, status, created_at) VALUES
-(200, 'Nguyễn Văn A', 'a@test.com', '0901', 'Hà Nội', 0, 'Delivered', DATE_SUB(CURDATE(), INTERVAL 6 DAY)),
-(201, 'Trần Thị B', 'b@test.com', '0902', 'TP HCM', 0, 'Delivered', DATE_SUB(CURDATE(), INTERVAL 5 DAY)),
-(202, 'Lê Văn C', 'c@test.com', '0903', 'Đà Nẵng', 0, 'Delivered', DATE_SUB(CURDATE(), INTERVAL 4 DAY)),
-(203, 'Phạm Thị D', 'd@test.com', '0904', 'Cần Thơ', 0, 'Delivered', DATE_SUB(CURDATE(), INTERVAL 3 DAY)),
-(204, 'Hoàng Văn E', 'e@test.com', '0905', 'Hải Phòng', 0, 'Delivered', DATE_SUB(CURDATE(), INTERVAL 2 DAY)),
-(205, 'Vũ Thị F', 'f@test.com', '0906', 'Nha Trang', 0, 'Delivered', DATE_SUB(CURDATE(), INTERVAL 1 DAY)),
-(206, 'Đặng Văn G', 'g@test.com', '0907', 'Huế', 0, 'Delivered', CURDATE()),
-(301, 'Tháng 1', 't1@t.com', '090', 'A', 0, 'Delivered', DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 11 MONTH), '%Y-%m-15')),
-(302, 'Tháng 2', 't2@t.com', '090', 'B', 0, 'Delivered', DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 10 MONTH), '%Y-%m-15')),
-(303, 'Tháng 3', 't3@t.com', '090', 'C', 0, 'Delivered', DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 9 MONTH), '%Y-%m-15')),
-(304, 'Tháng 4', 't4@t.com', '090', 'D', 0, 'Delivered', DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 8 MONTH), '%Y-%m-15')),
-(305, 'Tháng 5', 't5@t.com', '090', 'E', 0, 'Delivered', DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 7 MONTH), '%Y-%m-15')),
-(306, 'Tháng 6', 't6@t.com', '090', 'F', 0, 'Delivered', DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 6 MONTH), '%Y-%m-15')),
-(307, 'Tháng 7', 't7@t.com', '090', 'G', 0, 'Delivered', DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 5 MONTH), '%Y-%m-15')),
-(308, 'Tháng 8', 't8@t.com', '090', 'H', 0, 'Delivered', DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 4 MONTH), '%Y-%m-15')),
-(309, 'Tháng 9', 't9@t.com', '090', 'I', 0, 'Delivered', DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 3 MONTH), '%Y-%m-15')),
-(310, 'Tháng 10', 't10@t.com', '090', 'J', 0, 'Delivered', DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 2 MONTH), '%Y-%m-15')),
-(311, 'Tháng 11', 't11@t.com', '090', 'K', 0, 'Delivered', DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 1 MONTH), '%Y-%m-15')),
-(312, 'Tháng 12', 't12@t.com', '090', 'L', 0, 'Delivered', DATE_FORMAT(CURDATE(), '%Y-%m-15'));
+-- Quy ước seed: đơn Delivered = đã giao + ĐÃ THU TIỀN (Paid, đồng bộ delivered_at)
+-- để dashboard/revenue/badge hiển thị đẹp như đơn thật.
+-- Đơn dính đổi trả (301-312) giữ đúng luồng nghiệp vụ:
+--   Pending (301-304)                = Return Requested + Unpaid (chưa thu, đang chờ duyệt)
+--   Approved (305-308)               = Return Approved + Refunded (đã hoàn tiền cho khách)
+--   Rejected (309-312)               = Return Rejected + Paid (từ chối trả, tiền giữ nguyên)
+INSERT INTO orders (id, name, email, phone, address, total_price, status, payment_status, delivered_at, created_at) VALUES
+(200, 'Nguyễn Văn A', 'a@test.com', '0901', 'Hà Nội', 0, 'Delivered', 'Paid', DATE_SUB(CURDATE(), INTERVAL 6 DAY), DATE_SUB(CURDATE(), INTERVAL 6 DAY)),
+(201, 'Trần Thị B', 'b@test.com', '0902', 'TP HCM', 0, 'Delivered', 'Paid', DATE_SUB(CURDATE(), INTERVAL 5 DAY), DATE_SUB(CURDATE(), INTERVAL 5 DAY)),
+(202, 'Lê Văn C', 'c@test.com', '0903', 'Đà Nẵng', 0, 'Delivered', 'Paid', DATE_SUB(CURDATE(), INTERVAL 4 DAY), DATE_SUB(CURDATE(), INTERVAL 4 DAY)),
+(203, 'Phạm Thị D', 'd@test.com', '0904', 'Cần Thơ', 0, 'Delivered', 'Paid', DATE_SUB(CURDATE(), INTERVAL 3 DAY), DATE_SUB(CURDATE(), INTERVAL 3 DAY)),
+(204, 'Hoàng Văn E', 'e@test.com', '0905', 'Hải Phòng', 0, 'Delivered', 'Paid', DATE_SUB(CURDATE(), INTERVAL 2 DAY), DATE_SUB(CURDATE(), INTERVAL 2 DAY)),
+(205, 'Vũ Thị F', 'f@test.com', '0906', 'Nha Trang', 0, 'Delivered', 'Paid', DATE_SUB(CURDATE(), INTERVAL 1 DAY), DATE_SUB(CURDATE(), INTERVAL 1 DAY)),
+(206, 'Đặng Văn G', 'g@test.com', '0907', 'Huế', 0, 'Delivered', 'Paid', CURDATE(), CURDATE()),
+(301, 'Tháng 1', 't1@t.com', '090', 'A', 0, 'Return Requested', 'Unpaid', NULL, DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 11 MONTH), '%Y-%m-15')),
+(302, 'Tháng 2', 't2@t.com', '090', 'B', 0, 'Return Requested', 'Unpaid', NULL, DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 10 MONTH), '%Y-%m-15')),
+(303, 'Tháng 3', 't3@t.com', '090', 'C', 0, 'Return Requested', 'Unpaid', NULL, DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 9 MONTH), '%Y-%m-15')),
+(304, 'Tháng 4', 't4@t.com', '090', 'D', 0, 'Return Requested', 'Unpaid', NULL, DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 8 MONTH), '%Y-%m-15')),
+(305, 'Tháng 5', 't5@t.com', '090', 'E', 0, 'Return Approved', 'Refunded', DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 7 MONTH), '%Y-%m-15'), DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 7 MONTH), '%Y-%m-15')),
+(306, 'Tháng 6', 't6@t.com', '090', 'F', 0, 'Return Approved', 'Refunded', DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 6 MONTH), '%Y-%m-15'), DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 6 MONTH), '%Y-%m-15')),
+(307, 'Tháng 7', 't7@t.com', '090', 'G', 0, 'Return Approved', 'Refunded', DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 5 MONTH), '%Y-%m-15'), DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 5 MONTH), '%Y-%m-15')),
+(308, 'Tháng 8', 't8@t.com', '090', 'H', 0, 'Return Approved', 'Refunded', DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 4 MONTH), '%Y-%m-15'), DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 4 MONTH), '%Y-%m-15')),
+(309, 'Tháng 9', 't9@t.com', '090', 'I', 0, 'Return Rejected', 'Paid', DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 3 MONTH), '%Y-%m-15'), DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 3 MONTH), '%Y-%m-15')),
+(310, 'Tháng 10', 't10@t.com', '090', 'J', 0, 'Return Rejected', 'Paid', DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 2 MONTH), '%Y-%m-15'), DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 2 MONTH), '%Y-%m-15')),
+(311, 'Tháng 11', 't11@t.com', '090', 'K', 0, 'Return Rejected', 'Paid', DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 1 MONTH), '%Y-%m-15'), DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 1 MONTH), '%Y-%m-15')),
+(312, 'Tháng 12', 't12@t.com', '090', 'L', 0, 'Return Rejected', 'Paid', DATE_FORMAT(CURDATE(), '%Y-%m-15'), DATE_FORMAT(CURDATE(), '%Y-%m-15'));
 
 INSERT INTO order_items (order_id, product_id, quantity, price) VALUES
 (200, 1, 2, 150000),
@@ -348,26 +354,46 @@ INSERT INTO order_items (order_id, product_id, quantity, price) VALUES
 
 UPDATE orders o SET total_price = (SELECT SUM(quantity * price) FROM order_items WHERE order_id = o.id);
 
--- Đồng bộ delivered_at cho đơn Delivered: khớp changeOrderStatusLogic —
--- doanh thu được neo theo NGÀY GIAO (delivered_at), không phải ngày tạo đơn.
+-- delivered_at đã set trực tiếp lúc INSERT (Delivered/Approved/Rejected = ngày giao,
+-- Return Requested = NULL vì chưa giao xong đã bị yêu cầu trả).
+-- Dòng này chỉ là lưới an toàn cho đơn Delivered nào còn sót NULL.
 UPDATE orders SET delivered_at = created_at WHERE status = 'Delivered' AND delivered_at IS NULL;
 
 -- ============================================================
 -- 12. SEED RETURN REQUESTS
 -- ============================================================
-INSERT INTO return_requests (order_id, reason_code, status) VALUES
-(301, 'Damaged', 'Pending'),
-(302, 'Wrong item', 'Pending'),
-(303, 'Change mind', 'Pending'),
-(304, 'Not as described', 'Pending'),
-(305, 'Damaged', 'Approved'),
-(306, 'Wrong item', 'Approved'),
-(307, 'Change mind', 'Approved'),
-(308, 'Not as described', 'Approved'),
-(309, 'Damaged', 'Rejected'),
-(310, 'Wrong item', 'Rejected'),
-(311, 'Change mind', 'Rejected'),
-(312, 'Not as described', 'Rejected');
+-- refund_amount = đúng tiền hàng của đơn (đơn seed 1 item, không voucher/membership
+-- nên refund = total_price) để badge "Số tiền hoàn" và doanh thu trừ đúng.
+-- Approved: refund_amount > 0 (đã hoàn) | Pending/Rejected: tiền giữ nguyên.
+INSERT INTO return_requests (order_id, reason_code, status, refund_amount) VALUES
+(301, 'Damaged', 'Pending', 750000),
+(302, 'Wrong item', 'Pending', 1280000),
+(303, 'Change mind', 'Pending', 1200000),
+(304, 'Not as described', 'Pending', 2000000),
+(305, 'Damaged', 'Approved', 3000000),
+(306, 'Wrong item', 'Approved', 6250000),
+(307, 'Change mind', 'Approved', 4000000),
+(308, 'Not as described', 'Approved', 4800000),
+(309, 'Damaged', 'Rejected', 1800000),
+(310, 'Wrong item', 'Rejected', 1200000),
+(311, 'Change mind', 'Rejected', 4500000),
+(312, 'Not as described', 'Rejected', 3200000);
+
+-- Seed doanh thu + chi tiêu mẫu khớp đơn Delivered/Approved/Rejected đã Paid:
+-- revenues neo theo delivered_at (ngày giao), users.total_spent cộng dồn.
+-- Return Requested (301-304) chưa giao xong nên KHÔNG tính doanh thu.
+INSERT INTO revenues (report_date, total_sales, total_orders) VALUES
+(DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 7 MONTH), '%Y-%m-15'), 3000000, 1),
+(DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 6 MONTH), '%Y-%m-15'), 6250000, 1),
+(DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 5 MONTH), '%Y-%m-15'), 4000000, 1),
+(DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 4 MONTH), '%Y-%m-15'), 4800000, 1),
+(DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 3 MONTH), '%Y-%m-15'), 1800000, 1),
+(DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 2 MONTH), '%Y-%m-15'), 1200000, 1),
+(DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 1 MONTH), '%Y-%m-15'), 4500000, 1),
+(DATE_FORMAT(CURDATE(), '%Y-%m-15'), 3200000, 1)
+ON DUPLICATE KEY UPDATE
+  total_sales = total_sales + VALUES(total_sales),
+  total_orders = total_orders + VALUES(total_orders);
 
 -- ============================================================
 -- 13. SEED USER PRODUCT INTERACTIONS

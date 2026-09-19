@@ -306,16 +306,25 @@ export default function OrderDetailModal({ order, onClose, onOpenPaymentModal, a
                 </span>
               </div>
 
-              {order.return_request.admin_response && (
+              {order.return_request.admin_response ? (
                 <div className="mt-2 bg-white/60 dark:bg-slate-800/60 p-2.5 rounded-lg border border-amber-100 dark:border-amber-900/30">
                   <span className="text-[11px] font-semibold text-amber-800 dark:text-amber-300 block mb-0.5">
                     {t('order_details.admin_response', 'Phản hồi từ Admin:')}
                   </span>
                   <p className="text-xs text-slate-700 dark:text-slate-300">
-                    {order.return_request.admin_response}
+                    {["Approved", "Rejected", "Rejected by admin", "Manually approved by admin", "Manually rejected by admin"].includes(order.return_request.admin_response)
+                      ? t(`api_msg.${order.return_request.admin_response}`, order.return_request.admin_response)
+                      : order.return_request.admin_response}
                   </p>
                 </div>
-              )}
+              ) : order.return_request.status === "Approved" ? (
+                <div className="mt-2 bg-emerald-50 dark:bg-emerald-900/30 p-2.5 rounded-lg border border-emerald-100 dark:border-emerald-800/50">
+                  <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-300 flex items-center gap-1.5">
+                    <i className="fa-solid fa-circle-check"></i>
+                    {t('order_details.return_approved_note', 'Yêu cầu đổi trả đã được chấp nhận. Shop sẽ liên hệ để hoàn tiền.')}
+                  </p>
+                </div>
+              ) : null}
             </div>
           )}
 

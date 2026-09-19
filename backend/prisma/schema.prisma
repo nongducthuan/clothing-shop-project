@@ -282,6 +282,7 @@ model Order {
   voucher                 Voucher?                @relation(fields: [voucher_id], references: [id])
   promotion_usage_history PromotionUsageHistory[]
   return_request          ReturnRequest?
+  payment_logs            PaymentStatusLog[]
 
   @@index([user_id], map: "orders_user_id_fkey")
   @@index([voucher_id], map: "orders_voucher_id_fkey")
@@ -342,6 +343,7 @@ model ReturnRequest {
   refund_bank_info Json?
   admin_response   String?              @db.Text
   refund_amount    Decimal              @default(0.00) @db.Decimal(10, 2)
+  shipping_refund  Decimal              @default(0.00) @db.Decimal(10, 2)
   status           ReturnStatus         @default(Pending)
   created_at       DateTime             @default(now())
   updated_at       DateTime             @updatedAt
@@ -372,6 +374,22 @@ model Revenue {
   total_orders Int      @default(0)
 
   @@map("revenues")
+}
+
+// Audit log cho mọi lần đổi payment_status (admin tay / hệ thống tự động).
+// Tiền cãi nhau là cần bằng chứng: ai đổi, từ gì sang gì, lúc nào.
+model PaymentStatusLog {
+  id          Int           @id @default(autoincrement())
+  order_id    Int
+  from_status PaymentStatus
+  to_status   PaymentStatus
+  changed_by  Int? // user_id admin thao tác; null = hệ thống (IPN/cancel/approve)
+  note        String?       @db.VarChar(255)
+  created_at  DateTime      @default(now())
+  order       Order         @relation(fields: [order_id], references: [id], onDelete: Cascade)
+
+  @@index([order_id], map: "payment_status_logs_order_id_fkey")
+  @@map("payment_status_logs")
 }
 
 model UserProductInteraction {

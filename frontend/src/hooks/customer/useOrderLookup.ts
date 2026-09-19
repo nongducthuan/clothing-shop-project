@@ -214,13 +214,50 @@ export function useOrderLookup() {
       await API.post(`/orders/${selectedOrder.id}/return`, formData);
 
       // 6. Update UI (Hide the Return button)
+      // Build optimistic return_request đầy đủ (giống profile sau fetchOrders)
+      // để box "Thông tin yêu cầu đổi trả" hiện ngay, không phải chờ verify OTP lại.
+      const optimisticItems: any[] = [];
+      let optimisticRefund = 0;
+      const orderItems = selectedOrder?.items || [];
+      returnItems.forEach((ri: { order_item_id: number; return_quantity: number }) => {
+        const orderItem = orderItems.find((i: any) => i.id === Number(ri.order_item_id));
+        if (!orderItem || orderItem.is_gift) return;
+        const qty = Number(orderItem.quantity) || 1;
+        const unitPayable = orderItem.payable_amount !== null && orderItem.payable_amount !== undefined && orderItem.payable_amount !== ''
+          ? (Number(orderItem.payable_amount) || 0) / qty
+          : (Number(orderItem.price) || 0);
+        const itemRefund = Math.round(unitPayable * Number(ri.return_quantity) * 100) / 100;
+        optimisticRefund += itemRefund;
+        optimisticRefund = Math.round(optimisticRefund * 100) / 100;
+        optimisticItems.push({
+          order_item_id: orderItem.id,
+          return_quantity: ri.return_quantity,
+          refund_amount: itemRefund,
+          product_name: orderItem.product_name ?? null,
+          product_name_vi: orderItem.product_name_vi ?? null,
+          product_name_en: orderItem.product_name_en ?? null,
+          color_name: orderItem.color_name ?? orderItem.color ?? null,
+          color_name_vi: orderItem.color_name_vi ?? null,
+          color_name_en: orderItem.color_name_en ?? null,
+          size: orderItem.size ?? null,
+          is_gift: false,
+        });
+      });
       setOrders(prevOrders =>
         prevOrders.map(order => {
           if (order.id === selectedOrder.id) {
             return {
               ...order,
               status: 'Return Requested',
-              return_request: { id: 'pending' } // optimistic: show "processing" message
+              return_request: {
+                id: 'pending',
+                status: 'Pending',
+                reason_code: returnForm.reason_code,
+                description: returnForm.description,
+                admin_response: null,
+                refund_amount: optimisticRefund,
+                items: optimisticItems,
+              }
             };
           }
           return order;

@@ -127,7 +127,15 @@ function OrderRow({
               <img src={getImageUrl(item.image_url)} alt={getLocalizedText(item, "product_name") || item.product_name} className="w-12 h-12 sm:w-14 sm:h-14 object-cover rounded-md border dark:border-slate-600 flex-shrink-0" onError={(e) => { (e.target as HTMLImageElement).src = getImageUrl(null) }} />
               <div className="flex-1 min-w-0">
                 <h4 className="text-xs sm:text-sm font-medium text-gray-800 dark:text-slate-200 leading-tight">{getLocalizedText(item, "product_name") || item.product_name}</h4>
-                <p className="text-[11px] text-gray-500 dark:text-slate-400 mt-0.5">{t("lookup.variant").replace("{variant}", `${getLocalizedText(item, "color_name") || item.color}, ${item.size}`).replace("{qty}", item.quantity)}</p>
+                <div className="flex flex-wrap items-center gap-1.5 mt-1 text-[11px] font-medium text-gray-500 dark:text-slate-400">
+                  <span className="bg-white dark:bg-slate-700 border border-gray-200/80 dark:border-slate-600 px-1.5 py-0.5 rounded text-gray-600 dark:text-slate-300">
+                    {t("lookup.color_label", "Màu")}: {getLocalizedText(item, "color_name") || item.color_name || item.color || "N/A"}
+                  </span>
+                  <span className="bg-white dark:bg-slate-700 border border-gray-200/80 dark:border-slate-600 px-1.5 py-0.5 rounded text-gray-600 dark:text-slate-300">
+                    {t("lookup.size_label", "Size")}: {item.size || "N/A"}
+                  </span>
+                  <span className="text-gray-500 dark:text-slate-400">x{item.quantity}</span>
+                </div>
               </div>
               <p className="text-xs sm:text-sm font-semibold text-gray-700 dark:text-slate-300 flex-shrink-0">{formatCurrency(item.price)}</p>
             </div>
@@ -315,16 +323,25 @@ function OrderRow({
                               })}
                             </div>
                           )}
-                          {order.return_request.admin_response && (
+                          {order.return_request.admin_response ? (
                             <div className="mt-2 bg-white/60 dark:bg-slate-800/60 p-2.5 rounded-lg border border-amber-100 dark:border-amber-900/30">
                               <span className="text-[11px] font-semibold text-amber-800 dark:text-amber-300 block mb-0.5">
                                 {t('order_details.admin_response', 'Phản hồi từ Admin:')}
                               </span>
                               <p className="text-xs text-slate-700 dark:text-slate-300">
-                                {order.return_request.admin_response}
+                                {["Approved", "Rejected", "Rejected by admin", "Manually approved by admin", "Manually rejected by admin"].includes(order.return_request.admin_response)
+                                  ? t(`api_msg.${order.return_request.admin_response}`, order.return_request.admin_response)
+                                  : order.return_request.admin_response}
                               </p>
                             </div>
-                          )}
+                          ) : order.return_request.status === "Approved" ? (
+                            <div className="mt-2 bg-emerald-50 dark:bg-emerald-900/30 p-2.5 rounded-lg border border-emerald-100 dark:border-emerald-800/50">
+                              <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-300 flex items-center gap-1.5">
+                                <i className="fa-solid fa-circle-check"></i>
+                                {t('order_details.return_approved_note', 'Yêu cầu đổi trả đã được chấp nhận. Shop sẽ liên hệ để hoàn tiền.')}
+                              </p>
+                            </div>
+                          ) : null}
                         </div>
                       ) : (
                         <div className="p-2.5 bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 text-center rounded-lg text-xs font-bold border border-orange-100 dark:border-orange-700 flex items-center justify-center gap-2">

@@ -261,72 +261,58 @@ Sau khi chạy lệnh `npm run seed`, hệ thống tự động khởi tạo tà
 
 ---
 
-## Runbook vận hành — Duyệt nhầm "Return Approved"
+## Xử lý duyệt nhầm đổi trả (Undo)
 
-> **Đây là trạng thái duy nhất không có nút Undo — do thiết kế, không phải thiếu sót.**
-> Hệ thống không biết tiền đã hoàn ra ngoài thật chưa, nên chỉ sau khi con người xác nhận
-> (gọi điện cho khách) mới đủ thông tin để sửa. Các cặp Undo có kiểm soát khác xem tại
+> **Duyệt nhầm không cần sửa tay bằng SQL** — UI đã có sẵn nút hoàn tác cho cả 2 chiều.
+> Yêu cầu đổi trả của khách luôn được GIỮ NGUYÊN: khách không bao giờ phải gửi lại yêu cầu lần 2.
+> Cả 2 chiều hoàn tác đều đưa đơn về **`Return Requested`** (yêu cầu vẫn đang mở) — KHÔNG phải
+> `Delivered`, xem mục *Sau khi hoàn tác* bên dưới.
+
+### Nhầm "Chấp nhận" (đáng lẽ từ chối)
+
+1. **Gọi điện xác nhận với khách trước** — hệ thống không biết ngoài đời thực: hàng đã về kho
+   chưa, tiền đã hoàn ra ngoài chưa. Đây là lý do trạng thái này không có nút undo 1-click.
+2. Trên đơn `Return Approved`, bấm **"Hoàn tác duyệt nhầm"** → modal bắt chốt 2 dữ kiện:
+
+| Câu hỏi | Trả lời "Chưa" → hệ thống tự làm |
+|---|---|
+| Hàng đã gửi trả về kho chưa? | Trừ lại tồn kho đã cộng nhầm (chặn nếu kho không đủ) |
+| Tiền đã hoàn cho khách chưa? | Đảo `Refunded → Paid`; nếu đã hoàn, giữ `Refunded` (tự xử lý tiền ngoài hệ thống) |
+
+3. Toàn bộ đảo chiều (kho + doanh thu đúng ngày giao gốc + `total_spent`/hạng membership +
+   payment + status) chạy trong **1 transaction duy nhất** — `undoApproveReturn`
+   (`backend/src/controllers/admin/orderController.ts`), endpoint có rate-limit 5 lượt/phút (chống double-click trừ kho 2 lần).
+
+### Nhầm "Từ chối" (đáng lẽ chấp nhận)
+
+- Dropdown **trạng thái** của đơn: `Return Rejected` → `Return Requested` — cặp undo an toàn,
+  **không đụng kho/tiền** (reject chưa hề hoàn tiền).
+- Hệ thống đồng thời trả yêu cầu đổi trả về **Pending** (hiển thị "Chờ duyệt đổi trả"; lý do từ chối bị xóa vì quyết định
+  đã rút lại) — đối xứng với undo-approve, chạy trong cùng 1 transaction
+  (`updateOrderStatus` trong `backend/src/controllers/admin/orderController.ts`).
+
+### Sau khi hoàn tác — quyết định lại
+
+Đơn về `Return Requested` với yêu cầu đổi trả ở trạng thái **Pending** (hiển thị "Chờ duyệt đổi trả"): yêu cầu xuất hiện lại ở tab
+**Đổi trả** (nút lọc "Yêu cầu đổi trả") và nút **Chấp nhận / Từ chối** hiện lại ngay trên đơn →
+admin bấm lại đúng ý. Trong lúc chờ, khách vẫn có thể tự hủy yêu cầu từ trang của họ.
+
+> Các cặp Undo có kiểm soát khác (`Delivered → Shipping`, `Cancelled → Pending`) xem tại
 > `frontend/src/utils/orderUtils.ts` (`UNDO_TRANSITIONS`) và
 > `backend/src/controllers/admin/orderController.ts` (`isUndoTransition`).
 
-### Bước 1 — Liên hệ khách trước, chốt 2 dữ kiện
+---
 
-| Câu hỏi cho khách | Trả lời "Chưa" | Trả lời "Rồi" |
+## Hoàn tác nhầm trạng thái thanh toán
+
+Dropdown **Payment** cho phép quay lui đúng 2 cặp "lỡ bấm nhầm" (mọi lần đổi đều ghi audit log
+`payment_status_logs`):
+
+| Từ | Được phép | Dùng khi |
 |---|---|---|
-| Hàng đã gửi trả về kho chưa? | Phải **trừ lại kho** (Bước 3 + 4c) | Giữ nguyên kho |
-| Tiền đã hoàn ra ngoài thật chưa? | Payment `Refunded` → `Paid` (Bước 2) | Giữ nguyên `Refunded` |
+| `Refunded` | → `Paid` | Bấm hoàn nhầm mà tiền **chưa** chuyển ra ngoài thật |
+| `Paid` | → `Unpaid` — hiển thị "Chưa thanh toán" trên đơn còn mở (4 trạng thái giao hàng), "Chưa thu tiền" trên đơn đã đóng (hủy/đổi trả) | Bấm Paid nhầm mà tiền **chưa** thu được từ khách (điển hình COD) |
 
-### Bước 2 — Đồng bộ thanh toán (trong UI)
-
-Dropdown **Payment** của đơn: `Refunded` → `Paid` nếu chưa hoàn tiền thật; giữ `Refunded` nếu đã hoàn.
-
-### Bước 3 — Đồng bộ kho (trong UI, nếu hàng chưa về)
-
-**Quản lý sản phẩm** → trừ lại stock của size tương ứng (số lượng đã bị cộng nhầm lúc Approve).
-
-### Bước 4 — Đồng bộ doanh thu + trạng thái (SQL — phần duy nhất không có UI)
-
-Dành cho trường hợp **partial return** (yêu cầu đổi trả có danh sách items — trường hợp chính). Đổi `@order_id` rồi dán cả khối:
-
-```sql
-SET @order_id = 123;  -- ← đổi thành ID đơn cần khắc phục
-
--- 4a. Cộng lại doanh thu đúng ngày giao gốc (số đã bị trừ lúc Approve)
-UPDATE revenues r
-JOIN orders o           ON DATE(o.delivered_at) = r.report_date AND o.id = @order_id
-JOIN return_requests rr ON rr.order_id = o.id
-SET r.total_sales = r.total_sales + rr.refund_amount;
-
--- 4b. Cộng lại total_spent của khách (hạng membership tự cập nhật theo)
-UPDATE users u
-JOIN orders o           ON o.user_id = u.id AND o.id = @order_id
-JOIN return_requests rr ON rr.order_id = o.id
-SET u.total_spent = u.total_spent + rr.refund_amount;
-
--- 4c. Trừ lại kho phần hàng đã cộng nhầm (bỏ qua nếu hàng đã về thật)
-UPDATE product_sizes ps
-JOIN order_items oi          ON oi.size_id = ps.id
-JOIN return_request_items ri ON ri.order_item_id = oi.id
-JOIN return_requests rr      ON rr.id = ri.return_request_id
-SET ps.stock = ps.stock - ri.return_quantity
-WHERE rr.order_id = @order_id;
-
--- 4d. Trả nhãn trạng thái về Delivered
-UPDATE orders SET status = 'Delivered' WHERE id = @order_id;
-```
-
-**Kiểm tra sau khi chạy:**
-
-```sql
-SELECT status, payment_status FROM orders WHERE id = @order_id;
--- Kỳ vọng: status = 'Delivered'; payment_status tuỳ Bước 2
-
-SELECT total_sales FROM revenues
-WHERE report_date = DATE((SELECT delivered_at FROM orders WHERE id = @order_id));
--- Kỳ vọng: total_sales tăng đúng bằng refund_amount của yêu cầu đổi trả
-```
-
-> **Known issue (backlog):** luồng full-return — Approve trên yêu cầu đổi trả **không có items** —
-> hiện chưa trừ doanh thu (chỉ hoàn kho), nên dashboard vẫn tính tiền cho hàng đã thu hồi.
-> Khi đó Bước 4a/4b **không cần chạy**. Muốn khắc phục triệt để: chỉnh `approveReturn` trong
-> `backend/src/controllers/admin/orderController.ts`.
+> ⚠️ Với MoMo/VNPay, `Paid` thường do webhook cổng thanh toán ghi — trước khi hoàn tác hãy
+> đối chiếu giao dịch trên cổng; nếu tiền đã về thật thì KHÔNG hoàn tác.
+> UI hiện confirm bắt buộc khi đổi `Paid → Unpaid`; `Refunded → Paid` chỉ cần chọn trong dropdown.

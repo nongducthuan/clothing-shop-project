@@ -46,7 +46,7 @@ export default function ReturnInfoSection({
         {getReturnBadge(order.status)}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch">
         {/* Lý do trả hàng */}
         <div className="bg-white dark:bg-slate-700 p-5 rounded-2xl shadow-sm flex flex-col justify-between space-y-4">
           <div>
@@ -62,25 +62,38 @@ export default function ReturnInfoSection({
             <span className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-400 mb-1">
               {t("admin.customer_note", "Ghi chú từ khách hàng")}
             </span>
-            <div className="bg-slate-50 dark:bg-slate-600 rounded-xl p-3.5 text-xs text-slate-600 dark:text-slate-200 italic leading-relaxed min-h-[50px] flex items-center">
-              "{order.description || t("admin.no_description", "Không có ghi chú")}"
+            <div className="bg-slate-50 dark:bg-slate-600 rounded-xl p-3.5 text-xs text-slate-600 dark:text-slate-200 leading-relaxed min-h-[50px] flex items-center">
+              {order.description || t("admin.no_description", "Không có ghi chú")}
             </div>
           </div>
-          
-          {order.admin_response && (
-            <div>
-              <span className="block text-[10px] font-extrabold uppercase tracking-wider text-amber-700 dark:text-amber-400 mb-1">
-                {t("admin.admin_response", "Phản hồi từ Admin")}
-              </span>
-              <div className="bg-amber-50 dark:bg-amber-900/30 rounded-xl p-3.5 text-xs text-amber-900 dark:text-amber-200 italic leading-relaxed min-h-[50px] flex items-center">
-                "{order.admin_response}"
+
+          {(() => {
+            const rawResponse = order.admin_response;
+            const legacyResponses = ["Approved", "Rejected", "Rejected by admin", "Manually approved by admin", "Manually rejected by admin"];
+            const displayResponse = rawResponse && legacyResponses.includes(rawResponse)
+              ? t(`api_msg.${rawResponse}`, rawResponse)
+              : rawResponse;
+            const isApproved = order.status === "Return Approved" || order.status === "Return_Approved";
+            if (!displayResponse && !isApproved) return null;
+            return (
+              <div>
+                <span className="block text-[10px] font-extrabold uppercase tracking-wider text-amber-700 dark:text-amber-400 mb-1">
+                  {t("admin.admin_response", "Phản hồi từ Admin")}
+                </span>
+                <div className={`rounded-xl p-3.5 text-xs leading-relaxed min-h-[50px] flex items-center gap-2 ${isApproved && !displayResponse
+                  ? "bg-emerald-50 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-200 border border-emerald-200/60 dark:border-emerald-800/50 font-semibold"
+                  : "bg-amber-50 dark:bg-amber-900/30 text-amber-900 dark:text-amber-200"
+                  }`}>
+                  {isApproved && !displayResponse && <i className="fa-solid fa-circle-check shrink-0"></i>}
+                  {displayResponse || t("order_details.return_approved_note", "Đã chấp nhận đổi trả — chờ hoàn tiền.")}
+                </div>
               </div>
-            </div>
-          )}
+            );
+          })()}
         </div>
 
         {/* Thẻ Ngân hàng ATM */}
-        <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 text-white p-4 rounded-2xl shadow-lg relative overflow-hidden flex flex-col gap-2">
+        <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 text-white p-4 rounded-2xl shadow-lg relative overflow-hidden flex flex-col gap-4">
           <div className="absolute -right-4 -bottom-4 text-white/5 text-8xl pointer-events-none">
             <i className="fa-solid fa-building-columns"></i>
           </div>
@@ -93,7 +106,7 @@ export default function ReturnInfoSection({
           </div>
 
           {bankInfo ? (
-            <div className="relative z-10 flex flex-col gap-3">
+            <div className="relative z-10 flex flex-col gap-4 flex-1 justify-center">
               <div>
                 <span className="block text-[9px] uppercase font-bold text-slate-500 tracking-widest mb-0.5">
                   {t("admin.bank_name_label", "Ngân hàng")}
@@ -125,7 +138,9 @@ export default function ReturnInfoSection({
               </div>
             </div>
           ) : (
-            <p className="text-xs italic text-slate-400 relative z-10">{t("admin.missing_bank_info", "Chưa cung cấp thông tin ngân hàng")}</p>
+            <p className="text-xs italic text-slate-400 relative z-10 flex-1 flex items-center">
+              {t("admin.missing_bank_info", "Chưa cung cấp thông tin ngân hàng")}
+            </p>
           )}
         </div>
       </div>
