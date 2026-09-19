@@ -27,9 +27,12 @@ export default function ReturnInfoSection({
         </span>
       );
     }
+    // Nhánh còn lại = yêu cầu CHƯA có quyết định (Return Requested, hoặc đơn cũ
+    // Delivered + return_status Pending sau khi hoàn tác duyệt nhầm) → cùng nhãn
+    // "Chờ duyệt đổi trả" với badge trạng thái yêu cầu (order_status.return_pending).
     return (
       <span className="text-[10px] font-extrabold uppercase tracking-widest bg-amber-200/60 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 px-2.5 py-1 rounded-full border border-amber-300/40 dark:border-amber-900/40 whitespace-nowrap inline-flex items-center shrink-0">
-        {t("admin.return_action_required", "Cần xử lý đổi trả")}
+        {t("admin.return_pending_badge", "Chờ duyệt đổi trả")}
       </span>
     );
   };
