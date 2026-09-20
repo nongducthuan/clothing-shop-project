@@ -305,7 +305,7 @@ INSERT INTO buy_x_get_y_promotions (id, name, name_vi, name_en, description_vi, 
 -- 11. SEED ORDERS & ORDER ITEMS
 -- ============================================================
 INSERT INTO orders (id, name, email, phone, address, total_price, status, created_at, delivered_at) VALUES
-(201, 'Nguyễn Văn A', 'a@test.com', '0901', 'Hà Nội', 0, 'Delivered', DATE_ADD(CURDATE(), INTERVAL 12 HOUR) - INTERVAL 18 DAY, DATE_ADD(CURDATE(), INTERVAL 12 HOUR) - INTERVAL 18 DAY),
+(201, 'Nguyễn Văn A', 'a@test.com', '0901', 'Hà Nội', 0, 'Delivered', DATE_ADD(CURDATE(), INTERVAL 12 HOUR) - INTERVAL 7 DAY, DATE_ADD(CURDATE(), INTERVAL 12 HOUR) - INTERVAL 18 DAY),
 (202, 'Trần Thị B', 'b@test.com', '0902', 'TP HCM', 0, 'Delivered', DATE_ADD(CURDATE(), INTERVAL 12 HOUR) - INTERVAL 6 DAY, DATE_ADD(CURDATE(), INTERVAL 12 HOUR) - INTERVAL 6 DAY),
 (203, 'Lê Văn C', 'c@test.com', '0903', 'Đà Nẵng', 0, 'Delivered', DATE_ADD(CURDATE(), INTERVAL 12 HOUR) - INTERVAL 5 DAY, DATE_ADD(CURDATE(), INTERVAL 12 HOUR) - INTERVAL 5 DAY),
 (204, 'Phạm Thị D', 'd@test.com', '0904', 'Cần Thơ', 0, 'Delivered', DATE_ADD(CURDATE(), INTERVAL 12 HOUR) - INTERVAL 4 DAY, DATE_ADD(CURDATE(), INTERVAL 12 HOUR) - INTERVAL 4 DAY),
