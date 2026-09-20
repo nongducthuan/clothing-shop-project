@@ -6,9 +6,9 @@ import { PrismaClient, Gender, UserRole, SizeEnum, InteractionType, ReturnStatus
 const adapter = new PrismaMariaDb(process.env.DATABASE_URL!);
 const prisma = new PrismaClient({ adapter });
 
-function daysAgo(n: number): Date {
+function daysAgo(n: number, hour = 12): Date {
   const d = new Date();
-  d.setHours(0, 0, 0, 0);
+  d.setHours(hour, 0, 0, 0);
   d.setDate(d.getDate() - n);
   return d;
 }
@@ -21,8 +21,10 @@ function daysFromNow(n: number): Date {
 }
 
 function monthsAgoDay15(n: number): Date {
+  // Seed chart 12 thang: giu 12h trua de tranh lech timezone
+  // (00:00 VN = hom truoc theo gio UTC/MySQL -> roi nham cot chart).
   const d = new Date();
-  d.setHours(0, 0, 0, 0);
+  d.setHours(12, 0, 0, 0);
   d.setDate(1);
   d.setMonth(d.getMonth() - n);
   d.setDate(15);
@@ -451,49 +453,43 @@ async function main() {
   // ============================================================
   // 8. ORDERS & ORDER ITEMS
   // ============================================================
-  // Quy ước seed: đơn Delivered = đã giao + ĐÃ THU TIỀN (Paid, delivered_at = ngày giao)
-  // để dashboard/revenue/badge hiển thị đẹp như đơn thật.
-  // Đơn dính đổi trả (301-312) giữ đúng luồng nghiệp vụ:
-  //   Return Requested (301-304) = Unpaid, delivered_at NULL (chưa giao xong đã bị yêu cầu trả)
-  //   Return Approved  (305-308) = Refunded (đã hoàn tiền cho khách)
-  //   Return Rejected  (309-312) = Paid (từ chối trả, tiền giữ nguyên)
   const ordersData = [
-    { id: 200, name: 'Nguyễn Văn A', email: 'a@test.com',   phone: '0901', address: 'Hà Nội',    status: OrderStatus.Delivered,       payment_status: 'Paid' as const,     delivered_at: daysAgo(6),            created_at: daysAgo(6) },
-    { id: 201, name: 'Trần Thị B',   email: 'b@test.com',   phone: '0902', address: 'TP HCM',    status: OrderStatus.Delivered,       payment_status: 'Paid' as const,     delivered_at: daysAgo(5),            created_at: daysAgo(5) },
-    { id: 202, name: 'Lê Văn C',     email: 'c@test.com',   phone: '0903', address: 'Đà Nẵng',   status: OrderStatus.Delivered,       payment_status: 'Paid' as const,     delivered_at: daysAgo(4),            created_at: daysAgo(4) },
-    { id: 203, name: 'Phạm Thị D',   email: 'd@test.com',   phone: '0904', address: 'Cần Thơ',   status: OrderStatus.Delivered,       payment_status: 'Paid' as const,     delivered_at: daysAgo(3),            created_at: daysAgo(3) },
-    { id: 204, name: 'Hoàng Văn E',  email: 'e@test.com',   phone: '0905', address: 'Hải Phòng', status: OrderStatus.Delivered,       payment_status: 'Paid' as const,     delivered_at: daysAgo(2),            created_at: daysAgo(2) },
-    { id: 205, name: 'Vũ Thị F',     email: 'f@test.com',   phone: '0906', address: 'Nha Trang', status: OrderStatus.Delivered,       payment_status: 'Paid' as const,     delivered_at: daysAgo(1),            created_at: daysAgo(1) },
-    { id: 206, name: 'Đặng Văn G',   email: 'g@test.com',   phone: '0907', address: 'Huế',       status: OrderStatus.Delivered,       payment_status: 'Paid' as const,     delivered_at: daysAgo(0),            created_at: daysAgo(0) },
-    { id: 301, name: 'Tháng 1',      email: 't1@t.com',     phone: '090',  address: 'A',         status: OrderStatus.Return_Requested, payment_status: 'Unpaid' as const,   delivered_at: null,                    created_at: monthsAgoDay15(11) },
-    { id: 302, name: 'Tháng 2',      email: 't2@t.com',     phone: '090',  address: 'B',         status: OrderStatus.Return_Requested, payment_status: 'Unpaid' as const,   delivered_at: null,                    created_at: monthsAgoDay15(10) },
-    { id: 303, name: 'Tháng 3',      email: 't3@t.com',     phone: '090',  address: 'C',         status: OrderStatus.Return_Requested, payment_status: 'Unpaid' as const,   delivered_at: null,                    created_at: monthsAgoDay15(9)  },
-    { id: 304, name: 'Tháng 4',      email: 't4@t.com',     phone: '090',  address: 'D',         status: OrderStatus.Return_Requested, payment_status: 'Unpaid' as const,   delivered_at: null,                    created_at: monthsAgoDay15(8)  },
-    { id: 305, name: 'Tháng 5',      email: 't5@t.com',     phone: '090',  address: 'E',         status: OrderStatus.Return_Approved,  payment_status: 'Refunded' as const, delivered_at: monthsAgoDay15(7),      created_at: monthsAgoDay15(7)  },
-    { id: 306, name: 'Tháng 6',      email: 't6@t.com',     phone: '090',  address: 'F',         status: OrderStatus.Return_Approved,  payment_status: 'Refunded' as const, delivered_at: monthsAgoDay15(6),      created_at: monthsAgoDay15(6)  },
-    { id: 307, name: 'Tháng 7',      email: 't7@t.com',     phone: '090',  address: 'G',         status: OrderStatus.Return_Approved,  payment_status: 'Refunded' as const, delivered_at: monthsAgoDay15(5),      created_at: monthsAgoDay15(5)  },
-    { id: 308, name: 'Tháng 8',      email: 't8@t.com',     phone: '090',  address: 'H',         status: OrderStatus.Return_Approved,  payment_status: 'Refunded' as const, delivered_at: monthsAgoDay15(4),      created_at: monthsAgoDay15(4)  },
-    { id: 309, name: 'Tháng 9',      email: 't9@t.com',     phone: '090',  address: 'I',         status: OrderStatus.Return_Rejected,  payment_status: 'Paid' as const,     delivered_at: monthsAgoDay15(3),      created_at: monthsAgoDay15(3)  },
-    { id: 310, name: 'Tháng 10',     email: 't10@t.com',    phone: '090',  address: 'J',         status: OrderStatus.Return_Rejected,  payment_status: 'Paid' as const,     delivered_at: monthsAgoDay15(2),      created_at: monthsAgoDay15(2)  },
-    { id: 311, name: 'Tháng 11',     email: 't11@t.com',    phone: '090',  address: 'K',         status: OrderStatus.Return_Rejected,  payment_status: 'Paid' as const,     delivered_at: monthsAgoDay15(1),      created_at: monthsAgoDay15(1)  },
-    { id: 312, name: 'Tháng 12',     email: 't12@t.com',    phone: '090',  address: 'L',         status: OrderStatus.Return_Rejected,  payment_status: 'Paid' as const,     delivered_at: monthsAgoDay15(0),      created_at: monthsAgoDay15(0)  },
+    { id: 201, name: 'Nguyễn Văn A', email: 'a@test.com',   phone: '0901', address: 'Hà Nội',    created_at: daysAgo(7), status: OrderStatus.Delivered },
+    { id: 202, name: 'Trần Thị B',   email: 'b@test.com',   phone: '0902', address: 'TP HCM',    created_at: daysAgo(6), status: OrderStatus.Delivered },
+    { id: 203, name: 'Lê Văn C',     email: 'c@test.com',   phone: '0903', address: 'Đà Nẵng',   created_at: daysAgo(5), status: OrderStatus.Delivered },
+    { id: 204, name: 'Phạm Thị D',   email: 'd@test.com',   phone: '0904', address: 'Cần Thơ',   created_at: daysAgo(4), status: OrderStatus.Delivered },
+    { id: 205, name: 'Hoàng Văn E',  email: 'e@test.com',   phone: '0905', address: 'Hải Phòng', created_at: daysAgo(3), status: OrderStatus.Delivered },
+    { id: 206, name: 'Vũ Thị F',     email: 'f@test.com',   phone: '0906', address: 'Nha Trang', created_at: daysAgo(2), status: OrderStatus.Delivered },
+    { id: 207, name: 'Đặng Văn G',   email: 'g@test.com',   phone: '0907', address: 'Huế',       created_at: daysAgo(1), status: OrderStatus.Delivered },
+    { id: 301, name: 'Tháng 1',      email: 't1@t.com',     phone: '090',  address: 'A',          created_at: monthsAgoDay15(11), status: OrderStatus.Return_Requested },
+    { id: 302, name: 'Tháng 2',      email: 't2@t.com',     phone: '090',  address: 'B',          created_at: monthsAgoDay15(10), status: OrderStatus.Return_Requested },
+    { id: 303, name: 'Tháng 3',      email: 't3@t.com',     phone: '090',  address: 'C',          created_at: monthsAgoDay15(9),  status: OrderStatus.Return_Requested },
+    { id: 304, name: 'Tháng 4',      email: 't4@t.com',     phone: '090',  address: 'D',          created_at: monthsAgoDay15(8),  status: OrderStatus.Return_Requested },
+    { id: 305, name: 'Tháng 5',      email: 't5@t.com',     phone: '090',  address: 'E',          created_at: monthsAgoDay15(7),  status: OrderStatus.Return_Approved },
+    { id: 306, name: 'Tháng 6',      email: 't6@t.com',     phone: '090',  address: 'F',          created_at: monthsAgoDay15(6),  status: OrderStatus.Return_Approved },
+    { id: 307, name: 'Tháng 7',      email: 't7@t.com',     phone: '090',  address: 'G',          created_at: monthsAgoDay15(5),  status: OrderStatus.Return_Approved },
+    { id: 308, name: 'Tháng 8',      email: 't8@t.com',     phone: '090',  address: 'H',          created_at: monthsAgoDay15(4),  status: OrderStatus.Return_Approved },
+    { id: 309, name: 'Tháng 9',      email: 't9@t.com',     phone: '090',  address: 'I',          created_at: monthsAgoDay15(4),  status: OrderStatus.Return_Rejected },
+    { id: 310, name: 'Tháng 10',     email: 't10@t.com',    phone: '090',  address: 'J',          created_at: monthsAgoDay15(3),  status: OrderStatus.Return_Rejected },
+    { id: 311, name: 'Tháng 11',     email: 't11@t.com',    phone: '090',  address: 'K',          created_at: monthsAgoDay15(2),  status: OrderStatus.Return_Rejected },
+    { id: 312, name: 'Tháng 12',     email: 't12@t.com',    phone: '090',  address: 'L',          created_at: monthsAgoDay15(1),  status: OrderStatus.Return_Rejected },
   ];
 
   for (const o of ordersData) {
     await prisma.order.create({
-      data: { id: o.id, name: o.name, email: o.email, phone: o.phone, address: o.address, total_price: 0, status: o.status, payment_status: o.payment_status, delivered_at: o.delivered_at, created_at: o.created_at },
+      data: { id: o.id, name: o.name, email: o.email, phone: o.phone, address: o.address, total_price: 0, status: o.status, created_at: o.created_at, delivered_at: o.created_at },
     });
   }
   console.log('✔ Orders');
 
   const orderItemsData = [
-    { order_id: 200, product_id: 1,  quantity: 2,  price: 150000 },
-    { order_id: 201, product_id: 5,  quantity: 1,  price: 320000 },
-    { order_id: 202, product_id: 9,  quantity: 3,  price: 150000 },
-    { order_id: 203, product_id: 33, quantity: 4,  price: 250000 },
-    { order_id: 204, product_id: 25, quantity: 2,  price: 200000 },
-    { order_id: 205, product_id: 1,  quantity: 5,  price: 150000 },
-    { order_id: 206, product_id: 9,  quantity: 2,  price: 150000 },
+    { order_id: 201, product_id: 1,  quantity: 2,  price: 150000 },
+    { order_id: 202, product_id: 1,  quantity: 2,  price: 150000 },
+    { order_id: 203, product_id: 5,  quantity: 1,  price: 320000 },
+    { order_id: 204, product_id: 9,  quantity: 3,  price: 150000 },
+    { order_id: 205, product_id: 33, quantity: 4,  price: 250000 },
+    { order_id: 206, product_id: 25, quantity: 2,  price: 200000 },
+    { order_id: 207, product_id: 1,  quantity: 5,  price: 150000 },
     { order_id: 301, product_id: 1,  quantity: 5,  price: 150000 },
     { order_id: 302, product_id: 5,  quantity: 4,  price: 320000 },
     { order_id: 303, product_id: 1,  quantity: 8,  price: 150000 },
@@ -519,54 +515,25 @@ async function main() {
   }
 
   // ============================================================
-  // 9. RETURN REQUESTS (+ REVENUES neo theo delivered_at)
-  // refund_amount = đúng tiền hàng của đơn (đơn seed 1 item, không voucher/membership
-  // nên refund = total_price) để badge "Số tiền hoàn" hiển thị đẹp.
+  // 9. RETURN REQUESTS
   // ============================================================
-  const refundByOrder: Record<number, number> = {
-    301: 750000, 302: 1280000, 303: 1200000, 304: 2000000,
-    305: 3000000, 306: 6250000, 307: 4000000, 308: 4800000,
-    309: 1800000, 310: 1200000, 311: 4500000, 312: 3200000,
-  };
   await prisma.returnRequest.createMany({
     data: [
-      { order_id: 301, reason_code: 'Damaged',          status: ReturnStatus.Pending,  refund_amount: refundByOrder[301] },
-      { order_id: 302, reason_code: 'Wrong item',       status: ReturnStatus.Pending,  refund_amount: refundByOrder[302] },
-      { order_id: 303, reason_code: 'Change mind',      status: ReturnStatus.Pending,  refund_amount: refundByOrder[303] },
-      { order_id: 304, reason_code: 'Not as described', status: ReturnStatus.Pending,  refund_amount: refundByOrder[304] },
-      { order_id: 305, reason_code: 'Damaged',          status: ReturnStatus.Approved, refund_amount: refundByOrder[305] },
-      { order_id: 306, reason_code: 'Wrong item',       status: ReturnStatus.Approved, refund_amount: refundByOrder[306] },
-      { order_id: 307, reason_code: 'Change mind',      status: ReturnStatus.Approved, refund_amount: refundByOrder[307] },
-      { order_id: 308, reason_code: 'Not as described', status: ReturnStatus.Approved, refund_amount: refundByOrder[308] },
-      { order_id: 309, reason_code: 'Damaged',          status: ReturnStatus.Rejected, refund_amount: refundByOrder[309] },
-      { order_id: 310, reason_code: 'Wrong item',       status: ReturnStatus.Rejected, refund_amount: refundByOrder[310] },
-      { order_id: 311, reason_code: 'Change mind',      status: ReturnStatus.Rejected, refund_amount: refundByOrder[311] },
-      { order_id: 312, reason_code: 'Not as described', status: ReturnStatus.Rejected, refund_amount: refundByOrder[312] },
+      { order_id: 301, reason_code: 'Damaged',          status: ReturnStatus.Pending  },
+      { order_id: 302, reason_code: 'Wrong item',       status: ReturnStatus.Pending  },
+      { order_id: 303, reason_code: 'Change mind',      status: ReturnStatus.Pending  },
+      { order_id: 304, reason_code: 'Not as described', status: ReturnStatus.Pending  },
+      { order_id: 305, reason_code: 'Damaged',          status: ReturnStatus.Approved },
+      { order_id: 306, reason_code: 'Wrong item',       status: ReturnStatus.Approved },
+      { order_id: 307, reason_code: 'Change mind',      status: ReturnStatus.Approved },
+      { order_id: 308, reason_code: 'Not as described', status: ReturnStatus.Approved },
+      { order_id: 309, reason_code: 'Damaged',          status: ReturnStatus.Rejected },
+      { order_id: 310, reason_code: 'Wrong item',       status: ReturnStatus.Rejected },
+      { order_id: 311, reason_code: 'Change mind',      status: ReturnStatus.Rejected },
+      { order_id: 312, reason_code: 'Not as described', status: ReturnStatus.Rejected },
     ],
   });
   console.log('✔ Return requests');
-
-  // Doanh thu mẫu khớp đơn Delivered/Approved/Rejected đã Paid (neo theo delivered_at).
-  // Return Requested (301-304) chưa giao xong nên KHÔNG tính doanh thu.
-  const deliveredOrders = ordersData.filter((o) => o.delivered_at);
-  const revenueByDay = new Map<string, { total: number; count: number }>();
-  for (const o of deliveredOrders) {
-    const items = orderItemsData.filter((i) => i.order_id === o.id);
-    const total = items.reduce((sum, i) => sum + i.quantity * i.price, 0);
-    const day = (o.delivered_at as Date).toISOString().slice(0, 10);
-    const cur = revenueByDay.get(day) ?? { total: 0, count: 0 };
-    cur.total += total;
-    cur.count += 1;
-    revenueByDay.set(day, cur);
-  }
-  for (const [day, v] of revenueByDay) {
-    await prisma.revenue.upsert({
-      where: { report_date: new Date(day) },
-      update: { total_sales: { increment: v.total }, total_orders: { increment: v.count } },
-      create: { report_date: new Date(day), total_sales: v.total, total_orders: v.count },
-    });
-  }
-  console.log('✔ Revenues (seed)');
 
   // ============================================================
   // 10. USER PRODUCT INTERACTIONS

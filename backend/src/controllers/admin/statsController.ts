@@ -13,15 +13,15 @@ export const getAdminStats = async (req: Request, res: Response): Promise<void> 
         // Using $queryRaw for complex statistics is safer and matches the previous SQL exact behavior.
         const summarySql = `
             SELECT 
-                COUNT(DISTINCT CASE WHEN o.created_at BETWEEN DATE_SUB(NOW(), INTERVAL 7 DAY) AND NOW() THEN o.id END) AS weeklyOrders,
-                SUM(CASE WHEN o.created_at BETWEEN DATE_SUB(NOW(), INTERVAL 7 DAY) AND NOW() AND o.status = 'Delivered' THEN oi.quantity * oi.price ELSE 0 END) AS weeklyRevenue,
-                SUM(CASE WHEN o.created_at BETWEEN DATE_SUB(NOW(), INTERVAL 7 DAY) AND NOW() AND o.status = 'Delivered' THEN (oi.price - p.import_price) * oi.quantity ELSE 0 END) AS weeklyProfit,
-                SUM(CASE WHEN o.created_at BETWEEN DATE_SUB(NOW(), INTERVAL 7 DAY) AND NOW() AND o.status = 'Delivered' THEN oi.quantity ELSE 0 END) AS productsSoldWeek,
+                COUNT(DISTINCT CASE WHEN DATE(o.created_at) BETWEEN DATE(DATE_SUB(NOW(), INTERVAL 6 DAY)) AND DATE(NOW()) THEN o.id END) AS weeklyOrders,
+                SUM(CASE WHEN DATE(o.created_at) BETWEEN DATE(DATE_SUB(NOW(), INTERVAL 6 DAY)) AND DATE(NOW()) AND o.status IN ('Delivered','Return Requested','Return Rejected') THEN oi.quantity * oi.price ELSE 0 END) AS weeklyRevenue,
+                SUM(CASE WHEN DATE(o.created_at) BETWEEN DATE(DATE_SUB(NOW(), INTERVAL 6 DAY)) AND DATE(NOW()) AND o.status IN ('Delivered','Return Requested','Return Rejected') THEN (oi.price - p.import_price) * oi.quantity ELSE 0 END) AS weeklyProfit,
+                SUM(CASE WHEN DATE(o.created_at) BETWEEN DATE(DATE_SUB(NOW(), INTERVAL 6 DAY)) AND DATE(NOW()) AND o.status IN ('Delivered','Return Requested','Return Rejected') THEN oi.quantity ELSE 0 END) AS productsSoldWeek,
                 
-                COUNT(DISTINCT CASE WHEN o.created_at BETWEEN DATE_SUB(NOW(), INTERVAL 30 DAY) AND NOW() THEN o.id END) AS monthlyOrders,
-                SUM(CASE WHEN o.created_at BETWEEN DATE_SUB(NOW(), INTERVAL 30 DAY) AND NOW() AND o.status = 'Delivered' THEN oi.quantity * oi.price ELSE 0 END) AS monthlyRevenue,
-                SUM(CASE WHEN o.created_at BETWEEN DATE_SUB(NOW(), INTERVAL 30 DAY) AND NOW() AND o.status = 'Delivered' THEN (oi.price - p.import_price) * oi.quantity ELSE 0 END) AS monthlyProfit,
-                SUM(CASE WHEN o.created_at BETWEEN DATE_SUB(NOW(), INTERVAL 30 DAY) AND NOW() AND o.status = 'Delivered' THEN oi.quantity ELSE 0 END) AS productsSoldMonth
+                COUNT(DISTINCT CASE WHEN DATE(o.created_at) BETWEEN DATE(DATE_SUB(NOW(), INTERVAL 29 DAY)) AND DATE(NOW()) THEN o.id END) AS monthlyOrders,
+                SUM(CASE WHEN DATE(o.created_at) BETWEEN DATE(DATE_SUB(NOW(), INTERVAL 29 DAY)) AND DATE(NOW()) AND o.status IN ('Delivered','Return Requested','Return Rejected') THEN oi.quantity * oi.price ELSE 0 END) AS monthlyRevenue,
+                SUM(CASE WHEN DATE(o.created_at) BETWEEN DATE(DATE_SUB(NOW(), INTERVAL 29 DAY)) AND DATE(NOW()) AND o.status IN ('Delivered','Return Requested','Return Rejected') THEN (oi.price - p.import_price) * oi.quantity ELSE 0 END) AS monthlyProfit,
+                SUM(CASE WHEN DATE(o.created_at) BETWEEN DATE(DATE_SUB(NOW(), INTERVAL 29 DAY)) AND DATE(NOW()) AND o.status IN ('Delivered','Return Requested','Return Rejected') THEN oi.quantity ELSE 0 END) AS productsSoldMonth
             FROM orders o
             LEFT JOIN order_items oi ON o.id = oi.order_id
             LEFT JOIN products p ON oi.product_id = p.id
@@ -49,7 +49,7 @@ export const getAdminStats = async (req: Request, res: Response): Promise<void> 
                     UNION SELECT 4 UNION SELECT 5 UNION SELECT 6
                 ) AS sequences
             ) AS d
-            LEFT JOIN orders o ON DATE(o.created_at) = d.full_date AND o.status = 'Delivered'
+            LEFT JOIN orders o ON DATE(o.created_at) = d.full_date AND o.status IN ('Delivered','Return Requested','Return Rejected')
             LEFT JOIN order_items oi ON o.id = oi.order_id
             LEFT JOIN products p ON oi.product_id = p.id
             GROUP BY d.full_date, day
@@ -75,7 +75,7 @@ export const getAdminStats = async (req: Request, res: Response): Promise<void> 
             ) AS m
             LEFT JOIN orders o ON MONTH(o.created_at) = MONTH(m.month_date) 
                 AND YEAR(o.created_at) = YEAR(m.month_date)
-                AND o.status = 'Delivered'
+                AND o.status IN ('Delivered','Return Requested','Return Rejected')
             LEFT JOIN order_items oi ON o.id = oi.order_id
             LEFT JOIN products p ON oi.product_id = p.id
             GROUP BY m.month_date
@@ -94,7 +94,7 @@ export const getAdminStats = async (req: Request, res: Response): Promise<void> 
             JOIN orders o ON oi.order_id = o.id
             JOIN products p ON oi.product_id = p.id
             JOIN categories c ON p.category_id = c.id
-            WHERE o.status = 'Delivered' 
+            WHERE o.status IN ('Delivered','Return Requested','Return Rejected') 
             GROUP BY c.id, c.name, c.name_vi, c.name_en
             ORDER BY total_revenue DESC;
         `;
