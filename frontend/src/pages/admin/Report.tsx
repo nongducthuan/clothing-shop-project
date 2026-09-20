@@ -10,6 +10,12 @@ const STATUS_COLORS = {
   'Shipping': '#3b82f6',
   'Delivered': '#10b981',
   'Cancelled': '#ef4444',
+  'Return Requested': '#f59e0b',
+  'Return_Requested': '#f59e0b',
+  'Return Approved': '#8b5cf6',
+  'Return_Approved': '#8b5cf6',
+  'Return Rejected': '#64748b',
+  'Return_Rejected': '#64748b',
   'Approved': '#10b981',
   'Rejected': '#ef4444',
 };

@@ -45,8 +45,8 @@ export function useReport() {
   const statusPieData = [
     [t("admin.chart_status"), t("admin.chart_quantity")],
     ...(orderStatus || [])
-      .filter(r => ["Pending", "Confirmed", "Shipping", "Delivered", "Cancelled"].includes(r.status))
-      .map(r => [getLocalizedLabel("orderStatus", r.status), Number(r.quantity)])
+      .filter(r => ["Pending", "Confirmed", "Shipping", "Delivered", "Cancelled", "Return Requested", "Return Rejected", "Return Approved", "Return_Requested", "Return_Rejected", "Return_Approved"].includes(r.status))
+      .map(r => [getLocalizedLabel("orderStatus", r.status.replace(/_/g, " ")), Number(r.quantity)])
   ];
 
   const yearlyTrendData = [
