@@ -9,19 +9,22 @@ export const getAdminStats = async (req: Request, res: Response): Promise<void> 
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(today.getDate() - 30);
 
-        // This could be extremely complex to port fully to Prisma ORM. 
-        // Using $queryRaw for complex statistics is safer and matches the previous SQL exact behavior.
+        // Quy uoc bao cao: chi chot so lieu den HET NGAY HOM QUA.
+        // Ngay hom nay chua tron 24h (don co the them/sua/huy) nen khong dua vao
+        // summary 7/30 ngay va chart ngay -> tranh so nhay lien tuc trong ngay.
+        // Vi vay summary 7 ngay = 7 ngay da chot gan nhat (hom qua - 6 ... hom qua),
+        // summary 30 ngay = 30 ngay da chot gan nhat (hom qua - 29 ... hom qua).
         const summarySql = `
             SELECT 
-                COUNT(DISTINCT CASE WHEN DATE(o.created_at) BETWEEN DATE(DATE_SUB(NOW(), INTERVAL 6 DAY)) AND DATE(NOW()) THEN o.id END) AS weeklyOrders,
-                SUM(CASE WHEN DATE(o.created_at) BETWEEN DATE(DATE_SUB(NOW(), INTERVAL 6 DAY)) AND DATE(NOW()) AND o.status IN ('Delivered','Return Requested','Return Rejected') THEN oi.quantity * oi.price ELSE 0 END) AS weeklyRevenue,
-                SUM(CASE WHEN DATE(o.created_at) BETWEEN DATE(DATE_SUB(NOW(), INTERVAL 6 DAY)) AND DATE(NOW()) AND o.status IN ('Delivered','Return Requested','Return Rejected') THEN (oi.price - p.import_price) * oi.quantity ELSE 0 END) AS weeklyProfit,
-                SUM(CASE WHEN DATE(o.created_at) BETWEEN DATE(DATE_SUB(NOW(), INTERVAL 6 DAY)) AND DATE(NOW()) AND o.status IN ('Delivered','Return Requested','Return Rejected') THEN oi.quantity ELSE 0 END) AS productsSoldWeek,
+                COUNT(DISTINCT CASE WHEN DATE(o.created_at) BETWEEN DATE(DATE_SUB(CURDATE(), INTERVAL 7 DAY)) AND DATE(DATE_SUB(CURDATE(), INTERVAL 1 DAY)) THEN o.id END) AS weeklyOrders,
+                SUM(CASE WHEN DATE(o.created_at) BETWEEN DATE(DATE_SUB(CURDATE(), INTERVAL 7 DAY)) AND DATE(DATE_SUB(CURDATE(), INTERVAL 1 DAY)) AND o.status IN ('Delivered','Return Requested','Return Rejected') THEN oi.quantity * oi.price ELSE 0 END) AS weeklyRevenue,
+                SUM(CASE WHEN DATE(o.created_at) BETWEEN DATE(DATE_SUB(CURDATE(), INTERVAL 7 DAY)) AND DATE(DATE_SUB(CURDATE(), INTERVAL 1 DAY)) AND o.status IN ('Delivered','Return Requested','Return Rejected') THEN (oi.price - p.import_price) * oi.quantity ELSE 0 END) AS weeklyProfit,
+                SUM(CASE WHEN DATE(o.created_at) BETWEEN DATE(DATE_SUB(CURDATE(), INTERVAL 7 DAY)) AND DATE(DATE_SUB(CURDATE(), INTERVAL 1 DAY)) AND o.status IN ('Delivered','Return Requested','Return Rejected') THEN oi.quantity ELSE 0 END) AS productsSoldWeek,
                 
-                COUNT(DISTINCT CASE WHEN DATE(o.created_at) BETWEEN DATE(DATE_SUB(NOW(), INTERVAL 29 DAY)) AND DATE(NOW()) THEN o.id END) AS monthlyOrders,
-                SUM(CASE WHEN DATE(o.created_at) BETWEEN DATE(DATE_SUB(NOW(), INTERVAL 29 DAY)) AND DATE(NOW()) AND o.status IN ('Delivered','Return Requested','Return Rejected') THEN oi.quantity * oi.price ELSE 0 END) AS monthlyRevenue,
-                SUM(CASE WHEN DATE(o.created_at) BETWEEN DATE(DATE_SUB(NOW(), INTERVAL 29 DAY)) AND DATE(NOW()) AND o.status IN ('Delivered','Return Requested','Return Rejected') THEN (oi.price - p.import_price) * oi.quantity ELSE 0 END) AS monthlyProfit,
-                SUM(CASE WHEN DATE(o.created_at) BETWEEN DATE(DATE_SUB(NOW(), INTERVAL 29 DAY)) AND DATE(NOW()) AND o.status IN ('Delivered','Return Requested','Return Rejected') THEN oi.quantity ELSE 0 END) AS productsSoldMonth
+                COUNT(DISTINCT CASE WHEN DATE(o.created_at) BETWEEN DATE(DATE_SUB(CURDATE(), INTERVAL 30 DAY)) AND DATE(DATE_SUB(CURDATE(), INTERVAL 1 DAY)) THEN o.id END) AS monthlyOrders,
+                SUM(CASE WHEN DATE(o.created_at) BETWEEN DATE(DATE_SUB(CURDATE(), INTERVAL 30 DAY)) AND DATE(DATE_SUB(CURDATE(), INTERVAL 1 DAY)) AND o.status IN ('Delivered','Return Requested','Return Rejected') THEN oi.quantity * oi.price ELSE 0 END) AS monthlyRevenue,
+                SUM(CASE WHEN DATE(o.created_at) BETWEEN DATE(DATE_SUB(CURDATE(), INTERVAL 30 DAY)) AND DATE(DATE_SUB(CURDATE(), INTERVAL 1 DAY)) AND o.status IN ('Delivered','Return Requested','Return Rejected') THEN (oi.price - p.import_price) * oi.quantity ELSE 0 END) AS monthlyProfit,
+                SUM(CASE WHEN DATE(o.created_at) BETWEEN DATE(DATE_SUB(CURDATE(), INTERVAL 30 DAY)) AND DATE(DATE_SUB(CURDATE(), INTERVAL 1 DAY)) AND o.status IN ('Delivered','Return Requested','Return Rejected') THEN oi.quantity ELSE 0 END) AS productsSoldMonth
             FROM orders o
             LEFT JOIN order_items oi ON o.id = oi.order_id
             LEFT JOIN products p ON oi.product_id = p.id
@@ -43,7 +46,7 @@ export const getAdminStats = async (req: Request, res: Response): Promise<void> 
                 IFNULL(SUM(oi.quantity * oi.price), 0) AS revenue,
                 IFNULL(SUM(oi.quantity * (oi.price - p.import_price)), 0) AS profit
             FROM (
-                SELECT DATE_SUB(CURDATE(), INTERVAL seq DAY) AS full_date
+                SELECT DATE_SUB(CURDATE(), INTERVAL (seq + 1) DAY) AS full_date
                 FROM (
                     SELECT 0 AS seq UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 
                     UNION SELECT 4 UNION SELECT 5 UNION SELECT 6

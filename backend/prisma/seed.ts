@@ -484,12 +484,12 @@ async function main() {
 
   const orderItemsData = [
     { order_id: 201, product_id: 1,  quantity: 2,  price: 150000 },
-    { order_id: 202, product_id: 1,  quantity: 2,  price: 150000 },
-    { order_id: 203, product_id: 5,  quantity: 1,  price: 320000 },
-    { order_id: 204, product_id: 9,  quantity: 3,  price: 150000 },
-    { order_id: 205, product_id: 33, quantity: 4,  price: 250000 },
-    { order_id: 206, product_id: 25, quantity: 2,  price: 200000 },
-    { order_id: 207, product_id: 1,  quantity: 5,  price: 150000 },
+    { order_id: 202, product_id: 5,  quantity: 1,  price: 320000 },
+    { order_id: 203, product_id: 9,  quantity: 3,  price: 150000 },
+    { order_id: 204, product_id: 33, quantity: 4,  price: 250000 },
+    { order_id: 205, product_id: 25, quantity: 2,  price: 200000 },
+    { order_id: 206, product_id: 1,  quantity: 5,  price: 150000 },
+    { order_id: 207, product_id: 9,  quantity: 2,  price: 150000 },
     { order_id: 301, product_id: 1,  quantity: 5,  price: 150000 },
     { order_id: 302, product_id: 5,  quantity: 4,  price: 320000 },
     { order_id: 303, product_id: 1,  quantity: 8,  price: 150000 },
