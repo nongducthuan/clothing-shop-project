@@ -287,5 +287,3 @@ Sau khi chạy lệnh `npm run seed`, hệ thống tự động khởi tạo tà
 > Lưu ý: Các thông tin thẻ trên chỉ dùng trong môi trường **Sandbox/Test**, không áp dụng cho giao dịch thật. Nếu MoMo/VNPay cập nhật lại bộ thẻ test, vui lòng tham khảo tài liệu chính thức:
 > MoMo Sandbox: https://developers.momo.vn/v3/vi/docs/payment/onboarding/test-instructions/
 > VNPay Sandbox: https://sandbox.vnpayment.vn/apis/docs/huong-dan-tich-hop/
-
----
