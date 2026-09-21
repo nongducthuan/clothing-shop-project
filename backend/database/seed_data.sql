@@ -316,7 +316,7 @@ INSERT INTO orders (id, name, email, phone, address, total_price, status, paymen
 (109, 'Ngày 09', 'ngay09@test.com', '0900000009', 'TP HCM', 0, 'Return Rejected', 'Paid', DATE_ADD(CURDATE(), INTERVAL 12 HOUR) - INTERVAL 22 DAY, DATE_ADD(CURDATE(), INTERVAL 12 HOUR) - INTERVAL 22 DAY),
 (110, 'Ngày 10', 'ngay10@test.com', '0900000010', 'Đà Nẵng', 0, 'Return Rejected', 'Paid', DATE_ADD(CURDATE(), INTERVAL 12 HOUR) - INTERVAL 21 DAY, DATE_ADD(CURDATE(), INTERVAL 12 HOUR) - INTERVAL 21 DAY),
 (111, 'Ngày 11', 'ngay11@test.com', '0900000011', 'Cần Thơ', 0, 'Return Rejected', 'Paid', DATE_ADD(CURDATE(), INTERVAL 12 HOUR) - INTERVAL 20 DAY, DATE_ADD(CURDATE(), INTERVAL 12 HOUR) - INTERVAL 20 DAY),
-(112, 'Ngày 12', 'ngay12@test.com', '0900000012', 'Hải Phòng', 0, 'Return Requested', 'Paid', DATE_ADD(CURDATE(), INTERVAL 12 HOUR) - INTERVAL 19 DAY, DATE_ADD(CURDATE(), INTERVAL 12 HOUR) - INTERVAL 19 DAY),
+(112, 'Ngày 12', 'ngay12@test.com', '0900000012', 'Hải Phòng', 0, 'Return Rejected', 'Paid', DATE_ADD(CURDATE(), INTERVAL 12 HOUR) - INTERVAL 19 DAY, DATE_ADD(CURDATE(), INTERVAL 12 HOUR) - INTERVAL 19 DAY),
 (113, 'Ngày 13', 'ngay13@test.com', '0900000013', 'Nha Trang', 0, 'Pending', 'Unpaid', DATE_ADD(CURDATE(), INTERVAL 12 HOUR) - INTERVAL 18 DAY, NULL),
 (114, 'Ngày 14', 'ngay14@test.com', '0900000014', 'Huế', 0, 'Pending', 'Unpaid', DATE_ADD(CURDATE(), INTERVAL 12 HOUR) - INTERVAL 17 DAY, NULL),
 (115, 'Ngày 15', 'ngay15@test.com', '0900000015', 'Hà Nội', 0, 'Confirmed', 'Unpaid', DATE_ADD(CURDATE(), INTERVAL 12 HOUR) - INTERVAL 16 DAY, NULL),
@@ -405,11 +405,11 @@ INSERT INTO return_requests (order_id, reason_code, status) VALUES
 (105, 'Damaged', 'Approved'),
 (106, 'Wrong item', 'Approved'),
 (107, 'Change mind', 'Approved'),
-(108, 'Change mind', 'Approved'),
+(108, 'Not as described', 'Approved'),
 (109, 'Damaged', 'Rejected'),
-(110, 'Change mind', 'Rejected'),
-(111, 'Not as described', 'Rejected'),
-(112, 'Not as described', 'Pending');
+(110, 'Wrong item', 'Rejected'),
+(111, 'Change mind', 'Rejected'),
+(112, 'Not as described', 'Rejected');
 
 -- ============================================================
 -- 13. SEED USER PRODUCT INTERACTIONS
