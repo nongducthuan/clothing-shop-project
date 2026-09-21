@@ -45,8 +45,25 @@ export function useReport() {
   const statusPieData = [
     [t("admin.chart_status"), t("admin.chart_quantity")],
     ...(orderStatus || [])
-      .filter(r => ["Pending", "Confirmed", "Shipping", "Delivered", "Cancelled", "Return Requested", "Return Rejected", "Return Approved", "Return_Requested", "Return_Rejected", "Return_Approved"].includes(r.status))
-      .map(r => [getLocalizedLabel("orderStatus", r.status.replace(/_/g, " ")), Number(r.quantity)])
+      // Gộp 3 status Return_* của orders thành 1 nhóm "Phát sinh trả hàng" để pie
+      // "Vòng đời đơn hàng" còn 6 nhóm loại trừ nhau, không trùng label với chart
+      // "Phê duyệt trả hàng" (nguồn return_requests) bên dưới.
+      .reduce((acc: { key: string; quantity: number }[], r) => {
+        const raw = String(r.status || "").replace(/_/g, " ");
+        const isReturn = ["Return Requested", "Return Approved", "Return Rejected"].includes(raw);
+        const key = isReturn ? "__RETURN_GROUP__" : raw;
+        const found = acc.find((x) => x.key === key);
+        if (found) found.quantity += Number(r.quantity);
+        else acc.push({ key, quantity: Number(r.quantity) });
+        return acc;
+      }, [])
+      .filter((r) => ["Pending", "Confirmed", "Shipping", "Delivered", "Cancelled", "__RETURN_GROUP__"].includes(r.key))
+      .map((r) => [
+        r.key === "__RETURN_GROUP__"
+          ? t("admin.chart_return_group", "Phát sinh trả hàng")
+          : getLocalizedLabel("orderStatus", r.key),
+        Number(r.quantity),
+      ])
   ];
 
   const yearlyTrendData = [

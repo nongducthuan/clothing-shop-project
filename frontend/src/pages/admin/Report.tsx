@@ -21,7 +21,7 @@ const STATUS_COLORS = {
 };
 
 export default function Report() {
-  const { t } = useLanguage();
+  const { t, getLocalizedLabel } = useLanguage();
   const { isDark } = useTheme();
 
   // Color variables for charts based on theme
@@ -181,7 +181,18 @@ export default function Report() {
                 data={statusPieData.length > 1 ? statusPieData : [[t("admin.chart_status"), t("admin.chart_quantity")], [t("admin.chart_no_data"), 1]]}
                 options={{
                   backgroundColor: "transparent",
-                  colors: (orderStatus || []).map(r => STATUS_COLORS[r.status] || "#cbd5e1"),
+                  colors: statusPieData.slice(1).map(([label]) => {
+                    const s = String(label || "");
+                    if (s === t("admin.chart_return_group", "Phát sinh trả hàng")) return "#f59e0b";
+                    for (const r of (orderStatus || [])) {
+                      const raw = String(r.status || "").replace(/_/g, " ");
+                      if (raw === s || getLocalizedLabel("orderStatus", raw) === s) {
+                        if (STATUS_COLORS[r.status]) return STATUS_COLORS[r.status];
+                        if (STATUS_COLORS[raw]) return STATUS_COLORS[raw];
+                      }
+                    }
+                    return STATUS_COLORS[s] || "#cbd5e1";
+                  }),
                   pieHole: 0.5,
                   legend: { position: "bottom", textStyle: { color: subTextColor } },
                   chartArea: { width: '90%', height: '75%' }

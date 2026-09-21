@@ -387,7 +387,7 @@ async function main() {
   console.log('✔ Banners');
 
   // ============================================================
-  // 7.1 SALES
+  // 8. SALES
   // ============================================================
   await prisma.sale.create({
     data: {
@@ -404,7 +404,7 @@ async function main() {
   console.log('✔ Sales');
 
   // ============================================================
-  // 7.2 VOUCHERS
+  // 9. VOUCHERS
   // ============================================================
   await prisma.voucher.create({
     data: {
@@ -425,7 +425,7 @@ async function main() {
   console.log('✔ Vouchers');
 
   // ============================================================
-  // 7.3 PROMOTIONS (BUY X GET Y)
+  // 10. PROMOTIONS (BUY X GET Y)
   // ============================================================
   await prisma.buyXGetYPromotion.create({
     data: {
@@ -451,40 +451,58 @@ async function main() {
   console.log('✔ BuyXGetY Promotions');
 
   // ============================================================
-  // 8. ORDERS & ORDER ITEMS
+  // 11. ORDERS & ORDER ITEMS
   // ============================================================
   const ordersData = [
-    { id: 201, name: 'Ngày 01', email: 'ngay01@test.com', phone: '0901', address: 'Hà Nội', created_at: daysAgo(1), status: OrderStatus.Delivered, payment_status: 'Paid' as any },
-    { id: 202, name: 'Ngày 02', email: 'ngay02@test.com', phone: '0902', address: 'TP HCM', created_at: daysAgo(2), status: OrderStatus.Delivered, payment_status: 'Paid' as any },
-    { id: 203, name: 'Ngày 03', email: 'ngay03@test.com', phone: '0903', address: 'Đà Nẵng', created_at: daysAgo(3), status: OrderStatus.Delivered, payment_status: 'Paid' as any },
-    { id: 204, name: 'Ngày 04', email: 'ngay04@test.com', phone: '0904', address: 'Cần Thơ', created_at: daysAgo(4), status: OrderStatus.Delivered, payment_status: 'Paid' as any },
-    { id: 205, name: 'Ngày 05', email: 'ngay05@test.com', phone: '0905', address: 'Hải Phòng', created_at: daysAgo(5), status: OrderStatus.Delivered, payment_status: 'Paid' as any },
-    { id: 206, name: 'Ngày 06', email: 'ngay06@test.com', phone: '0906', address: 'Nha Trang', created_at: daysAgo(6), status: OrderStatus.Delivered, payment_status: 'Paid' as any },
-    { id: 207, name: 'Ngày 07', email: 'ngay07@test.com', phone: '0907', address: 'Huế', created_at: daysAgo(7), status: OrderStatus.Delivered, payment_status: 'Paid' as any },
-    { id: 208, name: 'Ngày 08', email: 'ngay08@test.com', phone: '0908', address: 'Hà Nội', created_at: daysAgo(8), status: OrderStatus.Delivered, payment_status: 'Paid' as any },
-    { id: 209, name: 'Ngày 10', email: 'ngay10@test.com', phone: '0909', address: 'TP HCM', created_at: daysAgo(10), status: OrderStatus.Delivered, payment_status: 'Paid' as any },
-    { id: 210, name: 'Ngày 13', email: 'ngay13@test.com', phone: '0910', address: 'Đà Nẵng', created_at: daysAgo(13), status: OrderStatus.Delivered, payment_status: 'Paid' as any },
-    { id: 211, name: 'Ngày 15', email: 'ngay15@test.com', phone: '0911', address: 'Cần Thơ', created_at: daysAgo(15), status: OrderStatus.Delivered, payment_status: 'Paid' as any },
-    { id: 212, name: 'Ngày 17', email: 'ngay17@test.com', phone: '0912', address: 'Hải Phòng', created_at: daysAgo(17), status: OrderStatus.Delivered, payment_status: 'Paid' as any },
-    { id: 213, name: 'Ngày 20', email: 'ngay20@test.com', phone: '0913', address: 'Nha Trang', created_at: daysAgo(20), status: OrderStatus.Delivered, payment_status: 'Paid' as any },
-    { id: 214, name: 'Ngày 22', email: 'ngay22@test.com', phone: '0914', address: 'Huế', created_at: daysAgo(22), status: OrderStatus.Delivered, payment_status: 'Paid' as any },
-    { id: 215, name: 'Ngày 24', email: 'ngay24@test.com', phone: '0915', address: 'Hà Nội', created_at: daysAgo(24), status: OrderStatus.Delivered, payment_status: 'Paid' as any },
-    { id: 216, name: 'Ngày 25', email: 'ngay25@test.com', phone: '0916', address: 'TP HCM', created_at: daysAgo(25), status: OrderStatus.Delivered, payment_status: 'Paid' as any },
-    { id: 217, name: 'Ngày 27', email: 'ngay27@test.com', phone: '0917', address: 'Đà Nẵng', created_at: daysAgo(27), status: OrderStatus.Delivered, payment_status: 'Paid' as any },
-    { id: 218, name: 'Ngày 28', email: 'ngay28@test.com', phone: '0918', address: 'Cần Thơ', created_at: daysAgo(28), status: OrderStatus.Delivered, payment_status: 'Paid' as any },
-    { id: 219, name: 'Ngày 29', email: 'ngay29@test.com', phone: '0919', address: 'Hải Phòng', created_at: daysAgo(29), status: OrderStatus.Delivered, payment_status: 'Paid' as any },
-    { id: 301, name: 'Tháng 1', email: 't1@t.com', phone: '090', address: 'A', created_at: monthsAgoDay15(12), status: OrderStatus.Return_Requested, payment_status: 'Paid' as any },
-    { id: 302, name: 'Tháng 2', email: 't2@t.com', phone: '090', address: 'B', created_at: monthsAgoDay15(11), status: OrderStatus.Return_Requested, payment_status: 'Paid' as any },
-    { id: 303, name: 'Tháng 3', email: 't3@t.com', phone: '090', address: 'C', created_at: monthsAgoDay15(10), status: OrderStatus.Return_Requested, payment_status: 'Paid' as any },
-    { id: 304, name: 'Tháng 4', email: 't4@t.com', phone: '090', address: 'D', created_at: monthsAgoDay15(9), status: OrderStatus.Return_Requested, payment_status: 'Paid' as any },
-    { id: 305, name: 'Tháng 5', email: 't5@t.com', phone: '090', address: 'E', created_at: monthsAgoDay15(8), status: OrderStatus.Return_Approved, payment_status: 'Refunded' as any },
-    { id: 306, name: 'Tháng 6', email: 't6@t.com', phone: '090', address: 'F', created_at: monthsAgoDay15(7), status: OrderStatus.Return_Approved, payment_status: 'Refunded' as any },
-    { id: 307, name: 'Tháng 7', email: 't7@t.com', phone: '090', address: 'G', created_at: monthsAgoDay15(6), status: OrderStatus.Return_Approved, payment_status: 'Refunded' as any },
-    { id: 308, name: 'Tháng 8', email: 't8@t.com', phone: '090', address: 'H', created_at: monthsAgoDay15(5), status: OrderStatus.Return_Approved, payment_status: 'Refunded' as any },
-    { id: 309, name: 'Tháng 9', email: 't9@t.com', phone: '090', address: 'I', created_at: monthsAgoDay15(4), status: OrderStatus.Return_Rejected, payment_status: 'Paid' as any },
-    { id: 310, name: 'Tháng 10', email: 't10@t.com', phone: '090', address: 'J', created_at: monthsAgoDay15(3), status: OrderStatus.Return_Rejected, payment_status: 'Paid' as any },
-    { id: 311, name: 'Tháng 11', email: 't11@t.com', phone: '090', address: 'K', created_at: monthsAgoDay15(2), status: OrderStatus.Return_Rejected, payment_status: 'Paid' as any },
-    { id: 312, name: 'Tháng 12', email: 't12@t.com', phone: '090', address: 'L', created_at: monthsAgoDay15(1), status: OrderStatus.Return_Rejected, payment_status: 'Paid' as any },
+    { id: 201, name: 'Ngày 01', email: 'ngay01@test.com', phone: '0900000001', address: 'Hà Nội', created_at: daysAgo(1), status: OrderStatus.Delivered, payment_status: 'Paid' as any },
+    { id: 202, name: 'Ngày 02', email: 'ngay02@test.com', phone: '0900000002', address: 'TP HCM', created_at: daysAgo(2), status: OrderStatus.Delivered, payment_status: 'Paid' as any },
+    { id: 203, name: 'Ngày 03', email: 'ngay03@test.com', phone: '0900000003', address: 'Đà Nẵng', created_at: daysAgo(3), status: OrderStatus.Delivered, payment_status: 'Paid' as any },
+    { id: 204, name: 'Ngày 04', email: 'ngay04@test.com', phone: '0900000004', address: 'Cần Thơ', created_at: daysAgo(4), status: OrderStatus.Delivered, payment_status: 'Paid' as any },
+    { id: 205, name: 'Ngày 05', email: 'ngay05@test.com', phone: '0900000005', address: 'Hải Phòng', created_at: daysAgo(5), status: OrderStatus.Delivered, payment_status: 'Paid' as any },
+    { id: 206, name: 'Ngày 06', email: 'ngay06@test.com', phone: '0900000006', address: 'Nha Trang', created_at: daysAgo(6), status: OrderStatus.Delivered, payment_status: 'Paid' as any },
+    { id: 207, name: 'Ngày 07', email: 'ngay07@test.com', phone: '0900000007', address: 'Huế', created_at: daysAgo(7), status: OrderStatus.Delivered, payment_status: 'Paid' as any },
+    { id: 208, name: 'Ngày 08', email: 'ngay08@test.com', phone: '0900000008', address: 'Hà Nội', created_at: daysAgo(8), status: OrderStatus.Delivered, payment_status: 'Paid' as any },
+    { id: 209, name: 'Ngày 09', email: 'ngay09@test.com', phone: '0900000009', address: 'TP HCM', created_at: daysAgo(9), status: OrderStatus.Delivered, payment_status: 'Paid' as any },
+    { id: 210, name: 'Ngày 10', email: 'ngay10@test.com', phone: '0900000010', address: 'Đà Nẵng', created_at: daysAgo(10), status: OrderStatus.Delivered, payment_status: 'Paid' as any },
+    { id: 211, name: 'Ngày 11', email: 'ngay11@test.com', phone: '0900000011', address: 'Cần Thơ', created_at: daysAgo(11), status: OrderStatus.Delivered, payment_status: 'Paid' as any },
+    { id: 212, name: 'Ngày 12', email: 'ngay12@test.com', phone: '0900000012', address: 'Hải Phòng', created_at: daysAgo(12), status: OrderStatus.Delivered, payment_status: 'Paid' as any },
+    { id: 213, name: 'Ngày 13', email: 'ngay13@test.com', phone: '0900000013', address: 'Nha Trang', created_at: daysAgo(13), status: OrderStatus.Delivered, payment_status: 'Paid' as any },
+    { id: 214, name: 'Ngày 14', email: 'ngay14@test.com', phone: '0900000014', address: 'Huế', created_at: daysAgo(14), status: OrderStatus.Delivered, payment_status: 'Paid' as any },
+    { id: 215, name: 'Ngày 15', email: 'ngay15@test.com', phone: '0900000015', address: 'Hà Nội', created_at: daysAgo(15), status: OrderStatus.Delivered, payment_status: 'Paid' as any },
+    { id: 216, name: 'Ngày 16', email: 'ngay16@test.com', phone: '0900000016', address: 'TP HCM', created_at: daysAgo(16), status: OrderStatus.Delivered, payment_status: 'Paid' as any },
+    { id: 217, name: 'Ngày 17', email: 'ngay17@test.com', phone: '0900000017', address: 'Đà Nẵng', created_at: daysAgo(17), status: OrderStatus.Delivered, payment_status: 'Paid' as any },
+    { id: 218, name: 'Ngày 18', email: 'ngay18@test.com', phone: '0900000018', address: 'Cần Thơ', created_at: daysAgo(18), status: OrderStatus.Delivered, payment_status: 'Paid' as any },
+    { id: 219, name: 'Ngày 19', email: 'ngay19@test.com', phone: '0900000019', address: 'Hải Phòng', created_at: daysAgo(19), status: OrderStatus.Delivered, payment_status: 'Paid' as any },
+    { id: 220, name: 'Ngày 20', email: 'ngay20@test.com', phone: '0900000020', address: 'Nha Trang', created_at: daysAgo(20), status: OrderStatus.Delivered, payment_status: 'Paid' as any },
+    { id: 221, name: 'Ngày 21', email: 'ngay21@test.com', phone: '0900000021', address: 'Huế', created_at: daysAgo(21), status: OrderStatus.Delivered, payment_status: 'Paid' as any },
+    { id: 222, name: 'Ngày 22', email: 'ngay22@test.com', phone: '0900000022', address: 'Hà Nội', created_at: daysAgo(22), status: OrderStatus.Delivered, payment_status: 'Paid' as any },
+    { id: 223, name: 'Ngày 23', email: 'ngay23@test.com', phone: '0900000023', address: 'TP HCM', created_at: daysAgo(23), status: OrderStatus.Delivered, payment_status: 'Paid' as any },
+    { id: 224, name: 'Ngày 24', email: 'ngay24@test.com', phone: '0900000024', address: 'Đà Nẵng', created_at: daysAgo(24), status: OrderStatus.Delivered, payment_status: 'Paid' as any },
+    { id: 225, name: 'Ngày 25', email: 'ngay25@test.com', phone: '0900000025', address: 'Cần Thơ', created_at: daysAgo(25), status: OrderStatus.Delivered, payment_status: 'Paid' as any },
+    { id: 226, name: 'Ngày 26', email: 'ngay26@test.com', phone: '0900000026', address: 'Hải Phòng', created_at: daysAgo(26), status: OrderStatus.Delivered, payment_status: 'Paid' as any },
+    { id: 227, name: 'Ngày 27', email: 'ngay27@test.com', phone: '0900000027', address: 'Nha Trang', created_at: daysAgo(27), status: OrderStatus.Delivered, payment_status: 'Paid' as any },
+    { id: 228, name: 'Ngày 28', email: 'ngay28@test.com', phone: '0900000028', address: 'Huế', created_at: daysAgo(28), status: OrderStatus.Delivered, payment_status: 'Paid' as any },
+    { id: 229, name: 'Ngày 29', email: 'ngay29@test.com', phone: '0900000029', address: 'Hà Nội', created_at: daysAgo(29), status: OrderStatus.Delivered, payment_status: 'Paid' as any },
+    { id: 230, name: 'Ngày 30', email: 'ngay30@test.com', phone: '0900000030', address: 'TP HCM', created_at: daysAgo(30), status: OrderStatus.Delivered, payment_status: 'Paid' as any },
+    { id: 301, name: 'Tháng 01', email: 'thang01@test.com', phone: '0900000031', address: 'Hà Nội', created_at: monthsAgoDay15(12), status: OrderStatus.Return_Requested, payment_status: 'Paid' as any },
+    { id: 302, name: 'Tháng 02', email: 'thang02@test.com', phone: '0900000032', address: 'TP HCM', created_at: monthsAgoDay15(11), status: OrderStatus.Return_Requested, payment_status: 'Paid' as any },
+    { id: 303, name: 'Tháng 03', email: 'thang03@test.com', phone: '0900000033', address: 'Đà Nẵng', created_at: monthsAgoDay15(10), status: OrderStatus.Return_Requested, payment_status: 'Paid' as any },
+    { id: 305, name: 'Tháng 05', email: 'thang05@test.com', phone: '0900000035', address: 'Hải Phòng', created_at: monthsAgoDay15(8), status: OrderStatus.Return_Approved, payment_status: 'Refunded' as any },
+    { id: 306, name: 'Tháng 06', email: 'thang06@test.com', phone: '0900000036', address: 'Nha Trang', created_at: monthsAgoDay15(7), status: OrderStatus.Return_Approved, payment_status: 'Refunded' as any },
+    { id: 307, name: 'Tháng 07', email: 'thang07@test.com', phone: '0900000037', address: 'Huế', created_at: monthsAgoDay15(6), status: OrderStatus.Return_Approved, payment_status: 'Refunded' as any },
+    { id: 308, name: 'Tháng 08', email: 'thang08@test.com', phone: '0900000038', address: 'Hà Nội', created_at: monthsAgoDay15(5), status: OrderStatus.Return_Approved, payment_status: 'Refunded' as any },
+    { id: 309, name: 'Tháng 09', email: 'thang09@test.com', phone: '0900000039', address: 'TP HCM', created_at: monthsAgoDay15(4), status: OrderStatus.Return_Rejected, payment_status: 'Paid' as any },
+    { id: 310, name: 'Tháng 10', email: 'thang10@test.com', phone: '0900000040', address: 'Đà Nẵng', created_at: monthsAgoDay15(3), status: OrderStatus.Return_Rejected, payment_status: 'Paid' as any },
+    { id: 311, name: 'Tháng 11', email: 'thang11@test.com', phone: '0900000049', address: 'Cần Thơ', created_at: monthsAgoDay15(2), status: OrderStatus.Return_Rejected, payment_status: 'Paid' as any },
+    { id: 312, name: 'Tháng 12', email: 'thang12@test.com', phone: '0900000050', address: 'Hải Phòng', created_at: monthsAgoDay15(1), status: OrderStatus.Return_Rejected, payment_status: 'Paid' as any },
+    { id: 401, name: 'Pending 1', email: 'pending01@test.com', phone: '0900000041', address: 'Hà Nội', created_at: daysAgo(1), status: OrderStatus.Pending, payment_status: 'Unpaid' as any },
+    { id: 402, name: 'Pending 2', email: 'pending02@test.com', phone: '0900000042', address: 'TP HCM', created_at: daysAgo(2), status: OrderStatus.Pending, payment_status: 'Unpaid' as any },
+    { id: 403, name: 'Confirmed 1', email: 'confirmed01@test.com', phone: '0900000043', address: 'Đà Nẵng', created_at: daysAgo(2), status: OrderStatus.Confirmed, payment_status: 'Paid' as any },
+    { id: 404, name: 'Confirmed 2', email: 'confirmed02@test.com', phone: '0900000044', address: 'Cần Thơ', created_at: daysAgo(3), status: OrderStatus.Confirmed, payment_status: 'Paid' as any },
+    { id: 405, name: 'Shipping 1', email: 'shipping01@test.com', phone: '0900000045', address: 'Hải Phòng', created_at: daysAgo(3), status: OrderStatus.Shipping, payment_status: 'Paid' as any },
+    { id: 406, name: 'Shipping 2', email: 'shipping02@test.com', phone: '0900000046', address: 'Nha Trang', created_at: daysAgo(4), status: OrderStatus.Shipping, payment_status: 'Unpaid' as any },
+    { id: 407, name: 'Cancelled 1', email: 'cancelled01@test.com', phone: '0900000047', address: 'Huế', created_at: daysAgo(4), status: OrderStatus.Cancelled, payment_status: 'Unpaid' as any },
+    { id: 408, name: 'Cancelled 2', email: 'cancelled02@test.com', phone: '0900000048', address: 'Hà Nội', created_at: daysAgo(5), status: OrderStatus.Cancelled, payment_status: 'Unpaid' as any },
   ];
 
   for (const o of ordersData) {
@@ -514,6 +532,17 @@ async function main() {
     { order_id: 217, product_id: 5, quantity: 1, price: 320000 },
     { order_id: 218, product_id: 1, quantity: 4, price: 150000 },
     { order_id: 219, product_id: 25, quantity: 4, price: 200000 },
+    { order_id: 220, product_id: 9, quantity: 2, price: 150000 },
+    { order_id: 221, product_id: 1, quantity: 3, price: 150000 },
+    { order_id: 222, product_id: 25, quantity: 2, price: 200000 },
+    { order_id: 223, product_id: 33, quantity: 1, price: 250000 },
+    { order_id: 224, product_id: 5, quantity: 2, price: 320000 },
+    { order_id: 225, product_id: 1, quantity: 4, price: 150000 },
+    { order_id: 226, product_id: 9, quantity: 3, price: 150000 },
+    { order_id: 227, product_id: 25, quantity: 3, price: 200000 },
+    { order_id: 228, product_id: 33, quantity: 2, price: 250000 },
+    { order_id: 229, product_id: 5, quantity: 1, price: 320000 },
+    { order_id: 230, product_id: 1, quantity: 2, price: 150000 },
     { order_id: 301, product_id: 1, quantity: 6, price: 150000 },
     { order_id: 302, product_id: 5, quantity: 4, price: 320000 },
     { order_id: 303, product_id: 1, quantity: 10, price: 150000 },
@@ -526,6 +555,14 @@ async function main() {
     { order_id: 310, product_id: 9, quantity: 8, price: 150000 },
     { order_id: 311, product_id: 9, quantity: 12, price: 150000 },
     { order_id: 312, product_id: 5, quantity: 10, price: 320000 },
+    { order_id: 401, product_id: 1, quantity: 1, price: 150000 },
+    { order_id: 402, product_id: 25, quantity: 1, price: 200000 },
+    { order_id: 403, product_id: 5, quantity: 1, price: 320000 },
+    { order_id: 404, product_id: 9, quantity: 2, price: 150000 },
+    { order_id: 405, product_id: 33, quantity: 1, price: 250000 },
+    { order_id: 406, product_id: 1, quantity: 2, price: 150000 },
+    { order_id: 407, product_id: 25, quantity: 1, price: 200000 },
+    { order_id: 408, product_id: 9, quantity: 1, price: 150000 },
   ];
 
   await prisma.orderItem.createMany({ data: orderItemsData });
@@ -539,7 +576,7 @@ async function main() {
   }
 
   // ============================================================
-  // 9. RETURN REQUESTS
+  // 12. RETURN REQUESTS
   // ============================================================
   await prisma.returnRequest.createMany({
     data: [
@@ -560,7 +597,7 @@ async function main() {
   console.log('✔ Return requests');
 
   // ============================================================
-  // 10. USER PRODUCT INTERACTIONS
+  // 13. USER PRODUCT INTERACTIONS
   // ============================================================
   await prisma.userProductInteraction.createMany({
     data: [
