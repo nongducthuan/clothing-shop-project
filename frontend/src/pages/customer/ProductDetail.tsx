@@ -12,7 +12,6 @@ export default function ProductDetail() {
   const { state, actions, helpers, constants } = useProductDetail();
   const { t, getLocalizedText } = useLanguage();
 
-  // --- ERROR STATE ---
   if (state.error) {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center text-center bg-white dark:bg-slate-900">
@@ -30,7 +29,6 @@ export default function ProductDetail() {
     );
   }
 
-  // --- LOADING STATE ---
   if (!state.product) {
     return (
       <div className="min-h-[70vh] flex items-center justify-center bg-white dark:bg-slate-900">
@@ -39,7 +37,6 @@ export default function ProductDetail() {
     );
   }
 
-  // --- MAIN RENDER ---
   return (
     <div className="bg-white dark:bg-slate-900 flex-1 pb-12 pt-6">
       <div className="max-w-[1200px] mx-auto px-6">

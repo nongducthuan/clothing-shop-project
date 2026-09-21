@@ -38,7 +38,6 @@ export default function HeroCarousel({ banners = [] }) {
   const prev = () => goTo(current - 1);
   const next = useCallback(() => goTo(current + 1), [current, goTo]);
 
-  // Auto-advance every 5s
   useEffect(() => {
     if (slides.length <= 1) return;
     const timer = setInterval(next, 5000);

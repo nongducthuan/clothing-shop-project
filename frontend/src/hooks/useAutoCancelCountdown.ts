@@ -21,7 +21,6 @@ export function useAutoCancelCountdown(
 
   useEffect(() => {
     if (!createdAt) return;
-    // Recalculate immediately on mount / createdAt change
     setRemaining(getRemaining());
 
     const timer = setInterval(() => {

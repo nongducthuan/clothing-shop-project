@@ -2,8 +2,6 @@ import { createContext, useState, useEffect, ReactNode } from "react";
 import API from "../services/apiClient";
 import { User } from "../types";
 
-// --------------- Types ---------------
-
 interface AuthContextType {
   user: User | null;
   setUser: React.Dispatch<React.SetStateAction<User | null>>;
@@ -18,8 +16,6 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
-// --------------- Context ---------------
-
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
@@ -30,7 +26,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const tier = user?.tier_name ?? "Normal";
   const discount = user?.discount_percent ?? 0;
 
-  // Auto-refresh user data on mount
   useEffect(() => {
     refreshUser();
   }, []);
@@ -55,7 +50,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       const res = await API.get("/auth/me");
 
       if (res.data) {
-        // If token was removed while request was in-flight, do not update user state
         if (!localStorage.getItem("token")) return;
 
         setUser((prev) => {

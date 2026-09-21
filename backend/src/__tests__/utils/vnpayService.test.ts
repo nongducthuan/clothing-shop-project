@@ -6,8 +6,6 @@ import {
   generateVnPayUrl,
 } from '../../utils/vnpayService';
 
-// ─── sortObject ───────────────────────────────────────────────────────────────
-
 describe('sortObject', () => {
   it('should sort keys alphabetically', () => {
     const input = { z_key: 'last', a_key: 'first', m_key: 'middle' };
@@ -34,8 +32,6 @@ describe('sortObject', () => {
     expect(result['vnp_Amount']).toBe('10000');
   });
 });
-
-// ─── verifyVnPayReturn ────────────────────────────────────────────────────────
 
 /**
  * Helper: builds a VNPay callback params object and signs it correctly
@@ -110,8 +106,6 @@ describe('verifyVnPayReturn', () => {
     expect(result.isSuccess).toBe(false);
   });
 });
-
-// ─── generateVnPayUrl ─────────────────────────────────────────────────────────
 
 describe('generateVnPayUrl', () => {
   it('should return a URL string containing vnp_SecureHash', () => {

@@ -80,7 +80,6 @@ export default function ReturnRequestModal({ state, actions }: { state: any; act
     }
   };
 
-  // Calculate total estimated refund amount
   const estimatedRefund = items.reduce((sum: number, item: any) => {
     const sel = selectedItems[item.id];
     if (sel?.selected && !item.is_gift) {

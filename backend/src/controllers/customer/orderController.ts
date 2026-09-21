@@ -15,8 +15,6 @@ const ENUM_TO_DISPLAY_STATUS: Record<string, string> = {
     "Return_Approved":  "Return Approved",
 };
 
-// ─── OTP ──────────────────────────────────────────────────────────────────────
-
 export const sendOtpController = async (req: Request, res: Response): Promise<void> => {
     const { email, lang: bodyLang, language: bodyLanguage } = req.body;
     if (!email) {
@@ -89,7 +87,6 @@ export const verifyOtpAndGetOrders = async (req: Request, res: Response): Promis
         }
 
         if (otpData.code !== code) {
-            // Tăng failed_attempts
             await prisma.otp.update({
                 where: { id: otpData.id },
                 data: { failed_attempts: { increment: 1 } }
@@ -210,8 +207,6 @@ export const verifyOtpAndGetOrders = async (req: Request, res: Response): Promis
         res.status(500).json({ message: "System error while fetching orders" });
     }
 };
-
-// ─── ORDER CREATION ───────────────────────────────────────────────────────────
 
 export const createOrderController = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -539,8 +534,6 @@ export const createOrderController = async (req: Request, res: Response): Promis
     }
 };
 
-// ─── GET ORDERS ───────────────────────────────────────────────────────────────
-
 export const getOrders = async (req: Request, res: Response): Promise<void> => {
     try {
         const userId = req.user?.id;
@@ -660,8 +653,6 @@ export const getOrders = async (req: Request, res: Response): Promise<void> => {
     }
 };
 
-// ─── CUSTOMER CHANGE ORDER STATUS ─────────────────────────────────────────────
-
 // Fix 3: Customer chỉ được cancel đơn của chính mình, khi đang Pending/Confirmed
 export const changeOrderStatus = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -717,8 +708,6 @@ export const changeOrderStatus = async (req: Request, res: Response): Promise<vo
         res.status(500).json({ message: "Failed to update order status", error: err.message });
     }
 };
-
-// ─── MOMO CALLBACK ────────────────────────────────────────────────────────────
 
 // Fix 2: Verify HMAC signature từ MoMo trước khi xử lý
 export const momoCallback = async (req: Request, res: Response): Promise<void> => {
@@ -833,8 +822,6 @@ export const momoReturn = async (req: Request, res: Response): Promise<void> => 
     }
 };
 
-// ─── VNPAY CALLBACK & IPN ───────────────────────────────────────────────────
-
 export const vnpayIpn = async (req: Request, res: Response): Promise<void> => {
     try {
         const vnpParams = req.query;
@@ -935,8 +922,6 @@ export const vnpayReturn = async (req: Request, res: Response): Promise<void> =>
     }
 };
 
-// ─── REPAY / CHANGE PAYMENT METHOD ───────────────────────────────────────────
-
 export const repayMoMoController = async (req: Request, res: Response): Promise<void> => {
     try {
         const { id } = req.params;
@@ -1023,8 +1008,6 @@ export const repayMoMoController = async (req: Request, res: Response): Promise<
     }
 };
 
-// ─── RETURN REQUEST ───────────────────────────────────────────────────────────
-
 const parseBankInfo = (rawBank: any) => {
     if (!rawBank) return null;
     let bankData = typeof rawBank === 'string' ? JSON.parse(rawBank) : rawBank;
@@ -1088,8 +1071,6 @@ export const submitReturnRequest = async (req: Request, res: Response): Promise<
             if (existing) {
                 throw new Error("A return request has already been submitted for this order.");
             }
-
-            // ─── Validate & Build ReturnRequestItems ─────────────────────────────
 
             // Map order items để tra cứu nhanh
             const orderItemMap = new Map(order.items.map(i => [i.id, i]));
@@ -1187,8 +1168,6 @@ export const submitReturnRequest = async (req: Request, res: Response): Promise<
                 }
             }
 
-
-
             // Tạo ReturnRequest
             const returnRequest = await tx.returnRequest.create({
                 data: {
@@ -1217,7 +1196,6 @@ export const submitReturnRequest = async (req: Request, res: Response): Promise<
         res.status(500).json({ message: error.message });
     }
 };
-
 
 export const cancelReturnRequest = async (req: Request, res: Response): Promise<void> => {
     try {

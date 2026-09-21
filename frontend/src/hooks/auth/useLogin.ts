@@ -30,25 +30,20 @@ export function useLogin() {
     setIsLoading(true);
 
     try {
-      // Authenticate with the backend API
       const res = await API.post("/auth/login", form);
       const { user, token } = res.data;
 
-      // Ensure necessary data is present in the response
       if (!user || !token) {
         setError(t("auth.invalid_response"));
         setIsLoading(false);
         return;
       }
 
-      // Persist session to local storage
       localStorage.setItem("user", JSON.stringify(user));
       localStorage.setItem("token", token);
 
-      // Update global context
       setUser(user);
 
-      // Role-based redirection
       if (user.role === "admin") {
         navigate("/admin");
       } else {

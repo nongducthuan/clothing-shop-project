@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
 
-// ─── Mock Prisma before importing the controller ──────────────────────────────
 jest.mock('../../../prisma/client', () => ({
   __esModule: true,
   default: {
@@ -10,8 +9,6 @@ jest.mock('../../../prisma/client', () => ({
 
 import prisma from '../../../prisma/client';
 import { submitReturnRequest } from '../../controllers/customer/orderController';
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function mockRes() {
   const res = {
@@ -79,8 +76,6 @@ function createdReturnItems() {
   expect(tx.returnRequest.create).toHaveBeenCalledTimes(1);
   return tx.returnRequest.create.mock.calls[0][0].data.items.create;
 }
-
-// ─── Tests ────────────────────────────────────────────────────────────────────
 
 describe('submitReturnRequest – Buy X Get Y chỉ ràng buộc đúng sản phẩm X', () => {
   it('trả 1 phần sản phẩm KHÔNG phải X (#119) → cho phép, không gom quà Y', async () => {

@@ -116,5 +116,3 @@ export default function SidebarFilters({ state, refs, actions }) {
     </div>
   );
 }
-
-

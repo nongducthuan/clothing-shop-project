@@ -16,12 +16,6 @@ interface LanguageContextType {
 
 export type LabelType = "orderStatus" | "returnStatus" | "returnReason";
 
-/**
- * Bang map tap trung: enum code -> translation key.
- * Them status/reason moi chi can them 1 dong o day.
- * Tach theo type de tranh trung ma (vd: "Pending" vua la OrderStatus
- * vua la ReturnStatus nhung nghia khac nhau).
- */
 const LABEL_MAPS: Record<LabelType, Record<string, string>> = {
   orderStatus: {
     Pending: "order_status.pending",
@@ -87,28 +81,15 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return t(msg);
   };
 
-  /**
-   * Helper to resolve localized product/category names.
-   * Checks item[`${field}_${lang}`] first, e.g. item.name_vi or item.name_en.
-   * Falls back to the other language variant if the current one is empty.
-   */
   const getLocalizedText = (item: any, fieldName: string = "name"): string => {
     if (!item) return "";
     const langField = `${fieldName}_${language}`;
     if (item[langField]) return item[langField];
-    // Fallback to the other language (vi <-> en)
     const otherLang = language === "vi" ? "en" : "vi";
     const otherLangField = `${fieldName}_${otherLang}`;
     return item[otherLangField] || item[fieldName] || "";
   };
 
-  /**
-   * Ham chung duy nhat de dich cac ma enum co dinh (vi/en theo ngon ngu dang chon).
-   * Dung: getLocalizedLabel("orderStatus", status)
-   *       getLocalizedLabel("returnStatus", status)
-   *       getLocalizedLabel("returnReason", reason)
-   * Fallback: tra ve gia tri goc neu chua co map.
-   */
   const getLocalizedLabel = (type: LabelType, value?: string | null): string => {
     if (!value) return "";
     const key = LABEL_MAPS[type]?.[value];

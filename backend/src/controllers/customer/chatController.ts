@@ -39,11 +39,9 @@ export const handleChatWithHistory = async (req: Request, res: Response): Promis
         const history = activeChatSessions[sessionId];
         const reply = await generateAiResponse(message, history, lang as string);
 
-        // Update session history
         activeChatSessions[sessionId].push({ role: 'user', content: message });
         activeChatSessions[sessionId].push({ role: 'ai', content: reply });
 
-        // Keep last 8 messages in session history
         if (activeChatSessions[sessionId].length > 8) {
             activeChatSessions[sessionId] = activeChatSessions[sessionId].slice(-8);
         }

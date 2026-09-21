@@ -8,7 +8,6 @@ export default function Footer() {
   const { user } = useContext(AuthContext);
   const { t } = useLanguage();
 
-  // Hide footer on auth pages and admin pages
   if (
     location.pathname === "/login" ||
     location.pathname === "/register" ||

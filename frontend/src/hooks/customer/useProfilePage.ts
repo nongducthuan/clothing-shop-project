@@ -36,7 +36,6 @@ export function useProfilePage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  // --- State Management ---
   const activeTab = searchParams.get("tab") === "orders" ? "orders" : "info";
   const setActiveTab = (tab: string) => {
     setSearchParams({ tab });
@@ -47,7 +46,6 @@ export function useProfilePage() {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [phone, setPhone] = useState(user?.phone || "");
 
-  // Return Modal State
   const [showReturnModal, setShowReturnModal] = useState(false);
   const [returnOrderId, setReturnOrderId] = useState(null);
   const [returnOrder, setReturnOrder] = useState<any>(null);
@@ -56,7 +54,6 @@ export function useProfilePage() {
     selectedItems: {}
   });
 
-  // Change Payment Modal State
   const [paymentModalOrder, setPaymentModalOrder] = useState(null);
   const [repayLoading, setRepayLoading] = useState(false);
 
@@ -69,7 +66,6 @@ export function useProfilePage() {
   // Buy Again substitution suggestions (variant replacement modal)
   const [buyAgainSuggestions, setBuyAgainSuggestions] = useState<SubstitutionSuggestion[] | null>(null);
 
-  // --- Derived Variables ---
   const currentConfig = TIER_CONFIG[tier] || TIER_CONFIG.Normal;
   const totalSpent = Number(user?.total_spent || 0);
   const safeProgress = useMemo(() => {
@@ -77,7 +73,6 @@ export function useProfilePage() {
     return Math.min(rawProgress, 100);
   }, [totalSpent, currentConfig.next]);
 
-  // --- Effects ---
   useEffect(() => {
     if (!user) {
       navigate("/login");
@@ -101,7 +96,6 @@ export function useProfilePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, navigate]);
 
-  // Dùng ref hoặc state riêng để track việc đã fetch, tránh gọi liên tục nếu user chưa có đơn hàng nào
   const [hasFetchedOrders, setHasFetchedOrders] = useState(false);
 
   useEffect(() => {
@@ -110,7 +104,6 @@ export function useProfilePage() {
     }
   }, [activeTab, user, hasFetchedOrders]);
 
-  // --- Handlers & API Calls ---
   const fetchOrders = async () => {
     setLoadingOrders(true);
     setHasFetchedOrders(true);

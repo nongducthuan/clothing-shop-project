@@ -90,7 +90,6 @@ export const createCategory = async (req: Request, res: Response): Promise<void>
     // name is the canonical display name (NOT NULL). Falls back to either localized name.
     const baseName = name || name_vi || name_en;
 
-    // Convert gender string to enum type manually if needed, assuming Prisma maps it correctly from request
     const category = await prisma.category.create({
       data: {
         name: baseName,

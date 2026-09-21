@@ -332,10 +332,6 @@ export default function OrderTable({
   );
 }
 
-// ==========================================
-// THÀNH PHẦN CHI TIẾT ĐƯỢC TÍCH HỢP TRỰC TIẾP
-// ==========================================
-
 const DeliveryInfoSection = ({ order }) => {
   const { t, language } = useLanguage();
   const dateLocale = language === 'vi' ? 'vi-VN' : 'en-GB';

@@ -137,7 +137,6 @@ export default function usePromotionManager() {
     }
   };
 
-  // --- Helpers ---
   const formatDateDisplay = (dateString) => {
     if (!dateString) return "N/A";
     return new Date(dateString).toLocaleDateString("en-GB");

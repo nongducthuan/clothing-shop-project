@@ -3,12 +3,6 @@ import BannerForm from "../../components/admin/banners/BannerForm";
 import BannerList from "../../components/admin/banners/BannerList";
 import { useLanguage } from "../../context/LanguageContext";
 
-// --- SUB-COMPONENTS ---
-
-/**
- * PageHeader Component
- * Displays a minimal, pill-shaped title badge for consistency across the admin panel.
- */
 const PageHeader = () => {
   const { t } = useLanguage();
   return (
@@ -23,14 +17,7 @@ const PageHeader = () => {
   );
 };
 
-// --- MAIN COMPONENT ---
-
-/**
- * BannerManager Page Component.
- * Orchestrates the Banner Form and Banner List side-by-side in a modern UI wrapper.
- */
 export default function BannerManager() {
-  // Destructure all logic from our custom hook (Logic remains 100% untouched)
   const {
     banners, isUploading, editingId, form, setForm,
     uploadImage, saveBanner, deleteBanner, selectForEdit, resetForm
@@ -39,14 +26,10 @@ export default function BannerManager() {
   return (
     <div className="container mx-auto px-4 py-8 lg:px-8 max-w-7xl flex-1">
 
-      {/* Reusable Pill Header */}
       <PageHeader />
 
-      {/* Main Layout Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
 
-        {/* ======================== FORM SECTION ======================== */}
-        {/* Placed inside a heavily rounded card to pop against the background */}
         <div className="lg:col-span-4 bg-white dark:bg-slate-800 p-6 md:p-8 rounded-[2rem] border border-slate-200/80 dark:border-slate-700 shadow-sm transition-all duration-300 hover:shadow-md lg:sticky lg:top-24 relative z-10">
           <BannerForm
             form={form}

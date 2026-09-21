@@ -5,12 +5,6 @@ import CategoryForm from "../../components/admin/categories/CategoryForm";
 import CategoryList from "../../components/admin/categories/CategoryList";
 import { useLanguage } from "../../context/LanguageContext";
 
-// --- SUB-COMPONENTS ---
-
-/**
- * PageHeader Component
- * Displays a minimal, pill-shaped title badge and a matching action button.
- */
 const PageHeader = ({ navigate }) => {
   const { t } = useLanguage();
   return (
@@ -34,16 +28,9 @@ const PageHeader = ({ navigate }) => {
   );
 };
 
-// --- MAIN COMPONENT ---
-
-/**
- * Main Layout for Category Management.
- * Orchestrates the Category Form and List side-by-side in a modern UI wrapper.
- */
 export default function CategoryManager() {
   const navigate = useNavigate();
 
-  // Destructure all required logic from the custom hook (Logic remains untouched)
   const {
     categories, editingId, loading, filterGender, setFilterGender,
     categoryImages, recommendNames, form, setForm,

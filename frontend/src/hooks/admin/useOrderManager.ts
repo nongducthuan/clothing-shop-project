@@ -5,10 +5,6 @@ import { useLanguage } from "../../context/LanguageContext";
 import { formatCurrency as formatCurrencyUtil } from "../../utils/currencyUtils";
 import { UNDO_TRANSITIONS, isClosedOrderStatus } from "../../utils/orderUtils";
 
-// ==========================================
-// CONSTANTS (Declared outside to prevent re-creation on every render)
-// ==========================================
-
 const BASE_URL = import.meta.env.VITE_API_URL;
 
 // Danh sách enum trạng thái (STATUS_OPTIONS, STANDARD_STATUSES, RETURN_STATUSES,
@@ -36,24 +32,13 @@ const PAYMENT_STATUS_COLORS = {
   Refunded: "#6f42c1",
 };
 
-// ==========================================
-// CUSTOM HOOK
-// ==========================================
-
-/**
- * Custom hook to manage admin orders logic.
- * Encapsulates state management, API calls, and UI helpers.
- */
 export default function useOrderManager() {
-  // --- STATE MANAGEMENT ---
   const { showToast } = useToast();
   const { t, language, translateApiMessage } = useLanguage();
   const [orders, setOrders] = useState([]);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [confirmAction, setConfirmAction] = useState(false);
   const [filterStatus, setFilterStatus] = useState("All");
-
-  // --- UTILS & HELPERS ---
 
   const getToken = useCallback(() => {
     return localStorage.getItem("token") || localStorage.getItem("adminToken");
@@ -79,8 +64,6 @@ export default function useOrderManager() {
   const findOrderById = (orderId) =>
     orders.find((o) => String(o.id) === String(orderId)) || selectedOrder;
 
-  // --- DATA FETCHING ---
-
   /**
    * Fetch all orders from backend, sorted by newest first
    */
@@ -102,12 +85,9 @@ export default function useOrderManager() {
     }
   }, [getToken, showToast]);
 
-  // Initial Data Load
   useEffect(() => {
     fetchOrders();
   }, [fetchOrders]);
-
-  // --- MUTATIONS (API ACTIONS) ---
 
   /**
    * Updates the general delivery status of an order
@@ -343,16 +323,12 @@ export default function useOrderManager() {
     }
   };
 
-  // --- DERIVED STATE ---
-
-  // Memoized to prevent recalculation on every re-render unless dependencies change
   const filteredOrders = useMemo(() => {
     return orders.filter(
       (o) => filterStatus === "All" || o.status === filterStatus
     );
   }, [orders, filterStatus]);
 
-  // --- EXPOSE API TO COMPONENT ---
   return {
     orders: filteredOrders,
     selectedOrder,

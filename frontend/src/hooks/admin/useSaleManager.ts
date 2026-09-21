@@ -132,7 +132,6 @@ export default function useSaleManager() {
         await API.post("/admin/sales", payload);
         showToast(t("admin.toast_created", "Tạo mới thành công!"), "success");
       }
-      // Reset form
       setEditingId(null);
       setFormData({ ...emptySaleForm });
       setApplyScope("all");

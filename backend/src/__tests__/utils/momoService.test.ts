@@ -45,8 +45,6 @@ function buildValidMomoBody(overrides: Record<string, any> = {}): Record<string,
   return { ...base, signature };
 }
 
-// ─── verifyMomoSignature ──────────────────────────────────────────────────────
-
 describe('verifyMomoSignature', () => {
   it('should return true when signature matches (valid callback)', () => {
     const body = buildValidMomoBody();

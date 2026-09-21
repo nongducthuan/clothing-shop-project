@@ -5,12 +5,6 @@ import ProductForm from "../../components/admin/products/ProductForm";
 import ProductList from "../../components/admin/products/ProductList";
 import { useLanguage } from "../../context/LanguageContext";
 
-// --- SUB-COMPONENTS ---
-
-/**
- * PageHeader Component
- * Minimal, pill-shaped title badge and action buttons.
- */
 const PageHeader = ({ navigate, setMobileFormOpen, mobileFormOpen }) => {
   const { t } = useLanguage();
   return (
@@ -42,12 +36,9 @@ const PageHeader = ({ navigate, setMobileFormOpen, mobileFormOpen }) => {
   );
 };
 
-// --- MAIN COMPONENT ---
-
 export default function ProductManager() {
   const navigate = useNavigate();
 
-  // Custom Hook Handles everything
   const { state, actions } = useProductManager();
 
   return (

@@ -1,8 +1,6 @@
 import { createContext, useState, useEffect, ReactNode } from "react";
 import { CartItem } from "../types";
 
-// --------------- Types ---------------
-
 interface CartContextType {
   cart: CartItem[];
   setCart: React.Dispatch<React.SetStateAction<CartItem[]>>;
@@ -16,8 +14,6 @@ interface CartProviderProps {
   children: ReactNode;
 }
 
-// --------------- Context ---------------
-
 export const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: CartProviderProps) {
@@ -30,13 +26,11 @@ export function CartProvider({ children }: CartProviderProps) {
     localStorage.setItem("clothing-cart", JSON.stringify(cart));
   }, [cart]);
 
-  // Check if item exists (match ID + size + color)
   const isMatch = (p1: CartItem, p2: CartItem) =>
     p1.id === p2.id &&
     p1.size_id === p2.size_id &&
     p1.color_id === p2.color_id;
 
-  // Add item to cart or increment quantity
   const addToCart = (product: CartItem) => {
     const existing = cart.find((item) => isMatch(item, product));
 
@@ -59,7 +53,6 @@ export function CartProvider({ children }: CartProviderProps) {
     }
   };
 
-  // Update item quantity
   const updateQuantity = (cartItemId: string, delta: number) => {
     setCart(
       cart.map((p) =>
@@ -70,7 +63,6 @@ export function CartProvider({ children }: CartProviderProps) {
     );
   };
 
-  // Remove item
   const removeFromCart = (cartItemId: string) => {
     setCart(cart.filter((p) => p.cartItemId !== cartItemId));
   };

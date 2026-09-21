@@ -5,7 +5,6 @@ import { useLanguage } from "../../context/LanguageContext";
 import API from "../../services/apiClient.js";
 import { getImageUrl, PLACEHOLDER_IMG } from "../../utils/imageUtils";
 
-// --- TYPE DEFINITIONS ---
 interface ProductSize {
   id: number;
   size: string;
@@ -58,7 +57,6 @@ export function useProductDetail() {
   const { addToCart } = useContext(CartContext);
   const { t } = useLanguage();
 
-  // --- STATE ---
   const [product, setProduct] = useState<Product | null>(null);
   const [selectedColor, setSelectedColor] = useState<ProductColor | null>(null);
   const [selectedSize, setSelectedSize] = useState<ProductSize | null>(null);
@@ -74,9 +72,6 @@ export function useProductDetail() {
   const user = userStr ? (JSON.parse(userStr) as { id: number }) : null;
   const currentUserId = user ? user.id : null;
 
-  // --- EFFECTS ---
-
-  // Fetch Vouchers & Promotions
   useEffect(() => {
     if (product) {
       API.get("/vouchers", {
@@ -114,7 +109,6 @@ export function useProductDetail() {
       .catch(() => setActivePromotion(null));
   }, [product]);
 
-  // Fetch Product Details
   useEffect(() => {
     let url = `${API.defaults?.baseURL || import.meta.env.VITE_API_URL}/products/${id}`;
     if (currentUserId) {
@@ -156,7 +150,6 @@ export function useProductDetail() {
       .catch((err: unknown) => setError((err as Error).message));
   }, [id, currentUserId]);
 
-  // Handle Color Change
   useEffect(() => {
     if (selectedColor) {
       setMainImage(selectedColor.image_url);
@@ -174,14 +167,12 @@ export function useProductDetail() {
     }
   }, [selectedColor]);
 
-  // --- DERIVED VARIABLES ---
   const isSale = (product?.sale_percent ?? 0) > 0;
   const salePrice = isSale && product ? product.price * (1 - (product.sale_percent ?? 0) / 100) : product?.price ?? 0;
   const isVoucherValidForProduct = activeVoucher !== null && activeVoucher !== undefined;
   const isProductIncomplete = !product?.colors || product?.colors.length === 0;
   const currentStock = selectedSize ? selectedSize.stock : 0;
 
-  // --- HANDLERS & HELPERS ---
   const getStockMessage = () => {
     if (!product || !product.colors || product.colors.length === 0) return t("product.updating", "Product is updating.");
     if (!selectedColor) return t("product.select_color", "Please select a color");
@@ -238,5 +229,3 @@ export function useProductDetail() {
     }
   };
 }
-
-

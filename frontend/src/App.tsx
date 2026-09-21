@@ -1,6 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
-// Context Providers
 import { ThemeProvider } from "./context/ThemeContext.tsx";
 import { LanguageProvider } from "./context/LanguageContext.tsx";
 import { CartProvider } from "./context/CartContext.tsx";
@@ -8,14 +7,12 @@ import { AuthProvider } from "./context/AuthContext.tsx";
 import { AIChatProvider } from "./context/AIChatContext.tsx";
 import { ToastProvider } from "./context/ToastContext.tsx";
 
-// Components
 import ProtectedRoute from "./components/auth/ProtectedRoute.tsx";
 import Navbar from "./components/customer/layout/Navbar.tsx";
 import Footer from "./components/customer/layout/Footer.tsx";
 
 import AIChatBubble from "./components/customer/chatbot/AIChatBubble.tsx";
 
-// Pages - Public
 import Home from "./pages/customer/Home.tsx";
 import Cart from "./pages/customer/Cart.tsx";
 import Login from "./pages/auth/Login.tsx";
@@ -29,7 +26,6 @@ import Profile from "./pages/customer/Profile.tsx";
 import SalesPolicy from "./pages/customer/SalesPolicy.tsx";
 import PaymentReturn from "./pages/customer/PaymentReturn.tsx";
 
-// Pages - Admin
 import Dashboard from "./pages/admin/Dashboard.tsx";
 import ProductDetailManager from "./pages/admin/ProductDetailManager.tsx";
 import BannerManager from "./pages/admin/BannerManager.tsx";
@@ -40,7 +36,6 @@ import Report from "./pages/admin/Report.tsx";
 import SaleManager from "./pages/admin/SaleManager.tsx";
 import VoucherManager from "./pages/admin/VoucherManager.tsx";
 import PromotionManager from "./pages/admin/PromotionManager.tsx";
-
 
 function App() {
   return (

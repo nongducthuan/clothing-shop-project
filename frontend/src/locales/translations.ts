@@ -167,7 +167,6 @@ export const translations = {
     'profile.password_changed': 'Đổi mật khẩu thành công!',
     'profile.password_failed': 'Đổi mật khẩu thất bại.',
 
-
     // Home
     'home.hero_title': 'Thời Trang Đẳng Cấp & Phong Cách',
     'home.hero_fallback_title': 'Chào mừng đến với LOOM',

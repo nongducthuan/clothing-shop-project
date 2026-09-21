@@ -10,7 +10,6 @@ export default function ProductDetailManager() {
   const navigate = useNavigate();
   const { t, getLocalizedText } = useLanguage();
 
-  // Logic is completely isolated in the custom hook
   const {
     product, colors, selectedColorId, setSelectedColorId,
     colorForm, setColorForm, sizeForm, setSizeForm,

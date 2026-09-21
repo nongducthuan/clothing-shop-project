@@ -67,7 +67,6 @@ export function PaymentSection({ currentMethod, onChange }) {
   );
 }
 
-// --- Internal Reusable Sub-components ---
 const InputField = ({ label, type = "text", ...props }) => (
   <div>
     <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-2 ml-1">{label}</label>

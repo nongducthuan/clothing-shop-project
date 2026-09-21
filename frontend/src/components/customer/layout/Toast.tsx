@@ -3,11 +3,9 @@ import { useEffect, useState } from "react";
 export default function Toast({ message, type = "success", onClose }) {
   const [isVisible, setIsVisible] = useState(false);
 
-  // Fade-in effect when component mounts
   useEffect(() => {
     setIsVisible(true);
 
-    // Auto close after 3 seconds
     const timer = setTimeout(() => {
       handleClose();
     }, 3000);
@@ -24,7 +22,6 @@ export default function Toast({ message, type = "success", onClose }) {
     }, 300);
   };
 
-  // Configure colors and icons based on toast type
   const config = {
     success: {
       icon: "fa-circle-check",
@@ -60,7 +57,6 @@ export default function Toast({ message, type = "success", onClose }) {
     },
   };
 
-  // If type is invalid, fallback to success (or info)
   const style = config[type] || config.success;
 
   return (

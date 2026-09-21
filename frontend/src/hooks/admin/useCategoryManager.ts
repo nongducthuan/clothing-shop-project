@@ -13,17 +13,14 @@ export function useCategoryManager() {
   const token = localStorage.getItem("token");
   const authConfig = { headers: { Authorization: `Bearer ${token}` } };
 
-  // Core States
   const [categories, setCategories] = useState([]);
   const [editingId, setEditingId] = useState(null);
   const [loading, setLoading] = useState(false);
   const [filterGender, setFilterGender] = useState("male");
 
-  // Contextual States (Images from products & recommended names)
   const [categoryImages, setCategoryImages] = useState([]);
   const [recommendNames, setRecommendNames] = useState([]);
 
-  // Form State
   const [form, setForm] = useState({ name: "", name_vi: "", name_en: "", gender: "", image_url: "" });
 
   /**
@@ -54,7 +51,6 @@ export function useCategoryManager() {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
 
-    // Fetch naming suggestions when user selects a gender
     if (name === "gender" && value) {
       try {
         const res = await API.get(`/admin/categories/recommend?gender=${value}`);
@@ -84,7 +80,6 @@ export function useCategoryManager() {
       }
       resetForm();
       await fetchCategories();
-      // Sync other components if needed
       window.dispatchEvent(new Event("categories-updated"));
       showToast(`Category ${editingId ? "updated" : "added"} successfully!`, "success");
     } catch (err) {

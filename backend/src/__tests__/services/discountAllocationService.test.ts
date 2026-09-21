@@ -1,13 +1,9 @@
 import { allocateItemDiscounts, AllocatableItem } from '../../services/discountAllocationService';
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
 const cents = (value: number) => Math.round(value * 100);
 
 const sumPayable = (items: { payable_amount: number }[]) =>
   items.reduce((sum, item) => sum + cents(item.payable_amount), 0);
-
-// ─── Pro-rata allocation ──────────────────────────────────────────────────────
 
 describe('allocateItemDiscounts – Pro-rata allocation', () => {
   it('splits a 100k voucher over 300k + 200k items proportionally (60/40)', () => {
@@ -101,8 +97,6 @@ describe('allocateItemDiscounts – Pro-rata allocation', () => {
     expect(result[1]).toEqual({ discount_amount: 0, payable_amount: 0 });
   });
 });
-
-// ─── Edge cases & invariants ──────────────────────────────────────────────────
 
 describe('allocateItemDiscounts – Edge cases & invariants', () => {
   it('returns an empty array for an empty order', () => {

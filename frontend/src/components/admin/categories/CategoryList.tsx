@@ -12,14 +12,12 @@ export default function CategoryList({
 }) {
   const { t, getLocalizedText } = useLanguage();
 
-  // Gender tabs configuration
   const genderTabs = [
     { key: "male", label: t("gender.male") },
     { key: "female", label: t("gender.female") },
     { key: "unisex", label: t("gender.unisex") },
   ];
 
-  // Helper to display gender label with soft pill styling
   const renderGenderBadge = (g) => {
     const styles = {
       male: "bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400",
@@ -34,7 +32,6 @@ export default function CategoryList({
     );
   };
 
-  // Filter categories based on selected tab
   const filteredCategories = categories.filter(
     (cat) => cat.gender === filterGender
   );

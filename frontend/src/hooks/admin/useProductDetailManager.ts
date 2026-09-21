@@ -3,29 +3,21 @@ import API from "../../services/apiClient.js";
 import { useToast } from "../../context/ToastContext";
 import { useLanguage } from "../../context/LanguageContext";
 
-// Constants
 export const SIZE_ORDER = ["XS", "S", "M", "L", "XL", "XXL", "FreeSize", "29", "30", "31", "32"];
 export const API_URL = import.meta.env.VITE_API_URL;
 
-/**
- * Custom hook managing the inventory (colors & sizes) of a specific product.
- * @param {string|number} productId - The ID of the product being managed.
- */
 export function useProductInventory(productId) {
   const { showToast } = useToast();
   const { t } = useLanguage();
   const token = localStorage.getItem("token");
 
-  // Data States
   const [product, setProduct] = useState(null);
   const [colors, setColors] = useState([]);
   const [selectedColorId, setSelectedColorId] = useState(null);
 
-  // Form States
   const [colorForm, setColorForm] = useState({ color_name: "", color_name_vi: "", color_name_en: "", color_code: "#000000", image_url: "" });
   const [sizeForm, setSizeForm] = useState({ size: "S", stock: 10 });
 
-  // UI States
   const [isUploading, setIsUploading] = useState(false);
 
   /**
@@ -44,7 +36,6 @@ export function useProductInventory(productId) {
         setProduct(data);
         if (data.colors) {
           setColors([...data.colors]);
-          // Auto-select the first color if none is selected
           if (!selectedColorId && data.colors.length > 0) {
             setSelectedColorId(data.colors[0].id);
           }
@@ -90,7 +81,6 @@ export function useProductInventory(productId) {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      // Reset form & refresh data
       setColorForm({ color_name: "", color_name_vi: "", color_name_en: "", color_code: "#000000", image_url: "" });
       fetchProductData();
       showToast(t("admin.pd.toast_color_added", "Color added successfully!"), "success");
@@ -110,7 +100,6 @@ export function useProductInventory(productId) {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      // Clear selection if the deleted color was selected
       if (selectedColorId === colorId) setSelectedColorId(null);
       fetchProductData();
       showToast(t("admin.pd.toast_color_deleted", "Color deleted."), "success");
@@ -146,8 +135,8 @@ export function useProductInventory(productId) {
         currentColor.sizes.push({ id: data.id, size: sizeForm.size, stock: stockValue });
       }
 
-      setColors([...colors]); // Trigger re-render
-      setSizeForm({ size: "S", stock: 0 }); // Reset form
+      setColors([...colors]);
+      setSizeForm({ size: "S", stock: 0 });
       showToast(t("admin.pd.toast_stock_updated", "Size stock updated successfully!"), "success");
     } catch (err) {
       showToast(t("admin.pd.toast_add_size_failed", "Failed to add/update size stock."), "error");
@@ -207,8 +196,6 @@ export function useProductInventory(productId) {
     }
   };
 
-
-  // Initial Data Fetch
   useEffect(() => {
     fetchProductData();
     // eslint-disable-next-line react-hooks/exhaustive-deps

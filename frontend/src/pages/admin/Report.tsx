@@ -3,7 +3,6 @@ import { useReport } from "../../hooks/admin/useReport";
 import { useLanguage } from "../../context/LanguageContext";
 import { useTheme } from "../../context/ThemeContext";
 
-/** Bảng màu đồng bộ cho các trạng thái */
 const STATUS_COLORS = {
   'Pending': '#ffc107',
   'Confirmed': '#17a2b8',
@@ -23,12 +22,9 @@ const STATUS_COLORS = {
 export default function Report() {
   const { t, getLocalizedLabel } = useLanguage();
   const { isDark } = useTheme();
-
-  // Color variables for charts based on theme
   const textColor = isDark ? '#e2e8f0' : '#334155';
   const subTextColor = isDark ? '#94a3b8' : '#64748b';
 
-  // Chỉ việc gọi hook và lấy data ra dùng
   const {
     loading,
     stats,
@@ -44,7 +40,6 @@ export default function Report() {
     formatCurrency
   } = useReport();
 
-  // Modern Loading Pill UI
   if (loading) {
     return (
       <div className="flex-1 flex items-center justify-center bg-slate-50 dark:bg-slate-900">
@@ -56,7 +51,6 @@ export default function Report() {
     );
   }
 
-  // Modern Error State
   if (!stats) {
     return (
       <div className="flex-1 flex items-center justify-center bg-slate-50 dark:bg-slate-900">
@@ -74,7 +68,6 @@ export default function Report() {
   return (
     <div className="container mx-auto px-4 py-8 lg:px-8 max-w-7xl flex-1 font-sans">
 
-      {/* Pill UI Header */}
       <div className="flex items-center gap-4 mb-8">
         <div className="inline-flex items-center gap-3 bg-white dark:bg-slate-800 px-6 py-3.5 rounded-full shadow-sm border border-slate-200/80 dark:border-slate-700">
           <div className="w-3 h-3 flex-shrink-0 bg-indigo-500 rounded-full animate-pulse"></div>
@@ -86,7 +79,6 @@ export default function Report() {
 
       <div className="max-w-screen-2xl mx-auto space-y-10">
 
-        {/* --- PHẦN 1: CÁC THẺ THỐNG KÊ NHANH --- */}
         <div className="space-y-8">
           <section>
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-50 dark:bg-indigo-900/30 rounded-full mb-6 border border-indigo-100 dark:border-indigo-800/50">
@@ -115,10 +107,8 @@ export default function Report() {
           </section>
         </div>
 
-        {/* --- PHẦN 2: PHÂN TÍCH BIỂU ĐỒ --- */}
         <div className="space-y-8">
 
-          {/* Hàng 1: Doanh thu 7 ngày (full width) */}
           <div className="bg-white dark:bg-slate-800 p-6 md:p-8 shadow-sm rounded-[2rem] border border-slate-200/80 dark:border-slate-700 flex flex-col justify-center overflow-hidden">
             <Chart
               chartType="ColumnChart"
@@ -137,7 +127,6 @@ export default function Report() {
             />
           </div>
 
-          {/* Hàng 2: Xu hướng 12 tháng (trend dài hạn, full width) */}
           <div className="bg-white dark:bg-slate-800 p-6 md:p-8 shadow-sm rounded-[2rem] border border-slate-200/80 dark:border-slate-700 flex flex-col justify-center overflow-hidden">
             <Chart
               chartType="LineChart"
@@ -157,7 +146,6 @@ export default function Report() {
             />
           </div>
 
-          {/* Hàng 3: 4 biểu đồ tròn — lưới 2x2 (phân tích cơ cấu & vận hành) */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <ChartCard title={t("admin.chart_revenue_category", "Doanh thu theo danh mục")}>
               <Chart
@@ -237,7 +225,6 @@ export default function Report() {
   );
 }
 
-/** Component thẻ biểu đồ con */
 function ChartCard({ title, children }) {
   return (
     <div className="bg-white dark:bg-slate-800 p-6 shadow-sm rounded-[2rem] border border-slate-200/80 dark:border-slate-700 flex flex-col items-center hover:border-indigo-100 dark:hover:border-indigo-700 transition-colors duration-300">
@@ -251,7 +238,6 @@ function ChartCard({ title, children }) {
   );
 }
 
-/** Component thẻ thống kê */
 function StatCard({ title, value, color }) {
   return (
     <div className="bg-white dark:bg-slate-800 p-6 md:p-8 shadow-sm rounded-[2rem] border border-slate-200/80 dark:border-slate-700 transition-all duration-300 hover:-translate-y-1 hover:shadow-md hover:border-indigo-100 dark:hover:border-indigo-700 flex flex-col justify-center gap-2">

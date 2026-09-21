@@ -11,7 +11,6 @@ export const getProductDetail = async (req: Request, res: Response): Promise<voi
       return;
     }
 
-    // 1️⃣ Lấy thông tin sản phẩm
     const product = await prisma.product.findUnique({
       where: { id: productId },
       include: {
@@ -29,7 +28,6 @@ export const getProductDetail = async (req: Request, res: Response): Promise<voi
       return;
     }
 
-    // Lấy thông tin Sale (khuyến mãi) của sản phẩm
     const sales = await prisma.sale.findMany({
       where: {
         status: true, // Fix 10: Boolean
@@ -52,7 +50,6 @@ export const getProductDetail = async (req: Request, res: Response): Promise<voi
 
     const sale_percent = sales.length > 0 ? Number(sales[0].discount_percent) : 0;
 
-    // Tính tổng tồn kho
     let totalStock = 0;
     product.colors.forEach(color => {
       color.sizes.forEach(size => {
@@ -60,7 +57,6 @@ export const getProductDetail = async (req: Request, res: Response): Promise<voi
       });
     });
 
-    // Định dạng response
     const formattedProduct = {
       id: product.id,
       name: product.name,

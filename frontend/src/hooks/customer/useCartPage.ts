@@ -20,7 +20,6 @@ export function useCartPage() {
   const [giftProductsDetails, setGiftProductsDetails] = useState({});
   const [selectedGiftVariants, setSelectedGiftVariants] = useState({});
 
-  // Fetch active promotions
   useEffect(() => {
     API.get("/promotions")
       .then(res => setActivePromotions(res.data?.data || res.data || []))
@@ -89,7 +88,6 @@ export function useCartPage() {
     }));
   };
 
-  // Logic: Fetch details for earned gifts
   useEffect(() => {
     earnedGifts.forEach(gift => {
       if (!giftProductsDetails[gift.giftProductId]) {
@@ -103,7 +101,6 @@ export function useCartPage() {
     });
   }, [earnedGifts, giftProductsDetails]);
 
-  // Logic: Calculate totals
   const { subtotal, membershipDiscount, voucherDiscount, finalTotal, totalQuantity } = useMemo(() => {
     const subtotalValue = cart.reduce(
       (sum, item) => sum + Number(item.price) * (item.quantity || 1),
@@ -141,7 +138,6 @@ export function useCartPage() {
     return translateApiMessage(data?.message) || t("cart.server_error", "Server connection error");
   };
 
-  // Logic: Apply Voucher
   const handleApplyVoucher = async () => {
     if (!voucherCode.trim()) return;
     setIsApplying(true);
@@ -178,7 +174,6 @@ export function useCartPage() {
     setVoucherMessage({ type: "", text: "" });
   };
 
-  // Helpers
   const formatPrice = (n) => formatCurrency(n, language);
 
   return {

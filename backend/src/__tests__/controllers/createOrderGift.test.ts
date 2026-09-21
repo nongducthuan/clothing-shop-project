@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
 
-// ─── Mocks ────────────────────────────────────────────────────────────────────
 jest.mock('../../../prisma/client', () => ({
   __esModule: true,
   default: { $transaction: jest.fn() },
@@ -13,8 +12,6 @@ jest.mock('../../utils/emailService', () => ({
 
 import prisma from '../../../prisma/client';
 import { createOrderController } from '../../controllers/customer/orderController';
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function mockRes() {
   return {
@@ -60,8 +57,6 @@ beforeEach(() => {
 
   (prisma.$transaction as jest.Mock).mockImplementation(async (cb: any) => cb(tx));
 });
-
-// ─── Tests ────────────────────────────────────────────────────────────────────
 
 describe('createOrderController – ràng buộc Buy X Get Y cho quà tặng', () => {
   it('từ chối quà tặng không có promotion_id', async () => {

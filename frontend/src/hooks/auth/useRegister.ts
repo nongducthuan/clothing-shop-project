@@ -32,7 +32,6 @@ export function useRegister() {
     setError("");
     setSuccess("");
 
-    // Basic Validation
     if (form.password !== form.confirmPassword) {
       setError(t("auth.password_mismatch"));
       return;
@@ -51,7 +50,6 @@ export function useRegister() {
 
       setSuccess(t("auth.register_success"));
 
-      // Redirect after a short delay
       setTimeout(() => {
         navigate("/login");
       }, 2000);

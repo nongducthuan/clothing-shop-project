@@ -6,8 +6,6 @@ import { ChatMessage } from "../types";
 const STORAGE_SESSION_KEY = "ai_chat_session_id";
 const STORAGE_HISTORY_KEY = "ai_chat_history";
 
-// --------------- Types ---------------
-
 interface AIChatContextType {
   sessionId: string;
   messages: ChatMessage[];
@@ -20,8 +18,6 @@ interface AIChatContextType {
 interface AIChatProviderProps {
   children: ReactNode;
 }
-
-// --------------- Context ---------------
 
 export const AIChatContext = createContext<AIChatContextType | undefined>(undefined);
 

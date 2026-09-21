@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
 
-// ─── Mock Prisma before importing the controller ──────────────────────────────
 jest.mock('../../../prisma/client', () => ({
   __esModule: true,
   default: {
@@ -16,8 +15,6 @@ jest.mock('../../../prisma/client', () => ({
 
 import prisma from '../../../prisma/client';
 import { applyVoucherCustomer } from '../../controllers/customer/voucherController';
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function mockRes() {
   const res = {
@@ -58,8 +55,6 @@ const dbProducts = [
   { id: 1, price: 200000, category_id: 10 },
   { id: 2, price: 150000, category_id: 20 },
 ];
-
-// ─── applyVoucherCustomer ─────────────────────────────────────────────────────
 
 describe('applyVoucherCustomer', () => {
   beforeEach(() => jest.clearAllMocks());

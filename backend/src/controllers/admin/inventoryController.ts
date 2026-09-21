@@ -21,7 +21,6 @@ export const getInventory = async (req: Request, res: Response): Promise<void> =
       }
     });
 
-    // Flattening the response to match the old raw SQL output structure
     const flattenedInventory: any[] = [];
     for (const product of inventory) {
       for (const color of product.colors) {

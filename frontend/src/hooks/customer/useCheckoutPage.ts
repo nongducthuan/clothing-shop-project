@@ -12,7 +12,6 @@ import {
 } from "../../utils/shippingUtils";
 import { formatCurrency } from "../../utils/currencyUtils";
 
-// --- HELPER HOOK: GEOLOCATION ---
 const useGeolocation = () => {
   const [isLocating, setIsLocating] = useState(false);
   const [locationError, setLocationError] = useState("");
@@ -84,7 +83,6 @@ const useGeolocation = () => {
   return { fetchCurrentLocation, isLocating, locationError };
 };
 
-// --- MAIN HOOK ---
 export function useCheckoutPage() {
   const navigate = useNavigate();
   const routeLocation = useLocation();
@@ -93,7 +91,6 @@ export function useCheckoutPage() {
   const { t, language, translateApiMessage } = useLanguage();
   const { fetchCurrentLocation, isLocating, locationError } = useGeolocation();
 
-  // State Management
   const [statusMessage, setStatusMessage] = useState("");
   const [shippingAddress, setShippingAddress] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("cod");
@@ -103,7 +100,6 @@ export function useCheckoutPage() {
   const appliedVoucher = routeLocation.state?.appliedVoucher || null;
   const earnedGifts = routeLocation.state?.earnedGifts || [];
 
-  // Fetch gift product details
   useEffect(() => {
     earnedGifts.forEach((gift) => {
       if (!giftDetails[gift.giftProductId]) {
@@ -117,7 +113,6 @@ export function useCheckoutPage() {
     });
   }, [earnedGifts, giftDetails]);
 
-  // Calculations
   const subtotal = useMemo(() =>
     cart.reduce((sum, item) => sum + Number(item.price) * (item.quantity ?? 1), 0),
   [cart]);
@@ -144,7 +139,6 @@ export function useCheckoutPage() {
     return getImageUrl(rawUrl);
   };
 
-  // Handlers
   const handleGuestChange = (e) => {
     const { name, value } = e.target;
     setGuestInfo(prev => ({ ...prev, [name]: value }));

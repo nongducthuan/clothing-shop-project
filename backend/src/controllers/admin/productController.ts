@@ -14,7 +14,6 @@ export const getProducts = async (req: Request, res: Response): Promise<void> =>
             orderBy: { id: 'desc' }
         });
 
-        // Map to match the previous structure
         const formattedProducts = products.map(p => {
             const totalStock = p.colors.reduce((acc, c) => acc + c.sizes.reduce((sum, s) => sum + s.stock, 0), 0);
             return {
@@ -136,7 +135,6 @@ export const getProductDetail = async (req: Request, res: Response): Promise<voi
     }
 };
 
-// --- COLORS & SIZES ---
 export const addColor = async (req: Request, res: Response): Promise<void> => {
     try {
         const { productId } = req.params;

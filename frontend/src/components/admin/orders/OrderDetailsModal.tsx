@@ -85,10 +85,6 @@ export default function OrderDetailsModal({ order, onClose, formatCurrency }) {
   );
 }
 
-// ==========================================
-// SUB COMPONENTS (SRP applied)
-// ==========================================
-
 const DeliveryInfoSection = ({ order }) => {
   const { t, language } = useLanguage();
   const dateLocale = language === 'vi' ? 'vi-VN' : 'en-US';

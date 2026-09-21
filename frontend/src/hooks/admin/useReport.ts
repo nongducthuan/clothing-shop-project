@@ -26,17 +26,13 @@ export function useReport() {
     return formatCurrencyUtil(amount, language);
   };
 
-  // Nếu đang loading hoặc lỗi thì chưa cần map data
   if (loading || !stats) {
     return { loading, stats, summary: {}, formatCurrency };
   }
 
-  // Lấy dữ liệu từ Backend
-  // Backend trả summary fields trực tiếp trong stats (không phải stats.summary)
   const summary = stats;
   const { revenue7Days, orderStatus, revenueMonths, categoryStats, returnStatuses, returnReasons } = stats;
 
-  // Xử lý dữ liệu cho các biểu đồ (header dịch qua i18n)
   const weeklyChartData = [
     [t("admin.chart_date"), t("admin.chart_revenue"), t("admin.chart_profit")],
     ...(revenue7Days || []).map(r => [r.day, Number(r.revenue), Number(r.profit)])

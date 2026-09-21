@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
 import prisma from '../../../prisma/client';
-// Import the interaction service you mentioned in task.md
 import { recordInteraction } from '../../services/interactionService';
 import { Prisma } from '../../generated/prisma/client';
 

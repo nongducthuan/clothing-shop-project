@@ -10,7 +10,6 @@ export default function CategoryPage() {
   const { state, actions } = useCategoryPage();
   const { t } = useLanguage();
 
-  // --- Early Returns for Critical Errors ---
   if (state.error) {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center text-rose-500">
@@ -28,7 +27,6 @@ export default function CategoryPage() {
     );
   }
 
-  // --- Main Render ---
   return (
     <div className="w-full flex-1 bg-white dark:bg-slate-900 transition-colors">
       <div className="max-w-[1400px] mx-auto py-12 px-6">

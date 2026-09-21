@@ -7,8 +7,6 @@ import {
   JwtPayload,
 } from '../../middleware/authMiddleware';
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
 /** Creates a minimal mock Express Response with jest.fn() for json/status */
 function mockRes() {
   const res = {
@@ -36,8 +34,6 @@ const VALID_PAYLOAD: JwtPayload = {
   email: 'test@example.com',
   role: 'customer',
 };
-
-// ─── authenticateToken ────────────────────────────────────────────────────────
 
 describe('authenticateToken', () => {
   beforeEach(() => jest.clearAllMocks());
@@ -95,8 +91,6 @@ describe('authenticateToken', () => {
   });
 });
 
-// ─── requireAdmin ─────────────────────────────────────────────────────────────
-
 describe('requireAdmin', () => {
   beforeEach(() => jest.clearAllMocks());
 
@@ -134,8 +128,6 @@ describe('requireAdmin', () => {
     expect(res.status).not.toHaveBeenCalled();
   });
 });
-
-// ─── optionalAuthenticateToken ────────────────────────────────────────────────
 
 describe('optionalAuthenticateToken', () => {
   beforeEach(() => jest.clearAllMocks());

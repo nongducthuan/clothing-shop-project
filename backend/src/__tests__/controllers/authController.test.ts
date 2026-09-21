@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
 
-// ─── Mock Prisma before importing the controller ──────────────────────────────
 jest.mock('../../../prisma/client', () => ({
   __esModule: true,
   default: {
@@ -26,8 +25,6 @@ import prisma from '../../../prisma/client';
 import bcrypt from 'bcryptjs';
 import { register, login } from '../../controllers/customer/authController';
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
 function mockRes() {
   const res = {
     status: jest.fn().mockReturnThis(),
@@ -39,8 +36,6 @@ function mockRes() {
 function mockReq(body: Record<string, any>): Request {
   return { body } as unknown as Request;
 }
-
-// ─── register ─────────────────────────────────────────────────────────────────
 
 describe('register', () => {
   beforeEach(() => jest.clearAllMocks());
@@ -124,8 +119,6 @@ describe('register', () => {
     );
   });
 });
-
-// ─── login ────────────────────────────────────────────────────────────────────
 
 describe('login', () => {
   beforeEach(() => jest.clearAllMocks());

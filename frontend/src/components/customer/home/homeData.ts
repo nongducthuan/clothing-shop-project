@@ -41,7 +41,6 @@ export const GENDER_PROMOS = [
   },
 ];
 
-
 export const LOOKBOOK_IMAGES = [
   "/assets/images/lookbook1.png",
   "/assets/images/lookbook2.png",

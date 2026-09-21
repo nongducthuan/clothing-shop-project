@@ -8,7 +8,6 @@ interface ApiOptions extends RequestInit {
   headers?: Record<string, string>;
 }
 
-// Internal API Wrapper (Kept exact logic from original file)
 const API = {
   get: async (endpoint: string, options: ApiOptions = {}) => {
     const res = await fetch(`${API_URL}${endpoint}`, {
@@ -59,7 +58,6 @@ export default function useProductManager() {
   const { showToast } = useToast();
   const { t } = useLanguage();
 
-  // --- State ---
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [uploading, setUploading] = useState(false);
@@ -84,14 +82,12 @@ export default function useProductManager() {
 
   const [mobileFormOpen, setMobileFormOpen] = useState(false);
 
-  // --- Helpers ---
   const resetForm = useCallback(() => {
     setEditingId(null);
     setForm({ name: "", name_vi: "", name_en: "", description_vi: "", description_en: "", import_price: "", price: "", image_url: "", gender: "unisex", category_id: "" });
     setMobileFormOpen(false);
   }, []);
 
-  // --- Data Fetching ---
   const fetchData = useCallback(async () => {
     try {
       const [prodRes, catRes] = await Promise.all([
@@ -114,7 +110,6 @@ export default function useProductManager() {
     setFilterCategory("all");
   }, [filterGender]);
 
-  // --- Actions ---
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -207,7 +202,6 @@ export default function useProductManager() {
     }
   }, [token, showToast]);
 
-  // --- Derived State (Memos) ---
   const uniqueCategoriesForFilter = useMemo(() => {
     const activeList = filterGender === "all"
       ? categories
@@ -276,5 +270,3 @@ export default function useProductManager() {
     }
   };
 }
-
-

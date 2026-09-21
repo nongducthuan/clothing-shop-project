@@ -8,12 +8,8 @@ import { useLanguage } from "../../../context/LanguageContext";
 import API from "../../../services/apiClient";
 import { getImageUrl as getImgUrl } from "../../../utils/imageUtils";
 
-// --- UTILS & CONSTANTS ---
 const GENDERS = ["male", "female", "unisex"];
 
-// --- CUSTOM HOOKS ---
-
-// Hook to manage category data fetching and updates
 function useCategoryData() {
   const [menuData, setMenuData] = useState({
     male: [],
@@ -71,9 +67,6 @@ function useHoverDelay(delay = 200) {
   return { isOpen, open, close, closeImmediately, cancelClose };
 }
 
-// --- SUB-COMPONENTS ---
-
-// Renders the Desktop Navigation and Dropdowns (SLIDING PILL EFFECT)
 const DesktopNav = ({ menuData, navigate }) => {
   const [hoveredGender, setHoveredGender] = useState(null);
   const [pillStyle, setPillStyle] = useState({ left: 0, width: 0, opacity: 0 });
@@ -161,7 +154,6 @@ const DesktopNav = ({ menuData, navigate }) => {
   );
 };
 
-// Renders the User Icon and Dropdown (Desktop)
 const UserDropdown = ({ user, navigate, onLogout }: { user: any; navigate: any; onLogout: any }) => {
   const { isOpen, open, close, closeImmediately, cancelClose } = useHoverDelay();
   const { t, language, setLanguage } = useLanguage();
@@ -317,7 +309,6 @@ const UserDropdown = ({ user, navigate, onLogout }: { user: any; navigate: any; 
   );
 };
 
-// Renders the Mobile Drawer (Hidden on Desktop)
 const MobileMenu = ({ isOpen, onClose, user, menuData, navigate, onLogout, cartCount }: { isOpen: boolean; onClose: () => void; user: any; menuData: any; navigate: any; onLogout: () => void; cartCount: number }) => {
   const [expandedGender, setExpandedGender] = useState(null);
   const { language, setLanguage, t } = useLanguage();
@@ -510,8 +501,6 @@ const MobileMenu = ({ isOpen, onClose, user, menuData, navigate, onLogout, cartC
     </>
   );
 };
-
-// --- MAIN COMPONENT ---
 
 export default function Navbar() {
   const { user, setUser } = useContext(AuthContext);

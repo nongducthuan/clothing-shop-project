@@ -8,7 +8,6 @@ import EmptyState from "../../components/common/EmptyState";
 import { useLanguage } from "../../context/LanguageContext";
 import { useState } from "react";
 
-// --- SUB-COMPONENTS ---
 const PageHeader = () => {
   const { t } = useLanguage();
   return (
@@ -23,7 +22,6 @@ const PageHeader = () => {
   );
 };
 
-// --- MAIN COMPONENT ---
 export default function OrderManager() {
   const { t } = useLanguage();
   const {

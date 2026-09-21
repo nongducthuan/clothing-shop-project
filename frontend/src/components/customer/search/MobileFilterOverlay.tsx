@@ -16,7 +16,6 @@ export default function MobileFilterOverlay({ state, actions, refs }) {
   const { setShowMobileFilter, updateFilter, clearFilters } = actions;
   const { t, language, getLocalizedText } = useLanguage();
 
-  // Lock body scroll
   useEffect(() => {
     if (typeof document !== "undefined") {
       if (showMobileFilter) {

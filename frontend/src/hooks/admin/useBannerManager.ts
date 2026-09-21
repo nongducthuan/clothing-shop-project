@@ -11,7 +11,6 @@ export function useBannerManager() {
   const { t } = useLanguage();
   const token = localStorage.getItem("token");
 
-  // State management
   const [banners, setBanners] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
   const [editingId, setEditingId] = useState(null);

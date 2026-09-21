@@ -147,7 +147,6 @@ const promotionService = {
     try {
       await prisma.$transaction(async (tx) => {
         for (const gift of userSelectedGifts) {
-          // Update total gifts issued
           const promoUpdate = await tx.buyXGetYPromotion.updateMany({
             where: {
               id: gift.promotion_id,
@@ -163,7 +162,6 @@ const promotionService = {
             throw new Error(`Promotion ID ${gift.promotion_id} has reached its gift limit or does not exist.`);
           }
 
-          // Decrement gift stock
           const stockUpdate = await tx.productSize.updateMany({
             where: {
               id: gift.size_id,

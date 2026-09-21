@@ -6,24 +6,20 @@ import { useLanguage } from "../../context/LanguageContext";
 
 export function useSearch() {
   const { t, getLocalizedText } = useLanguage();
-  // --- STATES ---
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [activePromotions, setActivePromotions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showMobileFilter, setShowMobileFilter] = useState(false);
 
-  // URL Params
   const [searchParams, setSearchParams] = useSearchParams();
   const urlQuery = searchParams.get("query") || "";
   const urlGender = searchParams.get("gender") || "all";
   const urlCategory = searchParams.get("category") || "";
 
-  // Local Filters
   const [searchInput, setSearchInput] = useState(urlQuery);
   const [filterPrice, setFilterPrice] = useState(0);
 
-  // Pill Styles & Refs
   const [pillStyle, setPillStyle] = useState({ left: 0, width: 0 });
   const buttonRefs = useRef([]);
 
@@ -33,7 +29,6 @@ export function useSearch() {
   const [pricePillStyle, setPricePillStyle] = useState({ top: 0, height: 0 });
   const priceRefs = useRef([]);
 
-  // --- MEMOS ---
   const uniqueCategories = useMemo(() => {
     const unique = [];
     const seen = new Set();
@@ -96,7 +91,6 @@ export function useSearch() {
     return text;
   }, [urlQuery, urlCategory, categories, t, getLocalizedText]);
 
-  // --- EFFECTS ---
   useEffect(() => {
     setSearchInput(urlQuery);
   }, [urlQuery]);
@@ -127,7 +121,6 @@ export function useSearch() {
     fetchData();
   }, []);
 
-  // Calculate Gender Pill Style
   useEffect(() => {
     if (loading) return;
     const activeIndex = GENDERS.findIndex((g) => g.id === urlGender);
@@ -139,7 +132,6 @@ export function useSearch() {
     }
   }, [urlGender, loading]);
 
-  // Calculate Category Pill Style
   useEffect(() => {
     if (loading) return;
     let activeIndex = 0;
@@ -158,7 +150,6 @@ export function useSearch() {
     }
   }, [urlCategory, uniqueCategories, categories, loading]);
 
-  // Calculate Price Pill Style
   useEffect(() => {
     if (loading) return;
     const activeBtn = priceRefs.current[filterPrice];
@@ -167,7 +158,6 @@ export function useSearch() {
     }
   }, [filterPrice, loading]);
 
-  // --- HANDLERS ---
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     const newParams = new URLSearchParams(searchParams);

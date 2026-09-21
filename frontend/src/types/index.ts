@@ -2,8 +2,6 @@
 // Shared Type Definitions — Frontend (đồng bộ với Backend API)
 // =============================================================================
 
-// --------------- User & Auth ---------------
-
 export interface User {
   id: number;
   name: string;
@@ -24,8 +22,6 @@ export interface AuthResponse {
   user: User;
 }
 
-// --------------- Category ---------------
-
 export interface Category {
   id: number;
   name: string;
@@ -34,8 +30,6 @@ export interface Category {
   image_url?: string;
   created_at?: string;
 }
-
-// --------------- Product ---------------
 
 export interface Color {
   id: number;
@@ -79,8 +73,6 @@ export interface Product {
   created_at?: string;
 }
 
-// --------------- Cart ---------------
-
 export interface CartItem {
   cartItemId?: string; // Made optional since addToCart constructs it if not present
   id: number;
@@ -103,8 +95,6 @@ export interface CartItem {
   color_image?: string;
   size?: string;
 }
-
-// --------------- Order ---------------
 
 export type OrderStatus =
   | 'pending'
@@ -145,8 +135,6 @@ export interface Order {
   updated_at?: string;
 }
 
-// --------------- Banner ---------------
-
 export interface Banner {
   id: number;
   title?: string;
@@ -156,8 +144,6 @@ export interface Banner {
   order?: number;
   created_at?: string;
 }
-
-// --------------- Voucher ---------------
 
 export interface Voucher {
   id: number;
@@ -173,8 +159,6 @@ export interface Voucher {
   created_at?: string;
 }
 
-// --------------- Sale ---------------
-
 export interface Sale {
   id: number;
   name: string;
@@ -184,8 +168,6 @@ export interface Sale {
   is_active: boolean;
   created_at?: string;
 }
-
-// --------------- Promotion ---------------
 
 export interface Promotion {
   id: number;
@@ -199,8 +181,6 @@ export interface Promotion {
   created_at?: string;
 }
 
-// --------------- AI Chat ---------------
-
 export type MessageRole = 'user' | 'ai';
 
 export interface ChatMessage {
@@ -209,8 +189,6 @@ export interface ChatMessage {
   content: string;
   createdAt: string;
 }
-
-// --------------- Generic API Response ---------------
 
 export interface ApiResponse<T> {
   data: T;

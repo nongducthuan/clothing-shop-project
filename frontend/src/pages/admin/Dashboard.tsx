@@ -3,12 +3,6 @@ import { useState, useRef } from "react";
 import { useDashboardStats } from "../../hooks/admin/useDashboard";
 import { useLanguage } from "../../context/LanguageContext";
 
-// --- SUB-COMPONENTS ---
-
-/**
- * DashboardHeader Component
- * Minimal, pill-shaped title badge.
- */
 const DashboardHeader = () => {
   const { t } = useLanguage();
   return (
@@ -23,17 +17,12 @@ const DashboardHeader = () => {
   );
 };
 
-/**
- * StatsPillGrid Component (THE SLIDING PILL UI)
- * Replaces the individual StatCards with a cohesive, 2D sliding segmented control.
- */
 const StatsPillGrid = ({ stats, navigate }) => {
   const { t } = useLanguage();
   const [hoveredId, setHoveredId] = useState(null);
   const [pillStyle, setPillStyle] = useState({ left: 0, top: 0, width: 0, height: 0, opacity: 0 });
   const closeTimer = useRef(null);
 
-  // Mapping the 8 stats into a structured array for rendering
   const statItems = [
     { id: 'stock', title: t('admin.total_stock'), value: stats.totalStock?.toLocaleString() || 0, sub: t('admin.available_products'), icon: 'fa-boxes-stacked', color: 'text-green-600 dark:text-emerald-400', route: '/admin/products', action: t('admin.manage_products') },
     { id: 'orders', title: t('admin.new_orders'), value: stats.orders || 0, sub: t('admin.need_processing'), icon: 'fa-file-invoice-dollar', color: 'text-yellow-500 dark:text-amber-400', route: '/admin/orders', action: t('admin.order_management') },
@@ -49,7 +38,6 @@ const StatsPillGrid = ({ stats, navigate }) => {
     if (closeTimer.current) clearTimeout(closeTimer.current);
     setHoveredId(id);
 
-    // Calculate 2D position (Left & Top) to support grid layout sliding
     if (e.currentTarget) {
       setPillStyle({
         left: e.currentTarget.offsetLeft,
@@ -73,7 +61,6 @@ const StatsPillGrid = ({ stats, navigate }) => {
       className="relative bg-slate-200/80 dark:bg-slate-800/60 p-3 rounded-[2rem] border border-gray-200/80 dark:border-slate-700/80 shadow-inner grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-10 overflow-hidden"
       onMouseLeave={handleMouseLeave}
     >
-      {/* The 2D Sliding Pill Background */}
       <div
         className="absolute bg-white dark:bg-slate-700/90 rounded-3xl shadow-md border border-gray-100 dark:border-slate-600 transition-all duration-300 ease-out pointer-events-none z-0"
         style={pillStyle}
@@ -88,10 +75,8 @@ const StatsPillGrid = ({ stats, navigate }) => {
             item.route === '#' ? 'cursor-default opacity-60' : ''
           }`}
         >
-          {/* Icon */}
           <i className={`fa-solid ${item.icon} text-3xl mb-4 transition-transform duration-300 ${hoveredId === item.id ? 'scale-110' : ''} ${item.color}`}></i>
 
-          {/* Title & Value */}
           <h6 className="text-gray-500 dark:text-slate-400 font-bold uppercase tracking-widest text-xs mb-1">
             {item.title}
           </h6>
@@ -102,7 +87,6 @@ const StatsPillGrid = ({ stats, navigate }) => {
             {item.sub}
           </p>
 
-          {/* Action Footer */}
           <div className="mt-auto pt-2">
             <span className={`text-xs font-bold transition-colors duration-300 ${
               hoveredId === item.id ? item.color : 'text-gray-500 dark:text-slate-400'
@@ -116,10 +100,6 @@ const StatsPillGrid = ({ stats, navigate }) => {
   );
 };
 
-/**
- * RevenueBanner Component
- * Large, horizontal pill-shaped banner for the revenue report.
- */
 const RevenueBanner = ({ onClick }) => {
   const { t } = useLanguage();
   return (
@@ -150,11 +130,6 @@ const RevenueBanner = ({ onClick }) => {
   );
 };
 
-// --- MAIN COMPONENT ---
-
-/**
- * Dashboard Page Component.
- */
 export default function Dashboard() {
   const navigate = useNavigate();
   const { stats } = useDashboardStats();
@@ -163,10 +138,8 @@ export default function Dashboard() {
     <div className="container mx-auto px-4 py-8 lg:px-8 max-w-7xl flex-1">
       <DashboardHeader />
 
-      {/* 2D Sliding Pill Grid */}
       <StatsPillGrid stats={stats} navigate={navigate} />
 
-      {/* Revenue Section */}
       <RevenueBanner onClick={() => navigate("/admin/report")} />
     </div>
   );

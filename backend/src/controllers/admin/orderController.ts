@@ -3,7 +3,6 @@ import prisma from '../../../prisma/client';
 
 export const getOrders = async (req: Request, res: Response): Promise<void> => {
     try {
-        // Fix 15: Default limit 500 → 50 để tránh memory spike
         const { page = 1, limit = 50 } = req.query;
         const p = Number(page) || 1;
         const l = Number(limit) || 50;
@@ -64,7 +63,6 @@ export const getOrders = async (req: Request, res: Response): Promise<void> => {
                 }
             }
 
-            // Flatten items for compatibility
             const items = order.items.map(item => ({
                 ...item,
                 product_name: item.product?.name,
@@ -77,9 +75,6 @@ export const getOrders = async (req: Request, res: Response): Promise<void> => {
                 size: item.size?.size
             }));
 
-            // Dữ liệu cũ (undo bằng phiên bản trước): đơn nằm ở "Delivered" nhưng yêu cầu đổi trả
-            // vẫn Pending. Trạng thái đó KHÔNG còn là "Đã giao" — hiển thị như "Return Requested"
-            // cho khớp luồng chuẩn (khách gửi yêu cầu ⇒ đơn ở Return Requested) và với bộ lọc tab Đổi trả.
             const displayStatus = ENUM_TO_DISPLAY_STATUS[order.status] || order.status;
             const normalizedDisplayStatus =
                 displayStatus === 'Delivered' && rr?.status === 'Pending' ? 'Return Requested' : displayStatus;
@@ -215,7 +210,6 @@ const ALLOWED_STATUS_TRANSITIONS: Record<string, string[]> = {
 // 3 trạng thái đổi trả chỉ được đổi qua /return/approve hoặc /return/reject
 const RETURN_STATUS_ENUMS = ["Return_Requested", "Return_Approved", "Return_Rejected"];
 
-// ─── UNDO CÓ KIỂM SOÁT ───────────────────────────────────────────────────────
 // Admin bấm nhầm hay đổi ý: cho phép quay lại đúng 3 cặp an toàn, mỗi cặp có
 // hậu quả đảo chiều được changeOrderStatusLogic xử lý đối xứng:
 //   Delivered → Shipping            : trừ doanh thu/total_spent đúng ngày delivered_at
@@ -588,18 +582,11 @@ export const updateOrderStatus = async (req: Request, res: Response): Promise<vo
     }
 };
 
-// Fix 17: Xóa hàm changeOrderStatus trùng với updateOrderStatus —
-// Route admin dùng updateOrderStatus (id từ params), đây là alias tương thích
 export const changeOrderStatus = updateOrderStatus;
 
 export const approveReturn = async (req: Request, res: Response): Promise<void> => {
     const orderId = Number(req.params.id);
     try {
-        // Gộp toàn bộ approve vào 1 transaction duy nhất: update ReturnRequest +
-        // hoàn kho partial + đổi status + trừ revenue/spending — crash giữa chừng
-        // không để lại trạng thái "kho đã hoàn mà đơn chưa duyệt".
-        // Kho/doanh thu/spending tính qua changeOrderStatusLogic với opts.partial
-        // (1 nơi duy nhất), không còn nhánh thủ công song song.
         const returnReq = await prisma.returnRequest.findUnique({
             where: { order_id: orderId },
             include: { items: { include: { order_item: true } } }
@@ -607,8 +594,6 @@ export const approveReturn = async (req: Request, res: Response): Promise<void> 
 
         const refundAmount = returnReq ? Number(returnReq.refund_amount) : 0;
         const hasPartialItems = !!returnReq?.items && returnReq.items.length > 0;
-        // shipping_refund mặc định 0 (chính sách hiện tại: không hoàn ship);
-        // sau này shop chịu ship khi giao sai hàng thì set > 0 tại đây.
         const shippingRefund = returnReq ? Number(returnReq.shipping_refund ?? 0) : 0;
 
         await prisma.$transaction(async (tx) => {
@@ -788,13 +773,6 @@ export const rejectReturn = async (req: Request, res: Response): Promise<void> =
     const orderId = Number(req.params.id);
     const { adminNote } = req.body;
     try {
-        // Reject KHÔNG bao giờ đụng doanh thu (khách vẫn giữ hàng, shop giữ tiền):
-        //   - Từ Return_Requested (luồng chuẩn — kể cả sau khi hoàn tác quyết định nhầm):
-        //     không nhánh nào của changeOrderStatusLogic khớp → 0.
-        //   - Từ Delivered (chỉ còn ở dữ liệu cũ: đơn đã hoàn tác bằng phiên bản trước nên
-        //     status Delivered mà yêu cầu vẫn Pending): nhánh "rời Delivered" sẽ trừ doanh thu
-        //     trong khi doanh thu Delivered gốc vẫn đang được tính → phải skipFinancial,
-        //     chỉ đổi nhãn trạng thái.
         const current = await prisma.order.findUnique({
             where: { id: orderId },
             select: { status: true },
@@ -803,8 +781,6 @@ export const rejectReturn = async (req: Request, res: Response): Promise<void> =
         const currentEnum = STATUS_DISPLAY_TO_ENUM[current.status as string] ?? (current.status as string);
         const rejectFromDelivered = currentEnum === "Delivered";
 
-        // Gộp update ReturnRequest + đổi status đơn vào 1 transaction duy nhất —
-        // crash giữa chừng không để lại "đã reject request mà đơn chưa đổi nhãn".
         await prisma.$transaction(async (tx) => {
             const existing = await tx.returnRequest.findUnique({ where: { order_id: orderId } });
             if (existing) {

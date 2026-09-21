@@ -1,12 +1,6 @@
 import { useState, useEffect } from "react";
 import API from "../../services/apiClient";
 
-/**
- * Safely extracts array data from Promise.allSettled results.
- * Handles different API response structures ({ data: [] } vs []).
- * * @param {Object} result - The result object from Promise.allSettled
- * @returns {Array} The extracted data array or empty array
- */
 type SettledResult = PromiseSettledResult<{ data: any }>;
 
 const extractData = (result: SettledResult): any[] => {
@@ -23,10 +17,6 @@ const extractData = (result: SettledResult): any[] => {
   return [];
 };
 
-/**
- * Custom Hook to manage Dashboard data fetching and state.
- * Separates data logic from UI rendering.
- */
 export function useDashboardStats() {
   const [stats, setStats] = useState({
     categoriesCount: 0,
@@ -44,7 +34,6 @@ export function useDashboardStats() {
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
       try {
-        // Fetch all required data concurrently
         const results = await Promise.allSettled([
           API.get("/admin/products", { headers }),
           API.get("/admin/orders", { headers }),
@@ -55,7 +44,6 @@ export function useDashboardStats() {
           API.get("/admin/promotions", { headers }),
         ]);
 
-        // Parse results using helper
         const products = extractData(results[0]);
         const orders = extractData(results[1]);
         const banners = extractData(results[2]);
@@ -69,13 +57,11 @@ export function useDashboardStats() {
         const activeVouchersCount = vouchers.filter(v => v.status === true).length;
         const activePromotionsCount = promotions.filter(p => p.status === 'active').length;
 
-        // Calculate total stock from all products
         const totalStockCount = products.reduce(
           (sum, p) => sum + (Number(p.total_stock) || 0),
           0
         );
 
-        // Update state
         setStats({
           categoriesCount: categories.length,
           totalStock: totalStockCount,

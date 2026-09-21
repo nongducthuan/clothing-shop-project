@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
 
-// ─── Mock Prisma before importing the controller ──────────────────────────────
 jest.mock('../../../prisma/client', () => ({
   __esModule: true,
   default: {
@@ -12,8 +11,6 @@ jest.mock('../../../prisma/client', () => ({
 
 import prisma from '../../../prisma/client';
 import { confirmPayment } from '../../controllers/admin/orderController';
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function mockRes() {
   const res = {
@@ -34,8 +31,6 @@ beforeEach(() => {
     Array.isArray(arg) ? Promise.all(arg) : arg({})
   );
 });
-
-// ─── Tests ────────────────────────────────────────────────────────────────────
 
 describe('confirmPayment – hoàn tác bấm nhầm trạng thái thanh toán', () => {
   it('Paid → Unpaid: cho phép (lỡ bấm Paid nhầm, tiền chưa thu), ghi audit log', async () => {

@@ -12,7 +12,6 @@ export default function MembershipInfoTab({ state, actions, helpers }) {
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
-  // Check if role badge adds value and isn't redundant with user's display name
   const showRoleBadge =
     user?.role &&
     user?.role.toUpperCase() !== user?.name?.toUpperCase() &&
@@ -241,6 +240,4 @@ export default function MembershipInfoTab({ state, actions, helpers }) {
     </div>
   );
 }
-
-
 

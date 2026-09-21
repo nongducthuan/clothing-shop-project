@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
 
-// ─── Mock Prisma before importing the controller ──────────────────────────────
 jest.mock('../../../prisma/client', () => ({
   __esModule: true,
   default: {
@@ -11,8 +10,6 @@ jest.mock('../../../prisma/client', () => ({
 
 import prisma from '../../../prisma/client';
 import { updateOrderStatus, rejectReturn } from '../../controllers/admin/orderController';
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function mockRes() {
   const res = {
@@ -64,8 +61,6 @@ beforeEach(() => {
 
   (prisma.$transaction as jest.Mock).mockImplementation(async (cb: any) => cb(tx));
 });
-
-// ─── Tests ────────────────────────────────────────────────────────────────────
 
 describe('updateOrderStatus – hoàn tác duyệt nhầm Reject (LEGACY: Return_Rejected → Delivered)', () => {
   it('[legacy] trả ReturnRequest về Pending + xóa lý do trong cùng transaction, KHÔNG đụng doanh thu', async () => {

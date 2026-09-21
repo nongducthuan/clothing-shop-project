@@ -19,7 +19,6 @@ export default function SearchResults() {
     );
   }
 
-
   return (
     <div className="sr-container container mx-auto py-6 px-3 md:px-4 flex-1 flex flex-col md:flex-row gap-8">
 

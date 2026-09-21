@@ -15,7 +15,6 @@ export function useCategoryPage() {
   const rawGender = searchParams.get("gender");
   const gender = ["male", "female", "unisex"].includes(rawGender) ? rawGender : null;
 
-  // --- State Management ---
   const [products, setProducts] = useState([]);
   const [currentCategory, setCurrentCategory] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -27,7 +26,6 @@ export function useCategoryPage() {
   const [activeVoucher, setActiveVoucher] = useState(null);
   const [activePromotions, setActivePromotions] = useState([]);
 
-  // --- Data Fetching Logic ---
   const fetchCategoryData = useCallback(async () => {
     setIsLoading(true);
     setError(null);
@@ -47,22 +45,18 @@ export function useCategoryPage() {
         API.get("/promotions").catch(() => ({ data: [] })),
       ]);
 
-      // Process Products
       const safeProducts = Array.isArray(productsResponse.data) ? productsResponse.data : productsResponse.data?.data || [];
       setProducts(safeProducts);
       setTotalPages(productsResponse.data?.totalPages || 1);
       setTotalProducts(productsResponse.data?.totalProducts || safeProducts.length);
 
-      // Process Categories
       const categoryList = Array.isArray(categoriesResponse.data) ? categoriesResponse.data : categoriesResponse.data?.data || [];
       const found = categoryList.find((c) => String(c.id) === String(id));
       setCurrentCategory(found || null);
 
-      // Process Vouchers
       const voucherList = vouchersResponse.data?.data || vouchersResponse.data;
       setActiveVoucher(Array.isArray(voucherList) && voucherList.length > 0 ? voucherList[0] : null);
 
-      // Process Promotions
       const promoList = promotionsResponse.data?.data || promotionsResponse.data || [];
       setActivePromotions(Array.isArray(promoList) ? promoList : []);
 
@@ -80,7 +74,6 @@ export function useCategoryPage() {
     fetchCategoryData();
   }, [fetchCategoryData, location.search]);
 
-  // --- Event Handlers ---
   const handleNextPage = () => {
     if (currentPage < totalPages) setCurrentPage((prev) => prev + 1);
   };
