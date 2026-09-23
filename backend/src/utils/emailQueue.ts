@@ -10,7 +10,7 @@ interface EmailTask {
 }
 
 // Create a queue object with concurrency 2
-export const emailQueue = async.queue(async (task: EmailTask, callback) => {
+export const emailQueue = async.queue(async (task: EmailTask) => {
   const { to, subject, text, language = 'vi', retries = 0 } = task;
   
   try {
@@ -20,7 +20,6 @@ export const emailQueue = async.queue(async (task: EmailTask, callback) => {
     }
     // Success
     console.log(`[EmailQueue] Successfully sent email to ${to}`);
-    callback();
   } catch (error) {
     console.error(`[EmailQueue] Failed to send email to ${to}:`, error);
     
@@ -34,7 +33,6 @@ export const emailQueue = async.queue(async (task: EmailTask, callback) => {
     } else {
       console.error(`[EmailQueue] Max retries reached for ${to}. Email dropped.`);
     }
-    callback(); // Tell the queue this task is done (even if failed, we re-queued it if needed)
   }
 }, 2); // Process at most 2 emails concurrently
 

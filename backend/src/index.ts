@@ -6,6 +6,7 @@ import cors from 'cors';
 import path from 'path';
 
 import adminRoutes from './routes/admin';
+import { globalErrorHandler } from './middleware/errorMiddleware';
 import customerRoutes from './routes/customer';
 
 import { startAutoCancelJob } from './services/autoCancelService';
@@ -37,6 +38,9 @@ app.use('/api/admin', adminRoutes);
 app.use('/api', customerRoutes);
 
 app.get('/', (req, res) => res.send("TS Server is running successfully!"));
+
+// Global Error Handling Middleware
+app.use(globalErrorHandler);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

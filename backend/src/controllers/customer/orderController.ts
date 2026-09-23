@@ -473,15 +473,8 @@ export const createOrderController = async (req: Request, res: Response): Promis
 
             // 3. Apply voucher discount (tính trên finalTotal sau membership)
             const { totalVoucherDiscount, eligibleProductIds } = await applyVoucherDiscount(tx, voucher_id, itemsToSave, finalTotal, userMembershipPercent);
-            finalTotal = Math.max(0, finalTotal - totalVoucherDiscount);
-        queueEmail(
-            email || (req.user ? req.user.email : ""),
-            isEnglish ? "Order Confirmation" : "Xác nhận đơn hàng",
-            isEnglish
-                ? `Thank you! Order #${orderId} has been placed successfully. Total: ${finalTotal.toLocaleString()} VND`
-                : `Cảm ơn bạn! Đơn hàng #${orderId} đã được đặt thành công. Tổng cộng: ${finalTotal.toLocaleString()} VNĐ`,
-            emailLang
-        );
+            const itemAllocations = allocateItemDiscounts(itemsToSave, {
+                membershipDiscount: totalMembershipDiscount,
                 voucherDiscount: totalVoucherDiscount,
                 eligibleProductIds,
                 payableTotal: finalTotal
@@ -523,14 +516,14 @@ export const createOrderController = async (req: Request, res: Response): Promis
         const emailLang = isEnglish ? 'en' : 'vi';
 
         // Outside transaction: Emails, Analytics, MoMo
-        sendEmail(
-            email || (req.user ? req.user.email : ''),
+        queueEmail(
+            email || (req.user ? req.user.email : ""),
             isEnglish ? "Order Confirmation" : "Xác nhận đơn hàng",
             isEnglish
                 ? `Thank you! Order #${orderId} has been placed successfully. Total: ${finalTotal.toLocaleString()} VND`
                 : `Cảm ơn bạn! Đơn hàng #${orderId} đã được đặt thành công. Tổng cộng: ${finalTotal.toLocaleString()} VNĐ`,
             emailLang
-        ).catch(e => console.error("Email error:", e));
+        );
 
         if (userId) {
             items.forEach((item: any) => recordInteraction(userId, item.product_id, 'purchase'));
