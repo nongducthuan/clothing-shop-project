@@ -4,7 +4,7 @@ import { Prisma } from '../../generated/prisma/client';
 
 export const createVoucherAdmin = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { productIds, categoryIds, applicable_category_id, code, discount_percent, max_discount_amount, min_order_value, usage_limit, start_date, end_date, apply_scope } = req.body;
+    const { productIds, categoryIds, code, discount_percent, max_discount_amount, min_order_value, usage_limit, start_date, end_date, apply_scope } = req.body;
     
     await prisma.$transaction(async (tx) => {
       const voucher = await tx.voucher.create({

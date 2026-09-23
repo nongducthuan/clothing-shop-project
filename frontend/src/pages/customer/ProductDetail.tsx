@@ -9,7 +9,7 @@ import ProductSelectors from "../../components/customer/product-detail/ProductSe
 import ProductActions from "../../components/customer/product-detail/ProductActions";
 
 export default function ProductDetail() {
-  const { state, actions, helpers, constants } = useProductDetail();
+  const { state, actions, helpers } = useProductDetail();
   const { t, getLocalizedText } = useLanguage();
 
   if (state.error) {

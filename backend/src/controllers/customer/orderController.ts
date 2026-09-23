@@ -2,10 +2,11 @@ import { Request, Response } from 'express';
 import prisma from '../../../prisma/client';
 import { sendEmail } from '../../utils/emailService';
 import { queueEmail } from '../../utils/emailQueue';
+import { getIO } from '../../utils/socket';
 import { recordInteraction } from '../../services/interactionService';
 import { allocateItemDiscounts } from '../../services/discountAllocationService';
-import https from 'https';
-import crypto from 'crypto';
+
+
 import { changeOrderStatusLogic } from '../admin/orderController';
 import { generateVnPayUrl, verifyVnPayReturn } from '../../utils/vnpayService';
 import { getMomoPayUrl, verifyMomoSignature } from '../../utils/momoService';
@@ -524,6 +525,13 @@ export const createOrderController = async (req: Request, res: Response): Promis
                 : `Cảm ơn bạn! Đơn hàng #${orderId} đã được đặt thành công. Tổng cộng: ${finalTotal.toLocaleString()} VNĐ`,
             emailLang
         );
+
+        // Emit realtime notification to Admin
+        try {
+            getIO().to('admin_room').emit('new_order', { orderId, total: finalTotal, customerName: name });
+        } catch(e) {
+            console.error('Socket emit error:', e);
+        }
 
         if (userId) {
             items.forEach((item: any) => recordInteraction(userId, item.product_id, 'purchase'));
@@ -1148,7 +1156,7 @@ export const submitReturnRequest = async (req: Request, res: Response): Promise<
             }
 
             // Tạo ReturnRequest
-            const returnRequest = await tx.returnRequest.create({
+            await tx.returnRequest.create({
                 data: {
                     order_id: orderId,
                     reason_code,

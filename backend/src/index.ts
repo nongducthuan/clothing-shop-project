@@ -2,20 +2,21 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import express from 'express';
+import http from 'http';
 import cors from 'cors';
 import path from 'path';
 
 import adminRoutes from './routes/admin';
-import { globalErrorHandler } from './middleware/errorMiddleware';
 import customerRoutes from './routes/customer';
-
+import { globalErrorHandler } from './middleware/errorMiddleware';
+import { initSocket } from './utils/socket';
 import { startAutoCancelJob } from './services/autoCancelService';
 
 const app = express();
 
 const allowedOrigins = [
     'http://localhost:5173',
-    process.env.FRONTEND_URL 
+    process.env.FRONTEND_URL
 ];
 
 app.use(cors({
@@ -43,7 +44,12 @@ app.get('/', (req, res) => res.send("TS Server is running successfully!"));
 app.use(globalErrorHandler);
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
+const httpServer = http.createServer(app);
+
+// Initialize Socket.io — must attach to httpServer, not app directly
+initSocket(httpServer);
+
+httpServer.listen(PORT, () => {
     console.log(`Server is running at port ${PORT}`);
 });
 

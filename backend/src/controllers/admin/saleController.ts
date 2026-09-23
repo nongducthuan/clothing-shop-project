@@ -3,7 +3,7 @@ import prisma from '../../../prisma/client';
 
 export const createSaleAdmin = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { name, name_vi, name_en, discount_percent, productIds, categoryIds, buy_x, get_y, start_date, end_date, apply_scope } = req.body;
+    const { name, name_vi, name_en, discount_percent, productIds, categoryIds, start_date, end_date, apply_scope } = req.body;
     
     // name is the canonical display name (NOT NULL). Falls back to either localized name.
     const baseName = name || name_vi || name_en;

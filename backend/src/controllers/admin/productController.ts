@@ -73,7 +73,7 @@ export const editProduct = async (req: Request, res: Response): Promise<void> =>
         const baseName = name || name_vi || name_en;
         const baseDescription = description !== undefined ? description : (description_vi || description_en);
         
-        const product = await prisma.product.update({
+        await prisma.product.update({
             where: { id: Number(id) },
             data: {
                 name: baseName || undefined,

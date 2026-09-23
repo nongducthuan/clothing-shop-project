@@ -1,5 +1,7 @@
 import { useNavigate } from "react-router-dom";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
+import { io } from "socket.io-client";
+import { useToast } from "../../context/ToastContext";
 import { useDashboardStats } from "../../hooks/admin/useDashboard";
 import { useLanguage } from "../../context/LanguageContext";
 
@@ -133,6 +135,27 @@ const RevenueBanner = ({ onClick }) => {
 export default function Dashboard() {
   const navigate = useNavigate();
   const { stats } = useDashboardStats();
+  const { showToast } = useToast();
+  const { t } = useLanguage();
+
+  useEffect(() => {
+    const socket = io(import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000', {
+      withCredentials: true,
+    });
+
+    socket.emit('join_admin_room');
+
+    socket.on('new_order', (data: { orderId: number; total: number; customerName: string }) => {
+      showToast(
+        t('admin.toast_new_order', `🛒 Đơn hàng mới #${data.orderId} từ ${data.customerName} — ${data.total.toLocaleString()} VNĐ`),
+        'info'
+      );
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [showToast, t]);
 
   return (
     <div className="container mx-auto px-4 py-8 lg:px-8 max-w-7xl flex-1">

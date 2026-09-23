@@ -29,8 +29,10 @@ Website thương mại điện tử chuyên bán quần áo và thời trang, t�
 ### Dành Cho Quản Trị Viên (Admin)
 - **Quản lý sản phẩm & Kho hàng**: Thêm, sửa, xóa sản phẩm, danh mục, kích thước, màu sắc và cập nhật số lượng tồn kho (hỗ trợ nhập dữ liệu đa ngôn ngữ Việt - Anh).
 - **Quản lý đơn hàng & Đổi trả**: Xem danh sách đơn hàng, xem xét & duyệt/từ chối các yêu cầu đổi trả của khách hàng, cập nhật trạng thái xử lý/giao hàng/hủy đơn/hoàn trả.
+- **Thông báo Real-time (Socket.io)**: Nhận thông báo (Toast) tức thì trên Dashboard ngay khi có khách hàng đặt đơn mới thành công mà không cần tải lại trang.
 - **Mã giảm giá & Khuyến mãi**: Tạo và quản lý Voucher, thiết lập chương trình khuyến mãi (Sale / Promotion).
 - **Thống kê & Báo cáo**: Bảng điều khiển (Dashboard) xem báo cáo doanh thu, lượt bán và đơn hàng theo thời gian.
+- **CI/CD Pipeline**: Tích hợp GitHub Actions tự động chạy Unit Test (Backend & Frontend) mỗi khi có code mới được Push hoặc tạo Pull Request.
 
 ---
 
@@ -88,11 +90,12 @@ Website thương mại điện tử chuyên bán quần áo và thời trang, t�
 
 ## Công Nghệ Sử Dụng
 
-- **Frontend**: React.js (Vite), TypeScript, React Router, TailwindCSS, Axios, Lucide Icons, React Google Charts, OpenStreetMap Nominatim API, React Context API.
-- **Backend**: Node.js, TypeScript, Express.js, Prisma ORM (Multilingual DB Schema, `schema.prisma` + `client.ts`), MySQL/MariaDB (`@prisma/adapter-mariadb` + `mariadb` driver), JSON Web Token (JWT), `bcryptjs`, Multer, `express-rate-limit`, `node-cron`.
-- **Testing**:
+- **Frontend**: React.js (Vite), TypeScript, React Router, TailwindCSS, Axios, @tanstack/react-query, Lucide Icons, React Google Charts, OpenStreetMap Nominatim API, React Context API, `socket.io-client`.
+- **Backend**: Node.js, TypeScript, Express.js, Prisma ORM (Multilingual DB Schema, `schema.prisma` + `client.ts`), MySQL/MariaDB (`@prisma/adapter-mariadb` + `mariadb` driver), JSON Web Token (JWT), `bcryptjs`, Multer, `express-rate-limit`, `node-cache`, `async`, `node-cron`, `socket.io`.
+- **Testing & CI/CD**:
   - **Backend**: Jest + `@swc/jest` + `jest-mock-extended` + `supertest` (mock toàn bộ — không cần DB thật).
   - **Frontend**: Vitest.
+  - **CI/CD**: GitHub Actions Pipeline.
 - **Dịch vụ tích hợp & AI**:
   - **Brevo API (Sendinblue)**: Gửi email giao dịch / mã OTP xác thực.
   - **Cổng thanh toán MoMo & VNPay**: Xử lý thanh toán trực tuyến qua MoMo và VNPay-QR (Mobile Banking / NCB Sandbox).
@@ -114,10 +117,10 @@ clothing-shop-project/
 │   │   ├── controllers/
 │   │   │   ├── admin/           # 10 files: banner/category/inventory/membership/order/product/promotion/sale/stats/voucher
 │   │   │   └── customer/        # 11 files: auth/banner/category/chat/membership/order/product/productDetail/promotion/sale/voucher
-│   │   ├── middleware/          # authMiddleware (authenticateToken/requireAdmin/optionalAuth) + uploadMiddleware (Multer)
+│   │   ├── middleware/          # authMiddleware (authenticateToken/requireAdmin/optionalAuth) + uploadMiddleware (Multer) + errorMiddleware (globalErrorHandler)
 │   │   ├── routes/              # 2 files: admin/index.ts (/api/admin/*) + customer/index.ts (/api/*)
 │   │   ├── services/            # 5 files: aiService (Gemini @google/generative-ai) / autoCancelService (job nền) / discountAllocationService / interactionService (lưu hành vi view/cart/purchase) / promotionService
-│   │   ├── utils/               # 3 files: emailService (Brevo OTP) / momoService / vnpayService
+│   │   ├── utils/               # 7 files: emailService (Brevo OTP) / momoService / vnpayService / AppError / catchAsync / cacheService (RAM cache) / emailQueue (async queue)
 │   │   ├── types/               # express.d.ts (mở rộng Request.user)
 │   │   ├── generated/prisma/    # Prisma Client generate (không sửa tay)
 │   │   ├── public/images/       # Ảnh sản phẩm + banner seed (serve tại /public)

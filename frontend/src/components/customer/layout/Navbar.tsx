@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from "react-router-dom";
-import { useContext, useState, useEffect, useRef } from "react";
+import { useContext, useState, useRef } from "react";
 import { Sun, Moon, Globe, Menu, X, ShieldCheck, PackageCheck, Truck } from "lucide-react";
 import { AuthContext } from "../../../context/AuthContext";
 import { CartContext } from "../../../context/CartContext";
@@ -27,19 +27,9 @@ function useCategoryData() {
     staleTime: 5 * 60 * 1000,
   });
 
-  // Keep the listener for imperative updates from other parts of the app if they emit this event
-  useEffect(() => {
-    // We could use queryClient.invalidateQueries(["categories-preview"]) but to keep it self-contained:
-    const handleUpdate = () => {
-      // In a full implementation, we'd pass queryClient down or use hook, 
-      // but the event listener approach is less needed with React Query
-    };
-    window.addEventListener("categories-updated", handleUpdate);
-    return () => window.removeEventListener("categories-updated", handleUpdate);
-  }, []);
-
   return menuData;
 }
+
 
 // Hook to manage delayed hover effects (Debounce)
 function useHoverDelay(delay = 200) {

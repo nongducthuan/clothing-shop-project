@@ -10,7 +10,7 @@ export function useCategoryPage() {
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const { t } = useLanguage();
-  const { getLocalizedText, language } = useLanguage();
+  const { getLocalizedText } = useLanguage();
 
   const rawGender = searchParams.get("gender");
   const gender = ["male", "female", "unisex"].includes(rawGender) ? rawGender : null;

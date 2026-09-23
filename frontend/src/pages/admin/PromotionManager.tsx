@@ -9,8 +9,6 @@ import { useLanguage } from "../../context/LanguageContext";
 export default function PromotionManager() {
   const { t } = useLanguage();
   const { state, actions, helpers } = usePromotionManager();
-  const { searchTerm } = state;
-  const { setSearchTerm } = actions;
 
   return (
     <div className="container mx-auto px-4 py-8 lg:px-8 max-w-7xl flex-1 font-sans flex flex-col">
