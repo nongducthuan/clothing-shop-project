@@ -59,6 +59,80 @@ export const sendOtpController = async (req: Request, res: Response): Promise<vo
     }
 };
 
+/** Chuyển đổi Prisma order row → response shape dùng chung cho getOrders và verifyOtpAndGetOrders. */
+function formatOrderResponse(order: any): any {
+    return {
+        id: order.id,
+        email: order.email,
+        name: order.name,
+        phone: order.phone,
+        address: order.address,
+        total_price: Number(order.total_price),
+        shipping_fee: Number(order.shipping_fee || 0),
+        status: ENUM_TO_DISPLAY_STATUS[order.status] || order.status,
+        payment_method: order.payment_method,
+        payment_status: order.payment_status,
+        created_at: order.created_at,
+        voucher: order.voucher ? {
+            id: order.voucher.id,
+            code: order.voucher.code,
+            discount_percent: order.voucher.discount_percent ? Number(order.voucher.discount_percent) : null,
+            max_discount_amount: order.voucher.max_discount_amount ? Number(order.voucher.max_discount_amount) : null
+        } : null,
+        voucher_code: order.voucher?.code || null,
+        return_request: order.return_request ? {
+            id: order.return_request.id,
+            status: order.return_request.status,
+            reason_code: order.return_request.reason_code,
+            description: order.return_request.description,
+            admin_response: order.return_request.admin_response,
+            refund_amount: Number(order.return_request.refund_amount),
+            items: order.return_request.items?.map((ri: any) => ({
+                id: ri.id,
+                order_item_id: ri.order_item_id,
+                return_quantity: ri.return_quantity,
+                refund_amount: Number(ri.refund_amount),
+                product_name: ri.order_item?.product?.name ?? null,
+                product_name_vi: ri.order_item?.product?.name_vi ?? null,
+                product_name_en: ri.order_item?.product?.name_en ?? null,
+                color_name: ri.order_item?.color?.color_name ?? null,
+                color_name_vi: ri.order_item?.color?.color_name_vi ?? null,
+                color_name_en: ri.order_item?.color?.color_name_en ?? null,
+                size: ri.order_item?.size?.size ?? null,
+                is_gift: ri.order_item?.is_gift ?? false
+            })) ?? []
+        } : null,
+        items: order.items.map((item: any) => ({
+            id: item.id,
+            product_id: item.product_id,
+            quantity: item.quantity,
+            price: Number(item.price),
+            discount_amount: Number(item.discount_amount || 0),
+            payable_amount: item.payable_amount !== null ? Number(item.payable_amount) : Number(item.price) * item.quantity,
+            is_gift: item.is_gift,
+            promotion_id: item.promotion_id ?? null,
+            promotion: item.promotion ? {
+                id: item.promotion.id,
+                buy_product_id: item.promotion.buy_product_id,
+                gift_product_id: item.promotion.gift_product_id,
+                buy_quantity: item.promotion.buy_quantity,
+                gift_quantity: item.promotion.gift_quantity
+            } : null,
+            product_name: item.product?.name ?? null,
+            product_name_vi: item.product?.name_vi ?? null,
+            product_name_en: item.product?.name_en ?? null,
+            image_url: item.color?.image_url || item.product?.image_url || null,
+            color: item.color?.color_name ?? null,
+            color_name: item.color?.color_name ?? null,
+            color_name_vi: item.color?.color_name_vi ?? null,
+            color_name_en: item.color?.color_name_en ?? null,
+            size: item.size?.size ?? null,
+            color_id: item.color_id,
+            size_id: item.size_id,
+        }))
+    };
+}
+
 export const verifyOtpAndGetOrders = async (req: Request, res: Response): Promise<void> => {
     const { email, code } = req.body;
 
@@ -72,7 +146,7 @@ export const verifyOtpAndGetOrders = async (req: Request, res: Response): Promis
             return;
         }
 
-        // Fix 14: Giới hạn số lần thử sai để chống brute-force
+        // Giới hạn số lần thử sai để chống brute-force
         const MAX_ATTEMPTS = 5;
         if (otpData.failed_attempts >= MAX_ATTEMPTS) {
             await prisma.otp.deleteMany({ where: { email } });
@@ -129,76 +203,7 @@ export const verifyOtpAndGetOrders = async (req: Request, res: Response): Promis
             }
         });
 
-        const formattedOrders = orders.map(order => ({
-            id: order.id,
-            email: order.email,
-            name: order.name,
-            phone: order.phone,
-            address: order.address,
-            total_price: Number(order.total_price),
-            shipping_fee: Number(order.shipping_fee || 0),
-            status: ENUM_TO_DISPLAY_STATUS[order.status] || order.status,
-            payment_method: order.payment_method,
-            payment_status: order.payment_status,
-            created_at: order.created_at,
-            voucher: order.voucher ? {
-                id: order.voucher.id,
-                code: order.voucher.code,
-                discount_percent: order.voucher.discount_percent ? Number(order.voucher.discount_percent) : null,
-                max_discount_amount: order.voucher.max_discount_amount ? Number(order.voucher.max_discount_amount) : null
-            } : null,
-            voucher_code: order.voucher?.code || null,
-            return_request: order.return_request ? {
-                id: order.return_request.id,
-                status: order.return_request.status,
-                reason_code: order.return_request.reason_code,
-                description: order.return_request.description,
-                admin_response: order.return_request.admin_response,
-                refund_amount: Number(order.return_request.refund_amount),
-                items: order.return_request.items?.map(ri => ({
-                    id: ri.id,
-                    order_item_id: ri.order_item_id,
-                    return_quantity: ri.return_quantity,
-                    refund_amount: Number(ri.refund_amount),
-                    product_name: ri.order_item?.product?.name ?? null,
-                    product_name_vi: ri.order_item?.product?.name_vi ?? null,
-                    product_name_en: ri.order_item?.product?.name_en ?? null,
-                    color_name: ri.order_item?.color?.color_name ?? null,
-                    color_name_vi: ri.order_item?.color?.color_name_vi ?? null,
-                    color_name_en: ri.order_item?.color?.color_name_en ?? null,
-                    size: ri.order_item?.size?.size ?? null,
-                    is_gift: ri.order_item?.is_gift ?? false
-                })) ?? []
-            } : null,
-            items: order.items.map(item => ({
-                id: item.id,
-                product_id: item.product_id,
-                quantity: item.quantity,
-                price: Number(item.price),
-                discount_amount: Number(item.discount_amount || 0),
-                payable_amount: item.payable_amount !== null ? Number(item.payable_amount) : Number(item.price) * item.quantity,
-                is_gift: item.is_gift,
-                promotion_id: item.promotion_id ?? null,
-                promotion: item.promotion ? {
-                    id: item.promotion.id,
-                    buy_product_id: item.promotion.buy_product_id,
-                    gift_product_id: item.promotion.gift_product_id,
-                    buy_quantity: item.promotion.buy_quantity,
-                    gift_quantity: item.promotion.gift_quantity
-                } : null,
-                product_name: item.product?.name ?? null,
-                product_name_vi: item.product?.name_vi ?? null,
-                product_name_en: item.product?.name_en ?? null,
-                image_url: item.color?.image_url || item.product?.image_url || null,
-                color: item.color?.color_name ?? null,
-                color_name: item.color?.color_name ?? null,
-                color_name_vi: item.color?.color_name_vi ?? null,
-                color_name_en: item.color?.color_name_en ?? null,
-                size: item.size?.size ?? null,
-                color_id: item.color_id,
-                size_id: item.size_id,
-            }))
-        }));
+        const formattedOrders = orders.map(formatOrderResponse);
 
         await prisma.otp.deleteMany({ where: { email } });
         res.json({ message: "Verification successful", orders: formattedOrders });
@@ -233,7 +238,7 @@ export const createOrderController = async (req: Request, res: Response): Promis
                 });
                 if (!product) throw new Error(`Product not found`);
 
-                // Fix 13: Validate size bắt buộc nếu sản phẩm có size
+                // Validate size bắt buộc nếu sản phẩm có size
                 const isGift = item.is_gift === true;
                 const hasSizes = product.colors.some(c => c.sizes.length > 0);
                 if (hasSizes && !item.size_id && !isGift) {
@@ -256,7 +261,7 @@ export const createOrderController = async (req: Request, res: Response): Promis
                     }
                 }
 
-                // Fix 10: status: true (Boolean) thay vì status: 1
+                // status: true (Boolean) thay vì status: 1
                 const sales = await tx.sale.findMany({
                     where: {
                         status: true,
@@ -575,76 +580,7 @@ export const getOrders = async (req: Request, res: Response): Promise<void> => {
             }
         });
 
-        const formattedOrders = orders.map(order => ({
-            id: order.id,
-            name: order.name,
-            email: order.email,
-            phone: order.phone,
-            address: order.address,
-            total_price: Number(order.total_price),
-            shipping_fee: Number(order.shipping_fee || 0),
-            status: ENUM_TO_DISPLAY_STATUS[order.status] || order.status,
-            payment_method: order.payment_method,
-            payment_status: order.payment_status,
-            created_at: order.created_at,
-            voucher: order.voucher ? {
-                id: order.voucher.id,
-                code: order.voucher.code,
-                discount_percent: order.voucher.discount_percent ? Number(order.voucher.discount_percent) : null,
-                max_discount_amount: order.voucher.max_discount_amount ? Number(order.voucher.max_discount_amount) : null
-            } : null,
-            voucher_code: order.voucher?.code || null,
-            return_request: order.return_request ? {
-                id: order.return_request.id,
-                status: order.return_request.status,
-                reason_code: order.return_request.reason_code,
-                description: order.return_request.description,
-                admin_response: order.return_request.admin_response,
-                refund_amount: Number(order.return_request.refund_amount),
-                items: order.return_request.items?.map(ri => ({
-                    id: ri.id,
-                    order_item_id: ri.order_item_id,
-                    return_quantity: ri.return_quantity,
-                    refund_amount: Number(ri.refund_amount),
-                    product_name: ri.order_item?.product?.name ?? null,
-                    product_name_vi: ri.order_item?.product?.name_vi ?? null,
-                    product_name_en: ri.order_item?.product?.name_en ?? null,
-                    color_name: ri.order_item?.color?.color_name ?? null,
-                    color_name_vi: ri.order_item?.color?.color_name_vi ?? null,
-                    color_name_en: ri.order_item?.color?.color_name_en ?? null,
-                    size: ri.order_item?.size?.size ?? null,
-                    is_gift: ri.order_item?.is_gift ?? false
-                })) ?? []
-            } : null,
-            items: order.items.map(item => ({
-                id: item.id,
-                product_id: item.product_id,
-                quantity: item.quantity,
-                price: Number(item.price),
-                discount_amount: Number(item.discount_amount || 0),
-                payable_amount: item.payable_amount !== null ? Number(item.payable_amount) : Number(item.price) * item.quantity,
-                is_gift: item.is_gift,
-                promotion_id: item.promotion_id ?? null,
-                promotion: item.promotion ? {
-                    id: item.promotion.id,
-                    buy_product_id: item.promotion.buy_product_id,
-                    gift_product_id: item.promotion.gift_product_id,
-                    buy_quantity: item.promotion.buy_quantity,
-                    gift_quantity: item.promotion.gift_quantity
-                } : null,
-                product_name: item.product?.name ?? null,
-                product_name_vi: item.product?.name_vi ?? null,
-                product_name_en: item.product?.name_en ?? null,
-                image_url: item.color?.image_url || item.product?.image_url || null,
-                color: item.color?.color_name ?? null,
-                color_name: item.color?.color_name ?? null,
-                color_name_vi: item.color?.color_name_vi ?? null,
-                color_name_en: item.color?.color_name_en ?? null,
-                size: item.size?.size ?? null,
-                color_id: item.color_id,
-                size_id: item.size_id,
-            }))
-        }));
+        const formattedOrders = orders.map(formatOrderResponse);
 
         res.json(formattedOrders);
     } catch (error) {
@@ -653,7 +589,7 @@ export const getOrders = async (req: Request, res: Response): Promise<void> => {
     }
 };
 
-// Fix 3: Customer chỉ được cancel đơn của chính mình, khi đang Pending/Confirmed
+// Customer chỉ được cancel đơn của chính mình, khi đang Pending/Confirmed
 export const changeOrderStatus = async (req: Request, res: Response): Promise<void> => {
     try {
         const { order_id, new_status, email } = req.body;
@@ -709,7 +645,7 @@ export const changeOrderStatus = async (req: Request, res: Response): Promise<vo
     }
 };
 
-// Fix 2: Verify HMAC signature từ MoMo trước khi xử lý
+// Verify HMAC signature từ MoMo trước khi xử lý
 export const momoCallback = async (req: Request, res: Response): Promise<void> => {
     try {
         const { orderId, resultCode } = req.body;
@@ -1018,7 +954,7 @@ const parseBankInfo = (rawBank: any) => {
     };
 };
 
-// Fix 5: Tăng cường ownership check – JWT user_id ưu tiên hơn email
+// Tăng cường ownership check – JWT user_id ưu tiên hơn email
 export const submitReturnRequest = async (req: Request, res: Response): Promise<void> => {
     try {
         const { reason_code, description, email, returnItems } = req.body;
@@ -1055,7 +991,7 @@ export const submitReturnRequest = async (req: Request, res: Response): Promise<
                 throw new Error("The order is invalid or not delivered.");
             }
 
-            // Fix 5: Kiểm tra ownership
+            // Kiểm tra ownership
             const isAdmin = req.user?.role === 'admin';
             if (order.user_id) {
                 if (!isAdmin && (!req.user || req.user.id !== order.user_id)) {

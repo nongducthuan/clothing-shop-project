@@ -1,4 +1,4 @@
-// ─── SHIPPING UTILITIES ───────────────────────────────────────────────────────
+// SHIPPING UTILITIES
 // Tính phí vận chuyển dựa theo tỉnh/thành phố, số lượng sản phẩm và tổng đơn hàng.
 
 // Ngưỡng miễn phí vận chuyển
@@ -8,7 +8,7 @@ export const FREE_SHIPPING_THRESHOLD = 500_000;
 const EXTRA_ITEM_FEE = 5_000;
 const FREE_ITEM_LIMIT = 5;
 
-// ─── ZONE MAPPING ─────────────────────────────────────────────────────────────
+// ZONE MAPPING
 
 type ShippingZone = 'inner_city' | 'nearby' | 'south' | 'central' | 'north' | 'remote' | 'default';
 
@@ -24,7 +24,7 @@ const ZONE_BASE_FEE: Record<ShippingZone, number> = {
 
 /** Map tên tỉnh/thành (normalize) → zone */
 const PROVINCE_ZONE_MAP: Record<string, ShippingZone> = {
-  // ── Inner city ──────────────────────────────────────────────────────────────
+  // Inner city
   'hồ chí minh':    'inner_city',
   'tp hồ chí minh': 'inner_city',
   'tp.hcm':         'inner_city',
@@ -34,7 +34,7 @@ const PROVINCE_ZONE_MAP: Record<string, ShippingZone> = {
   'hà nội':         'inner_city',
   'ha noi':         'inner_city',
 
-  // ── Nearby HCM ──────────────────────────────────────────────────────────────
+  // Nearby HCM
   'bình dương':     'nearby',
   'binh duong':     'nearby',
   'đồng nai':       'nearby',
@@ -45,7 +45,7 @@ const PROVINCE_ZONE_MAP: Record<string, ShippingZone> = {
   'bà rịa - vũng tàu': 'nearby',
   'tây ninh':       'nearby',
 
-  // ── Nearby HN ───────────────────────────────────────────────────────────────
+  // Nearby HN
   'bắc ninh':       'nearby',
   'bac ninh':       'nearby',
   'hưng yên':       'nearby',
@@ -55,7 +55,7 @@ const PROVINCE_ZONE_MAP: Record<string, ShippingZone> = {
   'vĩnh phúc':      'nearby',
   'vinh phuc':      'nearby',
 
-  // ── South ───────────────────────────────────────────────────────────────────
+  // South
   'tiền giang':     'south',
   'tien giang':     'south',
   'bến tre':        'south',
@@ -86,7 +86,7 @@ const PROVINCE_ZONE_MAP: Record<string, ShippingZone> = {
   'ninh thuận':     'south',
   'ninh thuan':     'south',
 
-  // ── Central ─────────────────────────────────────────────────────────────────
+  // Central
   'đà nẵng':        'central',
   'da nang':        'central',
   'thừa thiên huế': 'central',
@@ -120,7 +120,7 @@ const PROVINCE_ZONE_MAP: Record<string, ShippingZone> = {
   'thái bình':      'central',
   'thai binh':      'central',
 
-  // ── North ───────────────────────────────────────────────────────────────────
+  // North
   'hải phòng':      'north',
   'hai phong':      'north',
   'hải dương':      'north',
@@ -142,7 +142,7 @@ const PROVINCE_ZONE_MAP: Record<string, ShippingZone> = {
   'sơn la':         'north',
   'son la':         'north',
 
-  // ── Remote ──────────────────────────────────────────────────────────────────
+  // Remote
   'đắk lắk':        'remote',
   'dak lak':        'remote',
   'đắk nông':       'remote',
@@ -171,7 +171,7 @@ const PROVINCE_ZONE_MAP: Record<string, ShippingZone> = {
   'phu quoc':       'remote',
 };
 
-// ─── HELPER FUNCTIONS ─────────────────────────────────────────────────────────
+// HELPER FUNCTIONS
 
 /**
  * Loại bỏ dấu tiếng Việt để fallback so sánh không dấu
@@ -237,7 +237,7 @@ function getProvinceZone(province: string): ShippingZone {
   return 'default';
 }
 
-// ─── MAIN FUNCTION ────────────────────────────────────────────────────────────
+// MAIN FUNCTION
 
 /**
  * Tính phí vận chuyển.

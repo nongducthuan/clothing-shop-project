@@ -88,9 +88,11 @@ Website thương mại điện tử chuyên bán quần áo và thời trang, t�
 
 ## Công Nghệ Sử Dụng
 
-- **Frontend**: React.js (Vite), TypeScript, React Router, TailwindCSS, Axios, Lucide Icons, React Google Charts, OpenStreetMap Nominatim API, React Context API (Auth/Cart/AIChat/Theme/Language/Toast).
-- **Backend**: Node.js, TypeScript, Express.js, Prisma ORM (Multilingual DB Schema, `schema.prisma` + `client.ts`), MySQL/MariaDB (`@prisma/adapter-mariadb` + `mariadb` driver), JSON Web Token (JWT), `bcryptjs`, Multer (`uploadMiddleware`), `express-rate-limit`, `qs`, `tsx`.
-- **Testing**: Jest + `@swc/jest` + `jest-mock-extended` + `supertest` (mock toàn bộ — không cần DB thật).
+- **Frontend**: React.js (Vite), TypeScript, React Router, TailwindCSS, Axios, Lucide Icons, React Google Charts, OpenStreetMap Nominatim API, React Context API.
+- **Backend**: Node.js, TypeScript, Express.js, Prisma ORM (Multilingual DB Schema, `schema.prisma` + `client.ts`), MySQL/MariaDB (`@prisma/adapter-mariadb` + `mariadb` driver), JSON Web Token (JWT), `bcryptjs`, Multer, `express-rate-limit`, `node-cron`.
+- **Testing**:
+  - **Backend**: Jest + `@swc/jest` + `jest-mock-extended` + `supertest` (mock toàn bộ — không cần DB thật).
+  - **Frontend**: Vitest.
 - **Dịch vụ tích hợp & AI**:
   - **Brevo API (Sendinblue)**: Gửi email giao dịch / mã OTP xác thực.
   - **Cổng thanh toán MoMo & VNPay**: Xử lý thanh toán trực tuyến qua MoMo và VNPay-QR (Mobile Banking / NCB Sandbox).
@@ -231,7 +233,10 @@ npm install
 
 ## Testing
 
-Project sử dụng **Jest** với **@swc/jest** transformer, toàn bộ test dùng mock — không cần kết nối database hay file `.env` thật.
+Dự án có hệ thống Test tự động bao phủ cả Backend và Frontend, được cấu hình độc lập nhưng đều không yêu cầu kết nối CSDL thực (mock hoàn toàn).
+
+### 1. Backend Testing (Jest)
+Sử dụng **Jest** với **@swc/jest** transformer, `jest-mock-extended` và `supertest`.
 
 ```bash
 cd backend
@@ -243,7 +248,7 @@ npm test
 npm run test:coverage
 ```
 
-**Kết quả hiện tại:** `69 tests passed` across 10 test suites (chạy `npm test` để cập nhật lại con số sau khi thêm/sửa test).
+**Kết quả:** `69 tests passed` across 10 test suites.
 
 | Test Suite | Số tests | Module được test |
 | --- | --- | --- |
@@ -257,6 +262,25 @@ npm run test:coverage
 | `createOrderGift.test.ts` | 3 | createOrder (ràng buộc quà tặng Buy X Get Y) |
 | `adminOrderReturn.test.ts` | 4 | updateOrderStatus, rejectReturn (hoàn tác duyệt/từ chối) |
 | `adminPaymentStatus.test.ts` | 4 | confirmPayment (chuyển đổi trạng thái thanh toán) |
+
+### 2. Frontend Testing (Vitest)
+Sử dụng **Vitest** để unit test các file tiện ích và helper functions (không yêu cầu mount UI).
+
+```bash
+cd frontend
+
+# Chạy toàn bộ frontend unit tests
+npm test
+```
+
+**Kết quả:** `33 tests passed` across 4 test suites.
+
+| Test Suite | Module được test |
+| --- | --- |
+| `shippingUtils.test.ts` | Test phí vận chuyển, tách chuỗi tên tỉnh thành, phụ thu. |
+| `orderUtils.test.ts` | Test luồng chuyển đổi trạng thái đơn hàng và validate thanh toán. |
+| `currencyUtils.test.ts` | Test format tiền tệ Việt Nam Đồng (VND). |
+| `promotionUtils.test.ts` | Test các rule validate cho quà tặng của chương trình Buy X Get Y. |
 
 ---
 

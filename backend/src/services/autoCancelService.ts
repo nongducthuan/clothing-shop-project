@@ -1,6 +1,7 @@
 import prisma from '../../prisma/client';
 import { changeOrderStatusLogic } from '../controllers/admin/orderController';
 import { sendEmail } from '../utils/emailService';
+import cron from 'node-cron';
 
 // ─── AUTO-CANCEL EXPIRED UNPAID ORDERS ────────────────────────────────────────
 // Đơn thanh toán online (MoMo/VNPay) nếu khách không hoàn tất/ thất bại sẽ nằm
@@ -60,9 +61,8 @@ async function runAutoCancel(): Promise<void> {
 }
 
 export function startAutoCancelJob(): void {
-    // Chạy 1 lần khi khởi động rồi lặp theo chu kỳ
-    runAutoCancel();
-    setInterval(runAutoCancel, CHECK_INTERVAL_MS);
+    // Chạy mỗi 5 phút
+    cron.schedule('*/5 * * * *', runAutoCancel);
     console.log(
         `⏱️ Auto-cancel job started: unpaid MoMo/VNPay orders will be cancelled after ${UNPAID_ONLINE_TIMEOUT_MINUTES} minutes.`
     );
