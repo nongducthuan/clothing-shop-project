@@ -9,7 +9,6 @@ import cron from 'node-cron';
 // tạo đơn). Job này tự hủy các đơn đó sau một khoảng grace-time để nhả kho.
 // COD không được tự hủy — shop chủ động xác nhận/hủy.
 
-const CHECK_INTERVAL_MS = 5 * 60 * 1000;   // chạy quét mỗi 5 phút
 export const UNPAID_ONLINE_TIMEOUT_MINUTES = 30;  // quá 30 phút chưa thanh toán → hủy
 const BATCH_LIMIT = 50;                    // giới hạn số đơn mỗi lần quét
 
@@ -61,7 +60,6 @@ async function runAutoCancel(): Promise<void> {
 }
 
 export function startAutoCancelJob(): void {
-    // Chạy mỗi 5 phút
     cron.schedule('*/5 * * * *', runAutoCancel);
     console.log(
         `⏱️ Auto-cancel job started: unpaid MoMo/VNPay orders will be cancelled after ${UNPAID_ONLINE_TIMEOUT_MINUTES} minutes.`

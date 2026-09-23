@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import prisma from '../../../prisma/client';
 import { sendEmail } from '../../utils/emailService';
+import { queueEmail } from '../../utils/emailQueue';
 import { recordInteraction } from '../../services/interactionService';
 import { allocateItemDiscounts } from '../../services/discountAllocationService';
 import https from 'https';
@@ -213,6 +214,242 @@ export const verifyOtpAndGetOrders = async (req: Request, res: Response): Promis
     }
 };
 
+// ─── TYPE ALIAS ───────────────────────────────────────────────────────────────
+// Kiểu Prisma transaction client — dùng chung cho các helper nội bộ bên dưới.
+type TxClient = Parameters<Parameters<typeof prisma.$transaction>[0]>[0];
+
+// ─── INTERNAL HELPERS FOR createOrderController ───────────────────────────────
+
+/**
+ * Bước 1: Validate từng item (sản phẩm, size, promotion gift), tính giá sau sale,
+ * và trừ kho bằng atomic update để tránh race condition.
+ */
+async function validateAndReserveItems(
+    tx: TxClient,
+    items: any[]
+): Promise<{ itemsToSave: any[]; serverCalculatedTotal: number }> {
+    let serverCalculatedTotal = 0;
+    const itemsToSave: any[] = [];
+
+    for (const item of items) {
+        const product = await tx.product.findUnique({
+            where: { id: Number(item.product_id) },
+            include: { colors: { include: { sizes: true } } }
+        });
+        if (!product) throw new Error(`Product not found`);
+
+        // Validate size bắt buộc nếu sản phẩm có size
+        const isGift = item.is_gift === true;
+        const hasSizes = product.colors.some(c => c.sizes.length > 0);
+        if (hasSizes && !item.size_id && !isGift) {
+            throw new Error(`Please select a size for product "${product.name}"`);
+        }
+
+        // Buy X Get Y: a gift item must carry a valid promotion_id so the return flow
+        // can always resolve X (promotion.buy_product_id) for that gift.
+        let giftPromotion: { id: number; gift_product_id: number } | null = null;
+        if (isGift) {
+            if (!item.promotion_id) {
+                throw new Error(`Gift item "${product.name}" is missing promotion reference.`);
+            }
+            giftPromotion = await tx.buyXGetYPromotion.findUnique({
+                where: { id: Number(item.promotion_id) },
+                select: { id: true, gift_product_id: true }
+            });
+            if (!giftPromotion || giftPromotion.gift_product_id !== product.id) {
+                throw new Error(`Buy X Get Y promotion is invalid for gift item "${product.name}".`);
+            }
+        }
+
+        const sales = await tx.sale.findMany({
+            where: {
+                status: true,
+                start_date: { lte: new Date() },
+                end_date: { gte: new Date() },
+                OR: [
+                    { apply_scope: 'all' },
+                    { product_sales: { some: { product_id: product.id } } },
+                    { sale_categories: { some: { category_id: product.category_id } } }
+                ]
+            },
+            orderBy: { discount_percent: 'desc' },
+            take: 1
+        });
+
+        let finalItemPrice = 0;
+        if (!isGift) {
+            const discount = sales.length > 0 ? Number(sales[0].discount_percent) : 0;
+            finalItemPrice = Number(product.price) * (1 - discount / 100);
+            serverCalculatedTotal += finalItemPrice * item.quantity;
+        }
+
+        if (item.size_id) {
+            const size = await tx.productSize.findUnique({ where: { id: Number(item.size_id) } });
+            if (!size || size.stock < item.quantity) {
+                throw new Error(`Insufficient stock for product "${product.name}" (size_id=${item.size_id})`);
+            }
+            // FIX RACE CONDITION: Sử dụng Atomic Update để trừ kho
+            const updateResult = await tx.productSize.updateMany({
+                where: {
+                    id: Number(item.size_id),
+                    stock: { gte: item.quantity } // Phải đảm bảo còn đủ hàng lúc update
+                },
+                data: { stock: { decrement: item.quantity } }
+            });
+            if (updateResult.count === 0) {
+                throw new Error(`Out of stock for product "${product.name}" due to high traffic!`);
+            }
+        }
+
+        itemsToSave.push({
+            product_id: Number(item.product_id),
+            color_id: item.color_id ? Number(item.color_id) : null,
+            size_id: item.size_id ? Number(item.size_id) : null,
+            quantity: Number(item.quantity),
+            price: finalItemPrice,
+            is_gift: isGift,
+            promotion_id: giftPromotion ? giftPromotion.id : null
+        });
+    }
+
+    return { itemsToSave, serverCalculatedTotal };
+}
+
+/**
+ * Bước 2: Áp dụng giảm giá hạng thành viên nếu user đã đăng nhập và có membership tier.
+ * Trả về discount amount và percent để bước voucher tính đúng trên giá sau membership.
+ */
+async function applyMembershipDiscount(
+    tx: TxClient,
+    userId: number | null,
+    subtotal: number
+): Promise<{ totalMembershipDiscount: number; userMembershipPercent: number }> {
+    let totalMembershipDiscount = 0;
+    let userMembershipPercent = 0;
+
+    if (userId) {
+        const user = await tx.user.findUnique({
+            where: { id: userId },
+            include: { membership: true }
+        });
+        if (user?.membership && Number(user.membership.discount_percent) > 0) {
+            userMembershipPercent = Number(user.membership.discount_percent);
+            totalMembershipDiscount = (subtotal * userMembershipPercent) / 100;
+        }
+    }
+
+    return { totalMembershipDiscount, userMembershipPercent };
+}
+
+/**
+ * Bước 3: Validate voucher, tính discount, và atomic decrement usage limit để tránh race condition.
+ * Voucher tính trên giá SAU membership (finalTotal đã trừ membership) để scope product/category
+ * không giảm nhiều hơn kỳ vọng khi đi kèm hạng thành viên.
+ */
+async function applyVoucherDiscount(
+    tx: TxClient,
+    voucher_id: any,
+    itemsToSave: any[],
+    finalTotal: number,
+    userMembershipPercent: number
+): Promise<{ totalVoucherDiscount: number; eligibleProductIds: number[] }> {
+    let totalVoucherDiscount = 0;
+    let eligibleProductIds: number[] = [];
+
+    if (!voucher_id) return { totalVoucherDiscount, eligibleProductIds };
+
+    const voucher = await tx.voucher.findUnique({
+        where: { id: Number(voucher_id) },
+        include: { product_vouchers: true, voucher_categories: true }
+    });
+
+    if (!voucher || !voucher.status) {
+        throw new Error('Voucher does not exist or has been disabled.');
+    }
+    if (voucher.usage_limit !== null && voucher.usage_limit <= 0) {
+        throw new Error('Voucher usage limit reached.');
+    }
+    if (voucher.start_date && new Date() < voucher.start_date) {
+        throw new Error('Voucher is not active yet.');
+    }
+    if (voucher.end_date && new Date() > voucher.end_date) {
+        throw new Error('Voucher has expired.');
+    }
+    if (finalTotal < Number(voucher.min_order_value)) {
+        // Lỗi nghiệp vụ có dữ liệu kèm theo → catch bên dưới trả 400 để frontend dịch
+        const minOrderError: any = new Error("Minimum order value not met");
+        minOrderError.min_order_value = Number(voucher.min_order_value);
+        throw minOrderError;
+    }
+
+    let eligibleTotal = 0;
+    const nonGiftItems = itemsToSave.filter(i => !i.is_gift);
+
+    // Voucher tính trên giá SAU membership (khách thực phải trả),
+    // không phải giá gốc — nếu không voucher scope product/category sẽ
+    // giảm nhiều hơn kỳ vọng khi đi kèm hạng thành viên.
+    const membershipRate = userMembershipPercent > 0 ? userMembershipPercent / 100 : 0;
+    const priceAfterMembership = (gross: number) => gross * (1 - membershipRate);
+
+    if (voucher.apply_scope === 'all') {
+        eligibleTotal = finalTotal;
+        eligibleProductIds = nonGiftItems.map(i => i.product_id);
+    } else if (voucher.apply_scope === 'product') {
+        const allowedIds = voucher.product_vouchers.map(pv => pv.product_id);
+        eligibleProductIds = nonGiftItems.filter(i => allowedIds.includes(i.product_id)).map(i => i.product_id);
+        eligibleTotal = nonGiftItems
+            .filter(i => allowedIds.includes(i.product_id))
+            .reduce((sum, i) => sum + priceAfterMembership(i.price * i.quantity), 0);
+    } else if (voucher.apply_scope === 'category') {
+        const allowedCatIds = voucher.voucher_categories.map(vc => vc.category_id);
+        const products = await tx.product.findMany({
+            where: { id: { in: nonGiftItems.map(i => i.product_id) } },
+            select: { id: true, category_id: true }
+        });
+        eligibleProductIds = products
+            .filter(p => allowedCatIds.includes(p.category_id))
+            .map(p => p.id);
+        eligibleTotal = nonGiftItems
+            .filter(i => eligibleProductIds.includes(i.product_id))
+            .reduce((sum, i) => sum + priceAfterMembership(i.price * i.quantity), 0);
+    }
+
+    if (eligibleTotal === 0) {
+        throw new Error('Voucher is not applicable to any products in this order.');
+    }
+
+    totalVoucherDiscount = (eligibleTotal * Number(voucher.discount_percent || 0)) / 100;
+    if (voucher.max_discount_amount && totalVoucherDiscount > Number(voucher.max_discount_amount)) {
+        totalVoucherDiscount = Number(voucher.max_discount_amount);
+    }
+
+    // FIX RACE CONDITION: Atomic update cho Voucher limit
+    if (voucher.usage_limit !== null) {
+        const voucherUpdateResult = await tx.voucher.updateMany({
+            where: {
+                id: Number(voucher_id),
+                usage_limit: { gte: 1 }
+            },
+            data: {
+                usage_limit: { decrement: 1 },
+                used_count: { increment: 1 }
+            }
+        });
+        if (voucherUpdateResult.count === 0) {
+            throw new Error('Voucher was just fully consumed by other users.');
+        }
+    } else {
+        await tx.voucher.update({
+            where: { id: Number(voucher_id) },
+            data: { used_count: { increment: 1 } }
+        });
+    }
+
+    return { totalVoucherDiscount, eligibleProductIds };
+}
+
+// ─── CONTROLLER ───────────────────────────────────────────────────────────────
+
 export const createOrderController = async (req: Request, res: Response): Promise<void> => {
     try {
         const userId = req.user?.id || null;
@@ -227,211 +464,24 @@ export const createOrderController = async (req: Request, res: Response): Promis
         let finalTotal = 0;
 
         await prisma.$transaction(async (tx) => {
-            let serverCalculatedTotal = 0;
-            const itemsToSave: any[] = [];
+            // 1. Validate items, calculate prices, deduct stock atomically
+            const { itemsToSave, serverCalculatedTotal } = await validateAndReserveItems(tx, items);
 
-            // 1. Calculate price, check stock, validate size selection
-            for (const item of items) {
-                const product = await tx.product.findUnique({
-                    where: { id: Number(item.product_id) },
-                    include: { colors: { include: { sizes: true } } }
-                });
-                if (!product) throw new Error(`Product not found`);
+            // 2. Apply membership discount
+            const { totalMembershipDiscount, userMembershipPercent } = await applyMembershipDiscount(tx, userId, serverCalculatedTotal);
+            finalTotal = serverCalculatedTotal - totalMembershipDiscount;
 
-                // Validate size bắt buộc nếu sản phẩm có size
-                const isGift = item.is_gift === true;
-                const hasSizes = product.colors.some(c => c.sizes.length > 0);
-                if (hasSizes && !item.size_id && !isGift) {
-                    throw new Error(`Please select a size for product "${product.name}"`);
-                }
-
-                // Buy X Get Y: a gift item must carry a valid promotion_id so the return flow
-                // can always resolve X (promotion.buy_product_id) for that gift.
-                let giftPromotion: { id: number; gift_product_id: number } | null = null;
-                if (isGift) {
-                    if (!item.promotion_id) {
-                        throw new Error(`Gift item "${product.name}" is missing promotion reference.`);
-                    }
-                    giftPromotion = await tx.buyXGetYPromotion.findUnique({
-                        where: { id: Number(item.promotion_id) },
-                        select: { id: true, gift_product_id: true }
-                    });
-                    if (!giftPromotion || giftPromotion.gift_product_id !== product.id) {
-                        throw new Error(`Buy X Get Y promotion is invalid for gift item "${product.name}".`);
-                    }
-                }
-
-                // status: true (Boolean) thay vì status: 1
-                const sales = await tx.sale.findMany({
-                    where: {
-                        status: true,
-                        start_date: { lte: new Date() },
-                        end_date: { gte: new Date() },
-                        OR: [
-                            { apply_scope: 'all' },
-                            { product_sales: { some: { product_id: product.id } } },
-                            { sale_categories: { some: { category_id: product.category_id } } }
-                        ]
-                    },
-                    orderBy: { discount_percent: 'desc' },
-                    take: 1
-                });
-
-                let finalItemPrice = 0;
-                if (!isGift) {
-                    const discount = sales.length > 0 ? Number(sales[0].discount_percent) : 0;
-                    finalItemPrice = Number(product.price) * (1 - discount / 100);
-                    serverCalculatedTotal += finalItemPrice * item.quantity;
-                }
-
-                if (item.size_id) {
-                    const size = await tx.productSize.findUnique({ where: { id: Number(item.size_id) } });
-                    if (!size || size.stock < item.quantity) {
-                        throw new Error(`Insufficient stock for product "${product.name}" (size_id=${item.size_id})`);
-                    }
-                    // FIX RACE CONDITION: Sử dụng Atomic Update để trừ kho
-                    const updateResult = await tx.productSize.updateMany({
-                        where: { 
-                            id: Number(item.size_id),
-                            stock: { gte: item.quantity } // Phải đảm bảo còn đủ hàng lúc update
-                        },
-                        data: { stock: { decrement: item.quantity } }
-                    });
-
-                    if (updateResult.count === 0) {
-                        throw new Error(`Out of stock for product "${product.name}" due to high traffic!`);
-                    }
-                }
-
-                itemsToSave.push({
-                    product_id: Number(item.product_id),
-                    color_id: item.color_id ? Number(item.color_id) : null,
-                    size_id: item.size_id ? Number(item.size_id) : null,
-                    quantity: Number(item.quantity),
-                    price: finalItemPrice,
-                    is_gift: isGift,
-                    promotion_id: giftPromotion ? giftPromotion.id : null
-                });
-            }
-
-            // 2. Membership Discount
-            let totalMembershipDiscount = 0;
-            let userMembershipPercent = 0;
-            if (userId) {
-                const user = await tx.user.findUnique({
-                    where: { id: userId },
-                    include: { membership: true }
-                });
-                if (user?.membership && Number(user.membership.discount_percent) > 0) {
-                    userMembershipPercent = Number(user.membership.discount_percent);
-                    totalMembershipDiscount = (serverCalculatedTotal * userMembershipPercent) / 100;
-                    serverCalculatedTotal -= totalMembershipDiscount;
-                }
-            }
-
-            finalTotal = serverCalculatedTotal;
-
-            // 3. Voucher Discount
-            let totalVoucherDiscount = 0;
-            let eligibleProductIds: number[] = [];
-
-            if (voucher_id) {
-                const voucher = await tx.voucher.findUnique({
-                    where: { id: Number(voucher_id) },
-                    include: { product_vouchers: true, voucher_categories: true }
-                });
-
-                if (!voucher || !voucher.status) {
-                    throw new Error('Voucher does not exist or has been disabled.');
-                }
-                if (voucher.usage_limit !== null && voucher.usage_limit <= 0) {
-                    throw new Error('Voucher usage limit reached.');
-                }
-                if (voucher.start_date && new Date() < voucher.start_date) {
-                    throw new Error('Voucher is not active yet.');
-                }
-                if (voucher.end_date && new Date() > voucher.end_date) {
-                    throw new Error('Voucher has expired.');
-                }
-                if (finalTotal < Number(voucher.min_order_value)) {
-                    // Lỗi nghiệp vụ có dữ liệu kèm theo → catch bên dưới trả 400 để frontend dịch
-                    const minOrderError: any = new Error("Minimum order value not met");
-                    minOrderError.min_order_value = Number(voucher.min_order_value);
-                    throw minOrderError;
-                }
-
-                let eligibleTotal = 0;
-                const nonGiftItems = itemsToSave.filter(i => !i.is_gift);
-
-                // Voucher tính trên giá SAU membership (khách thực phải trả),
-                // không phải giá gốc — nếu không voucher scope product/category sẽ
-                // giảm nhiều hơn kỳ vọng khi đi kèm hạng thành viên.
-                const membershipRate = userMembershipPercent > 0 ? userMembershipPercent / 100 : 0;
-                const priceAfterMembership = (gross: number) => gross * (1 - membershipRate);
-
-                if (voucher.apply_scope === 'all') {
-                    eligibleTotal = finalTotal;
-                    eligibleProductIds = nonGiftItems.map(i => i.product_id);
-                } else if (voucher.apply_scope === 'product') {
-                    const allowedIds = voucher.product_vouchers.map(pv => pv.product_id);
-                    eligibleProductIds = nonGiftItems.filter(i => allowedIds.includes(i.product_id)).map(i => i.product_id);
-                    eligibleTotal = nonGiftItems
-                        .filter(i => allowedIds.includes(i.product_id))
-                        .reduce((sum, i) => sum + priceAfterMembership(i.price * i.quantity), 0);
-                } else if (voucher.apply_scope === 'category') {
-                    const allowedCatIds = voucher.voucher_categories.map(vc => vc.category_id);
-                    const products = await tx.product.findMany({
-                        where: { id: { in: nonGiftItems.map(i => i.product_id) } },
-                        select: { id: true, category_id: true }
-                    });
-                    eligibleProductIds = products
-                        .filter(p => allowedCatIds.includes(p.category_id))
-                        .map(p => p.id);
-                    eligibleTotal = nonGiftItems
-                        .filter(i => eligibleProductIds.includes(i.product_id))
-                        .reduce((sum, i) => sum + priceAfterMembership(i.price * i.quantity), 0);
-                }
-
-                if (eligibleTotal === 0) {
-                    throw new Error('Voucher is not applicable to any products in this order.');
-                }
-
-                totalVoucherDiscount = (eligibleTotal * Number(voucher.discount_percent || 0)) / 100;
-                if (voucher.max_discount_amount && totalVoucherDiscount > Number(voucher.max_discount_amount)) {
-                    totalVoucherDiscount = Number(voucher.max_discount_amount);
-                }
-                finalTotal = Math.max(0, finalTotal - totalVoucherDiscount);
-
-                // FIX RACE CONDITION: Atomic update cho Voucher limit
-                if (voucher.usage_limit !== null) {
-                    const voucherUpdateResult = await tx.voucher.updateMany({
-                        where: { 
-                            id: Number(voucher_id),
-                            usage_limit: { gte: 1 } 
-                        },
-                        data: {
-                            usage_limit: { decrement: 1 },
-                            used_count: { increment: 1 }
-                        }
-                    });
-                    if (voucherUpdateResult.count === 0) {
-                        throw new Error('Voucher was just fully consumed by other users.');
-                    }
-                } else {
-                    await tx.voucher.update({
-                        where: { id: Number(voucher_id) },
-                        data: { used_count: { increment: 1 } }
-                    });
-                }
-            }
-
-            // Pro-rata Allocation: Phân bổ Membership & Voucher discount cho từng OrderItem
-            // finalTotal tại thời điểm này = tiền hàng khách thực trả (đã trừ Membership + Voucher,
-            // CHƯA cộng phí vận chuyển). Làm tròn về 2 chữ số thập phân để khớp với tổng payable_amount.
-            finalTotal = Math.round(finalTotal * 100) / 100;
-
-            const itemAllocations = allocateItemDiscounts(itemsToSave, {
-                membershipDiscount: totalMembershipDiscount,
+            // 3. Apply voucher discount (tính trên finalTotal sau membership)
+            const { totalVoucherDiscount, eligibleProductIds } = await applyVoucherDiscount(tx, voucher_id, itemsToSave, finalTotal, userMembershipPercent);
+            finalTotal = Math.max(0, finalTotal - totalVoucherDiscount);
+        queueEmail(
+            email || (req.user ? req.user.email : ""),
+            isEnglish ? "Order Confirmation" : "Xác nhận đơn hàng",
+            isEnglish
+                ? `Thank you! Order #${orderId} has been placed successfully. Total: ${finalTotal.toLocaleString()} VND`
+                : `Cảm ơn bạn! Đơn hàng #${orderId} đã được đặt thành công. Tổng cộng: ${finalTotal.toLocaleString()} VNĐ`,
+            emailLang
+        );
                 voucherDiscount: totalVoucherDiscount,
                 eligibleProductIds,
                 payableTotal: finalTotal
@@ -450,7 +500,7 @@ export const createOrderController = async (req: Request, res: Response): Promis
             }
             finalTotal = Math.max(0, finalTotal + parsedShippingFee);
 
-            // 4. Create Order
+            // 5. Create Order
             const newOrder = await tx.order.create({
                 data: {
                     user_id: userId,
@@ -476,7 +526,7 @@ export const createOrderController = async (req: Request, res: Response): Promis
         sendEmail(
             email || (req.user ? req.user.email : ''),
             isEnglish ? "Order Confirmation" : "Xác nhận đơn hàng",
-            isEnglish 
+            isEnglish
                 ? `Thank you! Order #${orderId} has been placed successfully. Total: ${finalTotal.toLocaleString()} VND`
                 : `Cảm ơn bạn! Đơn hàng #${orderId} đã được đặt thành công. Tổng cộng: ${finalTotal.toLocaleString()} VNĐ`,
             emailLang

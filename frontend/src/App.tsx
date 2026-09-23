@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import { ThemeProvider } from "./context/ThemeContext.tsx";
 import { LanguageProvider } from "./context/LanguageContext.tsx";
@@ -37,9 +38,20 @@ import SaleManager from "./pages/admin/SaleManager.tsx";
 import VoucherManager from "./pages/admin/VoucherManager.tsx";
 import PromotionManager from "./pages/admin/PromotionManager.tsx";
 
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
+
 function App() {
   return (
-    <ThemeProvider>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider>
       <LanguageProvider>
         <ToastProvider>
           <AuthProvider>
@@ -173,10 +185,11 @@ function App() {
           </BrowserRouter>
         </AIChatProvider>
       </CartProvider>
-    </AuthProvider>
-    </ToastProvider>
-    </LanguageProvider>
+        </AuthProvider>
+        </ToastProvider>
+      </LanguageProvider>
     </ThemeProvider>
+    </QueryClientProvider>
   );
 }
 

@@ -17,8 +17,24 @@ import * as bannerController from '../../controllers/customer/bannerController';
 
 const router = Router();
 
-router.post('/auth/register', authController.register);
-router.post('/auth/login', authController.login);
+const loginLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 5,
+    standardHeaders: 'draft-8',
+    legacyHeaders: false,
+    message: { message: 'Too many login attempts. Please try again in 15 minutes.' },
+});
+
+const registerLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000,
+    max: 5,
+    standardHeaders: 'draft-8',
+    legacyHeaders: false,
+    message: { message: 'Too many registration attempts. Please try again later.' },
+});
+
+router.post('/auth/register', registerLimiter, authController.register);
+router.post('/auth/login', loginLimiter, authController.login);
 router.post('/auth/logout', authController.logout);
 router.get('/auth/me', authenticateToken, authController.getMe);
 router.put('/auth/profile', authenticateToken, authController.updateProfile);

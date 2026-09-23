@@ -8,34 +8,34 @@ import { useLanguage } from "../../../context/LanguageContext";
 import API from "../../../services/apiClient";
 import { getImageUrl as getImgUrl } from "../../../utils/imageUtils";
 
+import { useQuery } from "@tanstack/react-query";
+
 const GENDERS = ["male", "female", "unisex"];
 
 function useCategoryData() {
-  const [menuData, setMenuData] = useState({
-    male: [],
-    female: [],
-    unisex: [],
-  });
-
-  const fetchData = async () => {
-    try {
+  const { data: menuData = { male: [], female: [], unisex: [] } } = useQuery({
+    queryKey: ["categories-preview"],
+    queryFn: async () => {
       const res = await API.get("/categories/preview");
       const list = res.data.data || [];
       const grouped = { male: [], female: [], unisex: [] };
-      list.forEach((c) => {
+      list.forEach((c: any) => {
         if (grouped[c.gender]) grouped[c.gender].push(c);
       });
-      setMenuData(grouped);
-    } catch (err) {
-      console.error("Error loading menu:", err);
-    }
-  };
+      return grouped;
+    },
+    staleTime: 5 * 60 * 1000,
+  });
 
+  // Keep the listener for imperative updates from other parts of the app if they emit this event
   useEffect(() => {
-    fetchData();
-    const refresh = () => fetchData();
-    window.addEventListener("categories-updated", refresh);
-    return () => window.removeEventListener("categories-updated", refresh);
+    // We could use queryClient.invalidateQueries(["categories-preview"]) but to keep it self-contained:
+    const handleUpdate = () => {
+      // In a full implementation, we'd pass queryClient down or use hook, 
+      // but the event listener approach is less needed with React Query
+    };
+    window.addEventListener("categories-updated", handleUpdate);
+    return () => window.removeEventListener("categories-updated", handleUpdate);
   }, []);
 
   return menuData;

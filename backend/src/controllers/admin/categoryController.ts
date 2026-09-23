@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import prisma from '../../../prisma/client';
+import { appCache } from '../../utils/cacheService';
 
 export const getCategories = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -87,7 +88,6 @@ export const createCategory = async (req: Request, res: Response): Promise<void>
   try {
     const { name, name_vi, name_en, gender, image_url } = req.body;
 
-    // name is the canonical display name (NOT NULL). Falls back to either localized name.
     const baseName = name || name_vi || name_en;
 
     const category = await prisma.category.create({
@@ -99,6 +99,8 @@ export const createCategory = async (req: Request, res: Response): Promise<void>
         image_url: image_url || null,
       },
     });
+    
+    appCache.del('categories-preview');
     res.status(201).json({ message: "Successfully created", id: category.id });
   } catch (err) {
     console.error("createCategory error:", err);
@@ -111,7 +113,6 @@ export const updateCategory = async (req: Request, res: Response): Promise<void>
     const { id } = req.params;
     const { name, name_vi, name_en, gender, image_url } = req.body;
 
-    // Only touch names that were provided; derive canonical name if missing.
     const baseName = name || name_vi || name_en;
 
     const category = await prisma.category.update({
@@ -125,6 +126,7 @@ export const updateCategory = async (req: Request, res: Response): Promise<void>
       },
     });
 
+    appCache.del('categories-preview');
     res.json({ message: "Successfully updated" });
   } catch (err) {
     console.error("updateCategory error:", err);
@@ -141,6 +143,7 @@ export const deleteCategory = async (req: Request, res: Response): Promise<void>
       data: { is_active: false }
     });
 
+    appCache.del('categories-preview');
     res.json({ message: "Successfully deleted" });
   } catch (err) {
     console.error("deleteCategory error:", err);

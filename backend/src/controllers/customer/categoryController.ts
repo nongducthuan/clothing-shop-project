@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import prisma from '../../../prisma/client';
+import { appCache } from '../../utils/cacheService';
 
 export const getCategories = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -53,6 +54,13 @@ export const getRecommendCategories = async (req: Request, res: Response): Promi
 
 export const getCategoriesWithPreview = async (req: Request, res: Response): Promise<void> => {
   try {
+    const cacheKey = 'categories-preview';
+    const cachedData = appCache.get(cacheKey);
+    if (cachedData) {
+      res.status(200).json({ data: cachedData });
+      return;
+    }
+
     const categories = await prisma.category.findMany({
       where: {
         is_active: true,
@@ -102,6 +110,7 @@ export const getCategoriesWithPreview = async (req: Request, res: Response): Pro
       };
     });
 
+    appCache.set(cacheKey, rows);
     res.status(200).json({ data: rows });
   } catch (err) {
     console.error("getCategoriesWithPreview error:", err);
