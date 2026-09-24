@@ -4,6 +4,7 @@
  */
 
 process.env.JWT_SECRET = 'test-jwt-secret-key-for-unit-tests';
+process.env.JWT_REFRESH_SECRET = 'test-jwt-refresh-secret-key-for-unit-tests';
 process.env.MOMO_PARTNER_CODE = 'MOMO_TEST';
 process.env.MOMO_ACCESS_KEY = 'test_access_key';
 process.env.MOMO_SECRET_KEY = 'test_secret_key_momo';

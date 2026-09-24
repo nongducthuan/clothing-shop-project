@@ -22,9 +22,10 @@ Website thương mại điện tử chuyên bán quần áo và thời trang, t�
 - **Yêu cầu đổi trả hàng & Hủy yêu cầu (Return/Refund Request)**: Cho phép khách hàng gửi form yêu cầu đổi trả hàng (kèm ảnh bằng chứng & thông tin tài khoản ngân hàng hoàn tiền) hoặc hủy yêu cầu khi đang chờ xử lý (áp dụng cho cả Tài khoản thành viên và Khách tra cứu qua OTP).
 - **Chế độ Giao diện Sáng / Tối (Dark & Light Mode)**: Hỗ trợ chuyển đổi giao diện mượt mà giữa chế độ Tối (Dark) và Sáng (Light), tự động nhận diện theme hệ thống và ghi nhớ cài đặt qua `localStorage`.
 - **Hỗ trợ Đa ngôn ngữ (i18n & DB Localization)**: Chuyển đổi ngôn ngữ hiển thị linh hoạt cho cả giao diện tĩnh lẫn nội dung động trong CSDL.
-- **Tài khoản & Đăng nhập**: Đăng nhập & Đăng ký bảo mật qua JWT Auth (băm mật khẩu `bcryptjs`), hỗ trợ tích điểm hạng thành viên (Membership).
+- **Tài khoản & Đăng nhập**: Đăng nhập & Đăng ký bảo mật qua JWT Auth (băm mật khẩu `bcryptjs`), hỗ trợ tích điểm hạng thành viên (Membership). Luồng **Access Token (15 phút) + Refresh Token (7 ngày)** tự động làm mới phiên ngầm qua Axios interceptor — người dùng không bị đăng xuất đột ngột.
 - **Gợi ý sản phẩm liên quan**: Gợi ý các sản phẩm cùng danh mục / cùng mức giá trên trang chi tiết sản phẩm (không dùng Machine Learning, logic lọc trong `productDetailController`).
 - **Trợ lý AI Chatbot**: Tư vấn, giải đáp thắc mắc khách hàng trực tiếp sử dụng Google Gemini AI API.
+- **Trang 404**: Hiển thị trang "Không tìm thấy" thân thiện khi truy cập URL không hợp lệ.
 
 ### Dành Cho Quản Trị Viên (Admin)
 - **Quản lý sản phẩm & Kho hàng**: Thêm, sửa, xóa sản phẩm, danh mục, kích thước, màu sắc và cập nhật số lượng tồn kho (hỗ trợ nhập dữ liệu đa ngôn ngữ Việt - Anh).
@@ -91,7 +92,7 @@ Website thương mại điện tử chuyên bán quần áo và thời trang, t�
 ## Công Nghệ Sử Dụng
 
 - **Frontend**: React.js (Vite), TypeScript, React Router, TailwindCSS, Axios, @tanstack/react-query, Lucide Icons, React Google Charts, OpenStreetMap Nominatim API, React Context API, `socket.io-client`.
-- **Backend**: Node.js, TypeScript, Express.js, Prisma ORM (Multilingual DB Schema, `schema.prisma` + `client.ts`), MySQL/MariaDB (`@prisma/adapter-mariadb` + `mariadb` driver), JSON Web Token (JWT), `bcryptjs`, Multer, `express-rate-limit`, `node-cache`, `async`, `node-cron`, `socket.io`.
+- **Backend**: Node.js, TypeScript, Express.js, Prisma ORM (Multilingual DB Schema, `schema.prisma` + `client.ts`), MySQL/MariaDB (`@prisma/adapter-mariadb` + `mariadb` driver), JSON Web Token (JWT), `bcryptjs`, Multer, `express-rate-limit`, `helmet`, `zod`, `node-cache`, `async`, `node-cron`, `socket.io`.
 - **Testing & CI/CD**:
   - **Backend**: Jest + `@swc/jest` + `jest-mock-extended` + `supertest` (mock toàn bộ — không cần DB thật).
   - **Frontend**: Vitest.
@@ -117,23 +118,24 @@ clothing-shop-project/
 │   │   ├── controllers/
 │   │   │   ├── admin/           # 10 files: banner/category/inventory/membership/order/product/promotion/sale/stats/voucher
 │   │   │   └── customer/        # 11 files: auth/banner/category/chat/membership/order/product/productDetail/promotion/sale/voucher
-│   │   ├── middleware/          # authMiddleware (authenticateToken/requireAdmin/optionalAuth) + uploadMiddleware (Multer) + errorMiddleware (globalErrorHandler)
+│   │   ├── middleware/          # authMiddleware (authenticateToken/requireAdmin/optionalAuth) + uploadMiddleware (Multer) + errorMiddleware (globalErrorHandler) + validateMiddleware (Zod)
 │   │   ├── routes/              # 2 files: admin/index.ts (/api/admin/*) + customer/index.ts (/api/*)
 │   │   ├── services/            # 5 files: aiService (Gemini @google/generative-ai) / autoCancelService (job nền) / discountAllocationService / interactionService (lưu hành vi view/cart/purchase) / promotionService
 │   │   ├── utils/               # 7 files: emailService (Brevo OTP) / momoService / vnpayService / AppError / catchAsync / cacheService (RAM cache) / emailQueue (async queue)
-│   │   ├── types/               # express.d.ts (mở rộng Request.user)
+│   │   ├── types/               # express.d.ts (mở rộng Request.user) + schemas.ts (Zod validation schemas)
 │   │   ├── generated/prisma/    # Prisma Client generate (không sửa tay)
 │   │   ├── public/images/       # Ảnh sản phẩm + banner seed (serve tại /public)
 │   │   └── __tests__/           # setup.ts + controllers(5) / middleware(1) / services(1) / utils(2) — 10 suites, 69 tests
 │   ├── uploads/                 # Ảnh upload runtime qua Multer (serve tại /uploads)
 │   ├── prisma.config.ts         # trỏ schema ./prisma/schema.prisma
-│   └── package.json             # scripts: dev/start/seed/test/test:coverage (tsx + jest). Lưu ý: script `seed:admin` trỏ `prisma/seedAdmin.ts` nhưng file này hiện chưa có trong repo.
+│   └── package.json             # scripts: dev/start/seed/test/test:coverage (tsx + jest)
 └── frontend/
     ├── src/
     │   ├── pages/
     │   │   ├── customer/        # 10: Home/Category/ProductDetail/Cart/Checkout/Search/OrderLookup/PaymentReturn/Profile/SalesPolicy
     │   │   ├── admin/           # 10: Dashboard/Report/OrderManager/ProductManager/ProductDetailManager/CategoryManager/BannerManager/SaleManager/VoucherManager/PromotionManager
-    │   │   └── auth/            # 2: Login/Register
+    │   │   ├── auth/            # 2: Login/Register
+    │   │   └── NotFound.tsx     # Trang 404 hiển thị khi truy cập URL không hợp lệ
     │   ├── components/          # admin/auth/common/customer (4 nhóm)
     │   ├── context/             # 6: Auth/Cart/AIChat/Theme/Language/Toast
     │   ├── hooks/               # 21: admin(11: useDashboard/useReport/useOrderManager/...) / customer(8) / auth(2: useLogin/useRegister) + useAutoCancelCountdown
@@ -160,7 +162,8 @@ clothing-shop-project/
 | `FRONTEND_URL` | Địa chỉ URL của Frontend | `http://localhost:5173` |
 | `BACKEND_URL` | URL public Backend (dùng cho Webhook IPN Callback) | `https://your-ngrok-url.ngrok-free.app/api` |
 | `DATABASE_URL` | Chuỗi kết nối CSDL MySQL / MariaDB qua Prisma ORM | `mysql://username:password@localhost:3306/shopdb` |
-| `JWT_SECRET` | Khóa bí mật dùng để mã hóa & xác thực JWT | `your_super_secret_jwt_key` |
+| `JWT_SECRET` | Khóa bí mật dùng để mã hóa & xác thực Access Token (15 phút) | `your_super_secret_jwt_key` |
+| `JWT_REFRESH_SECRET` | Khóa bí mật riêng để mã hóa Refresh Token (7 ngày) | `your_super_secret_refresh_key` |
 | `MOMO_PARTNER_CODE` | Partner Code do MoMo cấp (Test Sandbox) | `your_partner_code` |
 | `MOMO_ACCESS_KEY` | Access Key kết nối cổng thanh toán MoMo | `your_access_key` |
 | `MOMO_SECRET_KEY` | Secret Key tạo chữ ký điện tử HMAC-SHA256 MoMo | `your_secret_key` |
