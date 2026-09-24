@@ -1,9 +1,9 @@
 import { useState, useEffect, useMemo, useContext } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { CartContext } from "../../context/CartContext.jsx";
-import { AuthContext } from "../../context/AuthContext.jsx";
+import { CartContext } from "../../context/CartContext.tsx";
+import { AuthContext } from "../../context/AuthContext.tsx";
 import { useLanguage } from "../../context/LanguageContext";
-import API from "../../services/apiClient.js";
+import API from "../../services/apiClient.ts";
 import { getImageUrl } from "../../utils/imageUtils";
 import {
   extractProvince,

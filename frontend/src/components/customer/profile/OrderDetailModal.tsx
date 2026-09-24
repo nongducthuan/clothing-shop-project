@@ -4,7 +4,7 @@ import { ModernStatusBadge, PaymentStatusBadge } from "./OrderBadges";
 import { PaymentBadge } from "../../common/PaymentBadge";
 import { useLanguage } from "../../../context/LanguageContext";
 import { useToast } from "../../../context/ToastContext";
-import { CartContext } from "../../../context/CartContext.jsx";
+import { CartContext } from "../../../context/CartContext.tsx";
 import { buyAgainFromOrder, applySubstitutions, SubstitutionSuggestion, VariantChoice } from "../../../utils/buyAgainUtils";
 import BuyAgainVariantModal from "../common/BuyAgainVariantModal";
 import { useAutoCancelCountdown } from "../../../hooks/useAutoCancelCountdown";

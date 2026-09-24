@@ -1,9 +1,9 @@
 import { useContext, useState, useEffect, useMemo } from "react";
-import { CartContext } from "../../context/CartContext.jsx";
-import { AuthContext } from "../../context/AuthContext.jsx";
+import { CartContext } from "../../context/CartContext.tsx";
+import { AuthContext } from "../../context/AuthContext.tsx";
 import { useLanguage } from "../../context/LanguageContext";
 import { formatCurrency } from "../../utils/currencyUtils";
-import API from "../../services/apiClient.js";
+import API from "../../services/apiClient.ts";
 import { getImageUrl } from "../../utils/imageUtils";
 
 export function useCartPage() {

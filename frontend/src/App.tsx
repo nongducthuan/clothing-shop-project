@@ -11,8 +11,8 @@ import { ToastProvider } from "./context/ToastContext.tsx";
 import ProtectedRoute from "./components/auth/ProtectedRoute.tsx";
 import Navbar from "./components/customer/layout/Navbar.tsx";
 import Footer from "./components/customer/layout/Footer.tsx";
-
 import AIChatBubble from "./components/customer/chatbot/AIChatBubble.tsx";
+import AdminLayout from "./components/admin/layout/AdminLayout.tsx";
 
 import Home from "./pages/customer/Home.tsx";
 import Cart from "./pages/customer/Cart.tsx";
@@ -53,146 +53,75 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
-      <LanguageProvider>
-        <ToastProvider>
-          <AuthProvider>
-            <CartProvider>
-              <AIChatProvider>
-                <BrowserRouter>
-                  <div className="flex flex-col min-h-screen bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 transition-colors duration-300">
-                    <Navbar />
+        <LanguageProvider>
+          <ToastProvider>
+            <AuthProvider>
+              <CartProvider>
+                <AIChatProvider>
+                  <BrowserRouter>
+                    <div className="flex flex-col min-h-screen bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 transition-colors duration-300">
+                      <Navbar />
 
-              <main className="pt-16 flex-1 flex flex-col">
-                <Routes>
-                  {/* --- PUBLIC ROUTES --- */}
-                  <Route path="/" element={<Home />} />
-                  <Route path="/products/:id" element={<ProductDetail />} />
-                  <Route path="/category/:id" element={<Category />} />
-                  <Route path="/search" element={<Search />} />
-                  <Route path="/cart" element={<Cart />} />
-                  <Route path="/checkout" element={<Checkout />} />
-                  <Route path="/order" element={<Order />} />
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/register" element={<Register />} />
-                  <Route path="/sales-policy" element={<SalesPolicy />} />
-                  <Route path="/payment-return" element={<PaymentReturn />} />
+                      <main className="pt-16 flex-1 flex flex-col">
+                        <Routes>
+                          {/* --- PUBLIC ROUTES --- */}
+                          <Route path="/" element={<Home />} />
+                          <Route path="/products/:id" element={<ProductDetail />} />
+                          <Route path="/category/:id" element={<Category />} />
+                          <Route path="/search" element={<Search />} />
+                          <Route path="/cart" element={<Cart />} />
+                          <Route path="/checkout" element={<Checkout />} />
+                          <Route path="/order" element={<Order />} />
+                          <Route path="/login" element={<Login />} />
+                          <Route path="/register" element={<Register />} />
+                          <Route path="/sales-policy" element={<SalesPolicy />} />
+                          <Route path="/payment-return" element={<PaymentReturn />} />
 
-                  {/* --- PROTECTED USER ROUTES --- */}
-                  <Route
-                    path="/profile"
-                    element={
-                      <ProtectedRoute>
-                        <Profile />
-                      </ProtectedRoute>
-                    }
-                  />
+                          {/* --- PROTECTED USER ROUTES --- */}
+                          <Route
+                            path="/profile"
+                            element={
+                              <ProtectedRoute>
+                                <Profile />
+                              </ProtectedRoute>
+                            }
+                          />
 
-                  {/* --- ADMIN ROUTES --- */}
-                  <Route
-                    path="/admin"
-                    element={
-                      <ProtectedRoute roleRequired="admin">
-                        <Dashboard />
-                      </ProtectedRoute>
-                    }
-                  />
+                          {/* --- ADMIN ROUTES (shared AdminLayout + single ProtectedRoute) --- */}
+                          <Route
+                            element={
+                              <ProtectedRoute roleRequired="admin">
+                                <AdminLayout />
+                              </ProtectedRoute>
+                            }
+                          >
+                            <Route path="/admin" element={<Dashboard />} />
+                            <Route path="/admin/banners" element={<BannerManager />} />
+                            <Route path="/admin/products" element={<ProductManager />} />
+                            <Route path="/admin/products/:id" element={<ProductDetailManager />} />
+                            <Route path="/admin/orders" element={<OrderManager />} />
+                            <Route path="/admin/categories" element={<CategoryManager />} />
+                            <Route path="/admin/report" element={<Report />} />
+                            <Route path="/admin/vouchers" element={<VoucherManager />} />
+                            <Route path="/admin/sales" element={<SaleManager />} />
+                            <Route path="/admin/promotions" element={<PromotionManager />} />
+                          </Route>
 
-                  <Route
-                    path="/admin/banners"
-                    element={
-                      <ProtectedRoute roleRequired="admin">
-                        <BannerManager />
-                      </ProtectedRoute>
-                    }
-                  />
+                          {/* --- 404 CATCH-ALL --- */}
+                          <Route path="*" element={<NotFound />} />
+                        </Routes>
+                      </main>
 
-                  <Route
-                    path="/admin/products"
-                    element={
-                      <ProtectedRoute roleRequired="admin">
-                        <ProductManager />
-                      </ProtectedRoute>
-                    }
-                  />
-
-                  <Route
-                    path="/admin/orders"
-                    element={
-                      <ProtectedRoute roleRequired="admin">
-                        <OrderManager />
-                      </ProtectedRoute>
-                    }
-                  />
-
-                  <Route
-                    path="/admin/products/:id"
-                    element={
-                      <ProtectedRoute roleRequired="admin">
-                        <ProductDetailManager />
-                      </ProtectedRoute>
-                    }
-                  />
-
-                  <Route
-                    path="/admin/report"
-                    element={
-                      <ProtectedRoute roleRequired="admin">
-                        <Report />
-                      </ProtectedRoute>
-                    }
-                  />
-
-                  <Route
-                    path="/admin/categories"
-                    element={
-                      <ProtectedRoute roleRequired="admin">
-                        <CategoryManager />
-                      </ProtectedRoute>
-                    }
-                  />
-
-                  <Route
-                    path="/admin/vouchers"
-                    element={
-                      <ProtectedRoute roleRequired="admin">
-                        <VoucherManager />
-                      </ProtectedRoute>
-                    }
-                  />
-
-                  <Route
-                    path="/admin/sales"
-                    element={
-                      <ProtectedRoute roleRequired="admin">
-                        <SaleManager />
-                      </ProtectedRoute>
-                    }
-                  />
-
-                  <Route
-                    path="/admin/promotions"
-                    element={
-                      <ProtectedRoute roleRequired="admin">
-                        <PromotionManager />
-                      </ProtectedRoute>
-                    }
-                  />
-
-                  {/* --- 404 CATCH-ALL --- */}
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </main>
-
-              <Footer />
-              <AIChatBubble />
-            </div>
-          </BrowserRouter>
-        </AIChatProvider>
-      </CartProvider>
-        </AuthProvider>
-        </ToastProvider>
-      </LanguageProvider>
-    </ThemeProvider>
+                      <Footer />
+                      <AIChatBubble />
+                    </div>
+                  </BrowserRouter>
+                </AIChatProvider>
+              </CartProvider>
+            </AuthProvider>
+          </ToastProvider>
+        </LanguageProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }

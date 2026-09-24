@@ -1,8 +1,8 @@
 import { useState, useEffect, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { CartContext } from "../../context/CartContext.jsx";
+import { CartContext } from "../../context/CartContext.tsx";
 import { useLanguage } from "../../context/LanguageContext";
-import API from "../../services/apiClient.js";
+import API from "../../services/apiClient.ts";
 import { getImageUrl, PLACEHOLDER_IMG } from "../../utils/imageUtils";
 
 interface ProductSize {

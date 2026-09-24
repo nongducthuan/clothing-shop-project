@@ -1,13 +1,13 @@
 import { useState, useEffect, useContext, useMemo } from "react";
-import { AuthContext } from "../../context/AuthContext.jsx";
+import { AuthContext } from "../../context/AuthContext.tsx";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import API from "../../services/apiClient.js";
+import API from "../../services/apiClient.ts";
 import { getImageUrl } from "../../utils/imageUtils";
 import { useToast } from "../../context/ToastContext";
 import { useLanguage } from "../../context/LanguageContext";
 import { formatCurrency as formatCurrencyUtil } from "../../utils/currencyUtils";
 import { getPromotionBuyProductIds, isPromotionBuyItem } from "../../utils/promotionUtils";
-import { CartContext } from "../../context/CartContext.jsx";
+import { CartContext } from "../../context/CartContext.tsx";
 import { buyAgainFromOrder, applySubstitutions, SubstitutionSuggestion, VariantChoice } from "../../utils/buyAgainUtils";
 
 const TIER_CONFIG = {

@@ -1,4 +1,4 @@
-﻿import React, { createContext, useCallback, useContext, useState } from "react";
+import React, { createContext, useCallback, useContext, useState } from "react";
 import Toast from "../components/customer/layout/Toast";
 
 type ToastType = "success" | "error" | "warning" | "info";

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import API from "../../services/apiClient.js";
-import { useLanguage } from "../../context/LanguageContext.jsx";
+import API from "../../services/apiClient.ts";
+import { useLanguage } from "../../context/LanguageContext.tsx";
 
 export function useRegister() {
   const [form, setForm] = useState({

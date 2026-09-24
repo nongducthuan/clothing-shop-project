@@ -1,8 +1,8 @@
 import { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import API from "../../services/apiClient.js";
-import { AuthContext } from "../../context/AuthContext.jsx";
-import { useLanguage } from "../../context/LanguageContext.jsx";
+import API from "../../services/apiClient.ts";
+import { AuthContext } from "../../context/AuthContext.tsx";
+import { useLanguage } from "../../context/LanguageContext.tsx";
 
 export function useLogin() {
   const [form, setForm] = useState({ identifier: "", password: "" });

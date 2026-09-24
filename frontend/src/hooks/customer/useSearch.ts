@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
-import API from "../../services/apiClient.js";
-import { PRICE_RANGES, GENDERS } from "../../components/customer/search/searchConstants.js";
+import API from "../../services/apiClient.ts";
+import { PRICE_RANGES, GENDERS } from "../../components/customer/search/searchConstants.ts";
 import { useLanguage } from "../../context/LanguageContext";
 
 export function useSearch() {

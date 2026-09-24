@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import API from "../../services/apiClient.js";
+import API from "../../services/apiClient.ts";
 import { useToast } from "../../context/ToastContext";
 import { useLanguage } from "../../context/LanguageContext";
 
