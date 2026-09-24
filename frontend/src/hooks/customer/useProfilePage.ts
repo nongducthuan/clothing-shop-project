@@ -8,7 +8,7 @@ import { useLanguage } from "../../context/LanguageContext";
 import { formatCurrency as formatCurrencyUtil } from "../../utils/currencyUtils";
 import { getPromotionBuyProductIds, isPromotionBuyItem } from "../../utils/promotionUtils";
 import { CartContext } from "../../context/CartContext.jsx";
-import { buyAgainFromOrder, applySubstitutions, SubstitutionSuggestion } from "../../utils/buyAgainUtils";
+import { buyAgainFromOrder, applySubstitutions, SubstitutionSuggestion, VariantChoice } from "../../utils/buyAgainUtils";
 
 const TIER_CONFIG = {
   Normal: { next: 5000000, color: "text-slate-400", bg: "bg-slate-100", icon: "fa-shield-halved", label: "Bronze" },
@@ -18,14 +18,46 @@ const TIER_CONFIG = {
   Diamond: { next: null, color: "text-cyan-500", bg: "bg-cyan-100", icon: "fa-gem", label: "Maximum" },
 };
 
-const INITIAL_RETURN_DATA = {
+type AxiosErr = { response?: { data?: { message?: string } } };
+
+interface ProfileOrderItem {
+  id: number;
+  product_id?: number;
+  is_gift?: boolean;
+  quantity?: number;
+  [key: string]: unknown;
+}
+
+interface ProfileOrder {
+  id: number;
+  status: string;
+  email?: string;
+  items?: ProfileOrderItem[];
+  payment_status?: string;
+  return_request?: unknown;
+  [key: string]: unknown;
+}
+
+type ReturnDataState = {
+  reason: string;
+  note: string;
+  bankName: string;
+  bankNumber: string;
+  accountHolder: string;
+  images: File[];
+  selectedItems: Record<number, { selected: boolean; return_quantity: number }>;
+};
+
+type ReturnItemVal = { selected: boolean; return_quantity: number | string };
+
+const INITIAL_RETURN_DATA: ReturnDataState = {
   reason: "",
   note: "",
   bankName: "",
   bankNumber: "",
   accountHolder: "",
   images: [],
-  selectedItems: {} as Record<number, { selected: boolean; return_quantity: number }>,
+  selectedItems: {},
 };
 
 export function useProfilePage() {
@@ -48,8 +80,8 @@ export function useProfilePage() {
 
   const [showReturnModal, setShowReturnModal] = useState(false);
   const [returnOrderId, setReturnOrderId] = useState(null);
-  const [returnOrder, setReturnOrder] = useState<any>(null);
-  const [returnData, setReturnData] = useState<any>({
+  const [returnOrder, setReturnOrder] = useState<ProfileOrder | null>(null);
+  const [returnData, setReturnData] = useState<ReturnDataState>({
     ...INITIAL_RETURN_DATA,
     selectedItems: {}
   });
@@ -120,7 +152,7 @@ export function useProfilePage() {
     }
   };
 
-  const handleOpenPaymentModal = (order: any) => {
+  const handleOpenPaymentModal = (order: ProfileOrder) => {
     setPaymentModalOrder(order);
   };
 
@@ -128,7 +160,7 @@ export function useProfilePage() {
     setPaymentModalOrder(null);
   };
 
-  const handleRepay = async (order: any, newMethod?: string) => {
+  const handleRepay = async (order: ProfileOrder, newMethod?: string) => {
     setRepayLoading(true);
     try {
       const token = localStorage.getItem("token");
@@ -145,16 +177,17 @@ export function useProfilePage() {
         setPaymentModalOrder(null);
         fetchOrders();
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Repay error:", error);
-      showToast(error.response?.data?.message || "Unable to process payment request right now.", "error");
+      const err = error as AxiosErr;
+      showToast(err.response?.data?.message || "Unable to process payment request right now.", "error");
     } finally {
       setRepayLoading(false);
     }
   };
 
-  const handleOpenReturnModal = (orderOrId: any) => {
-    const targetOrder = typeof orderOrId === 'object' ? orderOrId : orders.find((o: any) => o.id === orderOrId);
+  const handleOpenReturnModal = (orderOrId: ProfileOrder | number) => {
+    const targetOrder = typeof orderOrId === 'object' ? orderOrId : (orders as ProfileOrder[]).find((o) => o.id === orderOrId);
     const orderId = targetOrder ? targetOrder.id : orderOrId;
 
     setReturnOrderId(orderId);
@@ -163,7 +196,7 @@ export function useProfilePage() {
     // Initial selectedItems: select all non-gift items by default
     const initialSelectedItems: Record<number, { selected: boolean; return_quantity: number }> = {};
     if (targetOrder?.items) {
-      targetOrder.items.forEach((item: any) => {
+      targetOrder.items.forEach((item: ProfileOrderItem) => {
         initialSelectedItems[item.id] = {
           selected: !item.is_gift,
           return_quantity: item.quantity || 1
@@ -196,7 +229,7 @@ export function useProfilePage() {
       return;
     }
 
-    const currentOrder = returnOrder || orders.find((o: any) => o.id === returnOrderId);
+    const currentOrder = returnOrder || (orders as ProfileOrder[]).find((o) => o.id === returnOrderId);
     if (!currentOrder?.email) {
       showToast(t("profile.order_email_not_found"), "error");
       return;
@@ -206,10 +239,10 @@ export function useProfilePage() {
     const buyProductIds = getPromotionBuyProductIds(currentOrder?.items);
     const returnItems: { order_item_id: number; return_quantity: number }[] = [];
     if (selectedItems) {
-      Object.entries(selectedItems).forEach(([itemIdStr, val]: [string, any]) => {
+      Object.entries(selectedItems).forEach(([itemIdStr, val]: [string, ReturnItemVal]) => {
         if (val.selected) {
           // Chỉ sản phẩm X của Buy X Get Y mới bắt buộc hoàn trả toàn bộ số lượng
-          const itemInOrder = (currentOrder?.items || []).find((i: any) => i.id === Number(itemIdStr));
+          const itemInOrder = (currentOrder?.items || [] as ProfileOrderItem[]).find((i) => i.id === Number(itemIdStr));
           const qty = isPromotionBuyItem(itemInOrder, buyProductIds)
             ? (itemInOrder?.quantity || Number(val.return_quantity) || 1)
             : (Number(val.return_quantity) || 1);
@@ -236,7 +269,7 @@ export function useProfilePage() {
     formData.append("returnItems", JSON.stringify(returnItems));
 
     if (images?.length > 0) {
-      Array.from(images).forEach((file: any) => formData.append("images", file));
+      Array.from(images).forEach((file) => formData.append("images", file));
     }
 
     try {
@@ -251,13 +284,14 @@ export function useProfilePage() {
         setShowReturnModal(false);
         fetchOrders();
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Connection error:", error);
-      showToast(error.response?.data?.message || t("profile.connect_error"), "error");
+      const err = error as AxiosErr;
+      showToast(err.response?.data?.message || t("profile.connect_error"), "error");
     }
   };
 
-  const handleCancelReturn = async (orderId) => {
+  const handleCancelReturn = async (orderId: number) => {
     if (!window.confirm(t("lookup.cancel_return_confirm"))) return;
     try {
       const token = localStorage.getItem("token");
@@ -265,7 +299,7 @@ export function useProfilePage() {
         headers: { Authorization: `Bearer ${token}` },
       });
       showToast(t("lookup.return_cancelled"), "success");
-      setOrders((prevOrders: any[]) =>
+      setOrders((prevOrders: ProfileOrder[]) =>
         prevOrders.map((order) =>
           order.id === orderId
             ? { ...order, status: "Delivered", return_request: null }
@@ -273,14 +307,15 @@ export function useProfilePage() {
         )
       );
       fetchOrders();
-    } catch (error: any) {
-      showToast(error.response?.data?.message || t("lookup.cancel_return_error"), "error");
+    } catch (error: unknown) {
+      const err = error as AxiosErr;
+      showToast(err.response?.data?.message || t("lookup.cancel_return_error"), "error");
     }
   };
 
   // Customer cancels their own order (allowed only while Pending/Confirmed)
   // Backend handles: stock restore, revenue guard, and marks 'Refunded' for paid online orders
-  const handleCancelOrder = async (orderId) => {
+  const handleCancelOrder = async (orderId: number) => {
     if (!window.confirm(t("lookup.cancel_order_confirm"))) return;
     setCancellingOrderId(orderId);
     try {
@@ -295,7 +330,7 @@ export function useProfilePage() {
       } else {
         showToast(t("lookup.cancel_order_success"), "success");
       }
-      setOrders((prevOrders: any[]) =>
+      setOrders((prevOrders: ProfileOrder[]) =>
         prevOrders.map((o) =>
           o.id === orderId
             ? { ...o, status: "Cancelled", payment_status: res.data?.payment_status || o.payment_status }
@@ -303,18 +338,19 @@ export function useProfilePage() {
         )
       );
       fetchOrders();
-    } catch (error: any) {
-      showToast(error.response?.data?.message || t("lookup.cancel_order_error"), "error");
+    } catch (error: unknown) {
+      const err = error as AxiosErr;
+      showToast(err.response?.data?.message || t("lookup.cancel_order_error"), "error");
     } finally {
       setCancellingOrderId(null);
     }
   };
 
   // "Buy Again": re-add this order's items (current prices/stock) into the cart
-  const handleBuyAgain = async (order: any) => {
+  const handleBuyAgain = async (order: ProfileOrder) => {
     setBuyingAgainId(order.id);
     try {
-      const summary = await buyAgainFromOrder(order, setCart);
+      const summary = await buyAgainFromOrder(order as Parameters<typeof buyAgainFromOrder>[0], setCart);
       if (summary.addedCount > 0) {
         if (summary.skippedNames.length > 0) {
           showToast(
@@ -344,7 +380,7 @@ export function useProfilePage() {
   };
 
   // Xác nhận các variant thay thế đã chọn trong BuyAgainVariantModal
-  const handleConfirmBuyAgainSubstitutions = (selections: Array<{ suggestion: SubstitutionSuggestion; choice: any }>) => {
+  const handleConfirmBuyAgainSubstitutions = (selections: Array<{ suggestion: SubstitutionSuggestion; choice: VariantChoice }>) => {
     applySubstitutions(setCart, selections);
     if (selections.length > 0) {
       showToast(t("orders.buy_again_substituted", "Đã thêm sản phẩm thay thế vào giỏ hàng"), "success");

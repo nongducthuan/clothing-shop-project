@@ -18,7 +18,7 @@ const API = {
     if (!res.ok) throw new Error("API Error");
     return { data: await res.json() };
   },
-  post: async (endpoint: string, body: any, options: ApiOptions = {}) => {
+  post: async (endpoint: string, body: unknown, options: ApiOptions = {}) => {
     const isFormData = body instanceof FormData;
     const headers: Record<string, string> = { ...options.headers };
     if (!isFormData) headers["Content-Type"] = "application/json";
@@ -32,7 +32,7 @@ const API = {
     if (!res.ok) throw new Error("API Error");
     return { data: await res.json() };
   },
-  put: async (endpoint: string, body: any, options: ApiOptions = {}) => {
+  put: async (endpoint: string, body: unknown, options: ApiOptions = {}) => {
     const res = await fetch(`${API_URL}${endpoint}`, {
       ...options,
       method: "PUT",

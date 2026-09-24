@@ -59,8 +59,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           return updatedUser;
         });
       }
-    } catch (err: any) {
-      if (err?.response?.status === 401 || err?.response?.status === 404) {
+    } catch (err: unknown) {
+      const error = err as { response?: { status?: number } };
+      if (error?.response?.status === 401 || error?.response?.status === 404) {
         localStorage.removeItem("token");
         localStorage.removeItem("user");
         setUser(null);

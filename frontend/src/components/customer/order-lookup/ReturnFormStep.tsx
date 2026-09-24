@@ -11,18 +11,26 @@ import {
 export default function ReturnFormStep({
   returnForm, setReturnForm, selectedOrder, formatCurrency,
   handleReturnSubmit, loading, onCancel
+}: {
+  returnForm: Record<string, unknown>;
+  setReturnForm: (val: Record<string, unknown>) => void;
+  selectedOrder: Record<string, unknown>;
+  formatCurrency: (val: number | string) => string;
+  handleReturnSubmit: (e: React.FormEvent) => void;
+  loading: boolean;
+  onCancel: () => void;
 }) {
   const { t, getLocalizedText, language } = useLanguage();
   const inputCls = "w-full p-2.5 border border-gray-300 dark:border-slate-600 rounded-lg text-sm outline-none focus:ring-2 focus:ring-violet-500 bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500";
 
-  const items = selectedOrder?.items || [];
-  const selectedItems = returnForm.selectedItems || {};
+  const items = (selectedOrder?.items as Record<string, unknown>[]) || [];
+  const selectedItems = (returnForm.selectedItems as Record<string, { selected: boolean; return_quantity: number | string }>) || {};
 
   // Buy X Get Y: chỉ sản phẩm X (promotion.buy_product_id) mới bị ràng buộc hoàn trả toàn bộ
   // số lượng và mới kéo theo quà tặng Y. Các sản phẩm khác hoàn trả 1 phần bình thường.
   const buyProductIds = getPromotionBuyProductIds(items);
-  const isItemSelected = (item: any) => !!selectedItems[item.id]?.selected;
-  const hasGiftItems = items.some((i: any) => i.is_gift);
+  const isItemSelected = (item: Record<string, unknown>) => !!selectedItems[item.id as number]?.selected;
+  const hasGiftItems = items.some((i) => i.is_gift);
 
   const handleToggleItem = (itemId: number, maxQty: number, forceFullQty: boolean = false) => {
     const current = selectedItems[itemId] || { selected: false, return_quantity: maxQty };
@@ -77,8 +85,8 @@ export default function ReturnFormStep({
     }
   };
 
-  const estimatedRefund = items.reduce((sum: number, item: any) => {
-    const sel = selectedItems[item.id];
+  const estimatedRefund = items.reduce((sum: number, item: Record<string, unknown>) => {
+    const sel = selectedItems[item.id as number];
     if (sel?.selected && !item.is_gift) {
       const qty = Number(sel.return_quantity) || 0;
       // Đơn giá hoàn trả = payable_amount / quantity (đã trừ Voucher & Membership phân bổ)
@@ -90,8 +98,8 @@ export default function ReturnFormStep({
   return (
     <form onSubmit={handleReturnSubmit} className="space-y-4">
       <div className="bg-violet-50 dark:bg-violet-900/30 p-3 rounded-lg text-xs sm:text-sm text-violet-700 dark:text-violet-300 mb-4 flex flex-wrap justify-between items-center gap-1 border border-violet-100 dark:border-violet-700">
-        <span>{t("lookup.order_code")} <strong>#{selectedOrder?.id}</strong></span>
-        <span>{t("lookup.total")} <strong>{formatCurrency(selectedOrder?.total_price)}</strong></span>
+        <span>{t("lookup.order_code")} <strong>#{String(selectedOrder?.id)}</strong></span>
+        <span>{t("lookup.total")} <strong>{formatCurrency(Number(selectedOrder?.total_price))}</strong></span>
       </div>
 
       {/* Item Selection Section */}
@@ -109,8 +117,8 @@ export default function ReturnFormStep({
           )}
 
           <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
-            {items.map((item: any) => {
-              const sel = selectedItems[item.id] || { selected: false, return_quantity: item.quantity };
+            {items.map((item: Record<string, unknown>) => {
+              const sel = selectedItems[item.id as number] || { selected: false, return_quantity: item.quantity as number };
               const isGift = item.is_gift;
 
               // Gift items (Y): không thể trả độc lập, chỉ hoàn kèm khi sản phẩm X tương ứng được chọn
@@ -118,7 +126,7 @@ export default function ReturnFormStep({
                 const linkedBuyItems = getLinkedBuyItems(item, items);
                 const isAutoReturned = isGiftAutoReturned(item, items, isItemSelected);
                 const linkedBuyName = linkedBuyItems.length > 0
-                  ? (getLocalizedText(linkedBuyItems[0], "product_name") || linkedBuyItems[0].product_name || "")
+                  ? (getLocalizedText(linkedBuyItems[0], "product_name") || (linkedBuyItems[0] as Record<string, unknown>).product_name || "") as string
                   : "";
                 return (
                   <div

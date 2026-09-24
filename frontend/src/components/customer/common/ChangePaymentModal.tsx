@@ -4,7 +4,13 @@ import { formatCurrency } from "../../../utils/currencyUtils";
 
 interface ChangePaymentModalProps {
   isOpen: boolean;
-  order: any;
+  order: {
+    id?: number | string;
+    payment_method?: string;
+    total_price?: number | string;
+    payment_status?: string;
+    [key: string]: unknown;
+  } | null;
   onClose: () => void;
   onConfirm: (newMethod: string) => Promise<void>;
   loading?: boolean;

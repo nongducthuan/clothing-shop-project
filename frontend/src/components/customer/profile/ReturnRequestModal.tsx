@@ -8,21 +8,25 @@ import {
   isGiftAutoReturned,
 } from "../../../utils/promotionUtils";
 
-export default function ReturnRequestModal({ state, actions }: { state: any; actions: any }) {
+export default function ReturnRequestModal({ state, actions }: { state: Record<string, unknown>; actions: Record<string, unknown> }) {
   const { t, getReturnReasonLabel, getLocalizedText, language } = useLanguage();
 
   if (!state.showReturnModal) return null;
 
-  const { returnData, returnOrder } = state;
-  const { setShowReturnModal, handleReturnDataChange, handleSubmitReturn } = actions;
-  const items = returnOrder?.items || [];
-  const selectedItems = returnData.selectedItems || {};
+  const returnData = state.returnData as Record<string, unknown>;
+  const returnOrder = state.returnOrder as Record<string, unknown>;
+  const setShowReturnModal = actions.setShowReturnModal as (show: boolean) => void;
+  const handleReturnDataChange = actions.handleReturnDataChange as (field: string, value: unknown) => void;
+  const handleSubmitReturn = actions.handleSubmitReturn as () => void;
+
+  const items = (returnOrder?.items as Record<string, unknown>[]) || [];
+  const selectedItems = (returnData.selectedItems as Record<string, { selected: boolean; return_quantity: number | string }>) || {};
 
   // Buy X Get Y: chỉ sản phẩm X (promotion.buy_product_id) mới bị ràng buộc hoàn trả toàn bộ
   // số lượng và mới kéo theo quà tặng Y. Các sản phẩm khác hoàn trả 1 phần bình thường.
   const buyProductIds = getPromotionBuyProductIds(items);
-  const isItemSelected = (item: any) => !!selectedItems[item.id]?.selected;
-  const hasGiftItems = items.some((i: any) => i.is_gift);
+  const isItemSelected = (item: Record<string, unknown>) => !!selectedItems[item.id as number]?.selected;
+  const hasGiftItems = items.some((i) => i.is_gift);
 
   const handleToggleItem = (itemId: number, maxQty: number, forceFullQty: boolean = false) => {
     const current = selectedItems[itemId] || { selected: false, return_quantity: maxQty };
@@ -80,8 +84,8 @@ export default function ReturnRequestModal({ state, actions }: { state: any; act
     }
   };
 
-  const estimatedRefund = items.reduce((sum: number, item: any) => {
-    const sel = selectedItems[item.id];
+  const estimatedRefund = items.reduce((sum: number, item: Record<string, unknown>) => {
+    const sel = selectedItems[item.id as number];
     if (sel?.selected && !item.is_gift) {
       const qty = Number(sel.return_quantity) || 0;
       // Đơn giá hoàn trả = payable_amount / quantity (đã trừ Voucher & Membership phân bổ)
@@ -96,7 +100,7 @@ export default function ReturnRequestModal({ state, actions }: { state: any; act
 
         <div className="px-8 py-6 border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80">
           <h3 className="font-medium text-slate-900 dark:text-slate-100 text-lg">{t("lookup.return_title", "Yêu cầu đổi trả")}</h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{t("lookup.order_no", "Đơn hàng #{id}").replace("{id}", state.returnOrderId)}</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{t("lookup.order_no", "Đơn hàng #{id}").replace("{id}", String(state.returnOrderId))}</p>
         </div>
 
         <div className="p-6 max-h-[75vh] overflow-y-auto space-y-5 custom-scrollbar">
@@ -116,8 +120,8 @@ export default function ReturnRequestModal({ state, actions }: { state: any; act
               )}
 
               <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
-                {items.map((item: any) => {
-                  const sel = selectedItems[item.id] || { selected: false, return_quantity: item.quantity };
+                {items.map((item: Record<string, unknown>) => {
+                  const sel = selectedItems[item.id as number] || { selected: false, return_quantity: item.quantity as number };
                   const isGift = item.is_gift;
 
                   // Gift items (Y): không thể trả độc lập, chỉ hoàn kèm khi sản phẩm X tương ứng được chọn
@@ -125,7 +129,7 @@ export default function ReturnRequestModal({ state, actions }: { state: any; act
                     const linkedBuyItems = getLinkedBuyItems(item, items);
                     const isAutoReturned = isGiftAutoReturned(item, items, isItemSelected);
                     const linkedBuyName = linkedBuyItems.length > 0
-                      ? (getLocalizedText(linkedBuyItems[0], "product_name") || linkedBuyItems[0].product_name || "")
+                      ? (getLocalizedText(linkedBuyItems[0], "product_name") || (linkedBuyItems[0] as Record<string, unknown>).product_name || "") as string
                       : "";
                     return (
                       <div

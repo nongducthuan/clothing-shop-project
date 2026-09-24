@@ -80,9 +80,9 @@ export default function OrderDetailModal({ order, onClose, onOpenPaymentModal, a
     navigate("/cart");
   };
 
-  const itemsSubtotal = order.items?.reduce((sum: number, item: any) => {
+  const itemsSubtotal = order.items?.reduce((sum: number, item: { is_gift?: boolean; price?: number | string; quantity?: number | string }) => {
     if (item.is_gift) return sum;
-    return sum + (Number(item.price || 0) * (item.quantity || 1));
+    return sum + (Number(item.price || 0) * Number(item.quantity || 1));
   }, 0) || 0;
   const shippingFee = Number(order.shipping_fee || 0);
   const voucherCode = order.voucher?.code || order.voucher_code;
@@ -268,7 +268,7 @@ export default function OrderDetailModal({ order, onClose, onOpenPaymentModal, a
               {order.return_request.items && order.return_request.items.length > 0 && (
                 <div className="space-y-1.5 border-t border-amber-200/60 dark:border-amber-900/50 pt-2">
                   <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400">{t('order_details.returned_items_title', 'Sản phẩm yêu cầu trả:')}</p>
-                  {order.return_request.items.map((ri: any, rIdx: number) => {
+                  {order.return_request.items.map((ri: Record<string, unknown>, rIdx: number) => {
                     const pName = getLocalizedText(ri, "product_name") || ri.product_name || `Sản phẩm #${ri.order_item_id}`;
                     const cName = getLocalizedText(ri, "color_name") || ri.color_name;
                     return (

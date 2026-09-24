@@ -6,8 +6,8 @@ export default function ReturnInfoSection({
   order,
   formatCurrency,
 }: {
-  order: any;
-  formatCurrency?: (val: any) => string;
+  order: Record<string, unknown>;
+  formatCurrency?: (val: number | string) => string;
 }) {
   const { t, getLocalizedText, getLocalizedLabel } = useLanguage();
   const bankInfo = order.refund_bank_info;
@@ -164,7 +164,7 @@ export default function ReturnInfoSection({
             {t("admin.items_to_return", "Sản phẩm muốn trả")} ({order.return_items.length})
           </span>
           <div className="space-y-1.5">
-            {order.return_items.map((ri: any, idx: number) => {
+            {(order.return_items as Record<string, unknown>[]).map((ri: Record<string, unknown>, idx: number) => {
               const orderItem = ri.order_item;
               const pName = getLocalizedText(orderItem?.product, "name") || orderItem?.product?.name || getLocalizedText(orderItem, "product_name") || orderItem?.product_name || `Item #${ri.order_item_id}`;
               const cName = getLocalizedText(orderItem, "color_name") || orderItem?.color_name;
@@ -207,7 +207,7 @@ export default function ReturnInfoSection({
             {t("admin.evidence_attachments", "Ảnh minh chứng")} ({order.return_images.length})
           </span>
           <div className="flex flex-wrap gap-3">
-            {order.return_images.map((img: any, idx: number) => {
+            {(order.return_images as string[]).map((img: string, idx: number) => {
               const fullImgUrl = getImageUrl(img);
               return (
                 <div key={idx} className="relative group">

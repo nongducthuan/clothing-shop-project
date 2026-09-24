@@ -6,9 +6,54 @@ import { useLanguage } from "../../context/LanguageContext";
 import { formatCurrency as formatCurrencyUtil } from "../../utils/currencyUtils";
 import { getPromotionBuyProductIds, isPromotionBuyItem } from "../../utils/promotionUtils";
 import { CartContext } from "../../context/CartContext";
-import { buyAgainFromOrder, applySubstitutions, SubstitutionSuggestion } from "../../utils/buyAgainUtils";
+import { buyAgainFromOrder, applySubstitutions, SubstitutionSuggestion, VariantChoice } from "../../utils/buyAgainUtils";
 
 type AxiosErr = { response?: { data?: { message?: string } } };
+
+interface LookupOrderItem {
+  id: number;
+  product_id?: number;
+  is_gift?: boolean;
+  quantity?: number;
+  product_name?: string;
+  product_name_vi?: string;
+  product_name_en?: string;
+  color_name?: string;
+  color_name_vi?: string;
+  color_name_en?: string;
+  color?: string;
+  size?: string;
+  payable_amount?: number | string | null;
+  price?: number;
+  [key: string]: unknown;
+}
+
+interface LookupOrder {
+  id: number | string;
+  status?: string;
+  email?: string;
+  items?: LookupOrderItem[];
+  payment_status?: string;
+  return_request?: unknown;
+  payment_method?: string;
+  [key: string]: unknown;
+}
+
+type ReturnItemVal = { selected: boolean; return_quantity: number | string };
+
+interface OptimisticReturnItem {
+  order_item_id: number;
+  return_quantity: number;
+  refund_amount: number;
+  product_name?: string | null;
+  product_name_vi?: string | null;
+  product_name_en?: string | null;
+  color_name?: string | null;
+  color_name_vi?: string | null;
+  color_name_en?: string | null;
+  size?: string | null;
+  is_gift: boolean;
+}
 
 export function useOrderLookup() {
   const { showToast } = useToast();
@@ -22,7 +67,7 @@ export function useOrderLookup() {
   const [loading, setLoading] = useState(false);
   const [expandedOrder, setExpandedOrder] = useState(null);
   const [selectedOrder, setSelectedOrder] = useState(null);
-  const [paymentModalOrder, setPaymentModalOrder] = useState<any>(null);
+  const [paymentModalOrder, setPaymentModalOrder] = useState<LookupOrder | null>(null);
 
   // Buy Again substitution suggestions (variant replacement modal)
   const [buyAgainSuggestions, setBuyAgainSuggestions] = useState<SubstitutionSuggestion[] | null>(null);
@@ -84,7 +129,7 @@ export function useOrderLookup() {
     }
   };
 
-  const handleOpenPaymentModal = (order: any) => {
+  const handleOpenPaymentModal = (order: LookupOrder) => {
     setPaymentModalOrder(order);
   };
 
@@ -127,11 +172,11 @@ export function useOrderLookup() {
   /**
    * Opens the return form for a specific order.
    */
-  const openReturnForm = (order: { id: number | string; items?: any[] }) => {
+  const openReturnForm = (order: LookupOrder) => {
     setSelectedOrder(order);
     const initialSelectedItems: Record<number, { selected: boolean; return_quantity: number }> = {};
     if (order?.items) {
-      order.items.forEach((item: any) => {
+      order.items.forEach((item: LookupOrderItem) => {
         initialSelectedItems[item.id] = {
           selected: !item.is_gift,
           return_quantity: item.quantity || 1
@@ -170,10 +215,10 @@ export function useOrderLookup() {
       const buyProductIds = getPromotionBuyProductIds(selectedOrder?.items);
       const returnItems: { order_item_id: number; return_quantity: number }[] = [];
       if (returnForm.selectedItems) {
-        Object.entries(returnForm.selectedItems).forEach(([itemIdStr, val]: [string, any]) => {
+        Object.entries(returnForm.selectedItems).forEach(([itemIdStr, val]: [string, ReturnItemVal]) => {
           if (val.selected) {
             // Chỉ sản phẩm X của Buy X Get Y mới bắt buộc hoàn trả toàn bộ số lượng
-            const itemInOrder = (selectedOrder?.items || []).find((i: any) => i.id === Number(itemIdStr));
+            const itemInOrder = (selectedOrder?.items || [] as LookupOrderItem[]).find((i) => i.id === Number(itemIdStr));
             const qty = isPromotionBuyItem(itemInOrder, buyProductIds)
               ? (itemInOrder?.quantity || Number(val.return_quantity) || 1)
               : (Number(val.return_quantity) || 1);
@@ -211,16 +256,18 @@ export function useOrderLookup() {
       }
 
       // 5. Send API request with FormData
-      await API.post(`/orders/${selectedOrder.id}/return`, formData);
+      if (selectedOrder) {
+        await API.post(`/orders/${selectedOrder.id}/return`, formData);
+      }
 
       // 6. Update UI (Hide the Return button)
       // Build optimistic return_request đầy đủ (giống profile sau fetchOrders)
       // để box "Thông tin yêu cầu đổi trả" hiện ngay, không phải chờ verify OTP lại.
-      const optimisticItems: any[] = [];
+      const optimisticItems: OptimisticReturnItem[] = [];
       let optimisticRefund = 0;
       const orderItems = selectedOrder?.items || [];
       returnItems.forEach((ri: { order_item_id: number; return_quantity: number }) => {
-        const orderItem = orderItems.find((i: any) => i.id === Number(ri.order_item_id));
+        const orderItem = (orderItems as LookupOrderItem[]).find((i) => i.id === Number(ri.order_item_id));
         if (!orderItem || orderItem.is_gift) return;
         const qty = Number(orderItem.quantity) || 1;
         const unitPayable = orderItem.payable_amount !== null && orderItem.payable_amount !== undefined && orderItem.payable_amount !== ''
@@ -296,7 +343,7 @@ export function useOrderLookup() {
         headers: token ? { Authorization: `Bearer ${token}` } : {}
       });
       showToast(t("lookup.return_cancelled"), "success");
-      setOrders((prevOrders: any[]) =>
+      setOrders((prevOrders: LookupOrder[]) =>
         prevOrders.map((order) =>
           order.id === orderId
             ? { ...order, status: "Delivered", return_request: null }
@@ -330,7 +377,7 @@ export function useOrderLookup() {
       } else {
         showToast(t("lookup.cancel_order_success"), "success");
       }
-      setOrders((prevOrders: any[]) =>
+      setOrders((prevOrders: LookupOrder[]) =>
         prevOrders.map((order) =>
           order.id === orderId
             ? { ...order, status: "Cancelled", payment_status: res.data?.payment_status || order.payment_status }
@@ -354,10 +401,10 @@ export function useOrderLookup() {
    * "Buy Again": re-add the order's non-gift items (current prices/stock) into
    * the cart and navigate to the cart page.
    */
-  const handleBuyAgain = async (order: any) => {
+  const handleBuyAgain = async (order: LookupOrder) => {
     setLoading(true);
     try {
-      const summary = await buyAgainFromOrder(order, setCart);
+      const summary = await buyAgainFromOrder(order as Parameters<typeof buyAgainFromOrder>[0], setCart);
       if (summary.addedCount > 0) {
         if (summary.skippedNames.length > 0) {
           showToast(
@@ -387,7 +434,7 @@ export function useOrderLookup() {
   };
 
   // Xác nhận các variant thay thế đã chọn trong BuyAgainVariantModal
-  const handleConfirmBuyAgainSubstitutions = (selections: Array<{ suggestion: SubstitutionSuggestion; choice: any }>) => {
+  const handleConfirmBuyAgainSubstitutions = (selections: Array<{ suggestion: SubstitutionSuggestion; choice: VariantChoice }>) => {
     applySubstitutions(setCart, selections);
     if (selections.length > 0) {
       showToast(t("orders.buy_again_substituted", "Đã thêm sản phẩm thay thế vào giỏ hàng"), "success");

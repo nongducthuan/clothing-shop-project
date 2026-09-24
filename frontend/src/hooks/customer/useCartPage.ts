@@ -129,8 +129,14 @@ export function useCartPage() {
     };
   }, [cart, user, discount, appliedVoucher]);
 
+  interface VoucherErrorData {
+    min_order_value?: number | string | null;
+    message?: string;
+    [key: string]: unknown;
+  }
+
   // Lỗi áp dụng voucher: nếu backend kèm min_order_value → dựng thông báo song ngữ có số tiền
-  const buildVoucherErrorText = (data: any): string => {
+  const buildVoucherErrorText = (data: VoucherErrorData | undefined | null): string => {
     if (data?.min_order_value != null) {
       return t('api_msg.Minimum order value not met', 'Minimum order value of {min} not met')
         .replace('{min}', formatCurrency(Number(data.min_order_value), language));

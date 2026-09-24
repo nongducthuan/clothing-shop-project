@@ -40,7 +40,7 @@ interface PromotionFormProps {
     handleResetForm: () => void;
     setSearchBuyTerm: (v: string) => void;
     setSearchGetTerm: (v: string) => void;
-    setFormData: React.Dispatch<React.SetStateAction<any>>;
+    setFormData: React.Dispatch<React.SetStateAction<PromotionFormData>>;
   };
   helpers: {
     getCategoryName: (id: number) => string;
@@ -184,8 +184,8 @@ export default function PromotionForm({ state, actions, helpers }: PromotionForm
                 type="text"
                 name="name_vi"
                 required
-                value={(formData as any).name_vi || ""}
-                onChange={(e) => { handleInputChange(e as any); setFormData((prev: any) => ({ ...prev, name: (e.target as HTMLInputElement).value })); }}
+                value={formData.name_vi || ""}
+                onChange={(e) => { handleInputChange(e); setFormData((prev) => ({ ...prev, name: (e.target as HTMLInputElement).value })); }}
                 className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-indigo-500 text-sm outline-none transition-all text-slate-800 dark:text-slate-100"
                 placeholder={t("admin.ex_promo_name_vi")}
               />
@@ -197,7 +197,7 @@ export default function PromotionForm({ state, actions, helpers }: PromotionForm
               <input
                 type="text"
                 name="name_en"
-                value={(formData as any).name_en || ""}
+                value={formData.name_en || ""}
                 onChange={handleInputChange}
                 className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-indigo-500 text-sm outline-none transition-all text-slate-800 dark:text-slate-100"
                 placeholder={t("admin.ex_promo_name_en")}

@@ -1,18 +1,19 @@
 import { useState, useEffect } from "react";
 import API from "../../services/apiClient";
 
-type SettledResult = PromiseSettledResult<{ data: any }>;
+type SettledResult = PromiseSettledResult<{ data: unknown }>;
 
-const extractData = (result: SettledResult): any[] => {
+const extractData = (result: SettledResult): Record<string, unknown>[] => {
   if (result.status !== "fulfilled") return [];
 
-  const data = (result as PromiseFulfilledResult<{ data: any }>).value.data;
+  const data = (result as PromiseFulfilledResult<{ data: unknown }>).value.data;
 
   // Case 1: API returns array directly
-  if (Array.isArray(data)) return data;
+  if (Array.isArray(data)) return data as Record<string, unknown>[];
 
   // Case 2: API returns { data: [...] }
-  if (data && Array.isArray((data as { data?: any[] }).data)) return (data as { data: any[] }).data;
+  const wrapped = data as { data?: unknown[] };
+  if (wrapped && Array.isArray(wrapped.data)) return wrapped.data as Record<string, unknown>[];
 
   return [];
 };

@@ -7,9 +7,11 @@ import { useTheme } from "../../../context/ThemeContext";
 import { useLanguage } from "../../../context/LanguageContext";
 import API from "../../../services/apiClient";
 import { getImageUrl as getImgUrl } from "../../../utils/imageUtils";
+import type { User } from "../../../types";
 
 import { useQuery } from "@tanstack/react-query";
 
+type CategoryItem = { id: number; gender: string; name?: string; name_vi?: string; name_en?: string; [key: string]: unknown };
 const GENDERS = ["male", "female", "unisex"];
 
 function useCategoryData() {
@@ -17,9 +19,9 @@ function useCategoryData() {
     queryKey: ["categories-preview"],
     queryFn: async () => {
       const res = await API.get("/categories/preview");
-      const list = res.data.data || [];
-      const grouped = { male: [], female: [], unisex: [] };
-      list.forEach((c: any) => {
+      const list: CategoryItem[] = res.data.data || [];
+      const grouped: Record<string, CategoryItem[]> = { male: [], female: [], unisex: [] };
+      list.forEach((c) => {
         if (grouped[c.gender]) grouped[c.gender].push(c);
       });
       return grouped;
@@ -34,7 +36,7 @@ function useCategoryData() {
 // Hook to manage delayed hover effects (Debounce)
 function useHoverDelay(delay = 200) {
   const [isOpen, setIsOpen] = useState(false);
-  const timerRef = useRef<any>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const open = () => {
     if (timerRef.current) clearTimeout(timerRef.current);
@@ -144,7 +146,9 @@ const DesktopNav = ({ menuData, navigate }) => {
   );
 };
 
-const UserDropdown = ({ user, navigate, onLogout }: { user: any; navigate: any; onLogout: any }) => {
+type NavigateFn = ReturnType<typeof useNavigate>;
+
+const UserDropdown = ({ user, navigate, onLogout }: { user: User | null; navigate: NavigateFn; onLogout: () => void }) => {
   const { isOpen, open, close, closeImmediately, cancelClose } = useHoverDelay();
   const { t, language, setLanguage } = useLanguage();
   const { isDark, toggleTheme } = useTheme();
@@ -299,7 +303,7 @@ const UserDropdown = ({ user, navigate, onLogout }: { user: any; navigate: any; 
   );
 };
 
-const MobileMenu = ({ isOpen, onClose, user, menuData, navigate, onLogout, cartCount }: { isOpen: boolean; onClose: () => void; user: any; menuData: any; navigate: any; onLogout: () => void; cartCount: number }) => {
+const MobileMenu = ({ isOpen, onClose, user, menuData, navigate, onLogout, cartCount }: { isOpen: boolean; onClose: () => void; user: User | null; menuData: Record<string, CategoryItem[]>; navigate: NavigateFn; onLogout: () => void; cartCount: number }) => {
   const [expandedGender, setExpandedGender] = useState(null);
   const { language, setLanguage, t } = useLanguage();
   const { isDark, toggleTheme } = useTheme();

@@ -35,6 +35,39 @@ export interface BuyAgainSummary {
   substitutions: SubstitutionSuggestion[];
 }
 
+interface OrderItemRaw {
+  product_id: number;
+  product_name?: string;
+  color_id?: number;
+  size_id?: number;
+  color_name?: string;
+  color?: string;
+  size?: string;
+  quantity?: number;
+  is_gift?: boolean;
+}
+
+interface ProductDetailColor {
+  color_id: number;
+  id?: number;
+  color_name: string;
+  color_name_vi?: string;
+  color_name_en?: string;
+  image_url?: string;
+  sizes?: Array<{ size_id: number; id?: number; size: string; stock: number }>;
+}
+
+interface ProductDetail {
+  id: number;
+  name: string;
+  name_vi?: string;
+  name_en?: string;
+  image_url?: string;
+  price: number;
+  sale_percent?: number;
+  colors?: ProductDetailColor[];
+}
+
 /**
  * "Buy Again": re-adds the non-gift items of an existing order into the cart.
  *
@@ -50,11 +83,11 @@ export interface BuyAgainSummary {
  * would read a stale closure and lose items.
  */
 export async function buyAgainFromOrder(
-  order: any,
+  order: { items?: OrderItemRaw[] },
   setCart: React.Dispatch<React.SetStateAction<CartItem[]>>
 ): Promise<BuyAgainSummary> {
   const summary: BuyAgainSummary = { addedCount: 0, skippedNames: [], substitutions: [] };
-  const items = (order?.items || []).filter((i: any) => !i.is_gift && i.product_id);
+  const items = (order?.items || []).filter((i: OrderItemRaw) => !i.is_gift && i.product_id);
 
   if (items.length === 0) return summary;
 
@@ -67,11 +100,11 @@ export async function buyAgainFromOrder(
   const details = await Promise.all(
     productIds.map((pid) =>
       API.get(`/products/${pid}/details`)
-        .then((res: any) => ({ pid, product: res.data }))
+        .then((res: { data: ProductDetail | null }) => ({ pid, product: res.data }))
         .catch(() => ({ pid, product: null }))
     )
   );
-  const detailMap = new Map(details.map((d: any) => [d.pid, d.product]));
+  const detailMap = new Map(details.map((d: { pid: number; product: ProductDetail | null }) => [d.pid, d.product]));
 
   const toAdd: CartItem[] = [];
   for (const item of items) {
@@ -83,8 +116,8 @@ export async function buyAgainFromOrder(
       continue;
     }
 
-    const color = (product.colors || []).find((c: any) => c.color_id === item.color_id);
-    const size = color?.sizes?.find((s: any) => s.size_id === item.size_id);
+    const color = (product.colors || []).find((c: ProductDetailColor) => c.color_id === item.color_id);
+    const size = color?.sizes?.find((s: { size_id: number; size: string; stock: number }) => s.size_id === item.size_id);
     if (!color || !size || size.stock <= 0) {
       // Variant cũ không còn → gợi ý các variant thay thế còn hàng của cùng sản phẩm
       const choices = buildVariantChoices(product, item.color_id, item.size_id);
@@ -110,7 +143,7 @@ export async function buyAgainFromOrder(
 
     const isSale = (Number(product.sale_percent) || 0) > 0;
     const price = isSale
-      ? Math.round(Number(product.price) * (1 - product.sale_percent / 100))
+      ? Math.round(Number(product.price) * (1 - (product.sale_percent || 0) / 100))
       : Number(product.price);
 
     toAdd.push({
@@ -152,7 +185,7 @@ function mergeIntoCart(
       );
       if (idx >= 0) {
         // Same variant already in cart → merge quantities (same as CartContext.addToCart)
-        next[idx] = { ...next[idx], quantity: next[idx].quantity + item.quantity };
+        next[idx] = { ...next[idx], quantity: (next[idx].quantity || 1) + (item.quantity || 1) };
       } else {
         next.push({ ...item, cartItemId: crypto.randomUUID() });
       }
@@ -167,13 +200,13 @@ function mergeIntoCart(
  * (other color), 2 = any other variant. Higher stock first within a rank.
  */
 function buildVariantChoices(
-  product: any,
+  product: ProductDetail,
   originalColorId?: number,
   originalSizeId?: number
 ): VariantChoice[] {
   const isSale = (Number(product.sale_percent) || 0) > 0;
   const unitPrice = isSale
-    ? Math.round(Number(product.price) * (1 - product.sale_percent / 100))
+    ? Math.round(Number(product.price) * (1 - (product.sale_percent || 0) / 100))
     : Number(product.price);
 
   const choices: VariantChoice[] = [];

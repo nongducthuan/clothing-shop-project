@@ -51,8 +51,9 @@ const useGeolocation = () => {
         try {
           const address = await getAddressFromCoords(pos.coords.latitude, pos.coords.longitude);
           onSuccess(address);
-        } catch (err: any) {
-          setLocationError(translateApiMessage(err.message) || err.message);
+        } catch (err: unknown) {
+          const error = err as Error;
+          setLocationError(translateApiMessage(error.message) || error.message);
         } finally {
           setIsLocating(false);
         }

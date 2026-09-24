@@ -90,8 +90,8 @@ export function useProductDetail() {
     }
 
     API.get("/promotions")
-      .then((res: { data: any }) => {
-        const promoList = (res.data?.data || res.data || []) as Promotion[];
+      .then((res: { data: { data?: Promotion[] } | Promotion[] }) => {
+        const promoList = (('data' in res.data && res.data.data) ? res.data.data : res.data) as Promotion[];
         const matchedPromo = promoList.find(
           (p: Promotion) => String(p.buy_product_id) === String(product?.id)
         );
@@ -99,9 +99,9 @@ export function useProductDetail() {
         if (matchedPromo) {
           setActivePromotion(matchedPromo);
           API.get(`/products/${matchedPromo.gift_product_id}`)
-            .then((giftRes: { data: any }) => {
-              const gift = giftRes.data?.data || giftRes.data;
-              setGiftProduct(gift);
+            .then((giftRes: { data: { data?: Product } | Product }) => {
+              const gift = ('data' in giftRes.data && giftRes.data.data) ? giftRes.data.data : giftRes.data;
+              setGiftProduct(gift as Product);
             })
             .catch(() => setGiftProduct(null));
         }

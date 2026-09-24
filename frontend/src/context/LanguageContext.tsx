@@ -5,7 +5,7 @@ interface LanguageContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
   t: (key: TranslationKey | string, fallback?: string) => string;
-  getLocalizedText: (item: any, fieldName?: string) => string;
+  getLocalizedText: (item: Record<string, unknown>, fieldName?: string) => string;
   getLocalizedLabel: (type: LabelType, value?: string | null) => string;
   getOrderStatusLabel: (status?: string | null) => string;
   getReturnStatusLabel: (status?: string | null) => string;
@@ -67,11 +67,11 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const t = (key: TranslationKey | string, fallback?: string): string => {
     const dict = translations[language];
     if (dict && (key in dict)) {
-      return (dict as any)[key];
+      return (dict as Record<string, string>)[key];
     }
     const apiMsgKey = `api_msg.${key}`;
     if (dict && (apiMsgKey in dict)) {
-      return (dict as any)[apiMsgKey];
+      return (dict as Record<string, string>)[apiMsgKey];
     }
     return fallback || key;
   };
@@ -81,7 +81,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return t(msg);
   };
 
-  const getLocalizedText = (item: any, fieldName: string = "name"): string => {
+  const getLocalizedText = (item: Record<string, unknown>, fieldName: string = "name"): string => {
     if (!item) return "";
     const langField = `${fieldName}_${language}`;
     if (item[langField]) return item[langField];

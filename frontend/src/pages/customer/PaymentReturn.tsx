@@ -55,9 +55,10 @@ export default function PaymentReturn() {
               : t("payment_return.unsuccessful_or_cancelled", "Payment was unsuccessful or cancelled."),
           });
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error("Payment verification error:", err);
-        const errMsg = err.response?.data?.message;
+        const axErr = err as { response?: { data?: { message?: string } } };
+        const errMsg = axErr.response?.data?.message;
         setStatus({
           success: false,
           message: errMsg ? translateApiMessage(errMsg) : t("payment_return.verify_error", "Error verifying payment transaction."),
@@ -88,8 +89,9 @@ export default function PaymentReturn() {
         setShowChangeModal(false);
         navigate(user ? "/profile?tab=orders" : "/order");
       }
-    } catch (e: any) {
-      alert(e.response?.data?.message ? translateApiMessage(e.response.data.message) : t("lookup.payment_error", "Error initiating payment"));
+    } catch (e: unknown) {
+      const axErr = e as { response?: { data?: { message?: string } } };
+      alert(axErr.response?.data?.message ? translateApiMessage(axErr.response.data.message) : t("lookup.payment_error", "Error initiating payment"));
     } finally {
       setRepayLoading(false);
     }

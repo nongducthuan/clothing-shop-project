@@ -39,9 +39,9 @@ export default function OrderDetailsModal({ order, onClose, formatCurrency }) {
 
           {/* Footer Total */}
           {(() => {
-            const itemsSubtotal = order.items?.reduce((sum: number, item: any) => {
+            const itemsSubtotal = order.items?.reduce((sum: number, item: { is_gift?: boolean; price?: number | string; quantity?: number | string }) => {
               if (item.is_gift) return sum;
-              return sum + (Number(item.price || 0) * (item.quantity || 1));
+              return sum + (Number(item.price || 0) * Number(item.quantity || 1));
             }, 0) || 0;
             const shippingFee = Number(order.shipping_fee || 0);
             const voucherCode = order.voucher?.code || order.voucher_code;

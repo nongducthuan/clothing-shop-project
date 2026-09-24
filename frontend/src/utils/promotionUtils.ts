@@ -24,7 +24,7 @@ export interface ReturnableOrderItem {
   product_name?: string;
   product_name_vi?: string;
   product_name_en?: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 /**
