@@ -2,6 +2,14 @@ import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
 import { authenticateToken, optionalAuthenticateToken } from '../../middleware/authMiddleware';
 import { upload } from '../../middleware/uploadMiddleware';
+import { validate } from '../../middleware/validateMiddleware';
+import {
+  registerSchema,
+  loginSchema,
+  changePasswordSchema,
+  applyVoucherSchema,
+  createOrderSchema,
+} from '../../types/schemas';
 
 import * as authController from '../../controllers/customer/authController';
 import * as categoryController from '../../controllers/customer/categoryController';
@@ -33,12 +41,13 @@ const registerLimiter = rateLimit({
     message: { message: 'Too many registration attempts. Please try again later.' },
 });
 
-router.post('/auth/register', registerLimiter, authController.register);
-router.post('/auth/login', loginLimiter, authController.login);
-router.post('/auth/logout', authController.logout);
+router.post('/auth/register', registerLimiter, validate(registerSchema), authController.register);
+router.post('/auth/login', loginLimiter, validate(loginSchema), authController.login);
+router.post('/auth/refresh', authController.refreshToken);
+router.post('/auth/logout', authenticateToken, authController.logout);
 router.get('/auth/me', authenticateToken, authController.getMe);
 router.put('/auth/profile', authenticateToken, authController.updateProfile);
-router.put('/auth/password', authenticateToken, authController.changePassword);
+router.put('/auth/password', authenticateToken, validate(changePasswordSchema), authController.changePassword);
 
 router.get('/banners', bannerController.getBanners);
 
@@ -71,7 +80,7 @@ const otpVerifyLimiter = rateLimit({
 });
 router.post('/orders/otp/send', otpSendLimiter, orderController.sendOtpController);
 router.post('/orders/otp/verify', otpVerifyLimiter, orderController.verifyOtpAndGetOrders);
-router.post('/orders', optionalAuthenticateToken, orderController.createOrderController);
+router.post('/orders', optionalAuthenticateToken, validate(createOrderSchema), orderController.createOrderController);
 router.get('/orders', authenticateToken, orderController.getOrders);
 router.put('/orders/status', optionalAuthenticateToken, orderController.changeOrderStatus);
 router.post('/orders/:id/repay', optionalAuthenticateToken, orderController.repayMoMoController);
@@ -98,6 +107,6 @@ router.post('/promotions/calculate', promotionController.calculateCart);
 router.get('/sales', saleController.getCustomerSales);
 
 router.get('/vouchers', voucherController.getActiveVouchers);
-router.post('/vouchers/apply', voucherController.applyVoucherCustomer);
+router.post('/vouchers/apply', validate(applyVoucherSchema), voucherController.applyVoucherCustomer);
 
 export default router;

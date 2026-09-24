@@ -10,7 +10,7 @@ export function useLogin() {
   const [isLoading, setIsLoading] = useState(false);
 
   const navigate = useNavigate();
-  const { setUser } = useContext(AuthContext);
+  const { login } = useContext(AuthContext);
   const { t } = useLanguage();
 
   /**
@@ -31,18 +31,15 @@ export function useLogin() {
 
     try {
       const res = await API.post("/auth/login", form);
-      const { user, token } = res.data;
+      const { user, token, refreshToken } = res.data;
 
-      if (!user || !token) {
+      if (!user || !token || !refreshToken) {
         setError(t("auth.invalid_response"));
         setIsLoading(false);
         return;
       }
 
-      localStorage.setItem("user", JSON.stringify(user));
-      localStorage.setItem("token", token);
-
-      setUser(user);
+      login(user, token, refreshToken);
 
       if (user.role === "admin") {
         navigate("/admin");

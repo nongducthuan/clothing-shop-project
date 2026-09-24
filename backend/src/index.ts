@@ -5,6 +5,7 @@ import express from 'express';
 import http from 'http';
 import cors from 'cors';
 import path from 'path';
+import helmet from 'helmet';
 
 import adminRoutes from './routes/admin';
 import customerRoutes from './routes/customer';
@@ -14,10 +15,13 @@ import { startAutoCancelJob } from './services/autoCancelService';
 
 const app = express();
 
+// Security headers
+app.use(helmet());
+
 const allowedOrigins = [
     'http://localhost:5173',
     process.env.FRONTEND_URL
-];
+].filter(Boolean) as string[];
 
 app.use(cors({
     origin: function (origin, callback) {
@@ -32,8 +36,8 @@ app.use(cors({
 
 app.use(express.json());
 
-app.use('/public', express.static(path.join(__dirname, 'public')));
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/public', express.static(path.resolve(process.cwd(), 'src/public')));
+app.use('/uploads', express.static(path.resolve(process.cwd(), 'uploads')));
 
 app.use('/api/admin', adminRoutes);
 app.use('/api', customerRoutes);

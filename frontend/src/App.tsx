@@ -26,6 +26,7 @@ import Category from "./pages/customer/Category.tsx";
 import Profile from "./pages/customer/Profile.tsx";
 import SalesPolicy from "./pages/customer/SalesPolicy.tsx";
 import PaymentReturn from "./pages/customer/PaymentReturn.tsx";
+import NotFound from "./pages/NotFound.tsx";
 
 import Dashboard from "./pages/admin/Dashboard.tsx";
 import ProductDetailManager from "./pages/admin/ProductDetailManager.tsx";
@@ -176,6 +177,9 @@ function App() {
                       </ProtectedRoute>
                     }
                   />
+
+                  {/* --- 404 CATCH-ALL --- */}
+                  <Route path="*" element={<NotFound />} />
                 </Routes>
               </main>
 

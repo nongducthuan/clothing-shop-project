@@ -90,12 +90,24 @@ export const login = async (req: Request, res: Response): Promise<void> => {
         name: user.name,
         email: user.email,
         role: user.role,
-        // Fix 16: Không nhúng tier/discount vào JWT để tránh dữ liệu stale trong 7 ngày.
+        // Fix 16: Không nhúng tier/discount vào JWT để tránh dữ liệu stale trong 15 phút.
         // Frontend nên lấy thông tin membership từ GET /auth/me.
       },
       process.env.JWT_SECRET as string,
+      { expiresIn: '15m' }
+    );
+
+    const refreshToken = jwt.sign(
+      { id: user.id },
+      process.env.JWT_REFRESH_SECRET as string,
       { expiresIn: '7d' }
     );
+
+    const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { refresh_token: hashedRefreshToken },
+    });
 
     res.json({
       message: 'Login successful',
@@ -110,6 +122,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
         discount_percent: user.membership?.discount_percent || 0,
       },
       token,
+      refreshToken,
     });
   } catch (err) {
     console.error('❌ Error during login:', err);
@@ -197,9 +210,77 @@ export const getMe = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
-export const logout = (_req: Request, res: Response): void => {
-  // JWT is stateless — client simply discards the token
-  res.status(200).json({ message: 'Logged out successfully' });
+export const logout = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = req.user?.id;
+    if (userId) {
+      // Clear stored refresh token hash so old refresh tokens are invalidated
+      await prisma.user.update({
+        where: { id: userId },
+        data: { refresh_token: null },
+      });
+    }
+    res.status(200).json({ message: 'Logged out successfully' });
+  } catch (err) {
+    console.error('❌ Error during logout:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+export const refreshToken = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { refreshToken: token } = req.body;
+    if (!token) {
+      res.status(401).json({ message: 'Refresh token is required' });
+      return;
+    }
+
+    // Decode refresh token to get user id
+    let decoded: { id: number };
+    try {
+      decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET as string) as { id: number };
+    } catch {
+      res.status(403).json({ message: 'Invalid or expired refresh token' });
+      return;
+    }
+
+    const user = await prisma.user.findUnique({ where: { id: decoded.id } });
+    if (!user || !user.refresh_token) {
+      res.status(403).json({ message: 'Refresh token not found' });
+      return;
+    }
+
+    // Verify the provided token matches the stored hash
+    const isValid = await bcrypt.compare(token, user.refresh_token);
+    if (!isValid) {
+      res.status(403).json({ message: 'Refresh token mismatch' });
+      return;
+    }
+
+    // Issue new access token and rotate refresh token
+    const newAccessToken = jwt.sign(
+      { id: user.id, name: user.name, email: user.email, role: user.role },
+      process.env.JWT_SECRET as string,
+      { expiresIn: '15m' }
+    );
+
+    const newRefreshToken = jwt.sign(
+      { id: user.id },
+      process.env.JWT_REFRESH_SECRET as string,
+      { expiresIn: '7d' }
+    );
+
+    const hashedNewRefreshToken = await bcrypt.hash(newRefreshToken, 10);
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { refresh_token: hashedNewRefreshToken },
+    });
+
+    res.json({ token: newAccessToken, refreshToken: newRefreshToken });
+  } catch (err) {
+    console.error('❌ Error during token refresh:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
 };
 
 export const changePassword = async (req: Request, res: Response): Promise<void> => {

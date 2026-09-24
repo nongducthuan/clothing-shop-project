@@ -5,7 +5,7 @@ import { User } from "../types";
 interface AuthContextType {
   user: User | null;
   setUser: React.Dispatch<React.SetStateAction<User | null>>;
-  login: (userData: User, token: string) => void;
+  login: (userData: User, token: string, refreshToken: string) => void;
   logout: () => void;
   refreshUser: () => Promise<void>;
   tier: string;
@@ -30,14 +30,16 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     refreshUser();
   }, []);
 
-  const login = (userData: User, token: string) => {
+  const login = (userData: User, token: string, refreshToken: string) => {
     setUser(userData);
     localStorage.setItem("token", token);
+    localStorage.setItem("refreshToken", refreshToken);
     localStorage.setItem("user", JSON.stringify(userData));
   };
 
   const logout = () => {
     setUser(null);
+    localStorage.removeItem("refreshToken");
     localStorage.clear();
     window.location.href = "/login";
   };
