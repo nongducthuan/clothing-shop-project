@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from "react-router-dom";
-import { useContext, useState, useRef } from "react";
+import { useContext, useState, useRef, useEffect } from "react";
 import { Sun, Moon, Globe, Menu, X, ShieldCheck, PackageCheck, Truck } from "lucide-react";
 import { AuthContext } from "../../../context/AuthContext";
 import { CartContext } from "../../../context/CartContext";

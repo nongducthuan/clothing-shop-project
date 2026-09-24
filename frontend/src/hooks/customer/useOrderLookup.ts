@@ -7,6 +7,7 @@ import { formatCurrency as formatCurrencyUtil } from "../../utils/currencyUtils"
 import { getPromotionBuyProductIds, isPromotionBuyItem } from "../../utils/promotionUtils";
 import { CartContext } from "../../context/CartContext";
 import { buyAgainFromOrder, applySubstitutions, SubstitutionSuggestion, VariantChoice } from "../../utils/buyAgainUtils";
+import type { ReturnFormData } from "../../components/customer/order-lookup/ReturnFormStep";
 
 type AxiosErr = { response?: { data?: { message?: string } } };
 
@@ -71,15 +72,7 @@ export function useOrderLookup() {
 
   // Buy Again substitution suggestions (variant replacement modal)
   const [buyAgainSuggestions, setBuyAgainSuggestions] = useState<SubstitutionSuggestion[] | null>(null);
-  const [returnForm, setReturnForm] = useState<{
-    reason_code: string;
-    description: string;
-    bank_name: string;
-    bank_acc: string;
-    bank_owner: string;
-    images?: File[];
-    selectedItems?: Record<number, { selected: boolean; return_quantity: number | string }>;
-  }>({
+  const [returnForm, setReturnForm] = useState<ReturnFormData>({
     reason_code: "",
     description: "",
     bank_name: "",

@@ -2,11 +2,47 @@ import React from "react";
 import { getImageUrl } from "../../../utils/imageUtils";
 import { useLanguage } from "../../../context/LanguageContext";
 
+export interface BankInfo {
+  name?: string;
+  bankName?: string;
+  acc?: string;
+  bankNumber?: string;
+  owner?: string;
+  [key: string]: unknown;
+}
+
+export interface ReturnItem {
+  order_item_id?: number | string;
+  is_gift?: boolean;
+  return_quantity?: number | string;
+  refund_amount?: number | string;
+  order_item?: {
+    product?: Record<string, unknown>;
+    product_name?: string;
+    color_name?: string;
+    size?: string;
+    is_gift?: boolean;
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
+}
+
+export interface ReturnOrder {
+  status?: string;
+  return_reason?: string;
+  return_reason_code?: string;
+  refund_amount?: number;
+  refund_bank_info?: BankInfo;
+  return_items?: ReturnItem[];
+  return_images?: string[];
+  [key: string]: unknown;
+}
+
 export default function ReturnInfoSection({
   order,
   formatCurrency,
 }: {
-  order: Record<string, unknown>;
+  order: ReturnOrder;
   formatCurrency?: (val: number | string) => string;
 }) {
   const { t, getLocalizedText, getLocalizedLabel } = useLanguage();
@@ -57,7 +93,7 @@ export default function ReturnInfoSection({
               {t("admin.return_reason", "Lý do đổi trả")}
             </span>
             <span className="inline-block bg-slate-100 dark:bg-slate-600 text-slate-800 dark:text-slate-200 text-xs font-extrabold px-3 py-1 rounded-lg border border-slate-200/60 dark:border-slate-500/60">
-              {getLocalizedLabel("returnReason", order.reason_code) || t("admin.not_specified", "Chưa xác định")}
+              {getLocalizedLabel("returnReason", (order.reason_code as string) || (order.return_reason_code as string)) || t("admin.not_specified", "Chưa xác định")}
             </span>
           </div>
 
@@ -66,12 +102,12 @@ export default function ReturnInfoSection({
               {t("admin.customer_note", "Ghi chú từ khách hàng")}
             </span>
             <div className="bg-slate-50 dark:bg-slate-600 rounded-xl p-3.5 text-xs text-slate-600 dark:text-slate-200 leading-relaxed min-h-[50px] flex items-center">
-              {order.description || t("admin.no_description", "Không có ghi chú")}
+              {(order.description as string) || t("admin.no_description", "Không có ghi chú")}
             </div>
           </div>
 
           {(() => {
-            const rawResponse = order.admin_response;
+            const rawResponse = order.admin_response as string | undefined;
             const legacyResponses = ["Approved", "Rejected", "Rejected by admin", "Manually approved by admin", "Manually rejected by admin"];
             const displayResponse = rawResponse && legacyResponses.includes(rawResponse)
               ? t(`api_msg.${rawResponse}`, rawResponse)
@@ -88,7 +124,7 @@ export default function ReturnInfoSection({
                   : "bg-amber-50 dark:bg-amber-900/30 text-amber-900 dark:text-amber-200"
                   }`}>
                   {isApproved && !displayResponse && <i className="fa-solid fa-circle-check shrink-0"></i>}
-                  {displayResponse || t("order_details.return_approved_note", "Đã chấp nhận đổi trả — chờ hoàn tiền.")}
+                  {(displayResponse as string) || t("order_details.return_approved_note", "Đã chấp nhận đổi trả — chờ hoàn tiền.")}
                 </div>
               </div>
             );
@@ -164,10 +200,10 @@ export default function ReturnInfoSection({
             {t("admin.items_to_return", "Sản phẩm muốn trả")} ({order.return_items.length})
           </span>
           <div className="space-y-1.5">
-            {(order.return_items as Record<string, unknown>[]).map((ri: Record<string, unknown>, idx: number) => {
+            {order.return_items.map((ri: ReturnItem, idx: number) => {
               const orderItem = ri.order_item;
-              const pName = getLocalizedText(orderItem?.product, "name") || orderItem?.product?.name || getLocalizedText(orderItem, "product_name") || orderItem?.product_name || `Item #${ri.order_item_id}`;
-              const cName = getLocalizedText(orderItem, "color_name") || orderItem?.color_name;
+              const pName = String(getLocalizedText(orderItem?.product, "name") || orderItem?.product?.name || getLocalizedText(orderItem, "product_name") || orderItem?.product_name || `Item #${ri.order_item_id}`);
+              const cName = String(getLocalizedText(orderItem, "color_name") || orderItem?.color_name || "");
               const sizeName = orderItem?.size;
               const variantInfo = [cName, sizeName].filter(Boolean).join(" | ");
               const isGift = Boolean(orderItem?.is_gift || ri.is_gift);
@@ -191,7 +227,7 @@ export default function ReturnInfoSection({
                     )}
                   </div>
                   <div className="text-slate-600 dark:text-slate-300 font-mono text-[11px] shrink-0 bg-slate-50 dark:bg-slate-800/60 px-2 py-1 rounded-lg border border-slate-100 dark:border-slate-600/80 sm:ml-auto">
-                    {t("admin.qty_short", "SL")}: x{ri.return_quantity} | {t("admin.refund_short", "Hoàn")}: {formatCurrency ? formatCurrency(ri.refund_amount) : `${Number(ri.refund_amount).toLocaleString()}đ`}
+                    {t("admin.qty_short", "SL")}: x{ri.return_quantity} | {t("admin.refund_short", "Hoàn")}: {formatCurrency && ri.refund_amount != null ? formatCurrency(ri.refund_amount) : `${Number(ri.refund_amount || 0).toLocaleString()}đ`}
                   </div>
                 </div>
               );

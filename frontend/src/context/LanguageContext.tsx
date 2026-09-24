@@ -81,13 +81,14 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return t(msg);
   };
 
-  const getLocalizedText = (item: Record<string, unknown>, fieldName: string = "name"): string => {
-    if (!item) return "";
+  const getLocalizedText = (item: unknown, fieldName: string = "name"): string => {
+    if (!item || typeof item !== 'object') return "";
+    const record = item as Record<string, unknown>;
     const langField = `${fieldName}_${language}`;
-    if (item[langField]) return item[langField];
+    if (record[langField]) return String(record[langField]);
     const otherLang = language === "vi" ? "en" : "vi";
     const otherLangField = `${fieldName}_${otherLang}`;
-    return item[otherLangField] || item[fieldName] || "";
+    return String(record[otherLangField] || record[fieldName] || "");
   };
 
   const getLocalizedLabel = (type: LabelType, value?: string | null): string => {

@@ -11,6 +11,7 @@ export interface VariantChoice {
   stock: number;
   price: number;
   image_url?: string;
+  [key: string]: unknown;
 }
 
 export interface SubstitutionSuggestion {

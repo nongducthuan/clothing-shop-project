@@ -23,6 +23,7 @@ interface PromotionProduct {
   name: string;
   category_id: number;
   gender?: string;
+  [key: string]: unknown;
 }
 
 interface PromotionFormProps {

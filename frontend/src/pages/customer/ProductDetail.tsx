@@ -60,7 +60,7 @@ export default function ProductDetail() {
                 {t("product.details", "Product Details")}
               </h3>
               <div className="prose prose-slate prose-p:text-slate-500 dark:prose-invert dark:prose-p:text-slate-400 prose-p:leading-relaxed max-w-none text-sm whitespace-pre-line text-slate-500 dark:text-slate-400">
-                {getLocalizedText(state.product, 'description') || t("product.no_detailed_desc", "No detailed description available for this product.")}
+                {getLocalizedText(state.product as unknown as Record<string, unknown>, 'description') || t("product.no_detailed_desc", "No detailed description available for this product.")}
               </div>
             </div>
 

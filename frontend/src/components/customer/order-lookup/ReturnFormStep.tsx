@@ -8,13 +8,40 @@ import {
   isGiftAutoReturned,
 } from "../../../utils/promotionUtils";
 
+export interface ReturnFormData {
+  reason_code: string;
+  description: string;
+  bank_name: string;
+  bank_acc: string;
+  bank_owner: string;
+  images?: File[];
+  selectedItems?: Record<number | string, { selected: boolean; return_quantity: string | number }>;
+  [key: string]: unknown;
+}
+
+export interface ReturnFormOrderItem {
+  id?: number;
+  quantity?: number;
+  is_gift?: boolean;
+  product_name?: string;
+  payable_amount?: number | string;
+  [key: string]: unknown;
+}
+
+export interface ReturnFormOrder {
+  id?: number | string;
+  total_price?: number | string;
+  items?: ReturnFormOrderItem[];
+  [key: string]: unknown;
+}
+
 export default function ReturnFormStep({
   returnForm, setReturnForm, selectedOrder, formatCurrency,
   handleReturnSubmit, loading, onCancel
 }: {
-  returnForm: Record<string, unknown>;
-  setReturnForm: (val: Record<string, unknown>) => void;
-  selectedOrder: Record<string, unknown>;
+  returnForm: ReturnFormData;
+  setReturnForm: React.Dispatch<React.SetStateAction<ReturnFormData>>;
+  selectedOrder: ReturnFormOrder;
   formatCurrency: (val: number | string) => string;
   handleReturnSubmit: (e: React.FormEvent) => void;
   loading: boolean;
@@ -23,13 +50,13 @@ export default function ReturnFormStep({
   const { t, getLocalizedText, language } = useLanguage();
   const inputCls = "w-full p-2.5 border border-gray-300 dark:border-slate-600 rounded-lg text-sm outline-none focus:ring-2 focus:ring-violet-500 bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500";
 
-  const items = (selectedOrder?.items as Record<string, unknown>[]) || [];
-  const selectedItems = (returnForm.selectedItems as Record<string, { selected: boolean; return_quantity: number | string }>) || {};
+  const items = selectedOrder?.items || [];
+  const selectedItems = returnForm.selectedItems || {};
 
   // Buy X Get Y: chỉ sản phẩm X (promotion.buy_product_id) mới bị ràng buộc hoàn trả toàn bộ
   // số lượng và mới kéo theo quà tặng Y. Các sản phẩm khác hoàn trả 1 phần bình thường.
   const buyProductIds = getPromotionBuyProductIds(items);
-  const isItemSelected = (item: Record<string, unknown>) => !!selectedItems[item.id as number]?.selected;
+  const isItemSelected = (item: ReturnFormOrderItem) => !!selectedItems[item.id as number]?.selected;
   const hasGiftItems = items.some((i) => i.is_gift);
 
   const handleToggleItem = (itemId: number, maxQty: number, forceFullQty: boolean = false) => {
@@ -85,7 +112,7 @@ export default function ReturnFormStep({
     }
   };
 
-  const estimatedRefund = items.reduce((sum: number, item: Record<string, unknown>) => {
+  const estimatedRefund = items.reduce((sum: number, item: ReturnFormOrderItem) => {
     const sel = selectedItems[item.id as number];
     if (sel?.selected && !item.is_gift) {
       const qty = Number(sel.return_quantity) || 0;
@@ -117,7 +144,7 @@ export default function ReturnFormStep({
           )}
 
           <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
-            {items.map((item: Record<string, unknown>) => {
+            {items.map((item: ReturnFormOrderItem) => {
               const sel = selectedItems[item.id as number] || { selected: false, return_quantity: item.quantity as number };
               const isGift = item.is_gift;
 
@@ -126,11 +153,11 @@ export default function ReturnFormStep({
                 const linkedBuyItems = getLinkedBuyItems(item, items);
                 const isAutoReturned = isGiftAutoReturned(item, items, isItemSelected);
                 const linkedBuyName = linkedBuyItems.length > 0
-                  ? (getLocalizedText(linkedBuyItems[0], "product_name") || (linkedBuyItems[0] as Record<string, unknown>).product_name || "") as string
+                  ? String(getLocalizedText(linkedBuyItems[0], "product_name") || linkedBuyItems[0].product_name || "")
                   : "";
                 return (
                   <div
-                    key={item.id}
+                    key={String(item.id)}
                     className="p-2.5 rounded-xl border border-dashed border-amber-300 dark:border-amber-700 bg-amber-50/60 dark:bg-amber-950/30 flex items-center justify-between gap-3 opacity-80"
                   >
                     <div className="flex items-center gap-2.5 min-w-0 flex-1">
@@ -174,7 +201,7 @@ export default function ReturnFormStep({
 
               return (
                 <div
-                  key={item.id}
+                  key={String(item.id)}
                   className={`p-2.5 rounded-xl border transition-all flex items-center justify-between gap-3 ${
                     sel.selected
                       ? "bg-white dark:bg-slate-800 border-violet-500 dark:border-violet-400 shadow-xs"
@@ -186,7 +213,7 @@ export default function ReturnFormStep({
                       type="checkbox"
                       disabled={isGift}
                       checked={sel.selected}
-                      onChange={() => handleToggleItem(item.id, item.quantity, isPromotionBuyItem(item, buyProductIds))}
+                      onChange={() => handleToggleItem(Number(item.id), Number(item.quantity), isPromotionBuyItem(item, buyProductIds))}
                       className="w-4 h-4 rounded border-gray-300 text-violet-600 focus:ring-violet-500 cursor-pointer disabled:cursor-not-allowed"
                     />
                     <div className="min-w-0 flex-1">
@@ -214,7 +241,7 @@ export default function ReturnFormStep({
                             {formatCurrency(getItemUnitPayableAmount(item))}
                             {getItemUnitPayableAmount(item) < Number(item.price || 0) && (
                               <span className="ml-1 text-[10px] text-gray-400 dark:text-slate-500 line-through">
-                                {formatCurrency(item.price)}
+                                {formatCurrency(Number(item.price || 0))}
                               </span>
                             )}
                           </span>
@@ -230,10 +257,10 @@ export default function ReturnFormStep({
                       <input
                         type="number"
                         min={1}
-                        max={item.quantity}
-                        value={sel.return_quantity}
-                        onChange={(e) => handleQtyChange(item.id, e.target.value, item.quantity)}
-                        onBlur={() => handleQtyBlur(item.id)}
+                        max={Number(item.quantity)}
+                        value={sel.return_quantity as number | string}
+                        onChange={(e) => handleQtyChange(Number(item.id), e.target.value, Number(item.quantity))}
+                        onBlur={() => handleQtyBlur(Number(item.id))}
                         className="w-10 text-center bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 text-gray-900 dark:text-slate-100 text-xs py-1 rounded-lg outline-none focus:border-violet-500 font-bold"
                       />
                       <span className="text-[11px] text-gray-400">/{item.quantity}</span>
@@ -318,11 +345,11 @@ export default function ReturnFormStep({
           multiple
           accept="image/*"
           className="w-full text-xs sm:text-sm text-gray-500 dark:text-slate-400 file:mr-3 file:py-2 file:px-3 sm:file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-violet-50 dark:file:bg-violet-900/40 file:text-violet-700 dark:file:text-violet-300 hover:file:bg-violet-100 dark:hover:file:bg-violet-900/60"
-          onChange={(e) => setReturnForm({ ...returnForm, images: Array.from(e.target.files) })}
+          onChange={(e) => setReturnForm({ ...returnForm, images: e.target.files ? Array.from(e.target.files) : [] })}
         />
         {returnForm.images && returnForm.images.length > 0 && (
           <p className="text-xs text-violet-600 dark:text-violet-400 font-medium mt-1">
-            <i className="fa-solid fa-paperclip mr-1"></i> {t("lookup.files_selected").replace("{count}", returnForm.images.length)}
+            <i className="fa-solid fa-paperclip mr-1"></i> {t("lookup.files_selected").replace("{count}", String(returnForm.images.length))}
           </p>
         )}
         <p className="text-[10px] text-gray-400 dark:text-slate-500 mt-1">{t("lookup.images_hint")}</p>

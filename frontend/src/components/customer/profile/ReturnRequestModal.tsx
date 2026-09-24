@@ -7,6 +7,7 @@ import {
   getLinkedBuyItems,
   isGiftAutoReturned,
 } from "../../../utils/promotionUtils";
+import type { ReturnFormOrderItem } from "../order-lookup/ReturnFormStep";
 
 export default function ReturnRequestModal({ state, actions }: { state: Record<string, unknown>; actions: Record<string, unknown> }) {
   const { t, getReturnReasonLabel, getLocalizedText, language } = useLanguage();
@@ -19,13 +20,13 @@ export default function ReturnRequestModal({ state, actions }: { state: Record<s
   const handleReturnDataChange = actions.handleReturnDataChange as (field: string, value: unknown) => void;
   const handleSubmitReturn = actions.handleSubmitReturn as () => void;
 
-  const items = (returnOrder?.items as Record<string, unknown>[]) || [];
+  const items = (returnOrder?.items as ReturnFormOrderItem[]) || [];
   const selectedItems = (returnData.selectedItems as Record<string, { selected: boolean; return_quantity: number | string }>) || {};
 
   // Buy X Get Y: chỉ sản phẩm X (promotion.buy_product_id) mới bị ràng buộc hoàn trả toàn bộ
   // số lượng và mới kéo theo quà tặng Y. Các sản phẩm khác hoàn trả 1 phần bình thường.
   const buyProductIds = getPromotionBuyProductIds(items);
-  const isItemSelected = (item: Record<string, unknown>) => !!selectedItems[item.id as number]?.selected;
+  const isItemSelected = (item: ReturnFormOrderItem) => !!selectedItems[item.id as number]?.selected;
   const hasGiftItems = items.some((i) => i.is_gift);
 
   const handleToggleItem = (itemId: number, maxQty: number, forceFullQty: boolean = false) => {
@@ -120,7 +121,7 @@ export default function ReturnRequestModal({ state, actions }: { state: Record<s
               )}
 
               <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
-                {items.map((item: Record<string, unknown>) => {
+                {items.map((item: ReturnFormOrderItem) => {
                   const sel = selectedItems[item.id as number] || { selected: false, return_quantity: item.quantity as number };
                   const isGift = item.is_gift;
 
@@ -129,11 +130,11 @@ export default function ReturnRequestModal({ state, actions }: { state: Record<s
                     const linkedBuyItems = getLinkedBuyItems(item, items);
                     const isAutoReturned = isGiftAutoReturned(item, items, isItemSelected);
                     const linkedBuyName = linkedBuyItems.length > 0
-                      ? (getLocalizedText(linkedBuyItems[0], "product_name") || (linkedBuyItems[0] as Record<string, unknown>).product_name || "") as string
+                      ? String(getLocalizedText(linkedBuyItems[0], "product_name") || linkedBuyItems[0].product_name || "")
                       : "";
                     return (
                       <div
-                        key={item.id}
+                        key={String(item.id)}
                         className="p-3.5 rounded-2xl border border-dashed border-amber-300 dark:border-amber-700 bg-amber-50/60 dark:bg-amber-950/30 flex items-center justify-between gap-3 opacity-80"
                       >
                         <div className="flex items-start gap-3 min-w-0 flex-1">
@@ -177,7 +178,7 @@ export default function ReturnRequestModal({ state, actions }: { state: Record<s
 
                   return (
                     <div
-                      key={item.id}
+                      key={String(item.id)}
                       className={`p-3.5 rounded-2xl border transition-all flex items-start sm:items-center justify-between gap-3 ${
                         sel.selected
                           ? "bg-slate-50 dark:bg-slate-700/60 border-slate-900 dark:border-slate-400"
@@ -189,7 +190,7 @@ export default function ReturnRequestModal({ state, actions }: { state: Record<s
                           type="checkbox"
                           disabled={isGift}
                           checked={sel.selected}
-                          onChange={() => handleToggleItem(item.id, item.quantity, isPromotionBuyItem(item, buyProductIds))}
+                          onChange={() => handleToggleItem(Number(item.id), Number(item.quantity), isPromotionBuyItem(item, buyProductIds))}
                           className="w-4 h-4 mt-0.5 rounded border-slate-300 text-slate-900 focus:ring-slate-500 cursor-pointer disabled:cursor-not-allowed"
                         />
                         <div className="min-w-0 flex-1">
@@ -217,7 +218,7 @@ export default function ReturnRequestModal({ state, actions }: { state: Record<s
                                 {formatCurrency(getItemUnitPayableAmount(item), language)}
                                 {getItemUnitPayableAmount(item) < Number(item.price || 0) && (
                                   <span className="ml-1 text-[10px] text-slate-400 dark:text-slate-500 line-through">
-                                    {formatCurrency(item.price, language)}
+                                    {formatCurrency(Number(item.price || 0), language)}
                                   </span>
                                 )}
                               </span>
@@ -233,10 +234,10 @@ export default function ReturnRequestModal({ state, actions }: { state: Record<s
                           <input
                             type="number"
                             min={1}
-                            max={item.quantity}
-                            value={sel.return_quantity}
-                            onChange={(e) => handleQtyChange(item.id, e.target.value, item.quantity)}
-                            onBlur={() => handleQtyBlur(item.id)}
+                            max={Number(item.quantity)}
+                            value={sel.return_quantity as number | string}
+                            onChange={(e) => handleQtyChange(Number(item.id), e.target.value, Number(item.quantity))}
+                            onBlur={() => handleQtyBlur(Number(item.id))}
                             className="w-11 text-center bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-slate-100 text-xs py-1 rounded-lg outline-none focus:border-slate-900 dark:focus:border-slate-300 font-bold shadow-sm"
                           />
                           <span className="text-[11px] text-slate-400 font-medium">/{item.quantity}</span>
@@ -269,7 +270,7 @@ export default function ReturnRequestModal({ state, actions }: { state: Record<s
             <select
               required
               className="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-900 dark:text-slate-100 rounded-2xl p-4 text-sm outline-none focus:border-slate-900 dark:focus:border-slate-400 transition-colors"
-              value={returnData.reason}
+              value={(returnData.reason as string) || ""}
               onChange={(e) => handleReturnDataChange("reason", e.target.value)}
             >
               <option value="">{t("lookup.reason_placeholder", "Chọn lý do")}</option>
@@ -287,7 +288,7 @@ export default function ReturnRequestModal({ state, actions }: { state: Record<s
               rows={3}
               className="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 rounded-2xl p-4 text-sm outline-none focus:border-slate-900 dark:focus:border-slate-400 transition-colors resize-none"
               placeholder={t("lookup.desc_placeholder", "Mô tả vấn đề...")}
-              value={returnData.note}
+              value={(returnData.note as string) || ""}
               onChange={(e) => handleReturnDataChange("note", e.target.value)}
             />
           </div>
@@ -310,7 +311,7 @@ export default function ReturnRequestModal({ state, actions }: { state: Record<s
                 type="text"
                 placeholder={t("lookup.bank_name", "Tên ngân hàng")}
                 className="w-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 rounded-xl p-3 text-sm outline-none focus:border-slate-900 dark:focus:border-slate-400"
-                value={returnData.bankName}
+                value={(returnData.bankName as string) || ""}
                 onChange={(e) => handleReturnDataChange("bankName", e.target.value)}
               />
               <div className="grid grid-cols-2 gap-3">
@@ -318,14 +319,14 @@ export default function ReturnRequestModal({ state, actions }: { state: Record<s
                   type="text"
                   placeholder={t("lookup.bank_acc", "Số tài khoản")}
                   className="w-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 rounded-xl p-3 text-sm outline-none focus:border-slate-900 dark:focus:border-slate-400"
-                  value={returnData.bankNumber}
+                  value={(returnData.bankNumber as string) || ""}
                   onChange={(e) => handleReturnDataChange("bankNumber", e.target.value)}
                 />
                 <input
                   type="text"
                   placeholder={t("lookup.bank_owner", "Tên chủ tài khoản")}
                   className="w-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 rounded-xl p-3 text-sm outline-none focus:border-slate-900 dark:focus:border-slate-400"
-                  value={returnData.accountHolder}
+                  value={(returnData.accountHolder as string) || ""}
                   onChange={(e) => handleReturnDataChange("accountHolder", e.target.value)}
                 />
               </div>

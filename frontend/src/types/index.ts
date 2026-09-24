@@ -71,6 +71,7 @@ export interface Product {
   base_price?: number;
   is_active?: boolean;
   created_at?: string;
+  [key: string]: unknown;
 }
 
 export interface CartItem {
