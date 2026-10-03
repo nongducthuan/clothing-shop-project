@@ -1,0 +1,62 @@
+/* =============================================
+ * TAILWIND CSS ENTRY POINT
+ * Vite + PostCSS sẽ process file này,
+ * scan toàn bộ src/ và generate đúng dark: variants
+ * ============================================= */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom animations dùng trong Navbar, dropdown, v.v. */
+@layer utilities {
+  .animate-fadeIn {
+    animation: fadeIn 0.2s ease-out;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* =============================================
+ * Date/time inputs: icon calendar hiển thị đúng
+ * theo light/dark mode (áp dụng cho Sale, Voucher,
+ * Promotion form...)
+ * ============================================= */
+@layer base {
+  input[type="date"],
+  input[type="datetime-local"],
+  input[type="time"] {
+    color-scheme: light;
+  }
+
+  .dark input[type="date"],
+  .dark input[type="datetime-local"],
+  .dark input[type="time"] {
+    color-scheme: dark;
+  }
+}
+
+/* Custom scrollbar utility */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(156, 163, 175, 0.4);
+  border-radius: 9999px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(156, 163, 175, 0.7);
+}
+

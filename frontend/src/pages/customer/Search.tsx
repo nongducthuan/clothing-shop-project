@@ -1,0 +1,42 @@
+import React from "react";
+import { useSearch } from "../../hooks/customer/useSearch";
+import { useLanguage } from "../../context/LanguageContext";
+
+import SidebarFilters from "../../components/customer/search/SidebarFilters";
+import SearchBar from "../../components/customer/search/SearchBar";
+import SearchResultsGrid from "../../components/customer/search/SearchResultsGrid";
+import MobileFilterOverlay from "../../components/customer/search/MobileFilterOverlay";
+
+export default function SearchResults() {
+  const { state, refs, actions } = useSearch();
+  const { t } = useLanguage();
+
+  if (state.loading) {
+    return (
+      <div className="flex justify-center items-center h-64 text-violet-500 font-bold">
+        {t("common.loading", "Loading...")}
+      </div>
+    );
+  }
+
+  return (
+    <div className="sr-container container mx-auto py-6 px-3 md:px-4 flex-1 flex flex-col md:flex-row gap-8">
+
+      {/* ========== SIDEBAR (PC only) ========== */}
+      <SidebarFilters state={state} refs={refs} actions={actions} />
+
+      {/* ========== MAIN CONTENT ========== */}
+      <div className="flex-1 w-full md:w-3/4">
+
+        <SearchBar state={state} actions={actions} />
+
+        <SearchResultsGrid state={state} actions={actions} />
+
+      </div>
+
+      {/* ========== MOBILE FILTER OVERLAY ========== */}
+      <MobileFilterOverlay state={state} actions={actions} />
+
+    </div>
+  );
+}

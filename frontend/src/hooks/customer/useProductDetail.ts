@@ -1,0 +1,242 @@
+import { useState, useEffect, useContext } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { CartContext } from "../../context/CartContext.tsx";
+import { useLanguage } from "../../context/LanguageContext";
+import API from "../../services/apiClient.ts";
+import { getImageUrl, PLACEHOLDER_IMG } from "../../utils/imageUtils";
+import { formatCurrency } from "../../utils/currencyUtils";
+
+interface ProductSize {
+  id: number;
+  size: string;
+  stock: number;
+}
+
+interface ProductColor {
+  id: number;
+  color_name: string;
+  color_name_vi?: string;
+  color_name_en?: string;
+  image_url: string;
+  sizes?: ProductSize[];
+}
+
+interface Product {
+  id: number;
+  name: string;
+  name_vi?: string;
+  name_en?: string;
+  description?: string;
+  price: number;
+  image_url?: string;
+  category_id: number;
+  sale_percent?: number;
+  colors?: ProductColor[];
+}
+
+interface Voucher {
+  id: number;
+  code: string;
+  discount_percent: number;
+  [key: string]: unknown;
+}
+
+interface Promotion {
+  id: number;
+  buy_product_id: number;
+  gift_product_id: number;
+  buy_quantity: number;
+  gift_quantity: number;
+  [key: string]: unknown;
+}
+
+type AxiosError = { response?: { data?: { message?: string } }; message?: string };
+
+export function useProductDetail() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const { addToCart } = useContext(CartContext);
+  const { t, language } = useLanguage();
+
+  const [product, setProduct] = useState<Product | null>(null);
+  const [selectedColor, setSelectedColor] = useState<ProductColor | null>(null);
+  const [selectedSize, setSelectedSize] = useState<ProductSize | null>(null);
+  const [mainImage, setMainImage] = useState<string>("");
+  const [quantity, setQuantity] = useState<number | ''>(1);
+  const [error, setError] = useState<string | null>(null);
+
+  const [activeVoucher, setActiveVoucher] = useState<Voucher | null>(null);
+  const [activePromotion, setActivePromotion] = useState<Promotion | null>(null);
+  const [giftProduct, setGiftProduct] = useState<Product | null>(null);
+
+  const userStr = localStorage.getItem("user");
+  const user = userStr ? (JSON.parse(userStr) as { id: number }) : null;
+  const currentUserId = user ? user.id : null;
+
+  useEffect(() => {
+    if (product) {
+      API.get("/vouchers", {
+        params: {
+          product_id: product.id,
+          category_id: product.category_id,
+        },
+      })
+        .then((res) => {
+          const voucherList = res.data.data || res.data;
+          if (Array.isArray(voucherList) && voucherList.length > 0) {
+            setActiveVoucher(voucherList[0]);
+          }
+        })
+        .catch((err: unknown) => console.error("Voucher error:", err));
+    }
+
+    API.get("/promotions")
+      .then((res: { data: { data?: Promotion[] } | Promotion[] }) => {
+        const promoList = (('data' in res.data && res.data.data) ? res.data.data : res.data) as Promotion[];
+        const matchedPromo = promoList.find(
+          (p: Promotion) => String(p.buy_product_id) === String(product?.id)
+        );
+
+        if (matchedPromo) {
+          setActivePromotion(matchedPromo);
+          API.get(`/products/${matchedPromo.gift_product_id}`)
+            .then((giftRes: { data: { data?: Product } | Product }) => {
+              const gift = ('data' in giftRes.data && giftRes.data.data) ? giftRes.data.data : giftRes.data;
+              setGiftProduct(gift as Product);
+            })
+            .catch(() => setGiftProduct(null));
+        }
+      })
+      .catch(() => setActivePromotion(null));
+  }, [product]);
+
+  useEffect(() => {
+    let url = `${API.defaults?.baseURL || import.meta.env.VITE_API_URL}/products/${id}`;
+    if (currentUserId) {
+      url += `?userId=${currentUserId}`;
+    }
+
+    fetch(url)
+      .then((response) => {
+        if (!response.ok) throw new Error("Product does not exist");
+        return response.json();
+      })
+      .then((data) => {
+        if (data.image_url) {
+          data.image_url = getImageUrl(data.image_url);
+        }
+
+        if (data.colors) {
+          data.colors = data.colors.map((color) => ({
+            ...color,
+            image_url: getImageUrl(color.image_url),
+          }));
+        }
+
+        setProduct(data);
+
+        if (data.colors?.length > 0) {
+          const firstColor = data.colors[0];
+          setSelectedColor(firstColor);
+          setMainImage(firstColor.image_url);
+
+          if (firstColor.sizes?.length > 0) {
+            const availableSize = firstColor.sizes.find((size) => size.stock > 0);
+            setSelectedSize(availableSize || firstColor.sizes[0]);
+          }
+        } else {
+          setMainImage(data.image_url);
+        }
+      })
+      .catch((err: unknown) => setError((err as Error).message));
+  }, [id, currentUserId]);
+
+  useEffect(() => {
+    if (selectedColor) {
+      setMainImage(selectedColor.image_url);
+
+      if (selectedColor.sizes?.length > 0) {
+        const sameSizeAvailable = selectedColor.sizes.find(
+          (size) => size.size === selectedSize?.size && size.stock > 0
+        );
+        const firstAvailable = selectedColor.sizes.find((size) => size.stock > 0);
+
+        setSelectedSize(sameSizeAvailable || firstAvailable || selectedColor.sizes[0]);
+      } else {
+        setSelectedSize(null);
+      }
+    }
+  // `selectedSize?.size` is read only to find the matching size name in the new colour's list.
+  // Adding `selectedSize` as a full dep would trigger the effect every time we *set* selectedSize
+  // (infinite loop). Intentionally depend on selectedColor only.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedColor]);
+
+  useEffect(() => {
+    if (selectedSize && Number(quantity) > selectedSize.stock) {
+      setQuantity(Math.max(1, selectedSize.stock));
+    }
+  }, [selectedSize, quantity]);
+
+  const isSale = (product?.sale_percent ?? 0) > 0;
+  const salePrice = isSale && product ? product.price * (1 - (product.sale_percent ?? 0) / 100) : product?.price ?? 0;
+  const isVoucherValidForProduct = activeVoucher !== null && activeVoucher !== undefined;
+  const isProductIncomplete = !product?.colors || product?.colors.length === 0;
+  const currentStock = selectedSize ? selectedSize.stock : 0;
+
+  const getStockMessage = () => {
+    if (!product || !product.colors || product.colors.length === 0) return t("product.updating", "Product is updating.");
+    if (!selectedColor) return t("product.select_color", "Please select a color");
+    if (!selectedColor.sizes || selectedColor.sizes.length === 0) return t("product.color_temp_out", "This color is temporarily out of size");
+    if (!selectedSize) return t("product.select_size", "Please select a size");
+
+    return currentStock === 0 ? t("product.out_of_stock", "Out of stock") : t("product.in_stock", "In stock: {count} items").replace("{count}", String(currentStock));
+  };
+
+  const handleAddToCart = () => {
+    addToCart({
+      id: product.id,
+      category_id: product.category_id,
+      name: product.name,
+      name_vi: product.name_vi,
+      name_en: product.name_en,
+      price: salePrice,
+      color_id: selectedColor?.id,
+      color: selectedColor?.color_name,
+      color_name_vi: selectedColor?.color_name_vi,
+      color_name_en: selectedColor?.color_name_en,
+      color_image: selectedColor?.image_url,
+      size_id: selectedSize?.id,
+      size: selectedSize?.size,
+      quantity: Number(quantity) || 1,
+      stock: currentStock,
+    });
+
+    const userProfile = JSON.parse(localStorage.getItem("user"));
+    if (userProfile) {
+      API.post("/products/interaction", {
+        productId: product.id,
+        type: "add_to_cart",
+      }).catch((err) => console.error("Tracking error:", err));
+    }
+  };
+
+  const formatPrice = (price: number | string | null | undefined) => formatCurrency(price, language);
+
+  return {
+    state: {
+      product, selectedColor, selectedSize, mainImage, quantity, error,
+      activeVoucher, activePromotion, giftProduct,
+      isSale, salePrice, isVoucherValidForProduct, isProductIncomplete, currentStock
+    },
+    actions: {
+      setSelectedColor, setSelectedSize, setQuantity, handleAddToCart, navigate
+    },
+    helpers: {
+      getStockMessage, formatPrice
+    },
+    constants: {
+      PLACEHOLDER_IMG
+    }
+  };
+}

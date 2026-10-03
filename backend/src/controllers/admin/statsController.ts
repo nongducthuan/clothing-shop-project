@@ -1,0 +1,156 @@
+import { Request, Response } from 'express';
+import prisma from '../../../prisma/client';
+
+export const getAdminStats = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const today = new Date();
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(today.getDate() - 7);
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(today.getDate() - 30);
+
+        // Quy uoc bao cao: chi chot so lieu den HET NGAY HOM QUA.
+        // Ngay hom nay chua tron 24h (don co the them/sua/huy) nen khong dua vao
+        // summary 7/30 ngay va chart ngay -> tranh so nhay lien tuc trong ngay.
+        // Vi vay summary 7 ngay = 7 ngay da chot gan nhat (hom qua - 6 ... hom qua),
+        // summary 30 ngay = 30 ngay da chot gan nhat (hom qua - 29 ... hom qua).
+        const summarySql = `
+            SELECT 
+                COUNT(DISTINCT CASE WHEN DATE(o.created_at) BETWEEN DATE(DATE_SUB(CURDATE(), INTERVAL 7 DAY)) AND DATE(DATE_SUB(CURDATE(), INTERVAL 1 DAY)) THEN o.id END) AS weeklyOrders,
+                SUM(CASE WHEN DATE(o.created_at) BETWEEN DATE(DATE_SUB(CURDATE(), INTERVAL 7 DAY)) AND DATE(DATE_SUB(CURDATE(), INTERVAL 1 DAY)) AND o.status IN ('Delivered','Return Requested','Return Rejected') THEN oi.quantity * oi.price ELSE 0 END) AS weeklyRevenue,
+                SUM(CASE WHEN DATE(o.created_at) BETWEEN DATE(DATE_SUB(CURDATE(), INTERVAL 7 DAY)) AND DATE(DATE_SUB(CURDATE(), INTERVAL 1 DAY)) AND o.status IN ('Delivered','Return Requested','Return Rejected') THEN (oi.price - p.import_price) * oi.quantity ELSE 0 END) AS weeklyProfit,
+                SUM(CASE WHEN DATE(o.created_at) BETWEEN DATE(DATE_SUB(CURDATE(), INTERVAL 7 DAY)) AND DATE(DATE_SUB(CURDATE(), INTERVAL 1 DAY)) AND o.status IN ('Delivered','Return Requested','Return Rejected') THEN oi.quantity ELSE 0 END) AS productsSoldWeek,
+                
+                COUNT(DISTINCT CASE WHEN DATE(o.created_at) BETWEEN DATE(DATE_SUB(CURDATE(), INTERVAL 30 DAY)) AND DATE(DATE_SUB(CURDATE(), INTERVAL 1 DAY)) THEN o.id END) AS monthlyOrders,
+                SUM(CASE WHEN DATE(o.created_at) BETWEEN DATE(DATE_SUB(CURDATE(), INTERVAL 30 DAY)) AND DATE(DATE_SUB(CURDATE(), INTERVAL 1 DAY)) AND o.status IN ('Delivered','Return Requested','Return Rejected') THEN oi.quantity * oi.price ELSE 0 END) AS monthlyRevenue,
+                SUM(CASE WHEN DATE(o.created_at) BETWEEN DATE(DATE_SUB(CURDATE(), INTERVAL 30 DAY)) AND DATE(DATE_SUB(CURDATE(), INTERVAL 1 DAY)) AND o.status IN ('Delivered','Return Requested','Return Rejected') THEN (oi.price - p.import_price) * oi.quantity ELSE 0 END) AS monthlyProfit,
+                SUM(CASE WHEN DATE(o.created_at) BETWEEN DATE(DATE_SUB(CURDATE(), INTERVAL 30 DAY)) AND DATE(DATE_SUB(CURDATE(), INTERVAL 1 DAY)) AND o.status IN ('Delivered','Return Requested','Return Rejected') THEN oi.quantity ELSE 0 END) AS productsSoldMonth
+            FROM orders o
+            LEFT JOIN order_items oi ON o.id = oi.order_id
+            LEFT JOIN products p ON oi.product_id = p.id
+        `;
+        const summary: any[] = await prisma.$queryRawUnsafe(summarySql);
+
+        const revenue7DaysSql = `
+            SELECT 
+                d.full_date,
+                CASE DAYOFWEEK(d.full_date)
+                    WHEN 1 THEN CONCAT('CN (', DATE_FORMAT(d.full_date, '%d/%m'), ')') 
+                    WHEN 2 THEN CONCAT('T2 (', DATE_FORMAT(d.full_date, '%d/%m'), ')') 
+                    WHEN 3 THEN CONCAT('T3 (', DATE_FORMAT(d.full_date, '%d/%m'), ')')
+                    WHEN 4 THEN CONCAT('T4 (', DATE_FORMAT(d.full_date, '%d/%m'), ')')
+                    WHEN 5 THEN CONCAT('T5 (', DATE_FORMAT(d.full_date, '%d/%m'), ')')
+                    WHEN 6 THEN CONCAT('T6 (', DATE_FORMAT(d.full_date, '%d/%m'), ')')
+                    WHEN 7 THEN CONCAT('T7 (', DATE_FORMAT(d.full_date, '%d/%m'), ')')
+                END AS day,
+                IFNULL(SUM(oi.quantity * oi.price), 0) AS revenue,
+                IFNULL(SUM(oi.quantity * (oi.price - p.import_price)), 0) AS profit
+            FROM (
+                SELECT DATE_SUB(CURDATE(), INTERVAL (seq + 1) DAY) AS full_date
+                FROM (
+                    SELECT 0 AS seq UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 
+                    UNION SELECT 4 UNION SELECT 5 UNION SELECT 6
+                ) AS sequences
+            ) AS d
+            LEFT JOIN orders o ON DATE(o.created_at) = d.full_date AND o.status IN ('Delivered','Return Requested','Return Rejected')
+            LEFT JOIN order_items oi ON o.id = oi.order_id
+            LEFT JOIN products p ON oi.product_id = p.id
+            GROUP BY d.full_date, day
+            ORDER BY d.full_date ASC
+        `;
+        const revenue7Days: any[] = await prisma.$queryRawUnsafe(revenue7DaysSql);
+
+        const orderStatusSql = `SELECT status, COUNT(*) as quantity FROM orders GROUP BY status`;
+        const orderStatus: any[] = await prisma.$queryRawUnsafe(orderStatusSql);
+
+        const revenueMonthsSql = `
+            SELECT 
+                DATE_FORMAT(m.month_date, '%m/%y') AS month_label,
+                IFNULL(SUM(oi.quantity * oi.price), 0) AS revenue, 
+                IFNULL(SUM(oi.quantity * (oi.price - p.import_price)), 0) AS profit
+            FROM (
+                SELECT DATE_SUB(DATE_FORMAT(CURDATE(), '%Y-%m-01'), INTERVAL seq MONTH) AS month_date
+                FROM (
+                    SELECT 0 AS seq UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 
+                    UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 
+                    UNION SELECT 8 UNION SELECT 9 UNION SELECT 10 UNION SELECT 11
+                ) AS sequences
+            ) AS m
+            LEFT JOIN orders o ON MONTH(o.created_at) = MONTH(m.month_date) 
+                AND YEAR(o.created_at) = YEAR(m.month_date)
+                AND o.status IN ('Delivered','Return Requested','Return Rejected')
+            LEFT JOIN order_items oi ON o.id = oi.order_id
+            LEFT JOIN products p ON oi.product_id = p.id
+            GROUP BY m.month_date
+            ORDER BY m.month_date ASC
+        `;
+        const revenueMonths: any[] = await prisma.$queryRawUnsafe(revenueMonthsSql);
+
+        const categoryStatsSql = `
+            SELECT 
+                c.name AS category_name,
+                c.name_vi AS category_name_vi,
+                c.name_en AS category_name_en,
+                SUM(oi.quantity) AS total_sold,
+                SUM(oi.quantity * oi.price) AS total_revenue
+            FROM order_items oi
+            JOIN orders o ON oi.order_id = o.id
+            JOIN products p ON oi.product_id = p.id
+            JOIN categories c ON p.category_id = c.id
+            WHERE o.status IN ('Delivered','Return Requested','Return Rejected') 
+            GROUP BY c.id, c.name, c.name_vi, c.name_en
+            ORDER BY total_revenue DESC;
+        `;
+        const categoryStats: any[] = await prisma.$queryRawUnsafe(categoryStatsSql);
+
+        const returnReasonsSql = `SELECT reason_code AS reason, COUNT(*) AS quantity FROM return_requests GROUP BY reason_code`;
+        const returnReasons: any[] = await prisma.$queryRawUnsafe(returnReasonsSql);
+
+        const returnStatusSql = `SELECT status, COUNT(*) as quantity FROM return_requests GROUP BY status`;
+        const returnStatuses: any[] = await prisma.$queryRawUnsafe(returnStatusSql);
+
+        // 8 o so lieu tren Dashboard admin: dem bang SQL ngay tai DB thay vi keo
+        // toan bo danh sach ve client. Danh sach orders bi phan trang 50/trang va
+        // products/categories con phai build anh preview => dem o client vua nang
+        // vua sai khi du lieu lon. Cac dieu kien loc giu DUNG nhu cac man quan ly:
+        // products/categories chi tinh ban ghi is_active, promotions loai ban ghi
+        // da xoa mem (is_active) va chi tinh status = 'active'.
+        const dashboardSql = `
+            SELECT
+                (SELECT IFNULL(SUM(ps.stock), 0)
+                   FROM product_sizes ps
+                   JOIN product_colors pc ON ps.color_id = pc.id
+                   JOIN products p ON pc.product_id = p.id
+                  WHERE p.is_active = 1) AS totalStock,
+                (SELECT COUNT(*) FROM orders) AS orders,
+                (SELECT COUNT(*) FROM categories WHERE is_active = 1) AS categoriesCount,
+                (SELECT COUNT(*) FROM banners) AS banners,
+                (SELECT COUNT(*) FROM sales WHERE status = 1) AS activeSales,
+                (SELECT COUNT(*) FROM vouchers WHERE status = 1) AS activeVouchers,
+                (SELECT COUNT(*) FROM buy_x_get_y_promotions WHERE status = 'active' AND is_active = 1) AS activePromotions,
+                (SELECT COUNT(*) FROM users) AS users
+        `;
+        const dashboard: any[] = await prisma.$queryRawUnsafe(dashboardSql);
+
+        // Format to handle BigInt returned by raw queries (Prisma returns BigInt for COUNT)
+        const formatBigInt = (obj: any) => {
+            return JSON.parse(JSON.stringify(obj, (key, value) =>
+                typeof value === 'bigint' ? Number(value) : value
+            ));
+        };
+
+        res.json({
+            ...formatBigInt(summary[0] || {}),
+            dashboard: formatBigInt(dashboard[0] || {}),
+            revenue7Days: formatBigInt(revenue7Days),
+            orderStatus: formatBigInt(orderStatus),
+            revenueMonths: formatBigInt(revenueMonths),
+            categoryStats: formatBigInt(categoryStats),
+            returnStatuses: formatBigInt(returnStatuses),
+            returnReasons: formatBigInt(returnReasons)
+        });
+    } catch (err) {
+        console.error("Error fetching stats:", err);
+        res.status(500).json({ message: "Server error fetching statistics" });
+    }
+};

@@ -1,0 +1,72 @@
+import React from "react";
+import { useProductDetail } from "../../hooks/customer/useProductDetail";
+import { useLanguage } from "../../context/LanguageContext";
+
+import ProductImageGallery from "../../components/customer/product-detail/ProductImageGallery";
+import ProductMeta from "../../components/customer/product-detail/ProductMeta";
+import ProductVoucher from "../../components/customer/product-detail/ProductVoucher";
+import ProductSelectors from "../../components/customer/product-detail/ProductSelectors";
+import ProductActions from "../../components/customer/product-detail/ProductActions";
+
+export default function ProductDetail() {
+  const { state, actions, helpers } = useProductDetail();
+  const { t, getLocalizedText } = useLanguage();
+
+  if (state.error) {
+    return (
+      <div className="min-h-[60vh] flex flex-col items-center justify-center text-center bg-white dark:bg-slate-900">
+        <div className="w-16 h-16 bg-rose-50 dark:bg-rose-950/40 rounded-full flex items-center justify-center mb-4">
+          <i className="fa-solid fa-circle-exclamation text-2xl text-rose-500"></i>
+        </div>
+        <h2 className="text-2xl font-medium text-slate-900 dark:text-slate-100 mb-6">{state.error}</h2>
+        <button
+          onClick={() => actions.navigate("/")}
+          className="px-8 py-3 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 rounded-full font-medium hover:bg-slate-800 dark:hover:bg-white transition-colors"
+        >
+          {t("product.return_home", "Return to Homepage")}
+        </button>
+      </div>
+    );
+  }
+
+  if (!state.product) {
+    return (
+      <div className="min-h-[70vh] flex items-center justify-center bg-white dark:bg-slate-900">
+        <i className="fa-solid fa-circle-notch fa-spin text-3xl text-slate-300 dark:text-slate-600"></i>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-white dark:bg-slate-900 flex-1 pb-12 pt-6">
+      <div className="max-w-[1200px] mx-auto px-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-start">
+
+          {/* LEFT: IMAGE GALLERY (5 cols) */}
+          <div className="lg:col-span-5 lg:sticky lg:top-24">
+            <ProductImageGallery state={state} />
+          </div>
+
+          {/* RIGHT: PRODUCT DETAILS (7 cols) */}
+          <div className="lg:col-span-7 py-2">
+            <ProductMeta state={state} />
+            <ProductVoucher state={state} helpers={helpers} />
+            <ProductSelectors state={state} actions={actions} />
+            <ProductActions state={state} actions={actions} helpers={helpers} />
+
+            {/* DESCRIPTION ACCORDION/SECTION */}
+            <div className="mt-16 border-t border-slate-100 dark:border-slate-800 pt-10">
+              <h3 className="text-lg font-medium text-slate-900 dark:text-slate-100 mb-6">
+                {t("product.details", "Product Details")}
+              </h3>
+              <div className="prose prose-slate prose-p:text-slate-500 dark:prose-invert dark:prose-p:text-slate-400 prose-p:leading-relaxed max-w-none text-sm whitespace-pre-line text-slate-500 dark:text-slate-400">
+                {getLocalizedText(state.product as unknown as Record<string, unknown>, 'description') || t("product.no_detailed_desc", "No detailed description available for this product.")}
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

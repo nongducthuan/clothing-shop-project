@@ -1,0 +1,1407 @@
+import { Request, Response } from 'express';
+import prisma from '../../../prisma/client';
+import { sendEmail } from '../../utils/emailService';
+import { queueEmail } from '../../utils/emailQueue';
+import { getIO, sendNotification } from '../../utils/socket';
+import { recordInteraction } from '../../services/interactionService';
+import { allocateItemDiscounts } from '../../services/discountAllocationService';
+
+
+import { changeOrderStatusLogic } from '../admin/orderController';
+import { generateVnPayUrl, verifyVnPayReturn } from '../../utils/vnpayService';
+import { getMomoPayUrl, verifyMomoSignature } from '../../utils/momoService';
+
+const ENUM_TO_DISPLAY_STATUS: Record<string, string> = {
+    "Return_Requested": "Return Requested",
+    "Return_Rejected":  "Return Rejected",
+    "Return_Approved":  "Return Approved",
+};
+
+export const sendOtpController = async (req: Request, res: Response): Promise<void> => {
+    const { email, lang: bodyLang, language: bodyLanguage } = req.body;
+    if (!email) {
+        res.status(400).json({ message: "Email is required" });
+        return;
+    }
+    const headerLang = (req.headers['accept-language'] || req.headers['language'] || 'vi') as string;
+    const rawLang = ((bodyLang || bodyLanguage || headerLang) as string).toLowerCase();
+    const isEnglish = rawLang.startsWith('en');
+    const emailLang = isEnglish ? 'en' : 'vi';
+
+    try {
+        const oneMinuteAgo = new Date(Date.now() - 60 * 1000);
+        const recentOtp = await prisma.otp.findFirst({
+            where: { email, created_at: { gte: oneMinuteAgo } }
+        });
+
+        if (recentOtp) {
+            res.status(429).json({ message: "Please wait 1 minute before requesting a new OTP code." });
+            return;
+        }
+
+        const code = Math.floor(100000 + Math.random() * 900000).toString();
+        const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
+
+        await prisma.$transaction(async (tx) => {
+            await tx.otp.deleteMany({ where: { email } });
+            await tx.otp.create({
+                data: { email, code, expires_at: expiresAt }
+            });
+        });
+
+        const emailResult = await sendEmail(email, "Your OTP Code", `Your verification code is: ${code}`, emailLang);
+        if (!emailResult.success) {
+            res.status(500).json({ message: "Failed to send OTP email: " + emailResult.error });
+            return;
+        }
+        res.json({ message: "OTP sent to your email successfully" });
+    } catch (err) {
+        console.error("Send OTP Error:", err);
+        res.status(500).json({ message: "Server error while sending OTP" });
+    }
+};
+
+/** Chuyển đổi Prisma order row → response shape dùng chung cho getOrders và verifyOtpAndGetOrders. */
+function formatOrderResponse(order: any): any {
+    return {
+        id: order.id,
+        email: order.email,
+        name: order.name,
+        phone: order.phone,
+        address: order.address,
+        total_price: Number(order.total_price),
+        shipping_fee: Number(order.shipping_fee || 0),
+        membership_discount: Number(order.membership_discount || 0),
+        voucher_discount: Number(order.voucher_discount || 0),
+        status: ENUM_TO_DISPLAY_STATUS[order.status] || order.status,
+        payment_method: order.payment_method,
+        payment_status: order.payment_status,
+        created_at: order.created_at,
+        voucher: order.voucher ? {
+            id: order.voucher.id,
+            code: order.voucher.code,
+            discount_percent: order.voucher.discount_percent ? Number(order.voucher.discount_percent) : null,
+            max_discount_amount: order.voucher.max_discount_amount ? Number(order.voucher.max_discount_amount) : null
+        } : null,
+        voucher_code: order.voucher?.code || null,
+        return_request: order.return_request ? {
+            id: order.return_request.id,
+            status: order.return_request.status,
+            reason_code: order.return_request.reason_code,
+            description: order.return_request.description,
+            admin_response: order.return_request.admin_response,
+            refund_amount: Number(order.return_request.refund_amount),
+            items: order.return_request.items?.map((ri: any) => ({
+                id: ri.id,
+                order_item_id: ri.order_item_id,
+                return_quantity: ri.return_quantity,
+                refund_amount: Number(ri.refund_amount),
+                product_name: ri.order_item?.product?.name ?? null,
+                product_name_vi: ri.order_item?.product?.name_vi ?? null,
+                product_name_en: ri.order_item?.product?.name_en ?? null,
+                color_name: ri.order_item?.color?.color_name ?? null,
+                color_name_vi: ri.order_item?.color?.color_name_vi ?? null,
+                color_name_en: ri.order_item?.color?.color_name_en ?? null,
+                size: ri.order_item?.size?.size ?? null,
+                is_gift: ri.order_item?.is_gift ?? false,
+                // Giá gốc 1 món (trước phân bổ giảm giá) × số lượng trả để hiển thị tham khảo
+                unit_price: ri.order_item?.price != null ? Number(ri.order_item.price) : null,
+                original_quantity: ri.order_item?.quantity ?? null
+            })) ?? []
+        } : null,
+        items: order.items.map((item: any) => ({
+            id: item.id,
+            product_id: item.product_id,
+            quantity: item.quantity,
+            price: Number(item.price),
+            discount_amount: Number(item.discount_amount || 0),
+            payable_amount: item.payable_amount !== null ? Number(item.payable_amount) : Number(item.price) * item.quantity,
+            is_gift: item.is_gift,
+            promotion_id: item.promotion_id ?? null,
+            promotion: item.promotion ? {
+                id: item.promotion.id,
+                buy_product_id: item.promotion.buy_product_id,
+                gift_product_id: item.promotion.gift_product_id,
+                buy_quantity: item.promotion.buy_quantity,
+                gift_quantity: item.promotion.gift_quantity
+            } : null,
+            product_name: item.product?.name ?? null,
+            product_name_vi: item.product?.name_vi ?? null,
+            product_name_en: item.product?.name_en ?? null,
+            image_url: item.color?.image_url || item.product?.image_url || null,
+            color: item.color?.color_name ?? null,
+            color_name: item.color?.color_name ?? null,
+            color_name_vi: item.color?.color_name_vi ?? null,
+            color_name_en: item.color?.color_name_en ?? null,
+            size: item.size?.size ?? null,
+            color_id: item.color_id,
+            size_id: item.size_id,
+        }))
+    };
+}
+
+export const verifyOtpAndGetOrders = async (req: Request, res: Response): Promise<void> => {
+    const { email, code } = req.body;
+
+    try {
+        const otpData = await prisma.otp.findFirst({
+            where: { email }
+        });
+
+        if (!otpData) {
+            res.status(400).json({ message: "Invalid OTP code!" });
+            return;
+        }
+
+        // Giới hạn số lần thử sai để chống brute-force
+        const MAX_ATTEMPTS = 5;
+        if (otpData.failed_attempts >= MAX_ATTEMPTS) {
+            await prisma.otp.deleteMany({ where: { email } });
+            res.status(429).json({ message: "Too many failed attempts. Please request a new OTP." });
+            return;
+        }
+
+        if (new Date() > new Date(otpData.expires_at)) {
+            await prisma.otp.deleteMany({ where: { email } });
+            res.status(400).json({ message: "OTP code has expired!" });
+            return;
+        }
+
+        if (otpData.code !== code) {
+            await prisma.otp.update({
+                where: { id: otpData.id },
+                data: { failed_attempts: { increment: 1 } }
+            });
+            const remaining = MAX_ATTEMPTS - otpData.failed_attempts - 1;
+            res.status(400).json({ message: `Invalid OTP code! ${remaining} attempt(s) remaining.` });
+            return;
+        }
+
+        const orders = await prisma.order.findMany({
+            where: { email },
+            orderBy: { created_at: 'desc' },
+            include: {
+                return_request: {
+                    include: {
+                        items: {
+                            include: {
+                                order_item: {
+                                    include: {
+                                        product: { select: { name: true, name_vi: true, name_en: true, image_url: true } },
+                                        color: { select: { color_name: true, color_name_vi: true, color_name_en: true, image_url: true } },
+                                        size: { select: { size: true } }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                voucher: {
+                    select: { id: true, code: true, discount_percent: true, max_discount_amount: true }
+                },
+                items: {
+                    include: {
+                        promotion: { select: { id: true, buy_product_id: true, gift_product_id: true, buy_quantity: true, gift_quantity: true } },
+                        product: { select: { name: true, name_vi: true, name_en: true, image_url: true } },
+                        color: { select: { color_name: true, color_name_vi: true, color_name_en: true, image_url: true } },
+                        size: { select: { size: true } }
+                    }
+                }
+            }
+        });
+
+        const formattedOrders = orders.map(formatOrderResponse);
+
+        await prisma.otp.deleteMany({ where: { email } });
+        res.json({ message: "Verification successful", orders: formattedOrders });
+    } catch (err) {
+        console.error("Order verification error:", err);
+        res.status(500).json({ message: "System error while fetching orders" });
+    }
+};
+
+// ─── TYPE ALIAS ───────────────────────────────────────────────────────────────
+// Kiểu Prisma transaction client — dùng chung cho các helper nội bộ bên dưới.
+type TxClient = Parameters<Parameters<typeof prisma.$transaction>[0]>[0];
+
+// ─── INTERNAL HELPERS FOR createOrderController ───────────────────────────────
+
+/**
+ * Bước 1: Validate từng item (sản phẩm, size, promotion gift), tính giá sau sale,
+ * và trừ kho bằng atomic update để tránh race condition.
+ */
+async function validateAndReserveItems(
+    tx: TxClient,
+    items: any[]
+): Promise<{ itemsToSave: any[]; serverCalculatedTotal: number; blockedProductIds: Set<number> }> {
+    let serverCalculatedTotal = 0;
+    const itemsToSave: any[] = [];
+
+    const productIds = items.map(i => Number(i.product_id));
+    const promotionIds = items.filter(i => i.is_gift && i.promotion_id).map(i => Number(i.promotion_id));
+    const sizeIds = items.filter(i => i.size_id).map(i => Number(i.size_id));
+
+    const products = await tx.product.findMany({
+        where: { id: { in: productIds } },
+        include: { colors: { include: { sizes: true } } }
+    });
+    const productMap = new Map(products.map(p => [p.id, p]));
+
+    let promotionMap = new Map();
+    if (promotionIds.length > 0) {
+        const promotions = await tx.buyXGetYPromotion.findMany({
+            where: { id: { in: promotionIds } },
+            select: { id: true, gift_product_id: true, buy_product_id: true, is_stackable: true }
+        });
+        promotionMap = new Map(promotions.map(p => [p.id, p]));
+    }
+
+    const blockedProductIds = new Set<number>();
+    for (const promo of promotionMap.values()) {
+        if (promo.is_stackable === false) {
+            blockedProductIds.add(promo.buy_product_id);
+        }
+    }
+
+    const sales = await tx.sale.findMany({
+        where: {
+            status: true,
+            start_date: { lte: new Date() },
+            end_date: { gte: new Date() }
+        },
+        include: { product_sales: true, sale_categories: true }
+    });
+
+    let sizeMap = new Map();
+    if (sizeIds.length > 0) {
+        const sizes = await tx.productSize.findMany({
+            where: { id: { in: sizeIds } }
+        });
+        sizeMap = new Map(sizes.map(s => [s.id, s]));
+    }
+
+    // Gom số lượng cần trừ theo TỪNG size để trừ kho 1 lần duy nhất sau vòng lặp.
+    // Trước đây mỗi dòng hàng = 1 update riêng, tuần tự trong transaction → mạng tới DB
+    // ~80ms/query nên đơn 150+ dòng vượt timeout 30s và tạo đơn thất bại.
+    const stockDecrements = new Map<number, { quantity: number; productName: string }>();
+
+    for (const item of items) {
+        const productId = Number(item.product_id);
+        const product = productMap.get(productId);
+        if (!product) throw new Error(`Product not found`);
+
+        const isGift = item.is_gift === true;
+        const hasSizes = product.colors.some((c: any) => c.sizes.length > 0);
+        if (hasSizes && !item.size_id && !isGift) {
+            throw new Error(`Please select a size for product "${product.name}"`);
+        }
+
+        let giftPromotion: { id: number; gift_product_id: number } | null = null;
+        if (isGift) {
+            if (!item.promotion_id) {
+                throw new Error(`Gift item "${product.name}" is missing promotion reference.`);
+            }
+            giftPromotion = promotionMap.get(Number(item.promotion_id));
+            if (!giftPromotion || giftPromotion.gift_product_id !== product.id) {
+                throw new Error(`Buy X Get Y promotion is invalid for gift item "${product.name}".`);
+            }
+        }
+
+        let finalItemPrice = 0;
+        if (!isGift) {
+            const applicableSales = sales.filter((s: any) => 
+                s.apply_scope === 'all' || 
+                s.product_sales.some((ps: any) => ps.product_id === product.id) ||
+                s.sale_categories.some((sc: any) => sc.category_id === product.category_id)
+            ).sort((a: any, b: any) => Number(b.discount_percent) - Number(a.discount_percent));
+
+            const discount = applicableSales.length > 0 ? Number(applicableSales[0].discount_percent) : 0;
+            finalItemPrice = Number(product.price) * (1 - discount / 100);
+            serverCalculatedTotal += finalItemPrice * item.quantity;
+        }
+
+        if (item.size_id) {
+            // Chỉ GOM số lượng — KHÔNG update ngay. Trừ kho gộp 1 lần ở dưới.
+            const sizeId = Number(item.size_id);
+            const prevDecrement = stockDecrements.get(sizeId);
+            stockDecrements.set(sizeId, {
+                quantity: (prevDecrement?.quantity || 0) + Number(item.quantity),
+                productName: prevDecrement?.productName || product.name,
+            });
+        }
+
+        itemsToSave.push({
+            product_id: productId,
+            color_id: item.color_id ? Number(item.color_id) : null,
+            size_id: item.size_id ? Number(item.size_id) : null,
+            quantity: Number(item.quantity),
+            price: finalItemPrice,
+            is_gift: isGift,
+            promotion_id: giftPromotion ? giftPromotion.id : null
+        });
+    }
+
+    // Trừ kho GỘP 1 câu UPDATE cho TẤT CẢ size (thay vì 1 update/lần mỗi dòng hàng).
+    // CASE...END giữ tính atomic: size nào không đủ tồn sẽ không được cập nhật →
+    // số dòng bị ảnh hưởng != số size → ném lỗi để rollback toàn bộ transaction.
+    if (stockDecrements.size > 0) {
+        for (const [sizeId, dec] of stockDecrements) {
+            const size = sizeMap.get(sizeId);
+            if (!size || size.stock < dec.quantity) {
+                throw new Error(`Insufficient stock for product "${dec.productName}" (size_id=${sizeId})`);
+            }
+        }
+
+        const sizeIdsToUpdate = [...stockDecrements.keys()];
+        const quantityCase = sizeIdsToUpdate
+            .map((id) => `WHEN ${id} THEN ${stockDecrements.get(id)!.quantity}`)
+            .join(' ');
+        const affected = await tx.$executeRawUnsafe(
+            `UPDATE product_sizes SET stock = stock - (CASE id ${quantityCase} END) ` +
+            `WHERE id IN (${sizeIdsToUpdate.join(', ')}) AND stock >= (CASE id ${quantityCase} END)`
+        );
+        if (Number(affected) !== sizeIdsToUpdate.length) {
+            throw new Error('Out of stock due to high traffic! Please refresh and try again.');
+        }
+    }
+
+    return { itemsToSave, serverCalculatedTotal, blockedProductIds };
+}
+
+/**
+ * Bước 2: Áp dụng giảm giá hạng thành viên nếu user đã đăng nhập và có membership tier.
+ * Trả về discount amount và percent để bước voucher tính đúng trên giá sau membership.
+ */
+async function applyMembershipDiscount(
+    tx: TxClient,
+    userId: number | null,
+    subtotal: number,
+    itemsToSave: any[],
+    blockedProductIds: Set<number>
+): Promise<{ totalMembershipDiscount: number; userMembershipPercent: number }> {
+    let totalMembershipDiscount = 0;
+    let userMembershipPercent = 0;
+
+    if (userId) {
+        const user = await tx.user.findUnique({
+            where: { id: userId },
+            include: { membership: true }
+        });
+        if (user?.membership && Number(user.membership.discount_percent) > 0) {
+            userMembershipPercent = Number(user.membership.discount_percent);
+            
+            // Exclude non-stackable items from membership discount
+            let discountableSubtotal = 0;
+            for (const item of itemsToSave) {
+                if (!item.is_gift && !blockedProductIds.has(Number(item.product_id))) {
+                    discountableSubtotal += Number(item.price) * Number(item.quantity);
+                }
+            }
+            
+            totalMembershipDiscount = (discountableSubtotal * userMembershipPercent) / 100;
+        }
+    }
+
+    return { totalMembershipDiscount, userMembershipPercent };
+}
+
+/**
+ * Bước 3: Validate voucher, tính discount, và atomic decrement usage limit để tránh race condition.
+ * Voucher tính trên giá SAU membership (finalTotal đã trừ membership) để scope product/category
+ * không giảm nhiều hơn kỳ vọng khi đi kèm hạng thành viên.
+ * Riêng điều kiện "đơn tối thiểu" (min_order_value) tính trên TIỀN HÀNG gốc — trước mọi giảm giá.
+ */
+async function applyVoucherDiscount(
+    tx: TxClient,
+    voucher_id: any,
+    itemsToSave: any[],
+    finalTotal: number,
+    userMembershipPercent: number,
+    blockedProductIds: Set<number>
+): Promise<{ totalVoucherDiscount: number; eligibleProductIds: number[] }> {
+    let totalVoucherDiscount = 0;
+    let eligibleProductIds: number[] = [];
+
+    if (!voucher_id) return { totalVoucherDiscount, eligibleProductIds };
+
+    const voucher = await tx.voucher.findUnique({
+        where: { id: Number(voucher_id) },
+        include: { product_vouchers: true, voucher_categories: true }
+    });
+
+    if (!voucher || !voucher.status) {
+        throw new Error('Voucher does not exist or has been disabled.');
+    }
+    if (voucher.usage_limit !== null && voucher.usage_limit <= 0) {
+        throw new Error('Voucher usage limit reached.');
+    }
+    if (voucher.start_date && new Date() < voucher.start_date) {
+        throw new Error('Voucher is not active yet.');
+    }
+    if (voucher.end_date && new Date() > voucher.end_date) {
+        throw new Error('Voucher has expired.');
+    }
+    const nonGiftItems = itemsToSave.filter(i => !i.is_gift);
+
+    // Điều kiện "đơn tối thiểu" tính trên TIỀN HÀNG gốc (trước membership/voucher),
+    // không phải finalTotal (đã trừ giảm giá hạng) → tránh báo "chưa đạt" oan khi
+    // tiền hàng đã đủ nhưng bị giảm giá kéo xuống dưới ngưỡng.
+    const goodsSubtotal = nonGiftItems.reduce(
+        (sum, i) => sum + Number(i.price) * Number(i.quantity),
+        0
+    );
+    if (goodsSubtotal < Number(voucher.min_order_value)) {
+        // Lỗi nghiệp vụ có dữ liệu kèm theo → catch bên dưới trả 400 để frontend dịch
+        const minOrderError: any = new Error("Minimum order value not met");
+        minOrderError.min_order_value = Number(voucher.min_order_value);
+        throw minOrderError;
+    }
+
+    let eligibleTotal = 0;
+
+    // Voucher tính trên giá SAU membership (khách thực phải trả),
+    // không phải giá gốc — nếu không voucher scope product/category sẽ
+    // giảm nhiều hơn kỳ vọng khi đi kèm hạng thành viên.
+    const membershipRate = userMembershipPercent > 0 ? userMembershipPercent / 100 : 0;
+    const priceAfterMembership = (gross: number) => gross * (1 - membershipRate);
+
+    // Filter out blocked items from being eligible for vouchers
+    const eligibleNonGiftItems = nonGiftItems.filter(i => !blockedProductIds.has(Number(i.product_id)));
+
+    if (voucher.apply_scope === 'all') {
+        // Only items that are NOT blocked are eligible
+        eligibleTotal = eligibleNonGiftItems.reduce((sum, i) => sum + priceAfterMembership(i.price * i.quantity), 0);
+        eligibleProductIds = eligibleNonGiftItems.map(i => i.product_id);
+    } else if (voucher.apply_scope === 'product') {
+        const allowedIds = voucher.product_vouchers.map(pv => pv.product_id);
+        eligibleProductIds = eligibleNonGiftItems.filter(i => allowedIds.includes(i.product_id)).map(i => i.product_id);
+        eligibleTotal = eligibleNonGiftItems
+            .filter(i => allowedIds.includes(i.product_id))
+            .reduce((sum, i) => sum + priceAfterMembership(i.price * i.quantity), 0);
+    } else if (voucher.apply_scope === 'category') {
+        const allowedCatIds = voucher.voucher_categories.map(vc => vc.category_id);
+        const products = await tx.product.findMany({
+            where: { id: { in: eligibleNonGiftItems.map(i => i.product_id) } },
+            select: { id: true, category_id: true }
+        });
+        eligibleProductIds = products
+            .filter(p => allowedCatIds.includes(p.category_id))
+            .map(p => p.id);
+        eligibleTotal = eligibleNonGiftItems
+            .filter(i => eligibleProductIds.includes(i.product_id))
+            .reduce((sum, i) => sum + priceAfterMembership(i.price * i.quantity), 0);
+    }
+
+    if (eligibleTotal === 0) {
+        throw new Error('Voucher is not applicable to any products in this order.');
+    }
+
+    totalVoucherDiscount = (eligibleTotal * Number(voucher.discount_percent || 0)) / 100;
+    if (voucher.max_discount_amount && totalVoucherDiscount > Number(voucher.max_discount_amount)) {
+        totalVoucherDiscount = Number(voucher.max_discount_amount);
+    }
+
+    // FIX RACE CONDITION: Atomic update cho Voucher limit
+    if (voucher.usage_limit !== null) {
+        const voucherUpdateResult = await tx.voucher.updateMany({
+            where: {
+                id: Number(voucher_id),
+                usage_limit: { gte: 1 }
+            },
+            data: {
+                usage_limit: { decrement: 1 },
+                used_count: { increment: 1 }
+            }
+        });
+        if (voucherUpdateResult.count === 0) {
+            throw new Error('Voucher was just fully consumed by other users.');
+        }
+    } else {
+        await tx.voucher.update({
+            where: { id: Number(voucher_id) },
+            data: { used_count: { increment: 1 } }
+        });
+    }
+
+    return { totalVoucherDiscount, eligibleProductIds };
+}
+
+// ─── CONTROLLER ───────────────────────────────────────────────────────────────
+
+export const createOrderController = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const userId = req.user?.id || null;
+        const { address, items, phone, name, email, payment_method, voucher_id, shipping_fee: clientShippingFee } = req.body;
+
+        if (!address || !items || items.length === 0) {
+            res.status(400).json({ message: "Invalid order data: Address or items are missing" });
+            return;
+        }
+
+        let orderId = 0;
+        let finalTotal = 0;
+
+        await prisma.$transaction(async (tx) => {
+            // 1. Validate items, calculate prices, deduct stock atomically
+            const { itemsToSave, serverCalculatedTotal, blockedProductIds } = await validateAndReserveItems(tx, items);
+
+            // 2. Apply membership discount
+            const { totalMembershipDiscount, userMembershipPercent } = await applyMembershipDiscount(tx, userId, serverCalculatedTotal, itemsToSave, blockedProductIds);
+            finalTotal = serverCalculatedTotal - totalMembershipDiscount;
+
+            // 3. Apply voucher discount (tính trên finalTotal sau membership)
+            const { totalVoucherDiscount, eligibleProductIds } = await applyVoucherDiscount(tx, voucher_id, itemsToSave, finalTotal, userMembershipPercent, blockedProductIds);
+            finalTotal = Math.max(0, finalTotal - totalVoucherDiscount);
+            const itemAllocations = allocateItemDiscounts(itemsToSave, {
+                membershipDiscount: totalMembershipDiscount,
+                voucherDiscount: totalVoucherDiscount,
+                eligibleProductIds,
+                payableTotal: finalTotal
+            });
+
+            itemsToSave.forEach((item, index) => {
+                item.discount_amount = itemAllocations[index].discount_amount;
+                item.payable_amount = itemAllocations[index].payable_amount;
+            });
+
+            // 4. Apply shipping fee - compute server-side to prevent client manipulation
+            // Rules mirror frontend shippingUtils.ts: free if finalTotal >= 500,000đ,
+            // else fee is 20,000–45,000đ base + 5,000đ per item over 5.
+            const FREE_SHIPPING_THRESHOLD = 500_000;
+            const MAX_BASE_FEE = 45_000;
+            const EXTRA_ITEM_FEE = 5_000;
+            const FREE_ITEM_LIMIT = 5;
+
+            const totalQty = itemsToSave.filter(i => !i.is_gift).reduce((s: number, i: { quantity: number }) => s + Number(i.quantity), 0);
+            const extraItems = Math.max(0, totalQty - FREE_ITEM_LIMIT);
+            const maxAllowedFee = finalTotal >= FREE_SHIPPING_THRESHOLD
+                ? 0
+                : MAX_BASE_FEE + extraItems * EXTRA_ITEM_FEE;
+
+            const parsedShippingFee = Number(clientShippingFee) || 0;
+            if (parsedShippingFee < 0 || parsedShippingFee > maxAllowedFee) {
+                throw new Error(`Invalid shipping fee: expected 0–${maxAllowedFee}, got ${parsedShippingFee}.`);
+            }
+            finalTotal = Math.max(0, finalTotal + parsedShippingFee);
+
+            // 5. Create Order
+            const newOrder = await tx.order.create({
+                data: {
+                    user_id: userId,
+                    voucher_id: voucher_id ? Number(voucher_id) : null,
+                    name,
+                    email,
+                    phone,
+                    address,
+                    total_price: finalTotal,
+                    shipping_fee: parsedShippingFee,
+                    membership_discount: totalMembershipDiscount,
+                    voucher_discount: totalVoucherDiscount,
+                    payment_method: payment_method || 'cod',
+                    items: { create: itemsToSave }
+                }
+            });
+            orderId = newOrder.id;
+        }, { maxWait: 10000, timeout: 30000 });
+
+        const lang = (req.headers['accept-language'] || req.headers['language'] || 'vi') as string;
+        const isEnglish = lang.startsWith('en');
+        const emailLang = isEnglish ? 'en' : 'vi';
+
+        // Outside transaction: Emails, Analytics, MoMo
+        queueEmail(
+            email || (req.user ? req.user.email : ""),
+            isEnglish ? "Order Confirmation" : "Xác nhận đơn hàng",
+            isEnglish
+                ? `Thank you! Order #${orderId} has been placed successfully. Total: ${finalTotal.toLocaleString()} VND`
+                : `Cảm ơn bạn! Đơn hàng #${orderId} đã được đặt thành công. Tổng cộng: ${finalTotal.toLocaleString()} VNĐ`,
+            emailLang
+        );
+
+        // Emit realtime notification to Admin
+        try {
+            await sendNotification(prisma, null, 'Đơn hàng mới', `Khách hàng ${name} vừa đặt đơn hàng #${orderId}`, 'New Order', `Customer ${name} just placed order #${orderId}`, 'new_order', { orderId, total: finalTotal, customerName: name });
+        } catch(e) {
+            console.error('Socket emit error:', e);
+        }
+
+        if (userId) {
+            items.forEach((item: any) => recordInteraction(userId, item.product_id, 'purchase'));
+        }
+
+        if (payment_method === "momo") {
+            try {
+                const momoResponse = await getMomoPayUrl(orderId.toString(), finalTotal, `Payment for order #${orderId}`);
+                if (!momoResponse || !momoResponse.payUrl) {
+                    throw new Error(momoResponse?.message || "Failed to get MoMo payUrl");
+                }
+                res.status(201).json({ message: "Redirecting to MoMo", orderId, payUrl: momoResponse.payUrl });
+                return;
+            } catch (momoError) {
+                console.error("MoMo API Error:", momoError);
+                res.status(201).json({
+                    message: "Order created but MoMo payment link failed. Please retry payment in your profile.",
+                    orderId, payUrl: null
+                });
+                return;
+            }
+        }
+
+        if (payment_method === "vnpay") {
+            try {
+                const clientIp = (req.headers['x-forwarded-for'] as string) || req.socket.remoteAddress || '127.0.0.1';
+                const vnpayUrl = generateVnPayUrl({
+                    orderId: orderId.toString(),
+                    amount: finalTotal,
+                    orderInfo: `Thanh toan don hang #${orderId}`,
+                    ipAddr: clientIp,
+                    bankCode: 'VNBANK',
+                });
+                res.status(201).json({ message: "Redirecting to VNPay", orderId, payUrl: vnpayUrl });
+                return;
+            } catch (vnpError: any) {
+                console.error("VNPay API Error:", vnpError);
+                res.status(201).json({
+                    message: "Order created but VNPay payment link failed. Please retry payment in your profile.",
+                    orderId, payUrl: null
+                });
+                return;
+            }
+        }
+
+        res.status(201).json({ message: "Order placed successfully (COD)", orderId, total: finalTotal, payUrl: null });
+
+    } catch (error: any) {
+        console.error("Order creation failed:", error.message);
+        // Lỗi nghiệp vụ có dữ liệu (VD: voucher min order value) → trả 400 + dữ liệu để frontend dịch
+        if (error?.min_order_value != null) {
+            res.status(400).json({
+                message: "Minimum order value not met",
+                min_order_value: error.min_order_value
+            });
+            return;
+        }
+        res.status(500).json({ message: "Failed to create order", error: error.message });
+    }
+};
+
+export const getOrders = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const userId = req.user?.id;
+        if (!userId) {
+            res.status(401).json({ message: "Unauthorized" });
+            return;
+        }
+
+        const orders = await prisma.order.findMany({
+            where: { user_id: userId },
+            orderBy: { created_at: 'desc' },
+            include: {
+                return_request: {
+                    include: {
+                        items: {
+                            include: {
+                                order_item: {
+                                    include: {
+                                        product: { select: { name: true, name_vi: true, name_en: true, image_url: true } },
+                                        color: { select: { color_name: true, color_name_vi: true, color_name_en: true, image_url: true } },
+                                        size: { select: { size: true } }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                voucher: {
+                    select: { id: true, code: true, discount_percent: true, max_discount_amount: true }
+                },
+                items: {
+                    include: {
+                        promotion: { select: { id: true, buy_product_id: true, gift_product_id: true, buy_quantity: true, gift_quantity: true } },
+                        product: { select: { name: true, name_vi: true, name_en: true, image_url: true } },
+                        color: { select: { color_name: true, color_name_vi: true, color_name_en: true, image_url: true } },
+                        size: { select: { size: true } }
+                    }
+                }
+            }
+        });
+
+        const formattedOrders = orders.map(formatOrderResponse);
+
+        res.json(formattedOrders);
+    } catch (error) {
+        console.error("Get orders error:", error);
+        res.status(500).json({ message: "Error fetching order list" });
+    }
+};
+
+// Customer chỉ được cancel đơn của chính mình, khi đang Pending/Confirmed
+export const changeOrderStatus = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { order_id, new_status, email } = req.body;
+
+        const order = await prisma.order.findUnique({ where: { id: Number(order_id) } });
+        if (!order) {
+            res.status(404).json({ message: "Order not found." });
+            return;
+        }
+
+        // Kiểm tra ownership (cho phép Admin bypass): 
+        const isAdmin = req.user?.role === 'admin';
+        if (order.user_id) {
+            if (!isAdmin && (!req.user || req.user.id !== order.user_id)) {
+                res.status(403).json({ message: "Forbidden: This order does not belong to you." });
+                return;
+            }
+        } else {
+            if (!isAdmin && (!email || order.email !== email)) {
+                res.status(403).json({ message: "Forbidden: Email does not match the guest order." });
+                return;
+            }
+        }
+
+        // Customer chỉ được Cancel, và chỉ khi đơn chưa ship
+        const allowedCustomerStatuses = ['Cancelled'];
+        const cancellableFrom = ['Pending', 'Confirmed'];
+        if (!allowedCustomerStatuses.includes(new_status)) {
+            res.status(403).json({ message: "You are not allowed to set this order status." });
+            return;
+        }
+        if (!cancellableFrom.includes(order.status)) {
+            res.status(400).json({ message: `Cannot cancel an order that is already "${order.status}".` });
+            return;
+        }
+
+        await changeOrderStatusLogic(Number(order_id), new_status);
+
+        // Case đặc biệt: đơn đã thanh toán online (MoMo/VNPay thành công → Confirmed + Paid)
+        // Khi khách hủy, đánh dấu payment_status = 'Refunded' để admin biết cần hoàn tiền cho khách
+        let finalPaymentStatus: string = order.payment_status;
+        if (order.payment_status === 'Paid') {
+            await prisma.order.update({
+                where: { id: Number(order_id) },
+                data: { payment_status: 'Refunded' }
+            });
+            finalPaymentStatus = 'Refunded';
+        }
+
+        // Emit realtime socket event to Admin
+        try {
+            await sendNotification(prisma, null, 'Đơn hàng bị hủy', `Đơn hàng #${order_id} đã bị hủy`, 'Order Cancelled', `Order #${order_id} has been cancelled`, 'order_cancelled', { orderId: Number(order_id), customerName: order.name || `#${order_id}`, isPaid: order.payment_status === 'Paid' });
+        } catch (e) {
+            console.error('Socket emit error (order_cancelled):', e);
+        }
+
+        res.json({ message: "Order cancelled successfully!", payment_status: finalPaymentStatus });
+    } catch (err: any) {
+        res.status(500).json({ message: "Failed to update order status", error: err.message });
+    }
+};
+
+// Verify HMAC signature từ MoMo trước khi xử lý
+export const momoCallback = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { orderId, resultCode } = req.body;
+        const isValid = verifyMomoSignature(req.body);
+
+        if (!isValid) {
+            console.warn(`MoMo IPN: Invalid signature for orderId=${orderId}`);
+            res.status(400).json({ message: "Invalid signature" });
+            return;
+        }
+
+        if (resultCode === 0) {
+            const parts = orderId.split('_');
+            const realOrderId = orderId.startsWith('REPAY') ? Number(parts[1]) : Number(parts[0]);
+
+            const order = await prisma.order.findUnique({ where: { id: realOrderId } });
+
+            if (order?.status === 'Cancelled') {
+                // Thanh toán đến trễ sau khi đơn đã bị hủy (auto-cancel/khách hủy) →
+                // KHÔNG hồi sinh đơn, đánh dấu Refunded để admin hoàn tiền cho khách
+                console.warn(`⚠️ MoMo IPN: payment success for CANCELLED order #${realOrderId}. Marking as Refunded.`);
+                await prisma.order.update({
+                    where: { id: realOrderId },
+                    data: { payment_status: 'Refunded' }
+                });
+            } else {
+                await prisma.order.update({
+                    where: { id: realOrderId },
+                    data: { payment_status: 'Paid' }
+                });
+
+                try {
+                    await changeOrderStatusLogic(realOrderId, 'Confirmed');
+                } catch (orderError: any) {
+                    console.error("Order Status Update Error (IPN):", orderError.message);
+                }
+
+                // Emit realtime socket event to Admin
+                try {
+                    await sendNotification(prisma, null, 'Thanh toán thành công', `Đơn hàng #${realOrderId} đã thanh toán qua MoMo`, 'Payment Successful', `Order #${realOrderId} has been paid via MoMo`, 'payment_success', { orderId: realOrderId, amount: order?.total_price || 0, method: 'MoMo' });
+                } catch (e) {
+                    console.error('Socket emit error (MoMo IPN payment_success):', e);
+                }
+            }
+        }
+        res.status(204).send();
+    } catch (error: any) {
+        console.error("FULL IPN ERROR LOG:", error);
+        res.status(500).json({ message: "IPN Webhook Error", error: error.message });
+    }
+};
+
+export const momoReturn = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const query = req.query;
+        const { orderId, resultCode } = query as any;
+
+        if (!orderId) {
+            res.status(400).json({ success: false, message: "Missing orderId in query" });
+            return;
+        }
+
+        const isValid = verifyMomoSignature(query);
+        if (!isValid) {
+            console.warn(`MoMo Return: Invalid signature for orderId=${orderId}`);
+            res.status(400).json({ success: false, message: "Invalid signature" });
+            return;
+        }
+
+        const parts = String(orderId).split('_');
+        const realOrderId = String(orderId).startsWith('REPAY') ? Number(parts[1]) : Number(parts[0]);
+
+        if (String(resultCode) === '0') {
+            const order = await prisma.order.findUnique({ where: { id: realOrderId } });
+
+            if (order?.status === 'Cancelled') {
+                // Thanh toán đến trễ sau khi đơn đã bị hủy → đánh dấu Refunded, không hồi sinh đơn
+                console.warn(`⚠️ MoMo Return: payment success for CANCELLED order #${realOrderId}. Marking as Refunded.`);
+                await prisma.order.update({
+                    where: { id: realOrderId },
+                    data: { payment_status: 'Refunded' }
+                });
+                res.status(200).json({
+                    success: false,
+                    orderId: realOrderId,
+                    message: "Order was cancelled before payment completed. The paid amount will be refunded."
+                });
+                return;
+            }
+
+            await prisma.order.update({
+                where: { id: realOrderId },
+                data: { payment_status: 'Paid' }
+            });
+
+            try {
+                await changeOrderStatusLogic(realOrderId, 'Confirmed');
+            } catch (orderError: any) {
+                console.error("Order Status Update Error (MoMo Return):", orderError.message);
+            }
+
+            res.status(200).json({
+                success: true,
+                orderId: realOrderId,
+                message: "MoMo payment successful!"
+            });
+        } else {
+            res.status(200).json({
+                success: false,
+                orderId: realOrderId,
+                message: (query.message as string) || "MoMo payment was cancelled or failed."
+            });
+        }
+    } catch (error: any) {
+        console.error("MOMO RETURN ERROR:", error);
+        res.status(500).json({ success: false, message: "Error verifying MoMo transaction" });
+    }
+};
+
+export const vnpayIpn = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const vnpParams = req.query;
+        const verifyResult = verifyVnPayReturn(vnpParams);
+
+        if (!verifyResult.isValidSignature) {
+            console.warn(`VNPay IPN: Invalid signature for TxnRef=${verifyResult.vnp_TxnRef}`);
+            res.status(200).json({ RspCode: '97', Message: 'Invalid Checksum' });
+            return;
+        }
+
+        const realOrderId = Number(verifyResult.vnp_TxnRef.split('_')[0]);
+        const order = await prisma.order.findUnique({ where: { id: realOrderId } });
+
+        if (!order) {
+            res.status(200).json({ RspCode: '01', Message: 'Order not found' });
+            return;
+        }
+
+        if (order.payment_status === 'Paid') {
+            res.status(200).json({ RspCode: '02', Message: 'Order already confirmed' });
+            return;
+        }
+
+        if (order.status === 'Cancelled') {
+            // Thanh toán đến trễ sau khi đơn đã bị hủy → đánh dấu Refunded, không hồi sinh đơn
+            console.warn(`⚠️ VNPay IPN: payment success for CANCELLED order #${realOrderId}. Marking as Refunded.`);
+            await prisma.order.update({
+                where: { id: realOrderId },
+                data: { payment_status: 'Refunded' }
+            });
+            res.status(200).json({ RspCode: '04', Message: 'Order was cancelled, refund required' });
+            return;
+        }
+
+        if (verifyResult.responseCode === '00') {
+            await prisma.order.update({
+                where: { id: realOrderId },
+                data: { payment_status: 'Paid' }
+            });
+
+            try {
+                await changeOrderStatusLogic(realOrderId, 'Confirmed');
+            } catch (orderError: any) {
+                console.error("Order Status Update Error (VNPay IPN):", orderError.message);
+            }
+
+            // Emit realtime socket event to Admin
+            try {
+                await sendNotification(prisma, null, 'Thanh toán thành công', `Đơn hàng #${realOrderId} đã thanh toán qua VNPay`, 'Payment Successful', `Order #${realOrderId} has been paid via VNPay`, 'payment_success', { orderId: realOrderId, amount: order.total_price || 0, method: 'VNPay' });
+            } catch (e) {
+                console.error('Socket emit error (VNPay IPN payment_success):', e);
+            }
+
+            res.status(200).json({ RspCode: '00', Message: 'Confirm Success' });
+        } else {
+            res.status(200).json({ RspCode: '00', Message: 'Confirm Success' });
+        }
+    } catch (error: any) {
+        console.error("FULL VNPAY IPN ERROR LOG:", error);
+        res.status(200).json({ RspCode: '99', Message: 'Unknown error' });
+    }
+};
+
+export const vnpayReturn = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const vnpParams = req.query;
+        const verifyResult = verifyVnPayReturn(vnpParams);
+
+        if (!verifyResult.isValidSignature) {
+            res.status(400).json({ success: false, message: "Invalid signature" });
+            return;
+        }
+
+        const realOrderId = Number(verifyResult.vnp_TxnRef.split('_')[0]);
+
+        if (verifyResult.responseCode === '00') {
+            const order = await prisma.order.findUnique({ where: { id: realOrderId } });
+            if (order && order.status === 'Cancelled') {
+                // Thanh toán đến trễ sau khi đơn đã bị hủy → đánh dấu Refunded, không hồi sinh đơn
+                console.warn(`⚠️ VNPay Return: payment success for CANCELLED order #${realOrderId}. Marking as Refunded.`);
+                await prisma.order.update({
+                    where: { id: realOrderId },
+                    data: { payment_status: 'Refunded' }
+                });
+                res.json({ success: false, orderId: realOrderId, message: "Order was cancelled before payment completed. The paid amount will be refunded." });
+                return;
+            }
+            if (order && order.payment_status !== 'Paid') {
+                await prisma.order.update({
+                    where: { id: realOrderId },
+                    data: { payment_status: 'Paid' }
+                });
+                try {
+                    await changeOrderStatusLogic(realOrderId, 'Confirmed');
+                } catch (e) {
+                    console.error("Error updating order status in VNPay Return:", e);
+                }
+            }
+            res.json({ success: true, orderId: realOrderId, message: "Payment successful" });
+        } else {
+            res.json({ success: false, orderId: realOrderId, message: "Payment failed or cancelled", responseCode: verifyResult.responseCode });
+        }
+    } catch (error: any) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+export const repayMoMoController = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { id } = req.params;
+        const { email, new_payment_method } = req.body;
+
+        const order = await prisma.order.findUnique({ where: { id: Number(id) } });
+        if (!order) {
+            res.status(404).json({ message: "Order not found" });
+            return;
+        }
+
+        // Kiểm tra ownership đúng cách (Cho phép Admin bypass)
+        const isAdmin = req.user?.role === 'admin';
+        if (order.user_id) {
+            if (!isAdmin && (!req.user || req.user.id !== order.user_id)) {
+                res.status(403).json({ message: "Forbidden: You do not have permission to pay for this order." });
+                return;
+            }
+        } else {
+            if (!isAdmin && (!email || order.email !== email)) {
+                res.status(403).json({ message: "Forbidden: Email does not match the order." });
+                return;
+            }
+        }
+
+        if (order.payment_status === 'Paid') {
+            res.status(400).json({ message: "This order is already paid." });
+            return;
+        }
+
+        if (order.status === 'Cancelled') {
+            res.status(400).json({ message: "Cannot change payment method or pay for a cancelled order." });
+            return;
+        }
+
+        const targetMethod = (new_payment_method || order.payment_method).toLowerCase();
+        const allowedMethods = ['momo', 'vnpay', 'cod'];
+        if (!allowedMethods.includes(targetMethod)) {
+            res.status(400).json({ message: "Invalid payment method selected." });
+            return;
+        }
+
+        // Cập nhật phương thức thanh toán mới nếu có sự thay đổi
+        if (targetMethod !== order.payment_method) {
+            await prisma.order.update({
+                where: { id: order.id },
+                data: { payment_method: targetMethod }
+            });
+        }
+
+        if (targetMethod === 'momo') {
+            const momoOrderId = `REPAY_${order.id}_${Date.now()}`;
+            const momoResponse = await getMomoPayUrl(momoOrderId, Number(order.total_price), `Retry payment for order #${order.id}`);
+            res.json({ payUrl: momoResponse.payUrl, payment_method: 'momo' });
+            return;
+        }
+
+        if (targetMethod === 'vnpay') {
+            const clientIp = (req.headers['x-forwarded-for'] as string) || req.socket.remoteAddress || '127.0.0.1';
+            const vnpayUrl = generateVnPayUrl({
+                orderId: `${order.id}_${Date.now()}`,
+                amount: Number(order.total_price),
+                orderInfo: `Retry payment for order #${order.id}`,
+                ipAddr: clientIp,
+                bankCode: 'VNBANK',
+            });
+            res.json({ payUrl: vnpayUrl, payment_method: 'vnpay' });
+            return;
+        }
+
+        if (targetMethod === 'cod') {
+            res.json({ 
+                message: "Switched to Cash on Delivery (COD) successfully.", 
+                payUrl: null, 
+                payment_method: 'cod' 
+            });
+            return;
+        }
+
+        res.status(400).json({ message: "Repayment is not supported for this payment method." });
+    } catch (error) {
+        console.error("REPAY_ERROR:", error);
+        res.status(500).json({ message: "Internal Server Error during repayment" });
+    }
+};
+
+const parseBankInfo = (rawBank: any) => {
+    if (!rawBank) return null;
+    let bankData = typeof rawBank === 'string' ? JSON.parse(rawBank) : rawBank;
+    return {
+        name: bankData.name || bankData.bankName || "N/A",
+        acc: bankData.acc || bankData.bankNumber || "N/A",
+        owner: bankData.owner || bankData.accountHolder || "N/A"
+    };
+};
+
+// Tăng cường ownership check – JWT user_id ưu tiên hơn email
+export const submitReturnRequest = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { reason_code, description, email, returnItems } = req.body;
+        const orderId = Number(req.params.id);
+
+        // Parse returnItems (có thể gửi dưới dạng string JSON qua FormData)
+        let parsedReturnItems: { order_item_id: number; return_quantity: number }[] = [];
+        if (returnItems) {
+            try {
+                parsedReturnItems = typeof returnItems === 'string' ? JSON.parse(returnItems) : returnItems;
+            } catch {
+                res.status(400).json({ message: "Invalid returnItems format." });
+                return;
+            }
+        }
+
+        const rawBank = req.body.refund_bank_info || req.body.bankInfo;
+        const finalBankInfo = parseBankInfo(rawBank);
+        const images = (req as any).files
+            ? (req as any).files.map((file: any) => `/uploads/${file.filename}`)
+            : [];
+
+        await prisma.$transaction(async (tx) => {
+            // Lấy order và tất cả items (bao gồm thông tin promotion để xác định sản phẩm X của Buy X Get Y)
+            // KHÔNG yêu cầu payment_status = 'Paid': đơn COD đã giao có thể vẫn 'Unpaid' nếu admin
+            // chưa đánh dấu thu tiền → vẫn phải cho khách đổi trả.
+            // Việc có cần hoàn tiền hay không quyết định sau, dựa trên payment_status
+            // (Paid → set 'Refunded' khi approve, Unpaid → không cần hoàn).
+            const order = await tx.order.findFirst({
+                where: { id: orderId, status: 'Delivered' },
+                include: { items: { include: { promotion: true } } }
+            });
+            if (!order) {
+                throw new Error("The order is invalid or not delivered.");
+            }
+
+            // Kiểm tra ownership
+            const isAdmin = req.user?.role === 'admin';
+            if (order.user_id) {
+                if (!isAdmin && (!req.user || req.user.id !== order.user_id)) {
+                    throw new Error("Forbidden: This order belongs to another member.");
+                }
+            } else {
+                if (!isAdmin && (!email || order.email !== email)) {
+                    throw new Error("Forbidden: Email is required and must match the guest order.");
+                }
+            }
+
+            const existing = await tx.returnRequest.findUnique({ where: { order_id: orderId } });
+            if (existing) {
+                throw new Error("A return request has already been submitted for this order.");
+            }
+
+            // Map order items để tra cứu nhanh
+            const orderItemMap = new Map(order.items.map(i => [i.id, i]));
+
+            // Buy X Get Y: xác định sản phẩm X (promotion.buy_product_id) của các quà tặng trong đơn.
+            // Quà tặng luôn được gắn promotion_id hợp lệ từ khâu tạo đơn (createOrderController).
+            const giftItems = order.items.filter(i => i.is_gift);
+            const promoBuyProductIds = new Set<number>(
+                giftItems
+                    .map(gift => gift.promotion?.buy_product_id)
+                    .filter((id): id is number => typeof id === 'number')
+            );
+            const isPromotionBuyItem = (orderItem: (typeof order.items)[number]) =>
+                promoBuyProductIds.has(orderItem.product_id);
+
+            // Nếu không truyền returnItems → trả toàn bộ (backward-compatible)
+            if (parsedReturnItems.length === 0) {
+                parsedReturnItems = order.items
+                    .filter(i => !i.is_gift) // Loại gift items khỏi default
+                    .map(i => ({ order_item_id: i.id, return_quantity: i.quantity }));
+            }
+
+            if (parsedReturnItems.length === 0) {
+                throw new Error("No items selected for return.");
+            }
+
+            // Validate từng returnItem
+            for (const ri of parsedReturnItems) {
+                const orderItem = orderItemMap.get(ri.order_item_id);
+                if (!orderItem) {
+                    throw new Error(`Item ID ${ri.order_item_id} does not belong to this order.`);
+                }
+                // C1: Không cho phép trả gift item độc lập
+                if (orderItem.is_gift) {
+                    throw new Error(`Gift items cannot be returned independently. Please include the associated purchased item.`);
+                }
+                if (ri.return_quantity <= 0 || ri.return_quantity > orderItem.quantity) {
+                    throw new Error(`Invalid return quantity for item ID ${ri.order_item_id}. Must be between 1 and ${orderItem.quantity}.`);
+                }
+                // C2: Chỉ sản phẩm X của Buy X Get Y mới bắt buộc hoàn trả full số lượng
+                if (!orderItem.is_gift && isPromotionBuyItem(orderItem) && ri.return_quantity !== orderItem.quantity) {
+                    throw new Error(`Item ID ${ri.order_item_id} must be returned in full quantity (${orderItem.quantity}) because it is part of a Buy X Get Y promotion.`);
+                }
+            }
+
+            // Tính refund_amount
+            // - Non-gift items: (payable_amount / quantity) * return_quantity (Pro-rata allocation)
+            // - Gift items (is_gift=true): refund = 0
+            // Áp dụng Money Allocation làm tròn đến số nguyên (VNĐ) và bù trừ chênh lệch vào item có giá trị lớn nhất
+            const returnItemsToCreate: { order_item_id: number; return_quantity: number; refund_amount: number }[] = [];
+            const nonGiftReturnItems: { targetIndex: number; rawRefund: number }[] = [];
+
+            for (const ri of parsedReturnItems) {
+                const orderItem = orderItemMap.get(ri.order_item_id)!;
+                let itemRefund = 0;
+
+                if (!orderItem.is_gift) {
+                    if (orderItem.payable_amount !== null && orderItem.payable_amount !== undefined) {
+                        const unitPayable = Number(orderItem.payable_amount) / orderItem.quantity;
+                        itemRefund = unitPayable * ri.return_quantity;
+                    } else {
+                        // Fallback cho đơn hàng cũ trước khi có trường payable_amount
+                        itemRefund = Number(orderItem.price) * ri.return_quantity;
+                    }
+                    nonGiftReturnItems.push({
+                        targetIndex: returnItemsToCreate.length,
+                        rawRefund: itemRefund
+                    });
+                }
+
+                returnItemsToCreate.push({
+                    order_item_id: ri.order_item_id,
+                    return_quantity: ri.return_quantity,
+                    refund_amount: 0
+                });
+            }
+
+            // Kiểm tra xem khách có hoàn trả toàn bộ sản phẩm mua của đơn hay không
+            const allPurchasableItems = order.items.filter((it: any) => !it.is_gift);
+            const isFullReturn = allPurchasableItems.length === nonGiftReturnItems.length &&
+                allPurchasableItems.every((it: any) => {
+                    const found = parsedReturnItems.find((p: any) => p.order_item_id === it.id);
+                    return found && found.return_quantity === it.quantity;
+                });
+
+            let targetTotalRefund = 0;
+            if (isFullReturn && order.total_price != null && !isNaN(Number(order.total_price))) {
+                targetTotalRefund = Math.max(0, Math.round(Number(order.total_price) - Number(order.shipping_fee || 0)));
+            } else {
+                targetTotalRefund = Math.round(nonGiftReturnItems.reduce((sum, it) => sum + it.rawRefund, 0));
+            }
+
+            let allocatedSum = 0;
+            nonGiftReturnItems.forEach(item => {
+                const roundedRefund = Math.round(item.rawRefund);
+                returnItemsToCreate[item.targetIndex].refund_amount = roundedRefund;
+                allocatedSum += roundedRefund;
+            });
+
+            // Bù trừ chênh lệch (nếu có do làm tròn) vào item có giá trị hoàn lớn nhất
+            const refundDiff = targetTotalRefund - allocatedSum;
+            if (refundDiff !== 0 && nonGiftReturnItems.length > 0) {
+                let maxItem = nonGiftReturnItems[0];
+                for (let i = 1; i < nonGiftReturnItems.length; i++) {
+                    if (nonGiftReturnItems[i].rawRefund > maxItem.rawRefund) {
+                        maxItem = nonGiftReturnItems[i];
+                    }
+                }
+                returnItemsToCreate[maxItem.targetIndex].refund_amount += refundDiff;
+            }
+
+            const totalRefundAmount = targetTotalRefund;
+
+            // Gom quà tặng Y khi CHÍNH sản phẩm X (đã tạo ra quà đó) được trả
+            const returnedProductIds = new Set<number>();
+            for (const ri of parsedReturnItems) {
+                const returnedItem = orderItemMap.get(ri.order_item_id);
+                if (returnedItem && !returnedItem.is_gift) {
+                    returnedProductIds.add(returnedItem.product_id);
+                }
+            }
+
+            for (const giftItem of giftItems) {
+                const buyProductId = giftItem.promotion?.buy_product_id;
+                if (!buyProductId || !returnedProductIds.has(buyProductId)) continue;
+
+                const alreadyAdded = returnItemsToCreate.some(r => r.order_item_id === giftItem.id);
+                if (!alreadyAdded) {
+                    returnItemsToCreate.push({
+                        order_item_id: giftItem.id,
+                        return_quantity: giftItem.quantity,
+                        refund_amount: 0
+                    });
+                }
+            }
+
+            // Tạo ReturnRequest
+            await tx.returnRequest.create({
+                data: {
+                    order_id: orderId,
+                    reason_code,
+                    description: description || null,
+                    images: JSON.stringify(images),
+                    refund_bank_info: JSON.stringify(finalBankInfo),
+                    refund_amount: totalRefundAmount,
+                    status: 'Pending',
+                    items: {
+                        create: returnItemsToCreate
+                    }
+                }
+            });
+
+            await tx.order.update({
+                where: { id: orderId },
+                data: { status: 'Return_Requested' }
+            });
+        });
+
+        // Emit realtime notification to Admin
+        try {
+            await sendNotification(prisma, null, 'Yêu cầu trả hàng', `Đơn hàng #${orderId} có yêu cầu trả hàng mới`, 'Return Request', `Order #${orderId} has a new return request`, 'new_return_request', { orderId, customerName: email || req.user?.email || `Order #${orderId}` });
+        } catch (e) {
+            console.error('Socket emit return error:', e);
+        }
+
+        res.status(200).json({ message: "Return request submitted successfully" });
+    } catch (error: any) {
+        console.error("ERROR_SUBMIT_RETURN:", error);
+        res.status(500).json({ message: error.message });
+    }
+};
+
+export const cancelReturnRequest = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const orderId = Number(req.params.id);
+        const email = (req.body?.email || req.user?.email || "").toLowerCase();
+
+        await prisma.$transaction(async (tx) => {
+            const order = await tx.order.findUnique({
+                where: { id: orderId },
+                include: { return_request: true }
+            });
+
+            if (!order) {
+                throw new Error(`Order #${orderId} not found.`);
+            }
+
+            const isReturnRequested = ['Return_Requested', 'Return Requested'].includes(order.status as string);
+            // Sau khi admin hoàn tác quyết định nhầm (approve/reject), đơn về Delivered nhưng
+            // return_request còn Pending (chờ duyệt lại) — khách vẫn được rút yêu cầu của mình.
+            const isPendingRedo = order.status === 'Delivered' && order.return_request?.status === 'Pending';
+            if (!isReturnRequested && !isPendingRedo) {
+                throw new Error(`Order #${orderId} is not in Return Requested status (current status: '${order.status}').`);
+            }
+
+            // Ownership check – supports member user_id match or email match
+            const isAdmin = req.user?.role === 'admin';
+            const matchesUserId = order.user_id && req.user?.id === order.user_id;
+            const matchesEmail = email && order.email.toLowerCase() === email;
+
+            if (!isAdmin && !matchesUserId && !matchesEmail) {
+                throw new Error("Forbidden: You do not have permission to cancel this return request.");
+            }
+
+            // Delete the return request (if exists) and revert order status to Delivered
+            if (order.return_request) {
+                await tx.returnRequest.delete({ where: { order_id: orderId } });
+            } else {
+                await tx.returnRequest.deleteMany({ where: { order_id: orderId } });
+            }
+
+            await tx.order.update({
+                where: { id: orderId },
+                data: { status: 'Delivered' }
+            });
+        });
+
+        // Emit realtime socket event to Admin
+        try {
+            await sendNotification(prisma, null, 'Hủy yêu cầu trả hàng', `Yêu cầu trả hàng cho đơn #${orderId} đã bị hủy`, 'Return Request Cancelled', `Return request for order #${orderId} has been cancelled`, 'return_cancelled', { orderId });
+        } catch (e) {
+            console.error('Socket emit error (return_cancelled):', e);
+        }
+
+        res.status(200).json({ message: "Return request cancelled successfully." });
+    } catch (error: any) {
+        console.error("ERROR_CANCEL_RETURN:", error);
+        res.status(500).json({ message: error.message });
+    }
+};
