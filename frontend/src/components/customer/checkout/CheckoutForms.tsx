@@ -1,0 +1,106 @@
+import { useLanguage } from "../../../context/LanguageContext";
+import type { ChangeEvent, Dispatch, SetStateAction, InputHTMLAttributes } from "react";
+
+export function ShippingSection({ address, setAddress, fetchLocation, isLocating, locationError }: {
+  address: string; setAddress: Dispatch<SetStateAction<string>>;
+  fetchLocation: (setAddress: (address: string) => void) => void;
+  isLocating: boolean; locationError: string | null;
+}) {
+  const { t } = useLanguage();
+  return (
+    <section className="mb-10">
+      <div className="flex justify-between items-end mb-4">
+        <h3 className="text-xl font-medium text-slate-900 dark:text-slate-100">{t("checkout.shipping_address", "Shipping Address")}</h3>
+        <button
+          onClick={() => fetchLocation(setAddress)}
+          disabled={isLocating}
+          className="text-xs bg-transparent font-medium text-blue-600 hover:text-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-1"
+        >
+          <i className={`fa-solid ${isLocating ? "fa-spinner animate-spin" : "fa-location-crosshairs"}`}></i>
+          {isLocating ? t("checkout.locating", "Locating...") : t("checkout.use_location", "Use Current Location")}
+        </button>
+      </div>
+      <textarea
+        rows={3}
+        value={address}
+        onChange={(e) => setAddress(e.target.value)}
+        placeholder={t("checkout.address_placeholder", "Enter your house number, street, ward, district...")}
+        className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-4 py-3.5 rounded-2xl focus:ring-2 focus:ring-slate-900 dark:focus:ring-slate-400 focus:border-slate-900 dark:focus:border-slate-400 outline-none transition-all resize-none text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 text-sm"
+      />
+      {locationError && <p className="text-rose-500 text-xs mt-2 ml-1">{locationError}</p>}
+    </section>
+  );
+}
+
+export function GuestContactSection({ guestInfo, onChange }: {
+  guestInfo: { name: string; phone: string; email: string };
+  onChange: (event: ChangeEvent<HTMLInputElement>) => void;
+}) {
+  const { t } = useLanguage();
+  return (
+    <section className="mb-10">
+      <h3 className="text-xl font-medium text-slate-900 dark:text-slate-100 mb-4">{t("checkout.contact_info", "Contact Information")}</h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <InputField label={t("checkout.full_name", "Full Name")} name="name" value={guestInfo.name} onChange={onChange} placeholder={t("checkout.name_placeholder", "John Doe")} />
+        <InputField label={t("checkout.phone", "Phone Number")} name="phone" value={guestInfo.phone} onChange={onChange} placeholder="0901234567" />
+        <div className="md:col-span-2">
+          <InputField label={t("checkout.email", "Email Address")} type="email" name="email" value={guestInfo.email} onChange={onChange} placeholder={t("checkout.email_placeholder", "john@example.com")} />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export function PaymentSection({ currentMethod, onChange }: { currentMethod: string; onChange: (method: string) => void }) {
+  const { t } = useLanguage();
+  return (
+    <section className="mb-10">
+      <h3 className="text-xl font-medium text-slate-900 dark:text-slate-100 mb-4">{t("checkout.payment_method", "Payment Method")}</h3>
+      <div className="grid grid-cols-1 gap-4">
+        <PaymentOption
+          id="cod" label={t("checkout.cod", "Cash on Delivery (COD)")} sub={t("checkout.cod_desc", "Pay with cash upon receiving your package")}
+          icon="fa-box" current={currentMethod} onChange={onChange}
+        />
+        <PaymentOption
+          id="momo" label={t("checkout.momo", "MoMo E-Wallet")} sub={t("checkout.momo_desc", "Pay via Domestic ATM Card or MoMo Wallet")}
+          icon="fa-wallet" current={currentMethod} onChange={onChange}
+        />
+        <PaymentOption
+          id="vnpay" label={t("checkout.vnpay", "VNPay Gateway")} sub={t("checkout.vnpay_desc", "Pay via Domestic ATM Card or Internet Banking")}
+          icon="fa-credit-card" current={currentMethod} onChange={onChange}
+        />
+      </div>
+    </section>
+  );
+}
+
+const InputField = ({ label, type = "text", ...props }: { label: string; type?: string } & InputHTMLAttributes<HTMLInputElement>) => (
+  <div>
+    <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-2 ml-1">{label}</label>
+    <input
+      {...props}
+      type={type}
+      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl focus:ring-2 focus:ring-slate-900 dark:focus:ring-slate-400 focus:border-slate-900 dark:focus:border-slate-400 outline-none transition-all text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 text-sm"
+    />
+  </div>
+);
+
+const PaymentOption = ({ id, label, sub, icon, current, onChange }: {
+  id: string; label: string; sub: string; icon: string; current: string; onChange: (method: string) => void;
+}) => {
+  const isSelected = current === id;
+  return (
+    <label onClick={() => onChange(id)} className={`flex items-center justify-between p-4 border-2 rounded-2xl cursor-pointer transition-all duration-300 ${isSelected ? "border-slate-900 dark:border-slate-400 bg-slate-900 dark:bg-slate-700 text-white shadow-lg" : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-slate-400 dark:hover:border-slate-500"}`}>
+      <div className="flex items-center gap-4">
+        <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 ${isSelected ? "border-white" : "border-slate-300 dark:border-slate-600"}`}>
+          {isSelected && <div className="w-3 h-3 bg-white rounded-full"></div>}
+        </div>
+        <div>
+          <span className={`block font-semibold text-base ${isSelected ? "text-white" : "text-slate-900 dark:text-slate-100"}`}>{label}</span>
+          <p className={`text-sm mt-0.5 ${isSelected ? "text-slate-300" : "text-slate-500 dark:text-slate-400"}`}>{sub}</p>
+        </div>
+      </div>
+      <i className={`fa-solid ${icon} text-2xl opacity-80`}></i>
+    </label>
+  );
+};

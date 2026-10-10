@@ -1,0 +1,320 @@
+import { useState, useEffect, useMemo, useRef, type ChangeEvent } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { CartContext } from "../../context/CartContext.tsx";
+import { AuthContext } from "../../context/AuthContext.tsx";
+import { useLanguage } from "../../context/LanguageContext";
+import API from "../../services/apiClient.ts";
+import { getImageUrl } from "../../utils/imageUtils";
+import {
+  extractProvince,
+  calculateShippingFee,
+  FREE_SHIPPING_THRESHOLD,
+} from "../../utils/shippingUtils";
+import { calculateMembershipDiscount } from "../../utils/checkoutPricing";
+import { formatCurrency } from "../../utils/currencyUtils";
+import { extractApiErrorMessage, buildMinOrderValueMessage } from "../../utils/apiErrorUtils";
+import { useRequiredContext } from "../useRequiredContext";
+import type { CartItem } from "../../types";
+
+export interface CheckoutGift {
+  giftProductId: number;
+  quantity: number;
+  color_id: number | null;
+  size_id: number | null;
+  promoId: number;
+  promoName?: string;
+  promo?: { is_stackable?: boolean; buy_product_id?: number };
+}
+
+export interface CheckoutGiftDetail {
+  id: number;
+  name: string;
+  price: number | string;
+  image_url?: string;
+  colors?: Array<{
+    id: number;
+    color_name?: string;
+    color_name_vi?: string;
+    color_name_en?: string;
+    image_url?: string;
+    sizes?: Array<{ id: number; size: string; stock: number }>;
+  }>;
+  [key: string]: unknown;
+}
+
+interface CheckoutRouteState {
+  appliedVoucher?: { id: number; discount_amount: number; code?: string } | null;
+  earnedGifts?: CheckoutGift[];
+}
+
+const useGeolocation = () => {
+  const [isLocating, setIsLocating] = useState(false);
+  const [locationError, setLocationError] = useState("");
+  const { t, translateApiMessage } = useLanguage();
+
+  const getAddressFromCoords = async (lat: number, lon: number) => {
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=vi`,
+      { headers: { "Accept-Language": "vi", "User-Agent": "ClothingShopApp/1.0" } }
+    );
+
+    if (response.status === 429) throw new Error("Too many requests. Please try again later.");
+    if (!response.ok) throw new Error("Location API Error");
+
+    const data = await response.json();
+    const addr = data.address || {};
+    const parts = [
+      addr.house_number && addr.road ? `${addr.house_number} ${addr.road}` : addr.road,
+      addr.suburb || addr.quarter || addr.village || addr.neighbourhood,
+      addr.district || addr.county || addr.city_district,
+      addr.city || addr.town || addr.state || addr.province,
+    ];
+
+    return parts.filter(Boolean).join(", ");
+  };
+
+  const fetchCurrentLocation = (onSuccess: (address: string) => void) => {
+    setIsLocating(true);
+    setLocationError("");
+
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          const address = await getAddressFromCoords(pos.coords.latitude, pos.coords.longitude);
+          onSuccess(address);
+        } catch (err: unknown) {
+          const error = err as Error;
+          setLocationError(translateApiMessage(error.message) || error.message);
+        } finally {
+          setIsLocating(false);
+        }
+      },
+      async () => {
+        // Fallback to IP Geolocation if GPS is denied
+        try {
+          const ipRes = await fetch("https://ipapi.co/json/");
+          if (!ipRes.ok) {
+            throw new Error("IP Geolocation service failed");
+          }
+          const ipData = await ipRes.json();
+          if (!ipData || typeof ipData.latitude !== "number" || typeof ipData.longitude !== "number") {
+            throw new Error("Invalid IP Geolocation data");
+          }
+          const address = await getAddressFromCoords(ipData.latitude, ipData.longitude);
+          onSuccess(address);
+        } catch {
+          setLocationError(t("checkout.location_error", "Could not determine location. Please enter manually."));
+        } finally {
+          setIsLocating(false);
+        }
+      },
+      { timeout: 5000 }
+    );
+  };
+
+  return { fetchCurrentLocation, isLocating, locationError };
+};
+
+export function useCheckoutPage() {
+  const navigate = useNavigate();
+  const routeLocation = useLocation();
+  const { cart, setCart } = useRequiredContext(CartContext, 'CartContext');
+  const { user, discount, tier } = useRequiredContext(AuthContext, 'AuthContext');
+  const { t, language, translateApiMessage } = useLanguage();
+  const { fetchCurrentLocation, isLocating, locationError } = useGeolocation();
+
+  const [statusMessage, setStatusMessage] = useState("");
+  const [shippingAddress, setShippingAddress] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState("cod");
+  const [guestInfo, setGuestInfo] = useState({ name: "", phone: "", email: "" });
+  const [giftDetails, setGiftDetails] = useState<Record<number, CheckoutGiftDetail>>({});
+
+  const routeState = routeLocation.state as CheckoutRouteState | null;
+  const appliedVoucher = routeState?.appliedVoucher ?? null;
+  const earnedGifts = useMemo(
+    () => routeState?.earnedGifts ?? [],
+    [routeState]
+  );
+
+  useEffect(() => {
+    earnedGifts.forEach((gift) => {
+      if (!giftDetails[gift.giftProductId]) {
+        API.get(`/products/${gift.giftProductId}`)
+          .then((res) => {
+            const product = res.data?.data || res.data;
+            setGiftDetails((prev) => ({ ...prev, [gift.giftProductId]: product }));
+          })
+          .catch((err) => console.error("Gift fetch error:", err));
+      }
+    });
+  // giftDetails is intentionally excluded: we use functional setState to read latest value
+  // without triggering a new fetch loop on every giftDetails change.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [earnedGifts]);
+
+  const subtotal = useMemo(() =>
+    cart.reduce((sum, item) => sum + Number(item.price) * (item.quantity ?? 1), 0),
+  [cart]);
+
+  const blockedDiscountProductIds = new Set(
+    earnedGifts
+      .filter(gift => gift.promo?.is_stackable === false)
+      .map(gift => Number(gift.promo?.buy_product_id))
+  );
+  const membershipDiscount = user
+    ? calculateMembershipDiscount(cart, discount, blockedDiscountProductIds)
+    : 0;
+  const voucherDiscount = appliedVoucher ? Number(appliedVoucher.discount_amount) : 0;
+  const subtotalAfterDiscount = Math.max(0, subtotal - membershipDiscount - voucherDiscount);
+
+  const shippingFee = useMemo(() => {
+    const province = extractProvince(shippingAddress);
+    const totalItemQuantity = cart.reduce((sum, item) => sum + (item.quantity ?? 1), 0);
+    return calculateShippingFee(province, totalItemQuantity, subtotalAfterDiscount);
+  }, [shippingAddress, cart, subtotalAfterDiscount]);
+
+  const isFreeShipping = subtotalAfterDiscount >= FREE_SHIPPING_THRESHOLD;
+
+  const finalTotal = subtotalAfterDiscount + (shippingFee || 0);
+
+  const resolveItemImage = (itemOrPath: CartItem | string | null | undefined) => {
+    if (!itemOrPath) return getImageUrl(null);
+    if (typeof itemOrPath === 'string') return getImageUrl(itemOrPath);
+    const rawUrl = itemOrPath.color_image || itemOrPath.image_url;
+    return getImageUrl(rawUrl);
+  };
+
+  const handleGuestChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setGuestInfo(prev => ({ ...prev, [name]: value }));
+  };
+
+  const validateForm = () => {
+    if (!shippingAddress.trim()) return t("checkout.error_address", "Please enter a shipping address.");
+    if (!user) {
+      if (!guestInfo.name || !guestInfo.phone || !guestInfo.email) return t("checkout.error_contact", "Please fill in all contact information.");
+      if (!guestInfo.email.includes("@")) return t("checkout.invalid_email", "Invalid email format.");
+    }
+    return null;
+  };
+
+  const [isStatusSuccess, setIsStatusSuccess] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const submittingRef = useRef(false); // chặn đồng bộ, không chờ re-render
+
+  const handleSubmitOrder = async () => {
+    // Chặn bấm đúp / gửi trùng: mỗi request tạo một đơn, trừ kho và tốn lượt voucher.
+    if (submittingRef.current) return;
+    const error = validateForm();
+    if (error) {
+      setIsStatusSuccess(false);
+      setStatusMessage(error);
+      return;
+    }
+
+    submittingRef.current = true;
+    setIsSubmitting(true);
+    try {
+      const itemsPayload = [
+        ...cart.map(p => ({
+          product_id: p.id,
+          color_id: p.color_id,
+          size_id: p.size_id,
+          quantity: p.quantity || 1,
+          price: p.price,
+          is_gift: false
+        })),
+        ...earnedGifts.map(gift => {
+          const detail = giftDetails[gift.giftProductId];
+          let chosenColorId = gift.color_id || null;
+          let chosenSizeId = gift.size_id || null;
+
+          if ((!chosenColorId || !chosenSizeId) && detail && detail.colors && detail.colors.length > 0) {
+            for (const c of detail.colors) {
+              const availableSize = c.sizes?.find(s => s.stock > 0);
+              if (availableSize) {
+                if (!chosenColorId) chosenColorId = c.id;
+                if (!chosenSizeId) chosenSizeId = availableSize.id;
+                break;
+              }
+            }
+          }
+          return {
+            product_id: gift.giftProductId,
+            color_id: chosenColorId,
+            size_id: chosenSizeId,
+            quantity: gift.quantity,
+            price: 0,
+            is_gift: true,
+            promotion_id: gift.promoId
+          };
+        })
+      ];
+
+      const orderData = {
+        user_id: user?.id || null,
+        total_price: finalTotal,
+        voucher_id: appliedVoucher?.id || null,
+        address: shippingAddress,
+        phone: user?.phone || guestInfo.phone,
+        name: user?.name || guestInfo.name,
+        email: user?.email || guestInfo.email,
+        payment_method: paymentMethod,
+        items: itemsPayload,
+        shipping_fee: shippingFee,
+      };
+
+      const token = localStorage.getItem("token");
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+      const res = await API.post("/orders", orderData, { headers });
+
+      setCart([]); // Clear cart
+
+      if (res.data.payUrl) {
+        window.location.href = res.data.payUrl;
+      } else {
+        setIsStatusSuccess(true);
+        setStatusMessage(t("checkout.success", "Order placed successfully!"));
+        setTimeout(() => navigate(user ? "/profile?tab=orders" : "/order"), 2000);
+      }
+    } catch (err) {
+      setIsStatusSuccess(false);
+      const apiError = err as { response?: { data?: { error?: string; message?: string; errors?: Array<{ message?: string }> } }; message?: string };
+      const data = apiError.response?.data;
+      // Lỗi ngưỡng đơn tối thiểu (có số tiền) hiển thị riêng; còn lại ưu tiên lỗi field
+      // đầu tiên (đã dịch qua api_msg.*) để khách biết chính xác sai ở đâu.
+      const minOrderMsg = buildMinOrderValueMessage(data, t, formatPrice);
+      if (minOrderMsg) {
+        setStatusMessage(minOrderMsg);
+        return;
+      }
+      setStatusMessage(
+        `Error: ${extractApiErrorMessage(data, translateApiMessage, data?.error || apiError.message || '')}`
+      );
+    } finally {
+      // Thành công thì giỏ đã trống/đang chuyển trang; lỗi thì cho phép thử lại.
+      submittingRef.current = false;
+      setIsSubmitting(false);
+    }
+  };
+
+  const formatPrice = (n: number | string) => formatCurrency(n, language);
+
+  return {
+    state: {
+      cart, user, tier, discount,
+      statusMessage, isStatusSuccess, isSubmitting, shippingAddress, paymentMethod, guestInfo,
+      appliedVoucher, earnedGifts, giftDetails,
+      subtotal, membershipDiscount, voucherDiscount,
+      subtotalAfterDiscount, shippingFee, isFreeShipping, finalTotal,
+      isLocating, locationError
+    },
+    actions: {
+      setShippingAddress, setPaymentMethod, handleGuestChange,
+      handleSubmitOrder, fetchCurrentLocation, navigate
+    },
+    helpers: {
+      getImageUrl: resolveItemImage, formatPrice
+    }
+  };
+}

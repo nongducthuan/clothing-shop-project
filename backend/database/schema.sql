@@ -1,0 +1,346 @@
+DROP DATABASE IF EXISTS shopdb;
+CREATE DATABASE shopdb;
+USE shopdb;
+
+-- ==============================================================================
+-- LƯU Ý ĐỐI CHIẾU:
+--   Nguồn sự thật (source of truth) là prisma/schema.prisma (prisma db push/migrate).
+--   File này chỉ là bản tham chiếu để đọc nhanh.
+--   - Enum `orders.status` dùng giá trị DB CÓ DẤU CÁCH ('Return Requested', ...) —
+--     khớp @map(...) trong prisma. Code app dùng tên Prisma có dấu gạch dưới
+--     (Return_Requested) — 2 dạng này là CÙNG MỘT giá trị, không phải lỗi lệch.
+--   - Luồng trạng thái & undo: Pending → Confirmed → Shipping → Delivered | Cancelled;
+--     undo chỉ mở 3 cặp Delivered→Shipping, Cancelled→Pending, Return_Rejected→Return_Requested.
+--     Dữ liệu CŨ do bản trước ghi (orders.status='Delivered' + return_requests.status='Pending')
+--     vẫn được xử lý như nhánh legacy khi admin hoàn tác từ chối nhầm.
+-- ==============================================================================
+
+-- ==============================================================================
+-- 1. AUTHENTICATION & USERS
+-- ==============================================================================
+
+CREATE TABLE memberships (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(50) NOT NULL,
+  name_vi VARCHAR(50) NULL,
+  name_en VARCHAR(50) NULL,
+  min_spending DECIMAL(10,2) NOT NULL DEFAULT 0,
+  discount_percent DECIMAL(5,2) DEFAULT 0,
+  is_active BOOLEAN DEFAULT TRUE, -- Soft delete
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE users (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  email VARCHAR(255) UNIQUE NOT NULL,
+  phone VARCHAR(20) UNIQUE,
+  password VARCHAR(100) NOT NULL,
+  role ENUM('customer','admin') DEFAULT 'customer',
+  total_spent DECIMAL(15,2) DEFAULT 0,
+  membership_id INT DEFAULT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  refresh_token VARCHAR(512) DEFAULT NULL,
+  FOREIGN KEY (membership_id) REFERENCES memberships(id)
+);
+
+CREATE TABLE otps (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    email VARCHAR(255) NOT NULL,
+    code VARCHAR(64) NOT NULL,
+    expires_at DATETIME NOT NULL,
+    failed_attempts INT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX otps_email_idx (email)
+);
+
+-- ==============================================================================
+-- 2. PRODUCT CATALOG
+-- ==============================================================================
+
+CREATE TABLE categories (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  name_vi VARCHAR(100) NULL,
+  name_en VARCHAR(100) NULL,
+  gender ENUM('male','female','unisex') DEFAULT 'unisex',
+  image_url VARCHAR(512) NULL,
+  is_active BOOLEAN DEFAULT TRUE, -- Soft delete
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE products (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  name_vi VARCHAR(255) NULL,
+  name_en VARCHAR(255) NULL,
+  description TEXT NULL,
+  description_vi TEXT NULL,
+  description_en TEXT NULL,
+  price DECIMAL(10,2) NOT NULL CHECK (price >= 0),
+  import_price DECIMAL(15,2) NOT NULL DEFAULT 0 CHECK (import_price >= 0),
+  image_url VARCHAR(512),
+  gender ENUM('male','female','unisex') NOT NULL DEFAULT 'unisex',
+  category_id INT NOT NULL,
+  is_active BOOLEAN DEFAULT TRUE, -- Soft delete
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (category_id) REFERENCES categories(id),
+  INDEX products_category_id_fkey (category_id)
+);
+
+CREATE TABLE product_colors (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  product_id INT NOT NULL,
+  color_name VARCHAR(50) NOT NULL,
+  color_name_vi VARCHAR(50) NULL,
+  color_name_en VARCHAR(50) NULL,
+  color_code VARCHAR(10) DEFAULT NULL,
+  image_url VARCHAR(512) NOT NULL,
+  FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+  INDEX product_colors_product_id_fkey (product_id)
+);
+
+CREATE TABLE product_sizes (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  color_id INT NOT NULL,
+  size ENUM('XS','S','M','L','XL','XXL') NOT NULL,
+  stock INT NOT NULL DEFAULT 0 CHECK (stock >= 0),
+  extra_price DECIMAL(10,2) NOT NULL DEFAULT 0,
+  FOREIGN KEY (color_id) REFERENCES product_colors(id) ON DELETE CASCADE
+);
+
+-- ==============================================================================
+-- 3. MARKETING & PROMOTIONS
+-- ==============================================================================
+
+CREATE TABLE banners (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  image_url VARCHAR(500) NOT NULL,
+  title VARCHAR(255) NOT NULL,
+  title_vi VARCHAR(255) NULL,
+  title_en VARCHAR(255) NULL,
+  subtitle VARCHAR(500) NOT NULL,
+  subtitle_vi VARCHAR(500) NULL,
+  subtitle_en VARCHAR(500) NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE sales (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  name_vi VARCHAR(100) NULL,
+  name_en VARCHAR(100) NULL,
+  discount_percent DECIMAL(5,2) DEFAULT 0 CHECK (discount_percent BETWEEN 0 AND 100),
+  apply_scope ENUM('all', 'category', 'product') DEFAULT 'all',
+  start_date DATETIME NOT NULL,
+  end_date DATETIME NOT NULL,
+  status TINYINT(1) DEFAULT 1,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE product_sales (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  product_id INT NOT NULL,
+  sale_id INT NOT NULL,
+  FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+  FOREIGN KEY (sale_id) REFERENCES sales(id) ON DELETE CASCADE,
+  UNIQUE KEY unique_product_sale (product_id, sale_id)
+);
+
+CREATE TABLE sale_categories (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  sale_id INT NOT NULL,
+  category_id INT NOT NULL,
+  FOREIGN KEY (sale_id) REFERENCES sales(id) ON DELETE CASCADE,
+  FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE,
+  UNIQUE KEY unique_sale_category (sale_id, category_id)
+);
+
+CREATE TABLE vouchers (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  code VARCHAR(50) UNIQUE NOT NULL,
+  description_vi TEXT NULL,
+  description_en TEXT NULL,
+  discount_percent DECIMAL(5,2) CHECK (discount_percent BETWEEN 0 AND 100),
+  max_discount_amount DECIMAL(10,2) DEFAULT NULL,
+  min_order_value DECIMAL(10,2) NOT NULL DEFAULT 0,
+  usage_limit INT DEFAULT NULL,
+  used_count INT DEFAULT 0,
+  start_date DATETIME,
+  end_date DATETIME,
+  status TINYINT(1) DEFAULT 1 CHECK (status IN (0, 1)),
+  apply_scope ENUM('all', 'category', 'product') DEFAULT 'all',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE product_vouchers (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  product_id INT NOT NULL,
+  voucher_id INT NOT NULL,
+  FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+  FOREIGN KEY (voucher_id) REFERENCES vouchers(id) ON DELETE CASCADE,
+  UNIQUE KEY unique_product_voucher (product_id, voucher_id)
+);
+
+CREATE TABLE voucher_categories (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  voucher_id INT NOT NULL,
+  category_id INT NOT NULL,
+  FOREIGN KEY (voucher_id) REFERENCES vouchers(id) ON DELETE CASCADE,
+  FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE,
+  UNIQUE KEY unique_voucher_category (voucher_id, category_id)
+);
+
+CREATE TABLE buy_x_get_y_promotions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    name_vi VARCHAR(255) NULL,
+    name_en VARCHAR(255) NULL,
+    description_vi TEXT NULL,
+    description_en TEXT NULL,
+    buy_product_id INT NOT NULL,
+    buy_quantity INT NOT NULL CHECK (buy_quantity > 0),
+    gift_product_id INT NOT NULL,
+    gift_quantity INT NOT NULL CHECK (gift_quantity > 0),
+    start_date DATETIME NOT NULL,
+    end_date DATETIME NOT NULL,
+    max_gift_per_order INT DEFAULT NULL,
+    total_gift_limit INT DEFAULT NULL,
+    priority INT DEFAULT 0,
+    is_stackable BOOLEAN DEFAULT FALSE,
+    status ENUM('active', 'paused', 'expired') DEFAULT 'active',
+    is_active BOOLEAN DEFAULT TRUE, -- Soft delete
+    times_applied INT DEFAULT 0,
+    total_gifts_issued INT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (buy_product_id) REFERENCES products(id) ON DELETE CASCADE,
+    FOREIGN KEY (gift_product_id) REFERENCES products(id) ON DELETE CASCADE
+);
+
+-- ==============================================================================
+-- 4. ORDERS & TRANSACTIONS
+-- ==============================================================================
+
+CREATE TABLE orders (
+   id INT AUTO_INCREMENT PRIMARY KEY,
+   user_id INT DEFAULT NULL,
+   voucher_id INT DEFAULT NULL,
+   name VARCHAR(255) NOT NULL,
+   email VARCHAR(255) NOT NULL,
+   phone VARCHAR(20) NOT NULL,
+   address TEXT NOT NULL,
+   total_price DECIMAL(15,2) DEFAULT 0 CHECK (total_price >= 0),
+   shipping_fee DECIMAL(15,2) NOT NULL DEFAULT 0.00,
+    membership_discount DECIMAL(15,2) DEFAULT 0.00,
+    voucher_discount DECIMAL(15,2) DEFAULT 0.00,
+   status ENUM('Pending','Confirmed','Shipping','Delivered','Cancelled','Return Requested','Return Rejected','Return Approved') DEFAULT 'Pending',
+   payment_method ENUM('cod', 'momo', 'vnpay') DEFAULT 'cod',
+   payment_status ENUM('Unpaid', 'Paid', 'Refunded') DEFAULT 'Unpaid',
+   momo_order_id VARCHAR(255) NULL,
+   momo_pay_url TEXT NULL,
+   delivered_at DATETIME NULL, -- Thời điểm giao hàng, dùng để tính revenue đúng ngày
+   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
+   FOREIGN KEY (voucher_id) REFERENCES vouchers(id)
+);
+
+CREATE TABLE order_items (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  order_id INT NOT NULL,
+  product_id INT NOT NULL,
+  color_id INT DEFAULT NULL,
+  size_id INT DEFAULT NULL,
+  quantity INT NOT NULL CHECK (quantity > 0),
+  price DECIMAL(15,2) NOT NULL CHECK (price >= 0),
+  import_price_snapshot DECIMAL(15,2) NULL, -- Giá vốn tại thời điểm tạo đơn; NULL với đơn cũ chưa có snapshot
+  discount_amount DECIMAL(15,2) NOT NULL DEFAULT 0.00 CHECK (discount_amount >= 0),
+  payable_amount DECIMAL(15,2) DEFAULT NULL CHECK (payable_amount >= 0),
+  is_gift BOOLEAN DEFAULT FALSE,
+  promotion_id INT DEFAULT NULL,
+  FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
+  FOREIGN KEY (product_id) REFERENCES products(id),
+  FOREIGN KEY (color_id) REFERENCES product_colors(id),
+  FOREIGN KEY (size_id) REFERENCES product_sizes(id),
+  FOREIGN KEY (promotion_id) REFERENCES buy_x_get_y_promotions(id) ON DELETE RESTRICT
+);
+
+CREATE TABLE promotion_usage_history (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    order_id INT NOT NULL,
+    promotion_id INT NOT NULL,
+    buy_quantity_used INT NOT NULL,
+    gifts_awarded INT NOT NULL,
+    size_id INT DEFAULT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
+    FOREIGN KEY (promotion_id) REFERENCES buy_x_get_y_promotions(id) ON DELETE CASCADE,
+    FOREIGN KEY (size_id) REFERENCES product_sizes(id)
+);
+
+CREATE TABLE return_requests (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    order_id INT NOT NULL,
+    reason_code VARCHAR(255) NOT NULL,
+    description TEXT,
+    images JSON,
+    refund_bank_info JSON,
+    admin_response TEXT,
+    refund_amount DECIMAL(10, 2) DEFAULT 0,
+    shipping_refund DECIMAL(10, 2) DEFAULT 0,
+    status ENUM('Pending', 'Approved', 'Rejected') DEFAULT 'Pending',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
+    UNIQUE (order_id)
+);
+
+-- Audit log cho mọi lần đổi payment_status (admin tay / hệ thống tự động).
+CREATE TABLE payment_status_logs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    order_id INT NOT NULL,
+    from_status ENUM('Unpaid', 'Paid', 'Refunded') NOT NULL,
+    to_status ENUM('Unpaid', 'Paid', 'Refunded') NOT NULL,
+    changed_by INT NULL,
+    note VARCHAR(255) NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
+    FOREIGN KEY (changed_by) REFERENCES users(id) ON DELETE SET NULL,
+    INDEX payment_status_logs_order_id_fkey (order_id)
+);
+
+-- Items của yêu cầu đổi trả một phần (partial return) — khớp model ReturnRequestItem.
+-- Dùng bởi luồng approve/reject: chỉ hoàn kho + trừ doanh thu đúng các item được trả.
+CREATE TABLE return_request_items (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  return_request_id INT NOT NULL,
+  order_item_id INT NOT NULL,
+  return_quantity INT NOT NULL,
+  refund_amount DECIMAL(10,2) NOT NULL DEFAULT 0,
+  FOREIGN KEY (return_request_id) REFERENCES return_requests(id) ON DELETE CASCADE,
+  FOREIGN KEY (order_item_id) REFERENCES order_items(id) ON DELETE CASCADE,
+  INDEX return_request_items_return_request_id_fkey (return_request_id),
+  INDEX return_request_items_order_item_id_fkey (order_item_id)
+);
+
+CREATE TABLE revenues (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  report_date DATE NOT NULL UNIQUE,
+  total_sales DECIMAL(15,2) DEFAULT 0,
+  total_orders INT DEFAULT 0
+);
+
+-- ==============================================================================
+-- 5. RECOMMENDATION SYSTEM (USER INTERACTIONS)
+-- ==============================================================================
+
+CREATE TABLE user_product_interaction (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  product_id INT NOT NULL,
+  interaction_type ENUM('view', 'add_to_cart', 'purchase') NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_upi_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  CONSTRAINT fk_upi_product FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+);
