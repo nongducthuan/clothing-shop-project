@@ -1,0 +1,163 @@
+import { useState, useEffect, useCallback } from "react";
+import type { ChangeEvent, FormEvent } from "react";
+import API from "../../services/apiClient";
+import { useToast } from "../../context/ToastContext";
+import { useLanguage } from "../../context/LanguageContext";
+
+export interface CategoryRecord { id: number; name: string; name_vi?: string; name_en?: string; gender: "male" | "female" | "unisex"; image_url?: string; preview_image?: string; [key: string]: unknown }
+interface CategoryFormData { name: string; name_vi: string; name_en: string; gender: string; image_url: string }
+interface CategoryImage { image_url: string }
+interface RecommendedName { name: string; name_vi?: string }
+
+/**
+ * Custom hook to manage category-related operations including fetching,
+ * recommendations, and CRUD actions.
+ */
+export function useCategoryManager() {
+  const { showToast } = useToast();
+  const { t, translateApiMessage } = useLanguage();
+  const token = localStorage.getItem("token");
+  const authConfig = { headers: { Authorization: `Bearer ${token}` } };
+
+  const [categories, setCategories] = useState<CategoryRecord[]>([]);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [filterGender, setFilterGender] = useState("male");
+
+  const [categoryImages, setCategoryImages] = useState<CategoryImage[]>([]);
+  const [recommendNames, setRecommendNames] = useState<RecommendedName[]>([]);
+
+  const [form, setForm] = useState<CategoryFormData>({ name: "", name_vi: "", name_en: "", gender: "", image_url: "" });
+
+  /**
+   * Fetches all categories and sorts them by a predefined gender order.
+   * Order: Male -> Female -> Unisex
+   */
+  const fetchCategories = useCallback(async () => {
+    try {
+      const res = await API.get("/admin/categories");
+      let categoryList = Array.isArray(res.data) ? res.data : res.data.data;
+
+      const genderOrder: Record<string, number> = { male: 1, female: 2, unisex: 3 };
+      categoryList = [...categoryList].sort(
+        (a, b) => genderOrder[a.gender] - genderOrder[b.gender]
+      );
+
+      setCategories(categoryList || []);
+    } catch (error) {
+      console.error("Failed to fetch categories:", error);
+    }
+  }, []);
+
+  /**
+   * Handles input changes and fetches name recommendations when gender is selected.
+   * @param {Object} e - Input change event
+   */
+  const handleChange = async (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+
+    if (name === "gender" && value) {
+      try {
+        const res = await API.get(`/admin/categories/recommend?gender=${value}`);
+        setRecommendNames(res.data.data || []);
+      } catch {
+        setRecommendNames([]);
+      }
+    }
+  };
+
+  /**
+   * Submits the form to either create a new category or update an existing one.
+   */
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const payload = {
+        ...form,
+        name_vi: (form.name_vi || "").trim() || form.name.trim(),
+        name_en: (form.name_en || "").trim() || form.name.trim(),
+      };
+      if (editingId) {
+        await API.put(`/admin/categories/${editingId}`, payload, authConfig);
+      } else {
+        await API.post("/admin/categories", payload, authConfig);
+      }
+      resetForm();
+      await fetchCategories();
+      window.dispatchEvent(new Event("categories-updated"));
+      showToast(t(editingId ? "admin.toast_updated" : "admin.toast_created"), "success");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "";
+      showToast(
+        t("admin.toast_error").replace("{error}", translateApiMessage((err as { response?: { data?: { message?: string } } }).response?.data?.message) || message),
+        "error"
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /**
+   * Prepares the UI for editing by loading category data and its associated product images.
+   * @param {Object} cat - The category object to edit
+   */
+  const handleEdit = async (cat: CategoryRecord) => {
+    setEditingId(cat.id);
+    setForm({
+      name: cat.name || "",
+      name_vi: cat.name_vi || cat.name || "",
+      name_en: cat.name_en || cat.name || "",
+      gender: cat.gender,
+      image_url: cat.image_url || "",
+    });
+
+    try {
+      // Load preview images from existing products and current recommendations
+      const [imagesRes, recommendRes] = await Promise.all([
+        API.get(`/admin/categories/${cat.id}/images`),
+        API.get(`/admin/categories/recommend?gender=${cat.gender}`),
+      ]);
+      setCategoryImages(imagesRes.data.data || []);
+      setRecommendNames(recommendRes.data.data || []);
+    } catch (error) {
+      console.error("Failed to load editing context:", error);
+    }
+  };
+
+  /**
+   * Deletes a category. Prevents deletion if the category is not empty (handled by backend).
+   * @param {number|string} id - Category ID
+   */
+  const handleDelete = async (id: number) => {
+    if (!window.confirm(t("admin.confirm_delete", "Are you sure you want to delete this item?"))) return;
+    try {
+      await API.delete(`/admin/categories/${id}`, authConfig);
+      await fetchCategories();
+      showToast(t("admin.category.toast_deleted", "Category deleted successfully!"), "success");
+    } catch {
+      showToast(t("admin.category.toast_delete_failed", "Cannot delete category containing products."), "error");
+    }
+  };
+
+  /**
+   * Resets form and all temporary data (images, suggestions).
+   */
+  const resetForm = () => {
+    setEditingId(null);
+    setForm({ name: "", name_vi: "", name_en: "", gender: "", image_url: "" });
+    setCategoryImages([]);
+    setRecommendNames([]);
+  };
+
+  useEffect(() => {
+    fetchCategories();
+  }, [fetchCategories]);
+
+  return {
+    categories, editingId, loading, filterGender, setFilterGender,
+    categoryImages, recommendNames, form, setForm,
+    handleChange, handleSubmit, handleEdit, handleDelete, resetForm
+  };
+}

@@ -1,0 +1,17 @@
+import { useLanguage } from "../../../context/LanguageContext";
+
+export default function CategoryHeader({ category, productCount }: { category: Record<string, unknown> | null; productCount: number }) {
+  const { t, getLocalizedText } = useLanguage();
+  const categoryName = category ? getLocalizedText(category, 'name') : t("category.product_category", "Product Category");
+
+  return (
+    <div className="flex flex-col md:flex-row justify-between items-center md:items-end mb-10 border-b border-slate-100 dark:border-slate-800 pb-6">
+      <h1 className="text-4xl sm:text-5xl font-medium text-slate-900 dark:text-slate-100 tracking-tight capitalize text-center md:text-left">
+        {categoryName}
+      </h1>
+      <span className="text-slate-500 dark:text-slate-400 mt-3 md:mt-0 font-medium text-center md:text-right">
+        {productCount > 0 ? `${productCount} ${t("category.products_available", "products available")}` : t("category.fetching", "Fetching products...")}
+      </span>
+    </div>
+  );
+}

@@ -1,0 +1,213 @@
+import { useNavigate } from "react-router-dom";
+import { getImageUrl } from "../../../utils/imageUtils";
+import EmptyState from "../../common/EmptyState";
+import AdminPagination from "../layout/AdminPagination";
+import { useLanguage } from "../../../context/LanguageContext";
+import { formatCurrency } from "../../../utils/currencyUtils";
+import type { ProductRecord } from "../../../hooks/admin/product/useProductList";
+import type { ProductCategory } from "../../../hooks/admin/product/useProductCategories";
+
+interface Props {
+  products: ProductRecord[]; filterGender: string; setFilterGender: (value: string) => void;
+  filterCategory: string; setFilterCategory: (value: string) => void;
+  uniqueCategoriesForFilter: ProductCategory[]; searchTerm: string; setSearchTerm: (value: string) => void;
+  handleEdit: (product: ProductRecord) => void; handleDelete: (id: number) => void;
+  pagination: { currentPage?: number; totalPages?: number; totalProducts?: number };
+  onPageChange: (page: number) => void; loading: boolean;
+}
+
+export default function ProductList({
+  products,
+  filterGender,
+  setFilterGender,
+  filterCategory,
+  setFilterCategory,
+  uniqueCategoriesForFilter,
+  searchTerm,
+  setSearchTerm,
+  handleEdit,
+  handleDelete,
+  pagination,
+  onPageChange,
+  loading,
+}: Props) {
+  const navigate = useNavigate();
+  const { t, getLocalizedText, language } = useLanguage();
+  const genders = ["all", "male", "female", "unisex"];
+
+  return (
+    <div className="lg:col-span-8 flex flex-col h-full">
+      {/* Filtering Section */}
+      <div className="bg-white dark:bg-slate-800 p-4 md:p-5 rounded-[2rem] shadow-sm border border-slate-200/80 dark:border-slate-700 mb-8 flex flex-col gap-4">
+
+        {/* Top Row: Gender Pills & Category Select */}
+        <div className="flex flex-col md:flex-row md:flex-wrap items-center justify-between gap-4">
+          <div className="w-full md:w-auto md:shrink-0 overflow-x-auto md:overflow-visible">
+            <div className="inline-flex p-1.5 bg-slate-100 dark:bg-slate-700/60 rounded-full shadow-inner min-w-full md:min-w-0 md:w-auto">
+              {genders.map((g) => (
+                <button
+                  key={g}
+                  onClick={() => setFilterGender(g)}
+                  className={`flex-1 md:flex-none px-4 py-2 rounded-full font-bold text-sm transition-all duration-300 ease-out capitalize whitespace-nowrap ${filterGender === g
+                    ? "bg-white dark:bg-slate-800 text-violet-600 dark:text-violet-400 shadow-sm scale-100"
+                    : "text-slate-500 dark:text-slate-400 bg-transparent hover:text-slate-800 dark:hover:text-slate-200 scale-95"
+                    }`}
+                >
+                  {g === "all" ? t("gender.all") : t(`gender.${g}`)}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="relative w-full md:w-[160px] shrink-0">
+            <select
+              className="w-full pl-4 pr-9 py-2.5 bg-slate-50 dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 focus:bg-white dark:focus:bg-slate-700 focus:border-violet-500 dark:focus:border-violet-400 focus:ring-4 focus:ring-violet-500/10 rounded-full transition-all duration-300 outline-none text-slate-700 dark:text-slate-200 font-medium text-sm appearance-none cursor-pointer"
+              value={filterCategory}
+              onChange={(e) => setFilterCategory(e.target.value)}
+            >
+              <option value="all">{t("admin.all_categories")}</option>
+              {uniqueCategoriesForFilter.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {getLocalizedText(c, "name")}
+                </option>
+              ))}
+            </select>
+            <i className="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 pointer-events-none text-xs"></i>
+          </div>
+        </div>
+
+        {/* Bottom Row: Search Input */}
+        <div className="relative w-full">
+          <i className="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+          <input
+            className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600 focus:bg-white dark:focus:bg-slate-700 focus:border-violet-500 dark:focus:border-violet-400 focus:ring-4 focus:ring-violet-500/10 rounded-full transition-all duration-300 outline-none text-slate-700 dark:text-slate-200 font-medium text-sm shadow-inner placeholder:text-slate-400 dark:placeholder:text-slate-500"
+            placeholder={t("nav.search_placeholder")}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+      </div>
+
+      {/* Product Grid Area */}
+      <div className="bg-white dark:bg-slate-800 p-6 md:p-8 rounded-[2rem] border border-slate-200/80 dark:border-slate-700 shadow-sm flex-1 min-h-[500px]">
+        {products.length === 0 ? (
+          <div className="flex items-center justify-center h-full min-h-[400px]">
+            <EmptyState
+              title={t("admin.no_products_found")}
+              subtitle={t("search.no_items_desc")}
+              icon="fa-box-open"
+            />
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {products.map((p) => {
+              const genderColor = p.gender === "male" ? "bg-blue-500" : p.gender === "female" ? "bg-pink-500" : "bg-purple-500";
+              const sellingPrice = Number(p.price || 0);
+              const importPrice = Number(p.import_price || 0);
+              const profit = sellingPrice - importPrice;
+              const marginPercent = sellingPrice > 0 ? (profit / sellingPrice) * 100 : 0;
+
+              let profitBadgeStyle = "bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800/60";
+              if (profit <= 0) {
+                profitBadgeStyle = "bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-800/60";
+              } else if (marginPercent < 20) {
+                profitBadgeStyle = "bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-800/60";
+              }
+
+              return (
+                <div
+                  key={p.id}
+                  className="bg-slate-50/50 dark:bg-slate-700/40 rounded-[1.5rem] shadow-xs border border-slate-200/80 dark:border-slate-600/60 overflow-hidden cursor-pointer group hover:shadow-md hover:border-violet-200 dark:hover:border-violet-500/50 transition-all duration-300 flex flex-col"
+                  onClick={() => navigate(`/admin/products/${p.id}`)}
+                >
+                  {/* Image & Badges */}
+                  <div className="relative h-56 bg-slate-100 dark:bg-slate-700 overflow-hidden">
+                    <img
+                      src={getImageUrl(p.image_url)}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      alt={p.name}
+                      onError={(e) => ((e.target as HTMLImageElement).src = getImageUrl(null))}
+                    />
+
+                    {/* Gender Badge */}
+                    <span className={`absolute top-4 left-4 px-3 py-1 text-[11px] font-bold text-white rounded-full uppercase tracking-wider shadow-sm ${genderColor}`}>
+                      {t(`gender.${p.gender}`) || p.gender}
+                    </span>
+                  </div>
+
+                  {/* Content */}
+                  <div className="p-4 flex-1 flex flex-col">
+                    <div className="text-[10px] text-slate-400 dark:text-slate-400 font-bold tracking-widest mb-1 uppercase truncate">
+                      {getLocalizedText(p, "category_name") || p.category_name}
+                    </div>
+                    <h4 className="font-extrabold text-slate-900 dark:text-slate-100 text-base leading-tight truncate mb-3">
+                      {getLocalizedText(p, "name")}
+                    </h4>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">
+                      {getLocalizedText(p, "description") || t("product.no_desc")}
+                    </p>
+
+                    {/* Action Footer: Căn ngang Giá bên trái, Nút bên phải */}
+                    <div className="mt-auto flex flex-wrap gap-2 justify-between items-end pt-3 border-t border-slate-200/80 dark:border-slate-600/60">
+
+                      {/* Section 1: Thông tin Giá, Giá nhập, Lợi nhuận & Stock */}
+                      <div className="flex flex-col gap-1 flex-1 min-w-0">
+                        <div className="flex items-baseline gap-1 text-red-600 dark:text-rose-400 leading-none">
+                          <span className="font-black text-lg">
+                            {formatCurrency(sellingPrice, language)}
+                          </span>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-1">
+                          <div className="flex items-center gap-1 text-[10px] text-slate-500 dark:text-slate-400">
+                            <span className="font-medium opacity-70">{t("admin.import_price")}:</span>
+                            <span className="font-semibold">{formatCurrency(importPrice, language)}</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1 text-[10px] my-0.5">
+                          <span className="text-slate-500 dark:text-slate-400 font-medium opacity-70">{t("admin.profit")}:</span>
+                          <span className={`px-1.5 py-0.5 rounded-md text-[10px] font-bold border ${profitBadgeStyle}`}>
+                            {profit > 0 ? `+${formatCurrency(profit, language)}` : formatCurrency(profit, language)} ({marginPercent.toFixed(0)}%)
+                          </span>
+                        </div>
+                        <div className="text-[9px] font-bold text-slate-400 dark:text-slate-400 uppercase tracking-tighter">
+                          {t("admin.stock_quantity")}: {p.total_stock || 0}
+                        </div>
+                      </div>
+
+                      {/* Section 2: Nút Edit / Delete */}
+                      <div className="flex gap-2 flex-shrink-0 ml-2">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleEdit(p); }}
+                          aria-label={t("common.edit")}
+                          className="w-9 h-9 md:w-8 md:h-8 flex items-center justify-center bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 rounded-xl hover:bg-blue-600 hover:text-white dark:hover:bg-blue-600 dark:hover:text-white active:scale-95 transition-all shadow-sm"
+                        >
+                          <i className="fa-solid fa-pen text-sm"></i>
+                        </button>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleDelete(p.id); }}
+                          aria-label={t("common.delete")}
+                          className="w-9 h-9 md:w-8 md:h-8 flex items-center justify-center bg-red-50 dark:bg-red-950/50 text-red-600 dark:text-red-400 rounded-xl hover:bg-red-600 hover:text-white dark:hover:bg-red-600 dark:hover:text-white active:scale-95 transition-all shadow-sm"
+                        >
+                          <i className="fa-solid fa-trash text-sm"></i>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Phân trang: server trả từng trang nên UI chỉ cần phát sự kiện đổi trang */}
+        <AdminPagination
+          currentPage={pagination?.currentPage || 1}
+          totalPages={pagination?.totalPages || 1}
+          totalItems={pagination?.totalProducts || 0}
+          onPageChange={onPageChange}
+          disabled={loading}
+        />
+      </div>
+    </div>
+  );
+}

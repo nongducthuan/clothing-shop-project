@@ -1,0 +1,195 @@
+import { Request, Response } from 'express';
+import prisma from '../../../prisma/client';
+import { ApplyScope, Gender } from '../../generated/prisma/client';
+import { getErrorMessage } from '../../utils/errorMessage';
+
+const parseApplyScope = (value: unknown): ApplyScope => {
+  if (value === ApplyScope.all || value === ApplyScope.category || value === ApplyScope.product) return value;
+  throw new Error('Invalid apply scope');
+};
+
+export const createSaleAdmin = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { name, name_vi, name_en, discount_percent, productIds, categoryIds, start_date, end_date, apply_scope } = req.body;
+
+    // name is the canonical display name (NOT NULL). Falls back to either localized name.
+    const baseName = name || name_vi || name_en;
+
+    await prisma.$transaction(async (tx) => {
+      const sale = await tx.sale.create({
+        data: {
+          name: baseName,
+          name_vi: name_vi || baseName || null,
+          name_en: name_en || baseName || null,
+          discount_percent: Number(discount_percent),
+          apply_scope: parseApplyScope(apply_scope),
+          start_date: new Date(start_date),
+          end_date: new Date(end_date),
+          status: true
+        }
+      });
+
+      if (apply_scope === 'category' && categoryIds && categoryIds.length > 0) {
+        await tx.saleCategory.createMany({
+          data: categoryIds.map((id: number) => ({
+            sale_id: sale.id,
+            category_id: Number(id)
+          }))
+        });
+      }
+
+      if (apply_scope === 'product' && productIds && productIds.length > 0) {
+        await tx.productSale.createMany({
+          data: productIds.map((id: number) => ({
+            sale_id: sale.id,
+            product_id: Number(id)
+          }))
+        });
+      }
+    });
+
+    res.status(201).json({ success: true, message: "Created Successfully!" });
+  } catch (error: unknown) {
+    console.error(error);
+    res.status(500).json({ success: false, message: getErrorMessage(error) });
+  }
+};
+
+export const updateSaleAdmin = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const { name, name_vi, name_en, discount_percent, productIds, categoryIds, start_date, end_date, apply_scope } = req.body;
+
+    // Only touch names that were provided; derive canonical name if missing.
+    const baseName = name || name_vi || name_en;
+
+    await prisma.$transaction(async (tx) => {
+      await tx.sale.update({
+        where: { id: Number(id) },
+        data: {
+          name: baseName || undefined,
+          name_vi: name_vi !== undefined ? (name_vi || baseName || null) : undefined,
+          name_en: name_en !== undefined ? (name_en || baseName || null) : undefined,
+          discount_percent: Number(discount_percent),
+          apply_scope: parseApplyScope(apply_scope),
+          start_date: new Date(start_date),
+          end_date: new Date(end_date),
+        }
+      });
+
+      // Xoá relations cũ rồi tạo lại
+      await tx.saleCategory.deleteMany({ where: { sale_id: Number(id) } });
+      await tx.productSale.deleteMany({ where: { sale_id: Number(id) } });
+
+      if (apply_scope === 'category' && categoryIds && categoryIds.length > 0) {
+        await tx.saleCategory.createMany({
+          data: categoryIds.map((catId: number) => ({
+            sale_id: Number(id),
+            category_id: Number(catId)
+          }))
+        });
+      }
+
+      if (apply_scope === 'product' && productIds && productIds.length > 0) {
+        await tx.productSale.createMany({
+          data: productIds.map((pId: number) => ({
+            sale_id: Number(id),
+            product_id: Number(pId)
+          }))
+        });
+      }
+    });
+
+    res.json({ success: true, message: "Sale updated successfully!" });
+  } catch (error: unknown) {
+    console.error("UPDATE SALE ERROR:", getErrorMessage(error));
+    res.status(500).json({ success: false, message: getErrorMessage(error) });
+  }
+};
+
+export const getAllSalesAdmin = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const sales = await prisma.sale.findMany({
+      where: { status: true },
+      orderBy: { created_at: 'desc' }
+    });
+    res.json({ success: true, data: sales });
+  } catch (error: unknown) {
+    res.status(500).json({ success: false, message: getErrorMessage(error) });
+  }
+};
+
+export const toggleSaleStatus = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+    await prisma.sale.update({
+      where: { id: Number(id) },
+      data: { status: Boolean(Number(status)) }
+    });
+    res.json({ success: true, message: "Update status successfully!" });
+  } catch (error: unknown) {
+    res.status(500).json({ success: false, message: getErrorMessage(error) });
+  }
+};
+
+export const removeSale = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const sale = await prisma.sale.update({
+      where: { id: Number(id) },
+      data: { status: false }
+    });
+
+    if (!sale) {
+      res.status(404).json({ success: false, message: "Promotion not found!" });
+      return;
+    }
+
+    res.json({ success: true, message: "Promotion deleted successfully (Moved to archives)!" });
+  } catch (error: unknown) {
+    console.error("Remove Sale Error:", error);
+    res.status(500).json({ success: false, message: "System error while deleting promotion: " + getErrorMessage(error) });
+  }
+};
+
+export const getSaleDetailsAdmin = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const { type } = req.query;
+
+    if (!id || !type) {
+      res.status(400).json({ success: false, message: "Missing id or type" });
+      return;
+    }
+
+    let details: Array<{ name: string; name_vi: string | null; name_en: string | null; gender: Gender }> = [];
+    if (type === 'product') {
+        const productSales = await prisma.productSale.findMany({
+            where: { sale_id: Number(id) },
+            include: { product: true }
+        });
+        details = productSales.map(ps => ({
+            name: ps.product.name,
+            name_vi: ps.product.name_vi,
+            name_en: ps.product.name_en,
+            gender: ps.product.gender
+        }));
+    } else if (type === 'category') {
+        const categorySales = await prisma.saleCategory.findMany({
+            where: { sale_id: Number(id) },
+            include: { category: true }
+        });
+        details = categorySales.map(cs => ({
+            name: cs.category.name,
+            name_vi: cs.category.name_vi,
+            name_en: cs.category.name_en,
+            gender: cs.category.gender
+        }));
+    }
+
+    res.json({ success: true, details });
+  } catch (error: unknown) {
+    res.status(500).json({ success: false, message: getErrorMessage(error) });
+  }
+};
