@@ -38,7 +38,7 @@ model User {
   notifications  Notification[]
   membership    Membership?              @relation(fields: [membership_id], references: [id])
 
-  @@index([membership_id], map: "users_membership_id_fkey")
+  @@index([membership_id], map: "users_membership_id_idx")
   @@map("users")
 }
 
@@ -94,7 +94,7 @@ model Product {
   category         Category                 @relation(fields: [category_id], references: [id])
   interactions     UserProductInteraction[]
 
-  @@index([category_id], map: "products_category_id_fkey")
+  @@index([category_id], map: "products_category_id_idx")
   @@map("products")
 }
 
@@ -110,7 +110,7 @@ model ProductColor {
   product       Product       @relation(fields: [product_id], references: [id], onDelete: Cascade)
   sizes         ProductSize[]
 
-  @@index([product_id], map: "product_colors_product_id_fkey")
+  @@index([product_id], map: "product_colors_product_id_idx")
   @@map("product_colors")
 }
 
@@ -124,7 +124,7 @@ model ProductSize {
   color                   ProductColor            @relation(fields: [color_id], references: [id], onDelete: Cascade)
   promotion_usage_history PromotionUsageHistory[]
 
-  @@index([color_id], map: "product_sizes_color_id_fkey")
+  @@index([color_id], map: "product_sizes_color_id_idx")
   @@map("product_sizes")
 }
 
@@ -167,7 +167,7 @@ model ProductSale {
   sale       Sale    @relation(fields: [sale_id], references: [id], onDelete: Cascade)
 
   @@unique([product_id, sale_id])
-  @@index([sale_id], map: "product_sales_sale_id_fkey")
+  @@index([sale_id], map: "product_sales_sale_id_idx")
   @@map("product_sales")
 }
 
@@ -179,7 +179,7 @@ model SaleCategory {
   sale        Sale     @relation(fields: [sale_id], references: [id], onDelete: Cascade)
 
   @@unique([sale_id, category_id])
-  @@index([category_id], map: "sale_categories_category_id_fkey")
+  @@index([category_id], map: "sale_categories_category_id_idx")
   @@map("sale_categories")
 }
 
@@ -213,7 +213,7 @@ model ProductVoucher {
   voucher    Voucher @relation(fields: [voucher_id], references: [id], onDelete: Cascade)
 
   @@unique([product_id, voucher_id])
-  @@index([voucher_id], map: "product_vouchers_voucher_id_fkey")
+  @@index([voucher_id], map: "product_vouchers_voucher_id_idx")
   @@map("product_vouchers")
 }
 
@@ -225,7 +225,7 @@ model VoucherCategory {
   voucher     Voucher  @relation(fields: [voucher_id], references: [id], onDelete: Cascade)
 
   @@unique([voucher_id, category_id])
-  @@index([category_id], map: "voucher_categories_category_id_fkey")
+  @@index([category_id], map: "voucher_categories_category_id_idx")
   @@map("voucher_categories")
 }
 
@@ -257,8 +257,8 @@ model BuyXGetYPromotion {
   order_items        OrderItem[]
   usage_history      PromotionUsageHistory[]
 
-  @@index([buy_product_id], map: "buy_x_get_y_promotions_buy_product_id_fkey")
-  @@index([gift_product_id], map: "buy_x_get_y_promotions_gift_product_id_fkey")
+  @@index([buy_product_id], map: "buy_x_get_y_promotions_buy_product_id_idx")
+  @@index([gift_product_id], map: "buy_x_get_y_promotions_gift_product_id_idx")
   @@map("buy_x_get_y_promotions")
 }
 
@@ -289,8 +289,8 @@ model Order {
   return_request          ReturnRequest?
   payment_logs            PaymentStatusLog[]
 
-  @@index([user_id], map: "orders_user_id_fkey")
-  @@index([voucher_id], map: "orders_voucher_id_fkey")
+  @@index([user_id], map: "orders_user_id_idx")
+  @@index([voucher_id], map: "orders_voucher_id_idx")
   @@map("orders")
 }
 
@@ -314,11 +314,11 @@ model OrderItem {
   size                 ProductSize?         @relation(fields: [size_id], references: [id])
   return_request_items ReturnRequestItem[]
 
-  @@index([color_id], map: "order_items_color_id_fkey")
-  @@index([order_id], map: "order_items_order_id_fkey")
-  @@index([product_id], map: "order_items_product_id_fkey")
-  @@index([promotion_id], map: "order_items_promotion_id_fkey")
-  @@index([size_id], map: "order_items_size_id_fkey")
+  @@index([color_id], map: "order_items_color_id_idx")
+  @@index([order_id], map: "order_items_order_id_idx")
+  @@index([product_id], map: "order_items_product_id_idx")
+  @@index([promotion_id], map: "order_items_promotion_id_idx")
+  @@index([size_id], map: "order_items_size_id_idx")
   @@map("order_items")
 }
 
@@ -334,9 +334,9 @@ model PromotionUsageHistory {
   promotion         BuyXGetYPromotion @relation(fields: [promotion_id], references: [id], onDelete: Cascade)
   size              ProductSize?      @relation(fields: [size_id], references: [id])
 
-  @@index([order_id], map: "promotion_usage_history_order_id_fkey")
-  @@index([promotion_id], map: "promotion_usage_history_promotion_id_fkey")
-  @@index([size_id], map: "promotion_usage_history_size_id_fkey")
+  @@index([order_id], map: "promotion_usage_history_order_id_idx")
+  @@index([promotion_id], map: "promotion_usage_history_promotion_id_idx")
+  @@index([size_id], map: "promotion_usage_history_size_id_idx")
   @@map("promotion_usage_history")
 }
 
@@ -368,8 +368,8 @@ model ReturnRequestItem {
   return_request    ReturnRequest @relation(fields: [return_request_id], references: [id], onDelete: Cascade)
   order_item        OrderItem     @relation(fields: [order_item_id], references: [id], onDelete: Cascade)
 
-  @@index([return_request_id], map: "return_request_items_return_request_id_fkey")
-  @@index([order_item_id], map: "return_request_items_order_item_id_fkey")
+  @@index([return_request_id], map: "return_request_items_return_request_id_idx")
+  @@index([order_item_id], map: "return_request_items_order_item_id_idx")
   @@map("return_request_items")
 }
 
@@ -394,7 +394,7 @@ model PaymentStatusLog {
   created_at  DateTime      @default(now())
   order       Order         @relation(fields: [order_id], references: [id], onDelete: Cascade)
 
-  @@index([order_id], map: "payment_status_logs_order_id_fkey")
+  @@index([order_id], map: "payment_status_logs_order_id_idx")
   @@map("payment_status_logs")
 }
 
@@ -407,7 +407,7 @@ model UserProductInteraction {
   product          Product         @relation(fields: [product_id], references: [id], onDelete: Cascade)
   user             User            @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
-  @@index([product_id], map: "user_product_interaction_product_id_fkey")
+  @@index([product_id], map: "user_product_interaction_product_id_idx")
   @@index([user_id, product_id], map: "idx_upi_user_product")
   @@map("user_product_interaction")
 }
