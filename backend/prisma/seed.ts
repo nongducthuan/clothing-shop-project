@@ -1,11 +1,12 @@
 // Bắt buộc lưu file bằng UTF-8: src/__tests__/prisma/seedEncoding.test.ts sẽ fail nếu bị mojibake.
 import 'dotenv/config';
 import bcrypt from 'bcryptjs';
-import { PrismaMariaDb } from '@prisma/adapter-mariadb';
+import { PrismaPg } from '@prisma/adapter-pg';
+import { Client } from 'pg';
 import { PrismaClient, Gender, UserRole, SizeEnum, InteractionType, ReturnStatus, OrderStatus, PaymentStatus, ApplyScope, PromotionStatus } from '../src/generated/prisma/client';
-import { MARIADB_SSL, getDbConfig, getMariaDbPoolConfig } from '../src/utils/mariadbPool';
+import { getPostgresPoolConfig } from '../src/utils/postgres';
 
-const adapter = new PrismaMariaDb(getMariaDbPoolConfig());
+const adapter = new PrismaPg(getPostgresPoolConfig());
 const prisma = new PrismaClient({ adapter });
 
 function daysAgo(n: number, hour = 12): Date {
@@ -32,19 +33,58 @@ function monthsAgoDay15(n: number): Date {
   return d;
 }
 
-// Khoá seed (GET_LOCK) gắn với session nên phải giữ connection này mở suốt quá trình seed.
-let seedLockConn: { query: (sql: string) => Promise<unknown>; end: () => Promise<void> } | null = null;
+// PostgreSQL advisory lock giữ nguyên theo session trong suốt quá trình seed.
+type SeedLockConnection = Pick<Client, 'query' | 'end'>;
+let seedLockConn: SeedLockConnection | null = null;
 
 async function releaseSeedLock() {
   if (!seedLockConn) return;
   const conn = seedLockConn;
   seedLockConn = null;
   try {
-    await conn.query("SELECT RELEASE_LOCK('clothing_shop_seed')");
+    await conn.query("SELECT pg_advisory_unlock(2026, hashtext('clothing_shop_seed'))");
   } catch {
-    // Connection có thể đã đóng — khoá cũng đã được nhả theo session.
+    // The advisory lock is released automatically if the PostgreSQL session closes.
   }
   await conn.end().catch(() => undefined);
+}
+
+async function resetSequences(conn: SeedLockConnection) {
+  await conn.query(`
+    DO $$
+    DECLARE
+      sequence_column RECORD;
+      max_value BIGINT;
+      sequence_name TEXT;
+    BEGIN
+      FOR sequence_column IN
+        SELECT table_schema, table_name, column_name
+        FROM information_schema.columns
+        WHERE table_schema = current_schema()
+          AND (is_identity = 'YES' OR column_default LIKE 'nextval(%')
+      LOOP
+        EXECUTE format(
+          'SELECT MAX(%I) FROM %I.%I',
+          sequence_column.column_name,
+          sequence_column.table_schema,
+          sequence_column.table_name
+        ) INTO max_value;
+
+        sequence_name := pg_get_serial_sequence(
+          format('%I.%I', sequence_column.table_schema, sequence_column.table_name),
+          sequence_column.column_name
+        );
+
+        IF sequence_name IS NOT NULL THEN
+          IF max_value IS NULL THEN
+            PERFORM setval(sequence_name::regclass, 1, false);
+          ELSE
+            PERFORM setval(sequence_name::regclass, max_value, true);
+          END IF;
+        END IF;
+      END LOOP;
+    END $$;
+  `);
 }
 
 async function main() {
@@ -52,41 +92,38 @@ async function main() {
 
   // --- 0. CLEANUP ---
   {
-    const mariadb = await import('mariadb');
-    const conn = await mariadb.default.createConnection({
-      ...getDbConfig(),
-      ssl: MARIADB_SSL,
-      connectTimeout: 15000,
-      multipleStatements: true,
-    });
-    const lockRows = (await conn.query("SELECT GET_LOCK('clothing_shop_seed', 0) AS locked")) as Array<{
-      locked: number | null;
-    }>;
-    if (Number(lockRows[0].locked) !== 1) {
+    const conn = new Client(getPostgresPoolConfig());
+    await conn.connect();
+    const lockResult = await conn.query<{ locked: boolean }>(
+      "SELECT pg_try_advisory_lock(2026, hashtext('clothing_shop_seed')) AS locked"
+    );
+    if (!lockResult.rows[0]?.locked) {
       await conn.end();
       throw new Error(
-        'Một tiến trình seed khác đang chạy trên cùng database (không lấy được lock "clothing_shop_seed"). ' +
+        'Một tiến trình seed khác đang chạy trên cùng database (không lấy được advisory lock "clothing_shop_seed"). ' +
         'Dừng lại để tránh xoá dữ liệu giữa lúc seed đang chạy.'
       );
     }
-    seedLockConn = conn as unknown as typeof seedLockConn;
-    const rows = (await conn.query(
-      `SELECT TABLE_NAME FROM information_schema.TABLES
-       WHERE TABLE_SCHEMA = DATABASE()
-         AND TABLE_TYPE = 'BASE TABLE'
-         AND TABLE_NAME <> '_prisma_migrations'
-       ORDER BY TABLE_NAME`
-    )) as Array<{ TABLE_NAME: string }>;
-    const tables = rows.map((r) => r.TABLE_NAME);
-    await conn.query('SET FOREIGN_KEY_CHECKS = 0');
-    for (const t of tables) {
-      await conn.query(`TRUNCATE TABLE \`${t}\``);
+    seedLockConn = conn;
+
+    const { rows } = await conn.query<{ table_name: string }>(`
+      SELECT tablename AS table_name
+      FROM pg_tables
+      WHERE schemaname = current_schema()
+        AND tablename <> '_prisma_migrations'
+      ORDER BY tablename
+    `);
+    const tables = rows.map((row) => row.table_name);
+    if (tables.length > 0) {
+      const quotedTables = tables.map((table) => `"${table.replace(/"/g, '""')}"`);
+      await conn.query(`TRUNCATE TABLE ${quotedTables.join(', ')} RESTART IDENTITY CASCADE`);
     }
-    await conn.query('SET FOREIGN_KEY_CHECKS = 1');
+
     const notEmpty: string[] = [];
-    for (const t of tables) {
-      const counted = (await conn.query(`SELECT COUNT(*) AS c FROM \`${t}\``)) as Array<{ c: number }>;
-      if (Number(counted[0].c) > 0) notEmpty.push(`${t}(${counted[0].c})`);
+    for (const table of tables) {
+      const safeTable = `"${table.replace(/"/g, '""')}"`;
+      const counted = await conn.query<{ c: string }>(`SELECT COUNT(*)::text AS c FROM ${safeTable}`);
+      if (Number(counted.rows[0]?.c ?? 0) > 0) notEmpty.push(`${table}(${counted.rows[0].c})`);
     }
     if (notEmpty.length > 0) {
       throw new Error(`Cleanup thất bại, các bảng còn dữ liệu: ${notEmpty.join(', ')}`);
@@ -684,6 +721,7 @@ async function main() {
   await prisma.userProductInteraction.createMany({ data: interactionsData });
   console.log('✔ User product interactions');
 
+  if (seedLockConn) await resetSequences(seedLockConn);
   console.log('🎉 Seed hoàn tất!');
 }
 

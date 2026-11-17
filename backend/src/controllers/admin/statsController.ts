@@ -99,15 +99,15 @@ export const getAdminStats = async (req: Request, res: Response): Promise<void> 
         // summary 30 ngay = 30 ngay da chot gan nhat (hom qua - 29 ... hom qua).
         const summarySql = `
             SELECT
-                COUNT(DISTINCT CASE WHEN DATE(o.created_at) BETWEEN DATE(DATE_SUB(CURDATE(), INTERVAL 7 DAY)) AND DATE(DATE_SUB(CURDATE(), INTERVAL 1 DAY)) THEN o.id END) AS weeklyOrders,
-                SUM(CASE WHEN DATE(o.created_at) BETWEEN DATE(DATE_SUB(CURDATE(), INTERVAL 7 DAY)) AND DATE(DATE_SUB(CURDATE(), INTERVAL 1 DAY)) AND o.status IN ('Delivered','Return Requested','Return Rejected','Return Approved') THEN ${netItemRevenue} ELSE 0 END) AS weeklyRevenue,
-                SUM(CASE WHEN DATE(o.created_at) BETWEEN DATE(DATE_SUB(CURDATE(), INTERVAL 7 DAY)) AND DATE(DATE_SUB(CURDATE(), INTERVAL 1 DAY)) AND o.status IN ('Delivered','Return Requested','Return Rejected','Return Approved') THEN ${netItemRevenue} - (COALESCE(oi.import_price_snapshot, p.import_price) * ${retainedQuantity}) ELSE 0 END) AS weeklyProfit,
-                SUM(CASE WHEN DATE(o.created_at) BETWEEN DATE(DATE_SUB(CURDATE(), INTERVAL 7 DAY)) AND DATE(DATE_SUB(CURDATE(), INTERVAL 1 DAY)) AND o.status IN ('Delivered','Return Requested','Return Rejected','Return Approved') THEN ${retainedQuantity} ELSE 0 END) AS productsSoldWeek,
+                COUNT(DISTINCT CASE WHEN o.created_at::date BETWEEN (CURRENT_DATE - INTERVAL '7 days')::date AND (CURRENT_DATE - INTERVAL '1 day')::date THEN o.id END) AS "weeklyOrders",
+                SUM(CASE WHEN o.created_at::date BETWEEN (CURRENT_DATE - INTERVAL '7 days')::date AND (CURRENT_DATE - INTERVAL '1 day')::date AND o.status IN ('Delivered','Return Requested','Return Rejected','Return Approved') THEN ${netItemRevenue} ELSE 0 END) AS "weeklyRevenue",
+                SUM(CASE WHEN o.created_at::date BETWEEN (CURRENT_DATE - INTERVAL '7 days')::date AND (CURRENT_DATE - INTERVAL '1 day')::date AND o.status IN ('Delivered','Return Requested','Return Rejected','Return Approved') THEN ${netItemRevenue} - (COALESCE(oi.import_price_snapshot, p.import_price) * ${retainedQuantity}) ELSE 0 END) AS "weeklyProfit",
+                SUM(CASE WHEN o.created_at::date BETWEEN (CURRENT_DATE - INTERVAL '7 days')::date AND (CURRENT_DATE - INTERVAL '1 day')::date AND o.status IN ('Delivered','Return Requested','Return Rejected','Return Approved') THEN ${retainedQuantity} ELSE 0 END) AS "productsSoldWeek",
 
-                COUNT(DISTINCT CASE WHEN DATE(o.created_at) BETWEEN DATE(DATE_SUB(CURDATE(), INTERVAL 30 DAY)) AND DATE(DATE_SUB(CURDATE(), INTERVAL 1 DAY)) THEN o.id END) AS monthlyOrders,
-                SUM(CASE WHEN DATE(o.created_at) BETWEEN DATE(DATE_SUB(CURDATE(), INTERVAL 30 DAY)) AND DATE(DATE_SUB(CURDATE(), INTERVAL 1 DAY)) AND o.status IN ('Delivered','Return Requested','Return Rejected','Return Approved') THEN ${netItemRevenue} ELSE 0 END) AS monthlyRevenue,
-                SUM(CASE WHEN DATE(o.created_at) BETWEEN DATE(DATE_SUB(CURDATE(), INTERVAL 30 DAY)) AND DATE(DATE_SUB(CURDATE(), INTERVAL 1 DAY)) AND o.status IN ('Delivered','Return Requested','Return Rejected','Return Approved') THEN ${netItemRevenue} - (COALESCE(oi.import_price_snapshot, p.import_price) * ${retainedQuantity}) ELSE 0 END) AS monthlyProfit,
-                SUM(CASE WHEN DATE(o.created_at) BETWEEN DATE(DATE_SUB(CURDATE(), INTERVAL 30 DAY)) AND DATE(DATE_SUB(CURDATE(), INTERVAL 1 DAY)) AND o.status IN ('Delivered','Return Requested','Return Rejected','Return Approved') THEN ${retainedQuantity} ELSE 0 END) AS productsSoldMonth
+                COUNT(DISTINCT CASE WHEN o.created_at::date BETWEEN (CURRENT_DATE - INTERVAL '30 days')::date AND (CURRENT_DATE - INTERVAL '1 day')::date THEN o.id END) AS "monthlyOrders",
+                SUM(CASE WHEN o.created_at::date BETWEEN (CURRENT_DATE - INTERVAL '30 days')::date AND (CURRENT_DATE - INTERVAL '1 day')::date AND o.status IN ('Delivered','Return Requested','Return Rejected','Return Approved') THEN ${netItemRevenue} ELSE 0 END) AS "monthlyRevenue",
+                SUM(CASE WHEN o.created_at::date BETWEEN (CURRENT_DATE - INTERVAL '30 days')::date AND (CURRENT_DATE - INTERVAL '1 day')::date AND o.status IN ('Delivered','Return Requested','Return Rejected','Return Approved') THEN ${netItemRevenue} - (COALESCE(oi.import_price_snapshot, p.import_price) * ${retainedQuantity}) ELSE 0 END) AS "monthlyProfit",
+                SUM(CASE WHEN o.created_at::date BETWEEN (CURRENT_DATE - INTERVAL '30 days')::date AND (CURRENT_DATE - INTERVAL '1 day')::date AND o.status IN ('Delivered','Return Requested','Return Rejected','Return Approved') THEN ${retainedQuantity} ELSE 0 END) AS "productsSoldMonth"
             FROM orders o
             LEFT JOIN order_items oi ON o.id = oi.order_id
             LEFT JOIN products p ON oi.product_id = p.id
@@ -119,30 +119,30 @@ export const getAdminStats = async (req: Request, res: Response): Promise<void> 
         const revenue7DaysSql = `
             SELECT
                 d.full_date,
-                CASE DAYOFWEEK(d.full_date)
-                    WHEN 1 THEN CONCAT('CN (', DATE_FORMAT(d.full_date, '%d/%m'), ')')
-                    WHEN 2 THEN CONCAT('T2 (', DATE_FORMAT(d.full_date, '%d/%m'), ')')
-                    WHEN 3 THEN CONCAT('T3 (', DATE_FORMAT(d.full_date, '%d/%m'), ')')
-                    WHEN 4 THEN CONCAT('T4 (', DATE_FORMAT(d.full_date, '%d/%m'), ')')
-                    WHEN 5 THEN CONCAT('T5 (', DATE_FORMAT(d.full_date, '%d/%m'), ')')
-                    WHEN 6 THEN CONCAT('T6 (', DATE_FORMAT(d.full_date, '%d/%m'), ')')
-                    WHEN 7 THEN CONCAT('T7 (', DATE_FORMAT(d.full_date, '%d/%m'), ')')
-                END AS day,
-                IFNULL(SUM(${netItemRevenue}), 0) AS revenue,
-                IFNULL(SUM(${netItemRevenue} - (COALESCE(oi.import_price_snapshot, p.import_price) * ${retainedQuantity})), 0) AS profit
+                (CASE EXTRACT(ISODOW FROM d.full_date)::int
+                    WHEN 1 THEN 'T2'
+                    WHEN 2 THEN 'T3'
+                    WHEN 3 THEN 'T4'
+                    WHEN 4 THEN 'T5'
+                    WHEN 5 THEN 'T6'
+                    WHEN 6 THEN 'T7'
+                    WHEN 7 THEN 'CN'
+                END) || ' (' || TO_CHAR(d.full_date, 'DD/MM') || ')' AS day,
+                COALESCE(SUM(${netItemRevenue}), 0) AS revenue,
+                COALESCE(SUM(${netItemRevenue} - (COALESCE(oi.import_price_snapshot, p.import_price) * ${retainedQuantity})), 0) AS profit
             FROM (
-                SELECT DATE_SUB(CURDATE(), INTERVAL (seq + 1) DAY) AS full_date
-                FROM (
-                    SELECT 0 AS seq UNION SELECT 1 UNION SELECT 2 UNION SELECT 3
-                    UNION SELECT 4 UNION SELECT 5 UNION SELECT 6
-                ) AS sequences
+                SELECT generate_series(
+                    CURRENT_DATE - INTERVAL '7 days',
+                    CURRENT_DATE - INTERVAL '1 day',
+                    INTERVAL '1 day'
+                )::date AS full_date
             ) AS d
-            LEFT JOIN orders o ON DATE(o.created_at) = d.full_date AND o.status IN ('Delivered','Return Requested','Return Rejected','Return Approved')
+            LEFT JOIN orders o ON o.created_at::date = d.full_date AND o.status IN ('Delivered','Return Requested','Return Rejected','Return Approved')
             LEFT JOIN order_items oi ON o.id = oi.order_id
             LEFT JOIN products p ON oi.product_id = p.id
             ${approvedReturnsJoin}
             ${approvedReturnOrdersJoin}
-            GROUP BY d.full_date, day
+            GROUP BY d.full_date
             ORDER BY d.full_date ASC
         `;
         const revenue7Days = await prisma.$queryRawUnsafe<Revenue7DaysRow[]>(revenue7DaysSql);
@@ -152,19 +152,18 @@ export const getAdminStats = async (req: Request, res: Response): Promise<void> 
 
         const revenueMonthsSql = `
             SELECT
-                DATE_FORMAT(m.month_date, '%m/%y') AS month_label,
-                IFNULL(SUM(${netItemRevenue}), 0) AS revenue,
-                IFNULL(SUM(${netItemRevenue} - (COALESCE(oi.import_price_snapshot, p.import_price) * ${retainedQuantity})), 0) AS profit
+                TO_CHAR(m.month_date, 'MM/YY') AS month_label,
+                COALESCE(SUM(${netItemRevenue}), 0) AS revenue,
+                COALESCE(SUM(${netItemRevenue} - (COALESCE(oi.import_price_snapshot, p.import_price) * ${retainedQuantity})), 0) AS profit
             FROM (
-                SELECT DATE_SUB(DATE_FORMAT(CURDATE(), '%Y-%m-01'), INTERVAL seq MONTH) AS month_date
-                FROM (
-                    SELECT 0 AS seq UNION SELECT 1 UNION SELECT 2 UNION SELECT 3
-                    UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7
-                    UNION SELECT 8 UNION SELECT 9 UNION SELECT 10 UNION SELECT 11
-                ) AS sequences
+                SELECT generate_series(
+                    date_trunc('month', CURRENT_DATE) - INTERVAL '11 months',
+                    date_trunc('month', CURRENT_DATE),
+                    INTERVAL '1 month'
+                )::date AS month_date
             ) AS m
             LEFT JOIN orders o ON o.created_at >= m.month_date
-                AND o.created_at < DATE_ADD(m.month_date, INTERVAL 1 MONTH)
+                AND o.created_at < (m.month_date + INTERVAL '1 month')
                 AND o.status IN ('Delivered','Return Requested','Return Rejected','Return Approved')
             LEFT JOIN order_items oi ON o.id = oi.order_id
             LEFT JOIN products p ON oi.product_id = p.id
@@ -208,17 +207,17 @@ export const getAdminStats = async (req: Request, res: Response): Promise<void> 
         // da xoa mem (is_active) va chi tinh status = 'active'.
         const dashboardSql = `
             SELECT
-                (SELECT IFNULL(SUM(ps.stock), 0)
+                (SELECT COALESCE(SUM(ps.stock), 0)
                    FROM product_sizes ps
                    JOIN product_colors pc ON ps.color_id = pc.id
                    JOIN products p ON pc.product_id = p.id
-                  WHERE p.is_active = 1) AS totalStock,
+                  WHERE p.is_active IS TRUE) AS "totalStock",
                 (SELECT COUNT(*) FROM orders) AS orders,
-                (SELECT COUNT(*) FROM categories WHERE is_active = 1) AS categoriesCount,
+                (SELECT COUNT(*) FROM categories WHERE is_active IS TRUE) AS "categoriesCount",
                 (SELECT COUNT(*) FROM banners) AS banners,
-                (SELECT COUNT(*) FROM sales WHERE status = 1) AS activeSales,
-                (SELECT COUNT(*) FROM vouchers WHERE status = 1) AS activeVouchers,
-                (SELECT COUNT(*) FROM buy_x_get_y_promotions WHERE status = 'active' AND is_active = 1) AS activePromotions,
+                (SELECT COUNT(*) FROM sales WHERE status IS TRUE) AS "activeSales",
+                (SELECT COUNT(*) FROM vouchers WHERE status IS TRUE) AS "activeVouchers",
+                (SELECT COUNT(*) FROM buy_x_get_y_promotions WHERE status = 'active' AND is_active IS TRUE) AS "activePromotions",
                 (SELECT COUNT(*) FROM users) AS users
         `;
         const dashboard = await prisma.$queryRawUnsafe<DashboardRow[]>(dashboardSql);

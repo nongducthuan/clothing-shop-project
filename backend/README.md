@@ -1,47 +1,65 @@
-# Clothing Shop — Backend (Express + Prisma + TypeScript)
-
-REST API, thanh toán (MoMo / VNPay), Socket.IO và chatbot AI của đồ án **Clothing Shop**.
-
-Đây là phần backend trong monorepo. Tài liệu đầy đủ (kiến trúc, danh sách API, tài khoản mặc định, thẻ sandbox MoMo/VNPay...) nằm ở **[README gốc của dự án](../README.md)**.
-
----
+# Backend — Clothing Shop
 
 ## Yêu cầu
 
-- Node.js 22 trở lên (repo được kiểm thử với Node 24).
-- MySQL/MariaDB (ví dụ Aiven, hoặc cài local).
+- Node.js 22+ và npm.
+- PostgreSQL 14+ (local hoặc managed database).
 
-## Cài đặt & chạy
+## Cài đặt
+
+Tạo database PostgreSQL trước (ví dụ local), sau đó cấu hình `.env` trước khi cài dependencies vì Prisma 7 đọc `DATABASE_URL` khi generate client:
 
 ```bash
-npm install                # tự chạy prisma generate
-cp .env.example .env       # Windows CMD/PowerShell: copy .env.example .env
-npx prisma db push         # tạo bảng theo prisma/schema.prisma
-npm run seed               # nạp dữ liệu mẫu (XOÁ SẠCH dữ liệu cũ)
-npm run dev                # http://localhost:5000
+createdb shopdb
+cp .env.example .env
 ```
 
-> `npm run seed` reset toàn bộ dữ liệu. Chỉ chạy khi mới thiết lập hoặc muốn xoá sạch. Có thể nạp bằng SQL thay thế: `database/schema.sql`, `database/seed_data.sql`, `database/views_indexes.sql`.
+Sửa `DATABASE_URL` trong `.env` thành thông tin kết nối thực tế:
 
-## Scripts
+```env
+DATABASE_URL="postgresql://postgres:your_password@localhost:5432/shopdb?schema=public"
+```
 
-| Lệnh | Mô tả |
-| --- | --- |
-| `npm run dev` | Chạy dev, tự reload (`tsx watch`) |
-| `npm start` | Chạy production (`tsx src/index.ts`) |
-| `npm run seed` | Reset và nạp dữ liệu mẫu |
-| `npm test` | Chạy Jest (mock hoàn toàn, không cần DB) |
-| `npm run test:coverage` | Jest kèm báo cáo coverage |
-| `npm run typecheck` | Kiểm tra kiểu TypeScript (`tsc --noEmit`) |
-| `npm run check:no-any` | Chặn việc dùng `any` |
+Cài dependencies:
 
-## Biến môi trường (`backend/.env`)
+```bash
+npm install --legacy-peer-deps
+```
 
-Mẫu đầy đủ nằm trong `.env.example`; mô tả chi tiết từng biến ở README gốc. Nhóm chính:
+Lockfile backend của bản MySQL cũ không được giữ lại vì chứa driver cũ; lần cài đầu sẽ tạo `package-lock.json` mới cho bộ dependency PostgreSQL.
 
-- **CSDL & server**: `DATABASE_URL`, `PORT`, `BACKEND_URL`, `FRONTEND_URL` (CORS)
-- **Xác thực**: `JWT_SECRET`, `JWT_REFRESH_SECRET`
-- **Thanh toán**: `MOMO_PARTNER_CODE`, `MOMO_ACCESS_KEY`, `MOMO_SECRET_KEY`, `VNP_TMNCODE`, `VNP_HASHSECRET`, `VNP_URL`, `VNP_RETURNURL`
-- **Email & AI**: `BREVO_API_KEY`, `EMAIL_USER`, `GOOGLE_API_KEY`
+Nếu dùng dịch vụ PostgreSQL yêu cầu SSL, dùng URL do nhà cung cấp cấp (thường có `?sslmode=require`). Không thêm tham số SSL nếu nhà cung cấp không yêu cầu.
 
-> Khi deploy, `VNP_RETURNURL`, `BACKEND_URL` và `FRONTEND_URL` phải trỏ đúng domain thật, không phải `localhost`.
+## Đồng bộ schema và seed dữ liệu
+
+```bash
+npx prisma generate
+npx prisma db push
+npm run seed
+```
+
+> **Cảnh báo:** `npm run seed` xoá dữ liệu hiện có trong các bảng ứng dụng trước khi tạo dữ liệu mẫu, bao gồm người dùng, sản phẩm, đơn hàng và khuyến mãi. Chỉ chạy trên database mới hoặc khi chủ động muốn reset dữ liệu. Seed sử dụng PostgreSQL advisory lock để ngăn hai tiến trình seed chạy đồng thời, và đồng bộ lại identity sequences sau khi tạo các bản ghi có ID chỉ định.
+
+> **Chuyển dữ liệu từ MySQL:** Việc chuyển đổi source code và schema không tự sao chép dữ liệu đang có trong MySQL. Nếu cần giữ dữ liệu thật, hãy sao lưu/export MySQL và chuyển dữ liệu sang PostgreSQL riêng trước khi chạy ứng dụng. Không chạy `npm run seed` trên database đã có dữ liệu cần giữ.
+
+Có thể dùng các script SQL trong `database/` thay cho seed TypeScript nếu cần: chạy `schema.sql` khi đã kết nối vào database `shopdb`, sau đó `seed_data.sql` và `views_indexes.sql`. Prisma schema (`prisma/schema.prisma`) vẫn là nguồn sự thật; `npx prisma db push` là cách khuyến nghị để tạo cấu trúc bảng.
+
+## Chạy backend
+
+```bash
+npm run dev
+```
+
+Backend mặc định lắng nghe tại `http://localhost:5000`.
+
+## Kiểm tra
+
+```bash
+npm test
+npm run typecheck
+npm run check:no-any
+```
+
+## Biến môi trường
+
+Ngoài `DATABASE_URL`, cấu hình các biến tích hợp theo `.env.example`: JWT, frontend/backend URL, Brevo, MoMo, VNPay và Google Gemini.

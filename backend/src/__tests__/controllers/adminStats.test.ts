@@ -10,7 +10,7 @@ jest.mock('../../../prisma/client', () => ({
 import prisma from '../../../prisma/client';
 import { getAdminStats } from '../../controllers/admin/statsController';
 
-/** COUNT/SUM của MySQL trả BigInt => controller phải ép về number trước khi trả JSON. */
+/** COUNT/SUM của PostgreSQL trả BigInt => controller phải ép về number trước khi trả JSON. */
 const DASHBOARD_ROW = {
   totalStock: 137n,
   orders: 42n,
@@ -26,7 +26,7 @@ const SUMMARY_ROW = { weeklyOrders: 10n, weeklyRevenue: '1500000' };
 
 const queryRawUnsafe = () => prisma.$queryRawUnsafe as jest.Mock;
 
-const isDashboardSql = (sql: unknown) => String(sql).includes('AS activePromotions');
+const isDashboardSql = (sql: unknown) => String(sql).includes('AS \"activePromotions\"');
 
 const dashboardSql = () =>
   queryRawUnsafe().mock.calls.find(([sql]) => isDashboardSql(sql))?.[0] as string | undefined;
@@ -52,7 +52,7 @@ beforeEach(() => {
 
   queryRawUnsafe().mockImplementation((sql: string) => {
     if (isDashboardSql(sql)) return Promise.resolve([DASHBOARD_ROW]);
-    if (String(sql).includes('AS weeklyOrders')) return Promise.resolve([SUMMARY_ROW]);
+    if (String(sql).includes('AS \"weeklyOrders\"')) return Promise.resolve([SUMMARY_ROW]);
     return Promise.resolve([]);
   });
 });
@@ -83,15 +83,15 @@ describe('getAdminStats – 8 số đếm cho Dashboard', () => {
 
     // Tồn kho: chỉ sản phẩm is_active, cộng stock của mọi size.
     expect(sql).toContain('JOIN products p ON pc.product_id = p.id');
-    expect(sql).toContain('p.is_active = 1');
+    expect(sql).toContain('p.is_active IS TRUE');
     expect(sql).toContain('FROM product_sizes ps');
     // Danh mục xóa mềm không tính.
-    expect(sql).toContain('FROM categories WHERE is_active = 1');
+    expect(sql).toContain('FROM categories WHERE is_active IS TRUE');
     // Sale/Voucher dùng cờ boolean.
-    expect(sql).toContain('FROM sales WHERE status = 1');
-    expect(sql).toContain('FROM vouchers WHERE status = 1');
+    expect(sql).toContain('FROM sales WHERE status IS TRUE');
+    expect(sql).toContain('FROM vouchers WHERE status IS TRUE');
     // Khuyến mãi: chỉ status active và chưa xóa mềm.
-    expect(sql).toContain("status = 'active' AND is_active = 1");
+    expect(sql).toContain("status = 'active' AND is_active IS TRUE");
     expect(sql).toContain('FROM buy_x_get_y_promotions');
     // Đơn hàng / người dùng / banner đếm toàn bộ.
     expect(sql).toContain('FROM orders');
@@ -101,10 +101,10 @@ describe('getAdminStats – 8 số đếm cho Dashboard', () => {
 
   it('dùng snapshot/fallback giá vốn và chỉ tính doanh thu từ trạng thái được ghi nhận', async () => {
     await invoke();
-    const summarySql = queryRawUnsafe().mock.calls.find(([sql]) => String(sql).includes('AS weeklyProfit'))?.[0] as string;
+    const summarySql = queryRawUnsafe().mock.calls.find(([sql]) => String(sql).includes('AS \"weeklyProfit\"'))?.[0] as string;
 
     expect(summarySql).toContain('COALESCE(oi.import_price_snapshot, p.import_price)');
-    expect(summarySql).toContain('THEN o.id END) AS weeklyOrders'); // all created orders are counted
+    expect(summarySql).toContain('THEN o.id END) AS \"weeklyOrders\"'); // all created orders are counted
     expect(summarySql).toContain("o.status IN ('Delivered','Return Requested','Return Rejected','Return Approved')"); // recognized revenue states only
   });
 

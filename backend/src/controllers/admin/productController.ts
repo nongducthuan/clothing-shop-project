@@ -6,7 +6,7 @@ import type { Prisma } from '../../generated/prisma/client';
 const DEFAULT_PAGE_SIZE = 50;
 const MAX_PAGE_SIZE = 100;
 
-/** 3 giá trị enum của products.gender (khớp schema Prisma + enum MySQL). */
+/** 3 giá trị enum của products.gender (khớp schema Prisma + enum PostgreSQL). */
 const GENDERS = ['male', 'female', 'unisex'];
 
 /**

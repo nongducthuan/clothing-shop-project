@@ -64,7 +64,7 @@ export const getRecommendedProducts = async (userId: string | string[] | undefin
             const sqlRecs = Prisma.sql`
                 SELECT DISTINCT p.* FROM products p
                 JOIN user_product_interaction upi ON p.id = upi.product_id
-                WHERE p.is_active = 1
+                WHERE p.is_active IS TRUE
                 AND upi.user_id IN (
                     SELECT DISTINCT t2.user_id
                     FROM user_product_interaction t1
@@ -88,12 +88,12 @@ export const getRecommendedProducts = async (userId: string | string[] | undefin
     if (finalProducts.length < TARGET_SIZE) {
         const missingCount = TARGET_SIZE - finalProducts.length;
 
-        // Prisma doesn't natively support ORDER BY RAND(), using queryRaw
+        // Prisma doesn't natively support ORDER BY RANDOM(), using queryRaw
         let sqlRandom;
         if (excludeIds.length > 0) {
-            sqlRandom = Prisma.sql`SELECT * FROM products WHERE is_active = 1 AND id NOT IN (${Prisma.join(excludeIds)}) ORDER BY RAND() LIMIT ${missingCount}`;
+            sqlRandom = Prisma.sql`SELECT * FROM products WHERE is_active IS TRUE AND id NOT IN (${Prisma.join(excludeIds)}) ORDER BY RANDOM() LIMIT ${missingCount}`;
         } else {
-            sqlRandom = Prisma.sql`SELECT * FROM products WHERE is_active = 1 ORDER BY RAND() LIMIT ${missingCount}`;
+            sqlRandom = Prisma.sql`SELECT * FROM products WHERE is_active IS TRUE ORDER BY RANDOM() LIMIT ${missingCount}`;
         }
 
         const randomProducts = await prisma.$queryRaw<Product[]>(sqlRandom);

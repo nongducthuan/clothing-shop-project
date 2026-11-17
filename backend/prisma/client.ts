@@ -1,11 +1,10 @@
+import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '../src/generated/prisma/client';
-import { PrismaMariaDb } from '@prisma/adapter-mariadb';
-import { getMariaDbPoolConfig } from '../src/utils/mariadbPool';
+import { getPostgresPoolConfig } from '../src/utils/postgres';
 
-// Tham số pool nằm ở src/utils/mariadbPool.ts — KHÔNG đặt minimumIdle: 0 (gây P2039 pool timeout).
-const adapter = new PrismaMariaDb(getMariaDbPoolConfig());
+const adapter = new PrismaPg(getPostgresPoolConfig());
 
-// Singleton: giữ 1 pool duy nhất qua các lần hot-reload của tsx watch.
+// Keep one Prisma client/pool during tsx watch hot reloads.
 const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
 
 const prisma =
