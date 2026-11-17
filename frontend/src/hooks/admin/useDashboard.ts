@@ -23,7 +23,7 @@ const EMPTY_STATS: DashboardStats = {
   users: 0,
 };
 
-// Backend trả số đếm dạng number (COUNT của MySQL có thể là BigInt-string).
+// Backend trả số đếm dạng number (COUNT của PostgreSQL có thể là BigInt-string).
 // Giá trị thiếu / không phải số => 0 để các ô dashboard không hiện NaN.
 const toCount = (value: unknown): number => {
   const parsed = Number(value);

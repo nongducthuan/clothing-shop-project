@@ -76,8 +76,8 @@ Website thương mại điện tử chuyên bán quần áo và thời trang, t�
 │                                                                              │
 │ ┌──────────────────┐   ┌───────────────────────┐   ┌───────────────────────┐ │
 │ │      Routes      │   │      Controllers      │   │     Prisma Client     │ │
-│ │ customer / admin │ → │    customer / admin   │ → │    MySQL / MariaDB    │ │
-│ │  notifications   │   │ order / payment / ... │   │    adapter-mariadb    │ │
+│ │ customer / admin │ → │    customer / admin   │ → │    PostgreSQL    │ │
+│ │  notifications   │   │ order / payment / ... │   │    adapter-pg    │ │
 │ └──────────────────┘   └───────────────────────┘   └───────────────────────┘ │
 │                                                                              │
 │ Middleware · Authentication / guest OTP · Zod validation                     │
@@ -106,7 +106,7 @@ Website thương mại điện tử chuyên bán quần áo và thời trang, t�
 ## Công Nghệ Sử Dụng
 
 - **Frontend**: React.js (Vite), TypeScript, React Router, TailwindCSS, Axios, @tanstack/react-query, Lucide Icons, React Google Charts, OpenStreetMap Nominatim API, React Context API, `socket.io-client`.
-- **Backend**: Node.js, TypeScript, Express.js, Prisma ORM (Multilingual DB Schema, `schema.prisma` + `client.ts`), MySQL/MariaDB (`@prisma/adapter-mariadb` + `mariadb` driver), JSON Web Token (JWT), `bcryptjs`, Multer, `express-rate-limit`, `helmet`, `zod`, `node-cache`, `async`, `node-cron`, `socket.io`.
+- **Backend**: Node.js, TypeScript, Express.js, Prisma ORM (Multilingual DB Schema, `schema.prisma` + `client.ts`), PostgreSQL (`@prisma/adapter-pg` + `pg` driver), JSON Web Token (JWT), `bcryptjs`, Multer, `express-rate-limit`, `helmet`, `zod`, `node-cache`, `async`, `node-cron`, `socket.io`.
 - **Testing & CI/CD**:
   - **Backend**: Jest + `@swc/jest` + `jest-mock-extended` + `supertest` (mock toàn bộ — không cần DB thật).
   - **Frontend**: Vitest.
@@ -136,7 +136,7 @@ clothing-shop-project/
 │   │   ├── middleware/          # 5 files: authMiddleware (authenticateToken/requireAdmin/optionalAuth) + guestOrderAccessMiddleware (khách tra cứu qua OTP) + uploadMiddleware (Multer) + errorMiddleware (globalErrorHandler) + validateMiddleware (Zod)
 │   │   ├── routes/              # 3 files: admin/index.ts (/api/admin/*) + customer/index.ts (/api/*) + notificationRoutes.ts (/api/notifications/*)
 │   │   ├── services/            # 13 files: AI / auto-cancel / discount allocation / interaction / order creation / filtering / order status (+ financial, inventory) / product / promotion / return / user
-│   │   ├── utils/               # 14 files: error handling / cache / email (+ queue) / payment (MoMo, VNPay) / socket / MariaDB pool / shipping / env / pricing / order formatting
+│   │   ├── utils/               # 14 files: error handling / cache / email (+ queue) / payment (MoMo, VNPay) / socket / PostgreSQL connection pool / shipping / env / pricing / order formatting
 │   │   ├── constants/           # orderStatus.ts (luật chuyển trạng thái đơn) + returnPolicy.ts (đổi trả 7 ngày)
 │   │   ├── validators/          # user.ts
 │   │   ├── types/               # express.d.ts (mở rộng Request.user) + orderTypes.ts + schemas.ts (Zod validation schemas)
@@ -179,7 +179,7 @@ clothing-shop-project/
 | `PORT` | Cổng chạy server Backend | `5000` |
 | `FRONTEND_URL` | Địa chỉ URL của Frontend | `http://localhost:5173` |
 | `BACKEND_URL` | URL public Backend (dùng cho Webhook IPN Callback) | `https://your-ngrok-url.ngrok-free.app/api` |
-| `DATABASE_URL` | Chuỗi kết nối CSDL MySQL / MariaDB qua Prisma ORM | `mysql://username:password@localhost:3306/shopdb` |
+| `DATABASE_URL` | Chuỗi kết nối CSDL PostgreSQL qua Prisma ORM | `postgresql://username:password@localhost:5432/shopdb?schema=public` |
 | `JWT_SECRET` | Khóa bí mật dùng để mã hóa & xác thực Access Token (15 phút) | `your_super_secret_jwt_key` |
 | `JWT_REFRESH_SECRET` | Khóa bí mật riêng để mã hóa Refresh Token (7 ngày) | `your_super_secret_refresh_key` |
 | `MOMO_PARTNER_CODE` | Partner Code do MoMo cấp (Test Sandbox) | `your_partner_code` |
@@ -205,20 +205,25 @@ clothing-shop-project/
 
 ## Hướng Dẫn Cài Đặt & Khởi Động Dự Án
 
+Yêu cầu database: PostgreSQL 14+ (local hoặc dịch vụ managed). Tạo database `shopdb` trước khi chạy backend, ví dụ `createdb shopdb`.
+
 ### 1. Cấu hình & Khởi động Backend (`/backend`)
 
 ```bash
 cd backend
-npm install
+createdb shopdb  # nếu database chưa tồn tại và PostgreSQL CLI đã được cài
+cp .env.example .env
 ```
 
-- Copy file `.env.example` thành `.env` trong thư mục `backend` và điền đầy đủ thông tin:
-  ```bash
-  cp .env.example .env
+- Chỉnh `DATABASE_URL` trong `backend/.env` trước khi cài dependencies (Prisma 7 đọc biến này khi generate client), ví dụ:
+  ```env
+  DATABASE_URL="postgresql://postgres:your_password@localhost:5432/shopdb?schema=public"
   ```
-- Cập nhật các thông tin kết nối CSDL (`DATABASE_URL`), API Brevo gửi mail (`BREVO_API_KEY`), Cổng MoMo (`MOMO_SECRET_KEY`...), và Google Gemini AI (`GOOGLE_API_KEY`).
-
-- Khởi tạo bảng và đồng bộ Schema vào CSDL MySQL bằng Prisma:
+- Cập nhật các thông tin tích hợp nếu sử dụng: Brevo (`BREVO_API_KEY`), MoMo (`MOMO_SECRET_KEY`...), Google Gemini (`GOOGLE_API_KEY`). Sau đó cài dependencies:
+  ```bash
+  npm install --legacy-peer-deps
+  ```
+- Khởi tạo bảng và đồng bộ Schema vào CSDL PostgreSQL bằng Prisma:
   ```bash
   npx prisma db push
   ```
@@ -228,7 +233,8 @@ npm install
   npm run seed
   ```
   > **Lưu ý:** lệnh seed là *reset toàn bộ* — nó xoá hết người dùng, đơn hàng, sản phẩm, voucher... rồi tạo lại dữ liệu mẫu (kể cả tài khoản Admin). Chỉ chạy khi mới thiết lập dự án hoặc khi muốn xoá sạch dữ liệu. Tài khoản đăng nhập sau khi seed: xem mục **Tài Khoản Mặc Định (Seed)** bên dưới.
-  > Seed có khoá `GET_LOCK('clothing_shop_seed')`: nếu một tiến trình seed khác đang chạy, lệnh thứ hai sẽ dừng ngay và báo lỗi thay vì xoá dữ liệu giữa chừng.
+  > Source code/schema đã chuyển sang PostgreSQL nhưng không tự sao chép dữ liệu đang nằm trong máy chủ MySQL cũ. Nếu cần giữ dữ liệu thật, phải export/dump MySQL và chuyển dữ liệu riêng; không chạy seed trên database đã có dữ liệu cần giữ.
+  > Seed có PostgreSQL advisory lock `pg_try_advisory_lock(...)`: nếu một tiến trình seed khác đang chạy, lệnh thứ hai sẽ dừng ngay và báo lỗi thay vì xoá dữ liệu giữa chừng.
 
 - Chạy ứng dụng Backend:
   ```bash
@@ -296,7 +302,7 @@ npm run test:coverage
 | `adminStats.test.ts` | 6 | getAdminStats (Dashboard, điều kiện lọc, lỗi 500, dùng snapshot và fallback giá vốn cho đơn cũ) |
 | `adminOrderList.test.ts` | 9 | getOrders (phân trang, tab Đơn hàng/Đổi trả, lọc trạng thái, chặn limit, lỗi 500) |
 | `adminProductList.test.ts` | 8 | getProducts (phân trang, tìm kiếm 3 tên, giới tính, nhóm danh mục, chế độ trả mảng cũ) |
-| `mariadbPool.test.ts` | 13 | Cấu hình pool MariaDB dùng chung (chặn tái phát P2039 pool timeout: minimumIdle ≥ 1, acquireTimeout, SSL) |
+| `postgres.test.ts` | 6 | Cấu hình kết nối PostgreSQL, kiểm tra URL, adapter và seed cleanup |
 | `seedEncoding.test.ts` | 2 | Chặn mojibake trong `prisma/seed.ts` (chuỗi tiếng Việt phải lưu UTF-8) |
 | `validationSchemas.test.ts` | 19 | Chốt contract schema ↔ frontend (chặn tái phát lỗi strip `cartItems` → 500, payload checkout → 400, SĐT đa định dạng, mọi message lỗi đều có bản dịch `api_msg.*`) |
 | `returnPolicy.test.ts` | 7 | Quy tắc đổi trả 7 ngày (`constants/returnPolicy.ts`): mốc `delivered_at` → fallback `updated_at`, biên đúng 7 ngày, cờ `can_return`/`return_deadline` trong `formatOrderResponse` |
