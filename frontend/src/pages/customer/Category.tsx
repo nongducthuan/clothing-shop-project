@@ -1,6 +1,7 @@
 import ProductCard from "../../components/customer/product/ProductCard";
 import { useCategoryPage } from "../../hooks/customer/useCategoryPage";
 import { useLanguage } from "../../context/LanguageContext";
+import SEO from "../../components/common/SEO";
 import CategoryHeader from "../../components/customer/category/CategoryHeader";
 import VoucherBanner from "../../components/customer/category/VoucherBanner";
 import PaginationControls from "../../components/customer/category/PaginationControls";
@@ -8,7 +9,11 @@ import { ProductGridSkeleton, EmptyState } from "../../components/customer/categ
 
 export default function CategoryPage() {
   const { state, actions } = useCategoryPage();
-  const { t } = useLanguage();
+  const { t, getLocalizedText } = useLanguage();
+
+  const categoryName = state.currentCategory
+    ? (getLocalizedText(state.currentCategory as unknown as Record<string, unknown>, "name") as string || (state.currentCategory.name as string))
+    : t("category.product_category", "Danh mục sản phẩm");
 
   if (state.error) {
     return (
@@ -29,6 +34,7 @@ export default function CategoryPage() {
 
   return (
     <div className="w-full flex-1 bg-white dark:bg-slate-900 transition-colors">
+      <SEO title={categoryName} />
       <div className="max-w-[1400px] mx-auto py-12 px-6">
 
       <CategoryHeader

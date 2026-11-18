@@ -29,6 +29,13 @@ export const createOrderController = async (req: Request, res: Response): Promis
             return;
         }
 
+        // BUG #9 fix: Validate that an email is available for order confirmation
+        const orderEmail = email || (req.user ? req.user.email : '');
+        if (!orderEmail || typeof orderEmail !== 'string' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(orderEmail)) {
+            res.status(400).json({ message: "A valid email address is required to place an order." });
+            return;
+        }
+
         const normalizedPaymentMethod = String(payment_method || 'cod').toLowerCase();
         const allowedPaymentMethods = new Set(['cod', 'momo', 'vnpay']);
         if (!allowedPaymentMethods.has(normalizedPaymentMethod)) {
@@ -105,7 +112,7 @@ export const createOrderController = async (req: Request, res: Response): Promis
 
         // Outside transaction: Emails, Analytics, MoMo
         queueEmail(
-            email || (req.user ? req.user.email : ""),
+            orderEmail,
             isEnglish ? "Order Confirmation" : "Xác nhận đơn hàng",
             isEnglish
                 ? `Thank you! Order #${orderId} has been placed successfully. Total: ${finalTotal.toLocaleString()} VND`
@@ -275,16 +282,16 @@ export const changeOrderStatus = async (req: Request, res: Response): Promise<vo
 
         await changeOrderStatusLogic(Number(order_id), new_status);
 
-        // Case đặc biệt: đơn đã thanh toán online (MoMo/VNPay thành công → Confirmed + Paid)
-        // Khi khách hủy, đánh dấu payment_status = 'Refunded' để admin biết cần hoàn tiền cho khách
-        let finalPaymentStatus: string = order.payment_status;
-        if (order.payment_status === 'Paid') {
-            await prisma.order.update({
-                where: { id: Number(order_id) },
-                data: { payment_status: 'Refunded' }
-            });
-            finalPaymentStatus = 'Refunded';
-        }
+        // BUG #4 fix: payment_status transition (Paid → Refunded) is now handled
+        // atomically inside changeOrderStatusLogic (orderStatusService.ts L167-169).
+        // The previous code here did a redundant update OUTSIDE the transaction,
+        // which could race with the in-transaction update or double-write.
+        // Read the current payment_status after the transaction to report it back.
+        const updatedOrder = await prisma.order.findUnique({
+            where: { id: Number(order_id) },
+            select: { payment_status: true },
+        });
+        const finalPaymentStatus = updatedOrder?.payment_status ?? order.payment_status;
 
         // Emit realtime socket event to Admin
         try {

@@ -1,5 +1,7 @@
 import { useProductDetail } from "../../hooks/customer/useProductDetail";
 import { useLanguage } from "../../context/LanguageContext";
+import SEO from "../../components/common/SEO";
+import { getImageUrl } from "../../utils/imageUtils";
 
 import ProductImageGallery from "../../components/customer/product-detail/ProductImageGallery";
 import ProductMeta from "../../components/customer/product-detail/ProductMeta";
@@ -36,8 +38,18 @@ export default function ProductDetail() {
     );
   }
 
+  const productName = getLocalizedText(state.product as unknown as Record<string, unknown>, 'name') || state.product.name;
+  const productDesc = getLocalizedText(state.product as unknown as Record<string, unknown>, 'description') || state.product.description;
+  const productImg = state.mainImage || (state.product.image_url ? getImageUrl(state.product.image_url) : undefined);
+
   return (
     <div className="bg-white dark:bg-slate-900 flex-1 pb-12 pt-6">
+      <SEO
+        title={productName}
+        description={productDesc}
+        image={productImg}
+        type="product"
+      />
       <div className="max-w-[1200px] mx-auto px-6">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-start">
 

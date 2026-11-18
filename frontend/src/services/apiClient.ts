@@ -34,7 +34,10 @@ API.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        // Deduplicate concurrent refresh calls
+        // BUG #6 fix: Deduplicate concurrent refresh calls and don't null
+        // the promise until the new token is fully persisted. This prevents
+        // a third concurrent request from starting a second refresh after
+        // the first resolves but before localStorage is updated.
         if (!refreshPromise) {
           refreshPromise = (async () => {
             const storedRefreshToken = localStorage.getItem("refreshToken");
@@ -51,17 +54,18 @@ API.interceptors.response.use(
         }
 
         const newToken = await refreshPromise;
-        refreshPromise = null;
 
         originalRequest.headers.Authorization = `Bearer ${newToken}`;
         return API(originalRequest);
       } catch {
-        refreshPromise = null;
         localStorage.removeItem("token");
         localStorage.removeItem("refreshToken");
         localStorage.removeItem("user");
         window.location.href = "/login";
         return Promise.reject(error);
+      } finally {
+        // Clear the promise only after everything is done (success or failure)
+        refreshPromise = null;
       }
     }
 

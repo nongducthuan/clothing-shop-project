@@ -1,4 +1,4 @@
-const BASE_URL = import.meta.env.VITE_API_URL;
+import API from "../../services/apiClient";
 import type { ToastType } from "../../context/ToastContext";
 import type { AdminOrder } from "../../components/admin/orders/orderTypes";
 
@@ -38,26 +38,18 @@ export default function useReturnActions({ getToken, findOrderById, fetchOrders,
     }
 
     try {
-      const response = await fetch(`${BASE_URL}/admin/orders/${orderId}/return/approve`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
-        },
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        showToast(t("admin.order.toast_return_approved", "Return request approved successfully!"), "success");
-        fetchOrders();
-        setSelectedOrder(null); // Close modal if open
-      } else {
-        showToast(translateApiMessage(data.message) || t("admin.order.toast_approve_failed", "Failed to approve return"), "error");
-      }
-    } catch (error: unknown) {
-      console.error(error);
-      showToast(t("admin.order.toast_server_error", "Server connection error"), "error");
+      await API.post(
+        `/admin/orders/${orderId}/return/approve`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      showToast(t("admin.order.toast_return_approved", "Return request approved successfully!"), "success");
+      fetchOrders();
+      setSelectedOrder(null); // Close modal if open
+    } catch (err: unknown) {
+      const axErr = err as { response?: { data?: { message?: string } } };
+      showToast(translateApiMessage(axErr.response?.data?.message) || t("admin.order.toast_approve_failed", "Failed to approve return"), "error");
+      console.error(err);
     }
   };
 
@@ -79,26 +71,18 @@ export default function useReturnActions({ getToken, findOrderById, fetchOrders,
     }
 
     try {
-      const response = await fetch(`${BASE_URL}/admin/orders/${orderId}/return/reject`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
-        },
-        body: JSON.stringify({ adminNote: reason }),
-      });
-
-      if (response.ok) {
-        showToast(t("admin.order.toast_return_rejected", "Return request rejected."), "info");
-        fetchOrders();
-        setSelectedOrder(null); // Close modal if open
-      } else {
-        const data = await response.json();
-        showToast(translateApiMessage(data.message) || t("admin.order.toast_reject_failed", "Failed to reject return"), "error");
-      }
-    } catch (error: unknown) {
-      console.error(error);
-      showToast(t("admin.order.toast_server_error", "Server connection error"), "error");
+      await API.post(
+        `/admin/orders/${orderId}/return/reject`,
+        { adminNote: reason },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      showToast(t("admin.order.toast_return_rejected", "Return request rejected."), "info");
+      fetchOrders();
+      setSelectedOrder(null); // Close modal if open
+    } catch (err: unknown) {
+      const axErr = err as { response?: { data?: { message?: string } } };
+      showToast(translateApiMessage(axErr.response?.data?.message) || t("admin.order.toast_reject_failed", "Failed to reject return"), "error");
+      console.error(err);
     }
   };
 
@@ -116,28 +100,19 @@ export default function useReturnActions({ getToken, findOrderById, fetchOrders,
     }
 
     try {
-      const response = await fetch(`${BASE_URL}/admin/orders/${orderId}/return/undo-approve`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
-        },
-        body: JSON.stringify({ stock_returned: stockReturned, money_refunded: moneyRefunded }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        showToast(t("admin.order.toast_undo_approved", "Đã hoàn tác duyệt nhầm. Đơn đã về lại \"Yêu cầu đổi trả\"."), "success");
-        fetchOrders();
-        setSelectedOrder(null); // Close modal if open
-        return true;
-      }
-      showToast(translateApiMessage(data.message) || t("admin.order.toast_undo_approve_failed", "Hoàn tác thất bại"), "error");
-      return false;
-    } catch (error: unknown) {
-      console.error(error);
-      showToast(t("admin.order.toast_server_error", "Server connection error"), "error");
+      const { data } = await API.post(
+        `/admin/orders/${orderId}/return/undo-approve`,
+        { stock_returned: stockReturned, money_refunded: moneyRefunded },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      showToast(t("admin.order.toast_undo_approved", "Đã hoàn tác duyệt nhầm. Đơn đã về lại \"Yêu cầu đổi trả\"."), "success");
+      fetchOrders();
+      setSelectedOrder(null); // Close modal if open
+      return true;
+    } catch (err: unknown) {
+      const axErr = err as { response?: { data?: { message?: string } } };
+      showToast(translateApiMessage(axErr.response?.data?.message) || t("admin.order.toast_undo_approve_failed", "Hoàn tác thất bại"), "error");
+      console.error(err);
       return false;
     }
   };

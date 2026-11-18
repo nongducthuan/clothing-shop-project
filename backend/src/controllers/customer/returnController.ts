@@ -101,7 +101,27 @@ export const submitReturnRequest = async (req: Request, res: Response): Promise<
     } catch (error: unknown) {
         console.error("ERROR_SUBMIT_RETURN:", error);
         const message = errorMessage(error);
-        const status = message.startsWith('Forbidden:') ? 403 : error instanceof ReturnWindowExpiredError ? 400 : 500;
+        // BUG #7 fix: Map business logic errors to 400 instead of 500.
+        // Only truly unexpected errors should return 500.
+        let status = 500;
+        if (message.startsWith('Forbidden:')) {
+            status = 403;
+        } else if (error instanceof ReturnWindowExpiredError) {
+            status = 400;
+        } else if (
+            message.includes('not delivered') ||
+            message.includes('does not belong') ||
+            message.includes('already been submitted') ||
+            message.includes('No items selected') ||
+            message.includes('must be whole numbers') ||
+            message.includes('appears more than once') ||
+            message.includes('Gift items cannot') ||
+            message.includes('Invalid return quantity') ||
+            message.includes('must be returned in full') ||
+            message.includes('Invalid returnItems')
+        ) {
+            status = 400;
+        }
         res.status(status).json({ message });
     }
 };
@@ -127,6 +147,12 @@ export const cancelReturnRequest = async (req: Request, res: Response): Promise<
             const isPendingRedo = order.status === 'Delivered' && order.return_request?.status === 'Pending';
             if (!isReturnRequested && !isPendingRedo) {
                 throw new Error(`Order #${orderId} is not in Return Requested status (current status: '${order.status}').`);
+            }
+
+            // BUG #8 fix: Only allow cancelling a return request that is still Pending.
+            // If admin has already Approved or Rejected it, customer cannot cancel.
+            if (order.return_request && order.return_request.status !== 'Pending') {
+                throw new Error(`Return request for order #${orderId} has already been ${order.return_request.status.toLowerCase()} and cannot be cancelled.`);
             }
 
             // Ownership check – supports member user_id match or email match
@@ -162,6 +188,13 @@ export const cancelReturnRequest = async (req: Request, res: Response): Promise<
     } catch (error: unknown) {
         console.error("ERROR_CANCEL_RETURN:", error);
         const message = errorMessage(error);
-        res.status(message.startsWith('Forbidden:') ? 403 : 500).json({ message });
+        // BUG #7 fix: Map business errors to proper status codes
+        let status = 500;
+        if (message.startsWith('Forbidden:')) {
+            status = 403;
+        } else if (message.includes('not found') || message.includes('not in Return Requested') || message.includes('cannot be cancelled') || message.includes('already been')) {
+            status = 400;
+        }
+        res.status(status).json({ message });
     }
 };

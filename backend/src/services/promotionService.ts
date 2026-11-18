@@ -144,6 +144,12 @@ const promotionService = {
     return { cartItems, giftItems };
   },
 
+  /**
+   * @deprecated BUG #5 fix: This method is superseded by validateAndReserveItems()
+   * in orderCreationService.ts which handles gift stock decrement and promotion
+   * quota atomically within the order creation transaction. Calling this separately
+   * would double-decrement stock and gift quota. Kept for reference only — do NOT call.
+   */
   applyPromotionsAtCheckout: async (userSelectedGifts: UserSelectedGift[]): Promise<{ success: boolean; message: string }> => {
     if (!userSelectedGifts || userSelectedGifts.length === 0) {
       return { success: true, message: 'No gifts to process.' };

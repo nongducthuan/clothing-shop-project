@@ -4,7 +4,7 @@ Website thương mại điện tử chuyên bán quần áo và thời trang, t�
 
 ![Tests](https://img.shields.io/badge/tests-322%20cases-blue?logo=jest)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.8%20/%207.0-3178C6?logo=typescript&logoColor=white)
-![Node.js](https://img.shields.io/badge/Node.js-Express%205-339933?logo=node.js&logoColor=white)
+![Node.js](https://img.shields.io/badge/Node.js-NestJS%2011-E0234E?logo=nestjs&logoColor=white)
 ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
 ![Prisma](https://img.shields.io/badge/Prisma-ORM-2D3748?logo=prisma&logoColor=white)
 ![TailwindCSS](https://img.shields.io/badge/TailwindCSS-3.x-06B6D4?logo=tailwindcss&logoColor=white)
@@ -27,6 +27,7 @@ Website thương mại điện tử chuyên bán quần áo và thời trang, t�
 - **Hỗ trợ Đa ngôn ngữ (i18n & DB Localization)**: Chuyển đổi ngôn ngữ hiển thị linh hoạt cho cả giao diện tĩnh lẫn nội dung động trong CSDL.
 - **Tài khoản & Đăng nhập**: Đăng nhập & Đăng ký bảo mật qua JWT Auth (băm mật khẩu `bcryptjs`), hỗ trợ phân hạng thành viên (Membership) tự động theo tổng chi tiêu và % chiết khấu theo hạng. Luồng **Access Token (15 phút) + Refresh Token (7 ngày)** tự động làm mới phiên ngầm qua Axios interceptor — người dùng không bị đăng xuất đột ngột.
 - **Gợi ý sản phẩm liên quan (Collaborative Filtering)**: Khối "Gợi ý cho bạn" trên **Trang chủ** trả về tối đa 8 sản phẩm dựa trên hành vi tương tác (`view` / `add_to_cart` / `purchase`) của những người dùng tương tự; khách chưa đăng nhập nhận sản phẩm ngẫu nhiên. Hệ thống loại các sản phẩm có tương tác `purchase` đã ghi nhận cho tài khoản. Lưu ý: hiện tương tác `purchase` được ghi nhận ngay khi tạo đơn, nên không đồng nghĩa đơn đã thanh toán thành công. Logic nằm trong `productController.getRecommendations` và `productService.getRecommendedProducts`.
+- **Tối ưu hiệu năng & SEO cơ bản**: Tối ưu tốc độ tải trang bằng Code-splitting với `React.lazy()` và `Suspense` (chỉ tải trang chủ ban đầu, tách riêng các bundle Admin và trang phụ); quản lý thẻ tiêu đề, mô tả và chia sẻ mạng xã hội (Open Graph) động theo từng sản phẩm/danh mục thông qua `react-helmet-async`.
 - **Trợ lý AI Chatbot**: Tư vấn, giải đáp thắc mắc khách hàng trực tiếp sử dụng Google Gemini AI API.
 - **Trang Chính sách bán hàng (`/sales-policy`)**: Tổng hợp chính sách giao hàng – đổi trả – thanh toán cùng ưu đãi giảm giá và đặc quyền hội viên VIP.
 - **Trang 404**: Hiển thị trang "Không tìm thấy" thân thiện khi truy cập URL không hợp lệ.
@@ -72,15 +73,15 @@ Website thương mại điện tử chuyên bán quần áo và thời trang, t�
                        HTTP / REST API · JWT bearer token                       
                                        ▼                                        
 ┌──────────────────────────────────────────────────────────────────────────────┐
-│ BACKEND — Node.js + Express 5 + TypeScript                                   │
+│ BACKEND — Node.js + NestJS 11 + TypeScript                                   │
 │                                                                              │
 │ ┌──────────────────┐   ┌───────────────────────┐   ┌───────────────────────┐ │
-│ │      Routes      │   │      Controllers      │   │     Prisma Client     │ │
+│ │     Modules      │   │      Controllers      │   │     Prisma Client     │ │
 │ │ customer / admin │ → │    customer / admin   │ → │    PostgreSQL    │ │
 │ │  notifications   │   │ order / payment / ... │   │    adapter-pg    │ │
 │ └──────────────────┘   └───────────────────────┘   └───────────────────────┘ │
 │                                                                              │
-│ Middleware · Authentication / guest OTP · Zod validation                     │
+│ Guards · Authentication / guest OTP · Zod validation                         │
 │ Services · Order / payment / inventory · Email queue · Shipping              │
 │ Notifications · Product recommendations · Scheduled auto-cancel              │
 └──────────────────────────────────────────────────────────────────────────────┘
@@ -105,8 +106,8 @@ Website thương mại điện tử chuyên bán quần áo và thời trang, t�
 
 ## Công Nghệ Sử Dụng
 
-- **Frontend**: React.js (Vite), TypeScript, React Router, TailwindCSS, Axios, @tanstack/react-query, Lucide Icons, React Google Charts, OpenStreetMap Nominatim API, React Context API, `socket.io-client`.
-- **Backend**: Node.js, TypeScript, Express.js, Prisma ORM (Multilingual DB Schema, `schema.prisma` + `client.ts`), PostgreSQL (`@prisma/adapter-pg` + `pg` driver), JSON Web Token (JWT), `bcryptjs`, Multer, `express-rate-limit`, `helmet`, `zod`, `node-cache`, `async`, `node-cron`, `socket.io`.
+- **Frontend**: React.js (Vite), TypeScript, React Router, TailwindCSS, Axios, @tanstack/react-query, react-helmet-async (SEO & Meta Tags), Lucide Icons, React Google Charts, OpenStreetMap Nominatim API, React Context API, `socket.io-client`.
+- **Backend**: Node.js, TypeScript, **NestJS 11** (`@nestjs/common`, `@nestjs/core`, `@nestjs/platform-express`, `@nestjs/throttler`, `@nestjs/websockets`), Prisma ORM (Multilingual DB Schema, `schema.prisma` + `client.ts`), PostgreSQL (`@prisma/adapter-pg` + `pg` driver), JSON Web Token (JWT), `bcryptjs`, Multer, `helmet`, `zod`, `node-cache`, `async`, `node-cron`, `socket.io`.
 - **Testing & CI/CD**:
   - **Backend**: Jest + `@swc/jest` + `jest-mock-extended` + `supertest` (mock toàn bộ — không cần DB thật).
   - **Frontend**: Vitest.
@@ -126,17 +127,27 @@ Website thương mại điện tử chuyên bán quần áo và thời trang, t�
 clothing-shop-project/
 ├── .github/workflows/ci.yml     # CI: backend (test + typecheck + no-any) và frontend (test + i18n + lint + typecheck + build)
 ├── backend/
-│   ├── prisma/                  # schema.prisma (+ model Notification: title/title_en/message/message_en/is_read) + client.ts + seed.ts (prisma.config.ts ở root backend)
-│   ├── database/                # schema.sql (tham chiếu đọc nhanh) + seed_data.sql + views_indexes.sql
+│   ├── prisma/                  # schema.prisma + client.ts + seed.ts (prisma.config.ts ở root backend)
 │   ├── src/
-│   │   ├── index.ts             # entrypoint: CORS + /public + /uploads static + /api/admin + /api + /api/notifications + autoCancelJob
+│   │   ├── main.ts              # entrypoint NestJS: CORS + /public + /uploads static + global prefix /api + SocketIoAdapter + autoCancelJob
+│   │   ├── app.module.ts        # Root module: ThrottlerModule + PrismaModule + SocketModule + AdminModule + CustomerModule + NotificationModule
+│   │   ├── common/
+│   │   │   ├── guards/          # JwtAuthGuard / OptionalJwtAuthGuard / AdminGuard / GuestOrderAccessGuard
+│   │   │   ├── filters/         # AllExceptionsFilter (global error handler)
+│   │   │   ├── pipes/           # ZodValidationPipe
+│   │   │   ├── interceptors/    # PersistImagesInterceptor (Multer)
+│   │   │   └── decorators/      # @CurrentUser / @GuestEmail
+│   │   ├── socket/              # SocketService + SocketIoAdapter (Socket.io)
+│   │   ├── prisma/              # PrismaService (singleton DI)
+│   │   ├── admin/               # AdminController (45 routes) + AdminModule
+│   │   ├── customer/            # CustomerController (40 routes) + CustomerModule
+│   │   ├── notification/        # NotificationController (3 routes) + NotificationModule
 │   │   ├── controllers/
 │   │   │   ├── admin/           # 14 files: adminReturn/banner/category/color/inventory/membership/order/product/promotion/sale/size/stats/user/voucher
 │   │   │   └── customer/        # 14 files: auth/banner/category/chat/membership/order/orderLookup/payment/product/productDetail/promotion/return/sale/voucher
-│   │   ├── middleware/          # 5 files: authMiddleware (authenticateToken/requireAdmin/optionalAuth) + guestOrderAccessMiddleware (khách tra cứu qua OTP) + uploadMiddleware (Multer) + errorMiddleware (globalErrorHandler) + validateMiddleware (Zod)
-│   │   ├── routes/              # 3 files: admin/index.ts (/api/admin/*) + customer/index.ts (/api/*) + notificationRoutes.ts (/api/notifications/*)
+│   │   ├── middleware/          # 5 files: authMiddleware / guestOrderAccessMiddleware / uploadMiddleware / errorMiddleware / validateMiddleware (Zod)
 │   │   ├── services/            # 13 files: AI / auto-cancel / discount allocation / interaction / order creation / filtering / order status (+ financial, inventory) / product / promotion / return / user
-│   │   ├── utils/               # 14 files: error handling / cache / email (+ queue) / payment (MoMo, VNPay) / socket / PostgreSQL connection pool / shipping / env / pricing / order formatting
+│   │   ├── utils/               # 15 files: error handling / cache / email (+ queue) / payment (MoMo, VNPay) / socket / PostgreSQL connection pool / shipping / env / pricing / order formatting
 │   │   ├── constants/           # orderStatus.ts (luật chuyển trạng thái đơn) + returnPolicy.ts (đổi trả 7 ngày)
 │   │   ├── validators/          # user.ts
 │   │   ├── types/               # express.d.ts (mở rộng Request.user) + orderTypes.ts + schemas.ts (Zod validation schemas)
@@ -145,6 +156,7 @@ clothing-shop-project/
 │   │   └── __tests__/           # setup.ts + controllers(14) / middleware(2) / services(4) / utils(7) / prisma(1) — 28 suites, 224 tests
 │   ├── scripts/                 # check-no-any.cjs (CI chặn `any` tường minh)
 │   ├── uploads/                 # Ảnh upload runtime qua Multer (tự tạo khi chạy, serve tại /uploads)
+│   ├── nest-cli.json            # NestJS CLI config
 │   ├── prisma.config.ts         # trỏ schema ./prisma/schema.prisma
 │   └── package.json             # scripts: dev/start/seed/test/test:coverage (tsx + jest)
 └── frontend/              # 17 test suites, 101 test cases

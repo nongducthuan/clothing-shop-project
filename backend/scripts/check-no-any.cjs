@@ -1,6 +1,10 @@
+// check-no-any.cjs
+// Dùng TypeScript Compiler API thay vì @swc/core để tránh vấn đề native binding
+// trên Windows (ERR_SWC_NATIVE_CACHE). TypeScript đã là devDependency nên không
+// cần cài thêm package nào.
 const fs = require('fs');
 const path = require('path');
-const swc = require('@swc/core');
+const ts = require('typescript');
 
 const ROOTS = ['src', 'prisma'];
 const EXCLUDED_DIRS = new Set(['node_modules', 'dist', 'generated']);
@@ -8,14 +12,12 @@ const EXCLUDED_DIRS = new Set(['node_modules', 'dist', 'generated']);
 function collectTsFiles(dir) {
   const files = [];
   if (!fs.existsSync(dir)) return files;
-
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     if (entry.isDirectory() && EXCLUDED_DIRS.has(entry.name)) continue;
     const fullPath = path.join(dir, entry.name);
     if (entry.isDirectory()) files.push(...collectTsFiles(fullPath));
     else if (entry.isFile() && fullPath.endsWith('.ts')) files.push(fullPath);
   }
-
   return files;
 }
 
@@ -24,23 +26,24 @@ const violations = [];
 
 for (const file of files) {
   const source = fs.readFileSync(file, 'utf8');
-  const ast = swc.parseSync(source, { syntax: 'typescript', decorators: true });
+  const sourceFile = ts.createSourceFile(
+    file,
+    source,
+    ts.ScriptTarget.Latest,
+    /* setParentNodes */ true,
+    ts.ScriptKind.TS,
+  );
 
   function visit(node) {
-    if (!node || typeof node !== 'object') return;
-    if (node.type === 'TsKeywordType' && node.kind === 'any' && node.span) {
-      const prefix = Buffer.from(source, 'utf8').subarray(0, node.span.start - 1).toString('utf8');
-      const lines = prefix.split('\n');
-      violations.push(`${file}:${lines.length}:${lines[lines.length - 1].length + 1}`);
+    // TsKeywordType(any) → SyntaxKind.AnyKeyword in TS Compiler API
+    if (node.kind === ts.SyntaxKind.AnyKeyword) {
+      const { line, character } = sourceFile.getLineAndCharacterOfPosition(node.getStart(sourceFile));
+      violations.push(`${file}:${line + 1}:${character + 1}`);
     }
-    if (Array.isArray(node)) {
-      node.forEach(visit);
-      return;
-    }
-    for (const value of Object.values(node)) visit(value);
+    ts.forEachChild(node, visit);
   }
 
-  visit(ast);
+  visit(sourceFile);
 }
 
 console.log(`Scanned ${files.length} TypeScript files.`);

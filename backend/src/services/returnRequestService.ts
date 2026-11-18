@@ -22,7 +22,13 @@ const stringValue = (value: unknown, fallback: string): string =>
 
 export const parseBankInfo = (rawBank: unknown): ParsedBankInfo | null => {
     if (!rawBank) return null;
-    const parsed: unknown = typeof rawBank === 'string' ? JSON.parse(rawBank) as unknown : rawBank;
+    // BUG #10 fix: Wrap JSON.parse in try/catch for non-JSON strings
+    let parsed: unknown;
+    try {
+        parsed = typeof rawBank === 'string' ? JSON.parse(rawBank) as unknown : rawBank;
+    } catch {
+        return null;
+    }
     const bankData = toBankRecord(parsed);
     if (!bankData) return null;
 

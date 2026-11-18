@@ -1,4 +1,5 @@
 import { useHomePage } from "../../hooks/customer/useHomePage";
+import SEO from "../../components/common/SEO";
 import RecommendedProducts from "../../components/customer/home/RecommendedProducts";
 import HeroCarousel from "../../components/customer/home/HeroCarousel";
 import FeaturedCollections from "../../components/customer/home/FeaturedCollections";
@@ -11,6 +12,11 @@ export default function Home() {
 
   return (
     <div className="w-full">
+      <SEO
+        title="Trang chủ"
+        description="Khám phá các bộ sưu tập thời trang nam nữ mới nhất, ưu đãi giảm giá và chính sách bán hàng tại Clothing Shop."
+      />
+
       {/* Carousel Banner */}
       <HeroCarousel banners={banners} />
 

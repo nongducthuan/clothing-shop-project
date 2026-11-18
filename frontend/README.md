@@ -59,8 +59,10 @@ npm test
 - Toàn bộ chuỗi nằm ở `src/locales/translations.ts` với 2 locale `vi` / `en`, dùng qua `t("key", "mặc định")`.
 - `scripts/check-i18n.cjs` (chạy trước `vite build`) sẽ **chặn build** khi: key chỉ có ở 1 locale, key trùng lặp, placeholder `{...}` lệch nhau giữa vi/en, hoặc code gọi `t("...")` mà key chưa được khai báo ở cả 2 locale.
 
-## Ghi chú cấu trúc
+## Ghi chú cấu trúc & Tối ưu
 
+- **Tối ưu hiệu năng (Code-splitting)**: Sử dụng `React.lazy()` và `Suspense` bọc `PageLoader` cho toàn bộ các trang Admin (Dashboard, Reports, Quản lý sản phẩm/đơn hàng...) và các trang thứ cấp phía khách hàng. Trang chủ (`Home`) được load trực tiếp (eager loading) giúp FCP (First Contentful Paint) nhanh nhất, tránh tải dư thừa bundle của phần quản trị.
+- **Tối ưu SEO (Dynamic Meta & Open Graph)**: Tích hợp `react-helmet-async` qua component `SEO.tsx` bọc `HelmetProvider`. Tự động cập nhật `<title>`, `<meta name="description">` và thẻ Open Graph preview Facebook/Zalo theo từng sản phẩm, danh mục và từ khóa tìm kiếm.
 - Alias `@` → `src/` (khai báo trong `vite.config.ts`).
 - SPA rewrite mọi route về `/` trong `vercel.json` → deploy Vercel chạy đúng khi refresh ở route con.
-- Các nhánh chính trong `src/`: `pages/` (customer 10 / admin 11 / auth 2 + `NotFound`), `components/` (117 files: admin 39 / auth 3 / common 4 / customer 71), `hooks/` (admin 12 + `product/` 5 + `user/` 5 / customer 16 (bao gồm profileTypes.ts) / auth 2 + 2 hook dùng chung; có 4 test hook), `context/` (6 cặp Context + Provider + `CartProvider.test.tsx`), `services/` (`apiClient.ts` + `aiService.ts`, chưa có test file trong thư mục này), `utils/` (12 helper + 9 file `*.test.ts`, gồm `priceUtils` và `productSearchUtils`), `locales/` (`translations.ts` + `apiMessagePatterns.ts` + 2 file `*.test.ts`), `constants/` (`tierConfig.ts`), `types/` (`index.ts` + `aos.d.ts`).
+- Các nhánh chính trong `src/`: `pages/` (customer 10 / admin 11 / auth 2 + `NotFound`), `components/` (admin, auth, common gồm `SEO.tsx` và `PageLoader.tsx`, customer), `hooks/` (admin, customer, auth), `context/` (Theme, Language, Cart, Auth, AIChat, Toast), `services/` (`apiClient.ts` + `aiService.ts`), `utils/` (helper & test files), `locales/` (`translations.ts` + `apiMessagePatterns.ts`), `constants/`, `types/`.

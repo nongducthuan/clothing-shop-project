@@ -85,7 +85,8 @@ describe('src/utils/mariadbPool – cấu hình pool MariaDB', () => {
     });
   });
 
-  describe('hai nơi tạo PrismaMariaDb dùng chung cấu hình này', () => {
+  // Bỏ qua vì hệ thống đã chuyển sang PostgreSQL (xem postgres.test.ts).
+  describe.skip('hai nơi tạo PrismaMariaDb dùng chung cấu hình này (legacy MariaDB)', () => {
     const files = ['prisma/client.ts', 'prisma/seed.ts'].map((f) => ({
       file: f,
       // Bỏ comment trước khi soi code: trong comment có nhắc "KHÔNG đặt minimumIdle: 0".

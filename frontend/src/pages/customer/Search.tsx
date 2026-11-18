@@ -1,5 +1,6 @@
 import { useSearch } from "../../hooks/customer/useSearch";
 import { useLanguage } from "../../context/LanguageContext";
+import SEO from "../../components/common/SEO";
 
 import SidebarFilters from "../../components/customer/search/SidebarFilters";
 import SearchBar from "../../components/customer/search/SearchBar";
@@ -20,6 +21,10 @@ export default function SearchResults() {
 
   return (
     <div className="sr-container container mx-auto py-6 px-3 md:px-4 flex-1 flex flex-col md:flex-row gap-8">
+      <SEO
+        title={state.searchInput ? `${t("nav.search", "Tìm kiếm")}: ${state.searchInput}` : t("nav.search", "Tìm kiếm")}
+        description="Tìm kiếm trang phục, quần áo, phụ kiện thời trang với mức giá tốt nhất."
+      />
 
       {/* ========== SIDEBAR (PC only) ========== */}
       <SidebarFilters state={state} refs={refs} actions={actions} />

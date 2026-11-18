@@ -112,7 +112,7 @@ export function useReturnRequestForm(orders: ProfileOrder[], onSubmitted: () => 
 
     try {
       const response = await API.post(
-        `/orders/${returnOrderId}/return`,
+        `/orders/${returnOrder?.id ?? returnOrderId}/return`,
         formData,
         { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
       );

@@ -72,9 +72,15 @@ export const getIO = () => {
  *
  * @param prismaClient  - instance prisma của caller (tránh circular import)
  * @param userId        - null = gửi cho admin_room, có id = gửi cho user_{id}
- * @param title         - tiêu đề thông báo
- * @param message       - nội dung thông báo
- * @param socketEvent   - tên event socket sẽ emit
+ * @param title         - tiêu đề thông báo (Vietnamese)
+ * @param message       - nội dung thông báo (Vietnamese)
+ * @param titleEn       - tiêu đề thông báo (English)
+ * @param messageEn     - nội dung thông báo (English)
+ * @param socketEvent   - tên event socket sẽ emit (e.g. 'new_order', 'payment_success').
+ *                        BUG #12 note: This is NOT stored in the Notification table —
+ *                        it is only used for the realtime socket event name. The DB
+ *                        Notification model intentionally does not have a `type` column;
+ *                        the event type is transient and only relevant for the live push.
  * @param eventData     - dữ liệu kèm theo event (ngoài notification)
  */
 export const sendNotification = async (
