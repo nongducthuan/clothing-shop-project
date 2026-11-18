@@ -101,7 +101,7 @@ export const submitReturnRequest = async (req: Request, res: Response): Promise<
     } catch (error: unknown) {
         console.error("ERROR_SUBMIT_RETURN:", error);
         const message = errorMessage(error);
-        // BUG #7 fix: Map business logic errors to 400 instead of 500.
+        // Map business logic errors to 400 instead of 500.
         // Only truly unexpected errors should return 500.
         let status = 500;
         if (message.startsWith('Forbidden:')) {
@@ -149,7 +149,7 @@ export const cancelReturnRequest = async (req: Request, res: Response): Promise<
                 throw new Error(`Order #${orderId} is not in Return Requested status (current status: '${order.status}').`);
             }
 
-            // BUG #8 fix: Only allow cancelling a return request that is still Pending.
+            // Only allow cancelling a return request that is still Pending.
             // If admin has already Approved or Rejected it, customer cannot cancel.
             if (order.return_request && order.return_request.status !== 'Pending') {
                 throw new Error(`Return request for order #${orderId} has already been ${order.return_request.status.toLowerCase()} and cannot be cancelled.`);
@@ -188,7 +188,7 @@ export const cancelReturnRequest = async (req: Request, res: Response): Promise<
     } catch (error: unknown) {
         console.error("ERROR_CANCEL_RETURN:", error);
         const message = errorMessage(error);
-        // BUG #7 fix: Map business errors to proper status codes
+        // Map business errors to proper status codes
         let status = 500;
         if (message.startsWith('Forbidden:')) {
             status = 403;

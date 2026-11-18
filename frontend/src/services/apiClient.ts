@@ -34,7 +34,7 @@ API.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        // BUG #6 fix: Deduplicate concurrent refresh calls and don't null
+        // Deduplicate concurrent refresh calls and don't null
         // the promise until the new token is fully persisted. This prevents
         // a third concurrent request from starting a second refresh after
         // the first resolves but before localStorage is updated.

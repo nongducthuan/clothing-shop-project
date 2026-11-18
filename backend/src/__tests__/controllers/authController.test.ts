@@ -56,7 +56,7 @@ describe('register', () => {
       name: 'Thuan',
       email: 'taken@test.com',
       phone: '0909090909',
-      password: 'pass123',
+      password: 'pass12345',
     });
     const res = mockRes();
 
@@ -76,7 +76,7 @@ describe('register', () => {
       name: 'Thuan',
       email: 'new@test.com',
       phone: '0909090909',
-      password: 'pass123',
+      password: 'pass12345',
     });
     const res = mockRes();
 

@@ -92,7 +92,7 @@ export interface VerifyVnPayResult {
     orderId: string;
     vnp_TxnRef: string;
     /**
-     * BUG #11 fix: Amount as returned by VNPay (multiplied by 100).
+     * Amount as returned by VNPay (multiplied by 100).
      * VNPay represents amounts in units of 1/100 VND, so this value
      * must be compared against `order.total_price * 100`, NOT the raw total.
      * See isExpectedPayment() in paymentController.ts for correct usage.

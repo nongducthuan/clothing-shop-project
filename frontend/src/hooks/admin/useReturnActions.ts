@@ -100,7 +100,7 @@ export default function useReturnActions({ getToken, findOrderById, fetchOrders,
     }
 
     try {
-      const { data } = await API.post(
+      await API.post(
         `/admin/orders/${orderId}/return/undo-approve`,
         { stock_returned: stockReturned, money_refunded: moneyRefunded },
         { headers: { Authorization: `Bearer ${token}` } }

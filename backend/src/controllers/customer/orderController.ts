@@ -29,7 +29,7 @@ export const createOrderController = async (req: Request, res: Response): Promis
             return;
         }
 
-        // BUG #9 fix: Validate that an email is available for order confirmation
+        // Validate that an email is available for order confirmation
         const orderEmail = email || (req.user ? req.user.email : '');
         if (!orderEmail || typeof orderEmail !== 'string' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(orderEmail)) {
             res.status(400).json({ message: "A valid email address is required to place an order." });
@@ -282,7 +282,7 @@ export const changeOrderStatus = async (req: Request, res: Response): Promise<vo
 
         await changeOrderStatusLogic(Number(order_id), new_status);
 
-        // BUG #4 fix: payment_status transition (Paid → Refunded) is now handled
+        // Payment_status transition (Paid → Refunded) is now handled
         // atomically inside changeOrderStatusLogic (orderStatusService.ts L167-169).
         // The previous code here did a redundant update OUTSIDE the transaction,
         // which could race with the in-transaction update or double-write.

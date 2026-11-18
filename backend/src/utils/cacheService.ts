@@ -5,7 +5,7 @@ import NodeCache from 'node-cache';
 export const appCache = new NodeCache({ stdTTL: 300, checkperiod: 60 });
 
 /**
- * BUG #16 fix: Invalidate cache entries by key prefix.
+ * Invalidate cache entries by key prefix.
  * Call this after admin creates/updates/deletes products, sales, vouchers, etc.
  * Example: invalidateCacheByPrefix('products') clears all product-related cache.
  */

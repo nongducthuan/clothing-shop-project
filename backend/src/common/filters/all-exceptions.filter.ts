@@ -47,7 +47,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
     }
 
     if (exception instanceof Error) {
-      // BUG #15 fix: Only expose stack traces when explicitly opted in,
+      // Only expose stack traces when explicitly opted in,
       // not just based on NODE_ENV (which may be misconfigured in staging).
       if (process.env.NODE_ENV === 'development' && process.env.EXPOSE_STACK_TRACES !== 'false') {
         response.status(500).json({

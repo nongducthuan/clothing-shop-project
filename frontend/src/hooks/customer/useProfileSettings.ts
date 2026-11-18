@@ -47,7 +47,7 @@ export function useProfileSettings() {
       showToast(t("profile.fill_password"), "warning");
       return;
     }
-    if (newPassword.length < 6) {
+    if (newPassword.length < 8) {
       showToast(t("profile.password_too_short"), "warning");
       return;
     }

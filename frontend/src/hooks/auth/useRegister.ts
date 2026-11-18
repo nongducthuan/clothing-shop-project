@@ -38,7 +38,7 @@ export function useRegister() {
       return;
     }
 
-    if (form.password.length < 6) {
+    if (form.password.length < 8) {
       setError(t("auth.password_too_short"));
       return;
     }

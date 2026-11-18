@@ -12,21 +12,21 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    // BUG #3 fix: Validate email format
+    // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       res.status(400).json({ message: 'Invalid email format' });
       return;
     }
 
-    // BUG #3 fix: Validate phone format (Vietnamese phone: 10-11 digits, starts with 0)
+    // Validate phone format (Vietnamese phone: 10-11 digits, starts with 0)
     const phoneRegex = /^0\d{9,10}$/;
     if (!phoneRegex.test(phone)) {
       res.status(400).json({ message: 'Invalid phone number format. Must be 10-11 digits starting with 0.' });
       return;
     }
 
-    // BUG #2 fix: Validate password length
+    // Validate password length
     if (typeof password !== 'string' || password.length < 8) {
       res.status(400).json({ message: 'Password must be at least 8 characters' });
       return;
@@ -165,7 +165,7 @@ export const updateProfile = async (req: Request, res: Response): Promise<void> 
       return;
     }
 
-    // BUG #1 fix: Check if phone is already in use by another user
+    // Check if phone is already in use by another user
     const existingPhone = await prisma.user.findUnique({ where: { phone } });
     if (existingPhone && existingPhone.id !== userId) {
       res.status(400).json({ message: 'Phone number is already in use' });
@@ -323,7 +323,7 @@ export const changePassword = async (req: Request, res: Response): Promise<void>
       return;
     }
 
-    // BUG #2 fix: Validate new password length
+    // Validate new password length
     if (typeof newPassword !== 'string' || newPassword.length < 8) {
       res.status(400).json({ message: 'New password must be at least 8 characters' });
       return;

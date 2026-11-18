@@ -85,29 +85,4 @@ describe('src/utils/mariadbPool – cấu hình pool MariaDB', () => {
     });
   });
 
-  // Bỏ qua vì hệ thống đã chuyển sang PostgreSQL (xem postgres.test.ts).
-  describe.skip('hai nơi tạo PrismaMariaDb dùng chung cấu hình này (legacy MariaDB)', () => {
-    const files = ['prisma/client.ts', 'prisma/seed.ts'].map((f) => ({
-      file: f,
-      // Bỏ comment trước khi soi code: trong comment có nhắc "KHÔNG đặt minimumIdle: 0".
-      code: fs
-        .readFileSync(path.resolve(__dirname, '../../../', f), 'utf8')
-        .replace(/\/\*[\s\S]*?\*\//g, '')
-        .replace(/\/\/[^\n]*/g, ''),
-      raw: fs.readFileSync(path.resolve(__dirname, '../../../', f), 'utf8'),
-    }));
-
-    it.each(files)('$file lấy cấu hình từ getMariaDbPoolConfig()', ({ raw }) => {
-      expect(raw).toContain('getMariaDbPoolConfig');
-    });
-
-    it.each(files)('$file không tự khai báo minimumIdle (đặc biệt là 0)', ({ code }) => {
-      expect(code).not.toMatch(/minimumIdle\s*:\s*0\b/);
-      expect(code).not.toMatch(/minimumIdle\s*:/);
-    });
-
-    it.each(files)('$file không tự khai báo tham số pool (đã tập trung ở mariadbPool.ts)', ({ code }) => {
-      expect(code).not.toMatch(/connectionLimit\s*:/);
-    });
-  });
 });

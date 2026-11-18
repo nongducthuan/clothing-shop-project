@@ -13,6 +13,8 @@ node_modules/
 # Build output
 dist/
 dist-ssr/
+.swc/
+.swc-cache/
 
 # Local config files
 *.local

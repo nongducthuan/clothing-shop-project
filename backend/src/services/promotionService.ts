@@ -145,7 +145,7 @@ const promotionService = {
   },
 
   /**
-   * @deprecated BUG #5 fix: This method is superseded by validateAndReserveItems()
+   * @deprecated This method is superseded by validateAndReserveItems()
    * in orderCreationService.ts which handles gift stock decrement and promotion
    * quota atomically within the order creation transaction. Calling this separately
    * would double-decrement stock and gift quota. Kept for reference only — do NOT call.

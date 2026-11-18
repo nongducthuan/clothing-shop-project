@@ -198,7 +198,7 @@ export const changeOrderStatusLogicTx = async (
         ) {
             const v = await tx.voucher.findUnique({ where: { id: orderVoucherId } });
             if (v) {
-                // BUG #13 fix: Guard used_count from going negative on both branches
+                // Guard used_count from going negative on both branches
                 await tx.voucher.update({
                     where: { id: orderVoucherId },
                     data: v.usage_limit !== null && v.usage_limit !== undefined
