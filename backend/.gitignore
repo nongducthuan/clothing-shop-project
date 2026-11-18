@@ -36,3 +36,7 @@ env/
 
 # Prisma generated client
 src/generated/prisma/
+
+# Uploaded files
+uploads/*
+!uploads/.gitkeep

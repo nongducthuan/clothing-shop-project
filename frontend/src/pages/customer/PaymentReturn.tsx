@@ -86,10 +86,14 @@ export default function PaymentReturn() {
     setRepayLoading(true);
     try {
       const token = localStorage.getItem("token");
+      const guestToken = sessionStorage.getItem("guestOrderAccessToken");
+      const headers: Record<string, string> = {};
+      if (token) headers.Authorization = `Bearer ${token}`;
+      if (guestToken) headers["X-Guest-Order-Access"] = guestToken;
       const res = await API.post(
         `/orders/${status.orderId}/repay`,
         { new_payment_method: newMethod },
-        { headers: token ? { Authorization: `Bearer ${token}` } : {} }
+        { headers }
       );
 
       if (res.data?.payUrl) {

@@ -145,8 +145,8 @@ clothing-shop-project/
 │   │   ├── controllers/
 │   │   │   ├── admin/           # 14 files: adminReturn/banner/category/color/inventory/membership/order/product/promotion/sale/size/stats/user/voucher
 │   │   │   └── customer/        # 14 files: auth/banner/category/chat/membership/order/orderLookup/payment/product/productDetail/promotion/return/sale/voucher
-│   │   ├── middleware/          # 5 files: authMiddleware / guestOrderAccessMiddleware / uploadMiddleware / errorMiddleware / validateMiddleware (Zod)
-│   │   ├── services/            # 13 files: AI / auto-cancel / discount allocation / interaction / order creation / filtering / order status (+ financial, inventory) / product / promotion / return / user
+│   │   ├── middleware/          # 3 files: authMiddleware / uploadMiddleware / validateMiddleware (Zod)
+│   │   ├── services/            # 12 files: AI / auto-cancel / discount allocation / interaction / order creation / filtering / order status (+ financial, inventory) / product / return / user
 │   │   ├── utils/               # 15 files: error handling / cache / email (+ queue) / payment (MoMo, VNPay) / socket / PostgreSQL connection pool / shipping / env / pricing / order formatting
 │   │   ├── constants/           # orderStatus.ts (luật chuyển trạng thái đơn) + returnPolicy.ts (đổi trả 7 ngày)
 │   │   ├── validators/          # user.ts

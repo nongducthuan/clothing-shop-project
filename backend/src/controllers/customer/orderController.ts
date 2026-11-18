@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import jwt from 'jsonwebtoken';
 import prisma from '../../../prisma/client';
 import { queueEmail } from '../../utils/emailQueue';
 import { sendNotification } from '../../utils/socket';
@@ -91,9 +92,9 @@ export const createOrderController = async (req: Request, res: Response): Promis
                 data: {
                     user_id: userId,
                     voucher_id: voucher_id ? Number(voucher_id) : null,
-                    name,
-                    email,
-                    phone,
+                    name: name || (req.user ? req.user.name : 'Khách hàng'),
+                    email: orderEmail,
+                    phone: phone || '',
                     address,
                     total_price: finalTotal,
                     shipping_fee: serverShippingFee,
@@ -105,6 +106,18 @@ export const createOrderController = async (req: Request, res: Response): Promis
             });
             orderId = newOrder.id;
         }, { maxWait: 10000, timeout: 30000 });
+
+        let guestOrderAccessToken: string | undefined;
+        if (!userId) {
+            const secret = process.env.JWT_SECRET;
+            if (secret) {
+                guestOrderAccessToken = jwt.sign(
+                    { purpose: 'guest-order-access', email: orderEmail.toLowerCase() },
+                    secret,
+                    { expiresIn: '15m' }
+                );
+            }
+        }
 
         const lang = (req.headers['accept-language'] || req.headers['language'] || 'vi') as string;
         const isEnglish = lang.startsWith('en');
@@ -137,13 +150,13 @@ export const createOrderController = async (req: Request, res: Response): Promis
                 if (!momoResponse || !momoResponse.payUrl) {
                     throw new Error(momoResponse?.message || "Failed to get MoMo payUrl");
                 }
-                res.status(201).json({ message: "Redirecting to MoMo", orderId, payUrl: momoResponse.payUrl });
+                res.status(201).json({ message: "Redirecting to MoMo", orderId, payUrl: momoResponse.payUrl, guestOrderAccessToken });
                 return;
             } catch (momoError) {
                 console.error("MoMo API Error:", momoError);
                 res.status(201).json({
                     message: "Order created but MoMo payment link failed. Please retry payment in your profile.",
-                    orderId, payUrl: null
+                    orderId, payUrl: null, guestOrderAccessToken
                 });
                 return;
             }
@@ -159,19 +172,19 @@ export const createOrderController = async (req: Request, res: Response): Promis
                     ipAddr: clientIp,
                     bankCode: 'VNBANK',
                 });
-                res.status(201).json({ message: "Redirecting to VNPay", orderId, payUrl: vnpayUrl });
+                res.status(201).json({ message: "Redirecting to VNPay", orderId, payUrl: vnpayUrl, guestOrderAccessToken });
                 return;
             } catch (vnpError: unknown) {
                 console.error("VNPay API Error:", vnpError);
                 res.status(201).json({
                     message: "Order created but VNPay payment link failed. Please retry payment in your profile.",
-                    orderId, payUrl: null
+                    orderId, payUrl: null, guestOrderAccessToken
                 });
                 return;
             }
         }
 
-        res.status(201).json({ message: "Order placed successfully (COD)", orderId, total: finalTotal, payUrl: null });
+        res.status(201).json({ message: "Order placed successfully (COD)", orderId, total: finalTotal, payUrl: null, guestOrderAccessToken });
 
     } catch (error: unknown) {
         console.error("Order creation failed:", error instanceof Error ? error.message : String(error));

@@ -268,6 +268,10 @@ export function useCheckoutPage() {
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
       const res = await API.post("/orders", orderData, { headers });
 
+      if (res.data?.guestOrderAccessToken) {
+        sessionStorage.setItem("guestOrderAccessToken", res.data.guestOrderAccessToken);
+      }
+
       setCart([]); // Clear cart
 
       if (res.data.payUrl) {

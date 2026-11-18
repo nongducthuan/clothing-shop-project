@@ -140,15 +140,20 @@ export const toggleVoucherStatus = async (req: Request, res: Response): Promise<
 export const removeVoucher = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
-    const voucher = await prisma.voucher.update({
-      where: { id: Number(id) },
-      data: { status: false }
-    });
+    const voucher = await prisma.voucher.findUnique({ where: { id: Number(id) } });
 
     if (!voucher) {
       res.status(404).json({ success: false, message: "Voucher not found or already deleted!" });
       return;
     }
+
+    // Rename the code to release the original code for reuse due to @unique constraint
+    const releasedCode = `${voucher.code}_deleted_${voucher.id}_${Date.now()}`.slice(0, 50);
+
+    await prisma.voucher.update({
+      where: { id: Number(id) },
+      data: { status: false, code: releasedCode }
+    });
 
     res.json({ success: true, message: "Voucher deleted successfully! The code has been released for reuse." });
   } catch (error: unknown) {

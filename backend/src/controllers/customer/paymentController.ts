@@ -194,9 +194,12 @@ export const momoReturn = async (req: Request, res: Response): Promise<void> => 
                 return;
             }
 
+            const order = await prisma.order.findUnique({ where: { id: realOrderId } });
             res.status(200).json({
                 success: true,
                 orderId: realOrderId,
+                payment_method: 'momo',
+                total_price: Number(order?.total_price ?? 0),
                 message: "MoMo payment successful!"
             });
         } else {
@@ -301,7 +304,14 @@ export const vnpayReturn = async (req: Request, res: Response): Promise<void> =>
                 });
                 return;
             }
-            res.json({ success: true, orderId: realOrderId, message: "Payment successful" });
+            const order = await prisma.order.findUnique({ where: { id: realOrderId } });
+            res.json({
+                success: true,
+                orderId: realOrderId,
+                payment_method: 'vnpay',
+                total_price: Number(order?.total_price ?? 0),
+                message: "Payment successful"
+            });
         } else {
             const order = await prisma.order.findUnique({ where: { id: realOrderId } });
             res.json({
