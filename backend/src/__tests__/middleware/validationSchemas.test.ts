@@ -232,7 +232,7 @@ describe('contract: payload frontend phải sống sót qua validate()', () => {
     {
       route: 'POST /auth/register',
       schema: registerSchema,
-      body: { name: 'Khach', email: 'khach@example.com', phone: '0900000000', password: '123456' },
+      body: { name: 'Khach', email: 'khach@example.com', phone: '0900000000', password: 'password123' },
     },
     {
       route: 'POST /auth/login',
@@ -242,7 +242,7 @@ describe('contract: payload frontend phải sống sót qua validate()', () => {
     {
       route: 'PUT /auth/password',
       schema: changePasswordSchema,
-      body: { currentPassword: '123456', newPassword: 'abcdef' },
+      body: { currentPassword: 'password123', newPassword: 'newpassword123' },
     },
     {
       route: 'POST /vouchers/apply',
@@ -393,7 +393,7 @@ describe('message validation của schema phải dịch được ở frontend', 
     {
       name: 'register name quá dài',
       schema: registerSchema,
-      body: { name: 'a'.repeat(300), email: 'a@b.com', phone: '0900000000', password: '123456' },
+      body: { name: 'a'.repeat(300), email: 'a@b.com', phone: '0900000000', password: 'password123' },
     },
     { name: 'login rỗng', schema: loginSchema, body: {} },
     { name: 'change password rỗng', schema: changePasswordSchema, body: {} },

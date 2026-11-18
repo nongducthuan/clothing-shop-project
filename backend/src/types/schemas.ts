@@ -20,8 +20,8 @@ export const registerSchema = z.object({
   email: z.string({ error: 'Invalid email format' }).email('Invalid email format'),
   phone: z.string({ error: 'Phone must be 10-11 digits' }).regex(/^[0-9]{10,11}$/, 'Phone must be 10-11 digits'),
   password: z
-    .string({ error: 'Password must be at least 6 characters' })
-    .min(6, 'Password must be at least 6 characters'),
+    .string({ error: 'Password must be at least 8 characters' })
+    .min(8, 'Password must be at least 8 characters'),
 });
 
 export const loginSchema = z.object({
@@ -34,8 +34,8 @@ export const changePasswordSchema = z.object({
     .string({ error: 'Current password is required' })
     .min(1, 'Current password is required'),
   newPassword: z
-    .string({ error: 'New password must be at least 6 characters' })
-    .min(6, 'New password must be at least 6 characters'),
+    .string({ error: 'New password must be at least 8 characters' })
+    .min(8, 'New password must be at least 8 characters'),
 });
 
 /**
