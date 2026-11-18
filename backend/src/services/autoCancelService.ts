@@ -21,7 +21,7 @@ async function runAutoCancel(): Promise<void> {
                 status: 'Pending',
                 payment_status: 'Unpaid',
                 payment_method: { in: ['momo', 'vnpay'] },
-                updated_at: { lt: cutoff },
+                created_at: { lt: cutoff },
             },
             select: { id: true, email: true, name: true },
             take: BATCH_LIMIT,

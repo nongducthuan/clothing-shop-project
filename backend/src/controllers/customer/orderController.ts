@@ -114,7 +114,7 @@ export const createOrderController = async (req: Request, res: Response): Promis
                 guestOrderAccessToken = jwt.sign(
                     { purpose: 'guest-order-access', email: orderEmail.toLowerCase() },
                     secret,
-                    { expiresIn: '15m' }
+                    { expiresIn: '2h' }
                 );
             }
         }

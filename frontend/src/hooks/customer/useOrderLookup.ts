@@ -54,6 +54,9 @@ export function useOrderLookup() {
         try {
           const refreshRes = await API.post("/orders/otp/verify", { email, code: otp });
           if (refreshRes.data?.orders) setOrders(refreshRes.data.orders);
+          if (refreshRes.data?.guestOrderAccessToken) {
+            sessionStorage.setItem('guestOrderAccessToken', refreshRes.data.guestOrderAccessToken);
+          }
         } catch {
           // Ignore OTP re-verification error on background refresh
         }

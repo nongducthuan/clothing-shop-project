@@ -113,8 +113,9 @@ export const updateVoucherAdmin = async (req: Request, res: Response): Promise<v
 
 export const getAllVouchersAdmin = async (req: Request, res: Response): Promise<void> => {
   try {
+    const includeDeleted = req.query.includeDeleted === 'true';
     const vouchers = await prisma.voucher.findMany({
-      where: { status: true },
+      where: includeDeleted ? undefined : { status: true },
       orderBy: { created_at: 'desc' }
     });
     res.json({ success: true, data: vouchers });

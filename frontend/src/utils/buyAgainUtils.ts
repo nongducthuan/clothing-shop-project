@@ -252,7 +252,7 @@ export function applySubstitutions(
       name_vi: suggestion.base.name_vi,
       name_en: suggestion.base.name_en,
       price: choice.price,
-      quantity: suggestion.quantity,
+      quantity: Math.min(suggestion.quantity, choice.stock),
       color_id: choice.color_id,
       size_id: choice.size_id,
       color: choice.color_name,

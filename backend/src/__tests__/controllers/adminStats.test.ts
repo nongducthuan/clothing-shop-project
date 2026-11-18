@@ -105,7 +105,7 @@ describe('getAdminStats – 8 số đếm cho Dashboard', () => {
 
     expect(summarySql).toContain('COALESCE(oi.import_price_snapshot, p.import_price)');
     expect(summarySql).toContain('THEN o.id END) AS \"weeklyOrders\"'); // all created orders are counted
-    expect(summarySql).toContain("o.status IN ('Delivered','Return Requested','Return Rejected','Return Approved')"); // recognized revenue states only
+    expect(summarySql).toContain("o.status IN ('Delivered','Return Requested','Return Rejected')"); // Return Approved excluded: refunded orders should not inflate order count
   });
 
   it('gộp 8 ô dashboard vào đúng 1 truy vấn SQL', async () => {

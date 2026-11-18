@@ -3,6 +3,7 @@ import prisma from '../../../prisma/client';
 import { parseBankInfo, buildReturnPlan } from '../../services/returnRequestService';
 import { sendNotification } from '../../utils/socket';
 import { isWithinReturnWindow, ReturnWindowExpiredError } from '../../constants/returnPolicy';
+import { changeOrderStatusLogicTx } from '../../services/orderStatusService';
 
 const errorMessage = (error: unknown): string => error instanceof Error ? error.message : String(error);
 
@@ -167,13 +168,12 @@ export const cancelReturnRequest = async (req: Request, res: Response): Promise<
             // Delete the return request (if exists) and revert order status to Delivered
             if (order.return_request) {
                 await tx.returnRequest.delete({ where: { order_id: orderId } });
-            } else {
-                await tx.returnRequest.deleteMany({ where: { order_id: orderId } });
             }
 
-            await tx.order.update({
-                where: { id: orderId },
-                data: { status: 'Delivered' }
+            await changeOrderStatusLogicTx(tx, orderId, 'Delivered', {
+                isUndo: true,
+                skipFinancial: true,
+                skipStock: true,
             });
         });
 
