@@ -5,7 +5,7 @@ Backend đã được migrate từ Express sang **NestJS**, giữ nguyên 100% b
 ## Cấu trúc
 
 ```
-nestjs-backend/
+backend/
 ├── src/
 │   ├── main.ts                    # Entry point (thay thế index.ts)
 │   ├── app.module.ts              # Root module
@@ -32,12 +32,12 @@ nestjs-backend/
 │   ├── notification/
 │   │   ├── notification.controller.ts
 │   │   └── notification.module.ts
-│   ├── controllers/               # Express controllers (giữ nguyên, dùng lại)
-│   ├── services/                  # Business logic services (giữ nguyên)
-│   ├── middleware/                # Express middleware (giữ nguyên)
-│   ├── utils/                     # Utilities (giữ nguyên)
-│   ├── constants/                 # Constants (giữ nguyên)
-│   └── types/                     # Types & Zod schemas (giữ nguyên)
+│   ├── controllers/               # Controllers nghiệp vụ (14 admin, 14 customer)
+│   ├── services/                  # 12 services nghiệp vụ
+│   ├── middleware/                # Upload & Validate middleware (xác thực/phân quyền dùng common/guards)
+│   ├── utils/                     # 14 utilities (PostgreSQL, email, socket, MoMo, VNPay...)
+│   ├── constants/                 # Constants (order status, return policy)
+│   └── types/                     # Types & Zod schemas (đồng bộ validation)
 ├── prisma/                        # Prisma schema & seed
 ├── uploads/                       # File uploads
 ├── package.json
@@ -65,8 +65,9 @@ npm run seed
 npm test
 npm run test:coverage
 
-# TypeScript check
+# Quality & Type check
 npm run typecheck
+npm run check:no-any
 ```
 
 ## So sánh với Express
@@ -75,8 +76,9 @@ npm run typecheck
 |---------|--------|
 | `src/index.ts` | `src/main.ts` |
 | `express-rate-limit` | `@nestjs/throttler` |
-| `authenticateToken` middleware | `JwtAuthGuard` |
+| `authenticateToken` middleware | `JwtAuthGuard` (đã migrate hoàn toàn, loại bỏ authMiddleware) |
 | `requireAdmin` middleware | `AdminGuard` |
+| `guestOrderAccess` middleware | `GuestOrderAccessGuard` |
 | `globalErrorHandler` | `AllExceptionsFilter` |
 | `validate(schema)` middleware | `ZodValidationPipe` |
 | `initSocket()` | `SocketService.init()` + `SocketIoAdapter` |
@@ -84,7 +86,8 @@ npm run typecheck
 
 ## Notes
 
-- Business logic **không thay đổi** – controllers, services, utils giữ nguyên từ Express
-- NestJS controllers gọi thẳng Express controller functions qua `run(fn, req, res, next)`
+- Business logic và luồng nghiệp vụ được bảo toàn – controllers, services, utils được kế thừa và tinh gọn cho NestJS
+- Các middleware xác thực cũ của Express (`authMiddleware.ts`, `errorMiddleware.ts`, `guestOrderAccessMiddleware.ts`) và kết nối MariaDB cũ (`mariadbPool.ts`) đã được loại bỏ hoàn toàn, hệ thống chạy thuần NestJS Guards/Filters và Prisma PostgreSQL adapter
+- NestJS controllers gọi thẳng controller functions qua `run(fn, req, res, next)`
 - Rate limiting dùng `@nestjs/throttler` thay `express-rate-limit`
 - Socket.io khởi tạo qua `SocketService.init()` trong `main.ts` sau khi app listen

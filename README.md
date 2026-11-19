@@ -2,7 +2,7 @@
 
 Website thương mại điện tử chuyên bán quần áo và thời trang, tích hợp hệ thống quản lý bán hàng, gợi ý sản phẩm liên quan, xác thực OTP và thanh toán trực tuyến dành cho đồ án sinh viên.
 
-![Tests](https://img.shields.io/badge/tests-322%20cases-blue?logo=jest)
+![Tests](https://img.shields.io/badge/tests-308%20cases-blue?logo=jest)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.8%20/%207.0-3178C6?logo=typescript&logoColor=white)
 ![Node.js](https://img.shields.io/badge/Node.js-NestJS%2011-E0234E?logo=nestjs&logoColor=white)
 ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
@@ -25,7 +25,7 @@ Website thương mại điện tử chuyên bán quần áo và thời trang, t�
 - **Yêu cầu đổi trả hàng & Hủy yêu cầu (Return/Refund Request)**: Cho phép khách hàng gửi form yêu cầu đổi trả hàng (kèm ảnh bằng chứng & thông tin tài khoản ngân hàng hoàn tiền) hoặc hủy yêu cầu khi đang chờ xử lý (áp dụng cho cả Tài khoản thành viên và Khách tra cứu qua OTP). Chỉ nhận yêu cầu trong **7 ngày kể từ khi giao hàng** (backend chặn và trả cờ `can_return` để frontend ẩn nút; admin được xử lý ngoại lệ); khi hoàn tiền **không hoàn phí vận chuyển**.
 - **Chế độ Giao diện Sáng / Tối (Dark & Light Mode)**: Hỗ trợ chuyển đổi giao diện mượt mà giữa chế độ Tối (Dark) và Sáng (Light), tự động nhận diện theme hệ thống và ghi nhớ cài đặt qua `localStorage`.
 - **Hỗ trợ Đa ngôn ngữ (i18n & DB Localization)**: Chuyển đổi ngôn ngữ hiển thị linh hoạt cho cả giao diện tĩnh lẫn nội dung động trong CSDL.
-- **Tài khoản & Đăng nhập**: Đăng nhập & Đăng ký bảo mật qua JWT Auth (băm mật khẩu `bcryptjs`), hỗ trợ phân hạng thành viên (Membership) tự động theo tổng chi tiêu và % chiết khấu theo hạng. Luồng **Access Token (15 phút) + Refresh Token (7 ngày)** tự động làm mới phiên ngầm qua Axios interceptor — người dùng không bị đăng xuất đột ngột.
+- **Tài khoản & Đăng nhập**: Đăng nhập & Đăng ký bảo mật qua JWT Auth (băm mật khẩu `bcryptjs`, yêu cầu mật khẩu tối thiểu 8 ký tự khi đăng ký và đổi mật khẩu), hỗ trợ phân hạng thành viên (Membership) tự động theo tổng chi tiêu và % chiết khấu theo hạng. Luồng **Access Token (15 phút) + Refresh Token (7 ngày)** tự động làm mới phiên ngầm qua Axios interceptor — người dùng không bị đăng xuất đột ngột.
 - **Gợi ý sản phẩm liên quan (Collaborative Filtering)**: Khối "Gợi ý cho bạn" trên **Trang chủ** trả về tối đa 8 sản phẩm dựa trên hành vi tương tác (`view` / `add_to_cart` / `purchase`) của những người dùng tương tự; khách chưa đăng nhập nhận sản phẩm ngẫu nhiên. Hệ thống loại các sản phẩm có tương tác `purchase` đã ghi nhận cho tài khoản. Lưu ý: hiện tương tác `purchase` được ghi nhận ngay khi tạo đơn, nên không đồng nghĩa đơn đã thanh toán thành công. Logic nằm trong `productController.getRecommendations` và `productService.getRecommendedProducts`.
 - **Tối ưu hiệu năng & SEO cơ bản**: Tối ưu tốc độ tải trang bằng Code-splitting với `React.lazy()` và `Suspense` (chỉ tải trang chủ ban đầu, tách riêng các bundle Admin và trang phụ); quản lý thẻ tiêu đề, mô tả và chia sẻ mạng xã hội (Open Graph) động theo từng sản phẩm/danh mục thông qua `react-helmet-async`.
 - **Trợ lý AI Chatbot**: Tư vấn, giải đáp thắc mắc khách hàng trực tiếp sử dụng Google Gemini AI API.
@@ -45,7 +45,7 @@ Website thương mại điện tử chuyên bán quần áo và thời trang, t�
 - **Chiến dịch Giảm giá (Flash Sale / Discounts)**: Thiết lập các đợt giảm giá trực tiếp theo % trên từng sản phẩm hoặc danh mục sản phẩm theo khung thời gian.
 - **Chương trình Khuyến mãi (Promotions - Buy X Get Y)**: Cấu hình quy tắc mua sản phẩm X tặng kèm sản phẩm Y, tự động bổ sung quà tặng vào đơn hàng và ràng buộc khi đổi trả.
 - **Thông báo Real-time + Lịch sử (Socket.io + DB)**: Admin nhận thông báo Toast tức thì ở mọi trang quản trị khi có: *Đơn hàng mới*, *Khách gửi yêu cầu đổi trả*, *Khách hủy đơn hàng*, hoặc *Thanh toán trực tuyến thành công*. Đồng thời lưu lịch sử thông báo vào DB (bảng `notifications`), hiển thị qua **Dropdown Chuông** trên navbar, hỗ trợ đánh dấu đã đọc đơn lẻ hoặc tất cả. **Khách hàng** cũng nhận thông báo realtime khi admin cập nhật trạng thái đơn hàng hoặc duyệt trả hàng.
-- **CI/CD Pipeline**: Tích hợp GitHub Actions tự động cài đặt dependency, generate Prisma Client, rà soát chuỗi dịch i18n (`npm run check:i18n`) và chạy kiểm tra (**Backend 224 test cases, Frontend 101 test cases** — gồm kiểm tra key song ngữ `vi`/`en` khớp nhau). Workflow chạy khi push lên nhánh `main` / `master` hoặc tạo Pull Request nhắm đến các nhánh này.
+- **CI/CD Pipeline**: Tích hợp GitHub Actions tự động cài đặt dependency, generate Prisma Client, rà soát chuỗi dịch i18n (`npm run check:i18n`) và chạy kiểm tra (**Backend 207 test cases, Frontend 101 test cases** — gồm kiểm tra key song ngữ `vi`/`en` khớp nhau). Workflow chạy khi push lên nhánh `main` / `master` hoặc tạo Pull Request nhắm đến các nhánh này.
 
 ---
 
@@ -145,15 +145,15 @@ clothing-shop-project/
 │   │   ├── controllers/
 │   │   │   ├── admin/           # 14 files: adminReturn/banner/category/color/inventory/membership/order/product/promotion/sale/size/stats/user/voucher
 │   │   │   └── customer/        # 14 files: auth/banner/category/chat/membership/order/orderLookup/payment/product/productDetail/promotion/return/sale/voucher
-│   │   ├── middleware/          # 3 files: authMiddleware / uploadMiddleware / validateMiddleware (Zod)
+│   │   ├── middleware/          # 2 files: uploadMiddleware / validateMiddleware (Zod) (xác thực/phân quyền dùng NestJS Guards tại common/guards)
 │   │   ├── services/            # 12 files: AI / auto-cancel / discount allocation / interaction / order creation / filtering / order status (+ financial, inventory) / product / return / user
-│   │   ├── utils/               # 15 files: error handling / cache / email (+ queue) / payment (MoMo, VNPay) / socket / PostgreSQL connection pool / shipping / env / pricing / order formatting
+│   │   ├── utils/               # 14 files: error handling / cache / email (+ queue) / payment (MoMo, VNPay) / socket / PostgreSQL connection pool / shipping / env / pricing / order formatting
 │   │   ├── constants/           # orderStatus.ts (luật chuyển trạng thái đơn) + returnPolicy.ts (đổi trả 7 ngày)
 │   │   ├── validators/          # user.ts
 │   │   ├── types/               # express.d.ts (mở rộng Request.user) + orderTypes.ts + schemas.ts (Zod validation schemas)
 │   │   ├── generated/prisma/    # Prisma Client do `prisma generate` sinh ra (không commit, không sửa tay)
 │   │   ├── public/images/       # Ảnh sản phẩm + banner seed (serve tại /public)
-│   │   └── __tests__/           # setup.ts + controllers(14) / middleware(2) / services(4) / utils(7) / prisma(1) — 28 suites, 224 tests
+│   │   └── __tests__/           # setup.ts + controllers(14) / middleware(1) / services(4) / utils(7) / prisma(1) — 27 suites, 207 tests
 │   ├── scripts/                 # check-no-any.cjs (CI chặn `any` tường minh)
 │   ├── uploads/                 # Ảnh upload runtime qua Multer (tự tạo khi chạy, serve tại /uploads)
 │   ├── nest-cli.json            # NestJS CLI config
@@ -293,11 +293,10 @@ npm test
 npm run test:coverage
 ```
 
-**Theo các test case được liệt kê trong source hiện có:** `224 test cases` across 28 test suites trong `backend/`.
+**Theo các test case được liệt kê trong source hiện có:** `207 test cases` across 27 test suites trong `backend/`.
 
 | Test Suite | Số tests | Module được test |
 | --- | --- | --- |
-| `authMiddleware.test.ts` | 10 | JWT verify, requireAdmin, optionalAuth |
 | `vnpayService.test.ts` | 12 | sortObject, verifyVnPayReturn, generateVnPayUrl |
 | `momoService.test.ts` | 5 | HMAC-SHA256 signature verification |
 | `authController.test.ts` | 8 | register, login (với Prisma mock) |
@@ -316,7 +315,7 @@ npm run test:coverage
 | `adminProductList.test.ts` | 8 | getProducts (phân trang, tìm kiếm 3 tên, giới tính, nhóm danh mục, chế độ trả mảng cũ) |
 | `postgres.test.ts` | 6 | Cấu hình kết nối PostgreSQL, kiểm tra URL, adapter và seed cleanup |
 | `seedEncoding.test.ts` | 2 | Chặn mojibake trong `prisma/seed.ts` (chuỗi tiếng Việt phải lưu UTF-8) |
-| `validationSchemas.test.ts` | 19 | Chốt contract schema ↔ frontend (chặn tái phát lỗi strip `cartItems` → 500, payload checkout → 400, SĐT đa định dạng, mọi message lỗi đều có bản dịch `api_msg.*`) |
+| `validationSchemas.test.ts` | 19 | Chốt contract schema ↔ frontend (chặn tái phát lỗi strip `cartItems` → 500, payload checkout → 400, SĐT đa định dạng, mật khẩu tối thiểu 8 ký tự, mọi message lỗi đều có bản dịch `api_msg.*`) |
 | `returnPolicy.test.ts` | 7 | Quy tắc đổi trả 7 ngày (`constants/returnPolicy.ts`): mốc `delivered_at` → fallback `updated_at`, biên đúng 7 ngày, cờ `can_return`/`return_deadline` trong `formatOrderResponse` |
 | `envCheck.test.ts` | 15 | Kiểm tra biến môi trường bắt buộc khi khởi động (DATABASE_URL, JWT_SECRET, JWT_REFRESH_SECRET, FRONTEND_URL, BACKEND_URL, VNP_TMNCODE, VNP_HASHSECRET, VNP_URL, VNP_RETURNURL) và chế độ fail-fast `STRICT_ENV_CHECK` |
 | `promotionController.test.ts` | 3 | Phân bổ chung tồn kho quà cho nhiều khuyến mãi; từ chối giỏ hàng rỗng trước khi truy vấn DB |
@@ -325,7 +324,7 @@ npm run test:coverage
 | `shippingUtils.test.ts` | 14 | Phí ship phía server: tách tỉnh/thành (bỏ mã bưu chính và "Việt Nam" ở cuối), so khớp theo cụm từ nguyên vẹn, vùng giao hàng, phụ phí số lượng. Phải khớp bản frontend. |
 | `emailService.test.ts` | 6 | `sendEmail` gửi đúng tiêu đề/nội dung (escape HTML) thay vì mẫu OTP; `sendOtpEmail` dùng mẫu OTP vi/en; lỗi thiếu API key hoặc Brevo từ chối. |
 | `aiService.test.ts` | 1 | Quy tắc hội thoại tự nhiên; lọc ngày hiệu lực và hạn mức voucher; chỉ áp dụng ưu đãi đúng phạm vi; làm mới khuyến mãi mỗi lượt chat. |
-| **Tổng cộng** | **224** | **28 test suites** — mock Prisma, không cần kết nối CSDL thật |
+| **Tổng cộng** | **207** | **27 test suites** — mock Prisma, không cần kết nối CSDL thật |
 
 ### 2. Frontend Testing (Vitest)
 Sử dụng **Vitest** cho utility tests và test hook/component bằng React Testing Library khi cần; các test không gọi backend/database thật.
@@ -373,6 +372,7 @@ Sau khi chạy lệnh `npm run seed`, tất cả tài khoản mẫu dùng chung 
 
 > Ngoài ra seed còn tạo 10 khách hàng mẫu (`vana@example.com`, `thib@example.com`, ...) làm dữ liệu nền cho đơn hàng và tương tác sản phẩm, cũng dùng mật khẩu `123456`.
 > Đây chỉ là tài khoản dành cho môi trường dev/demo. Hãy đổi mật khẩu hoặc xoá các tài khoản này nếu triển khai thật.
+> *Lưu ý:* Mật khẩu `123456` (6 ký tự) chỉ áp dụng cho tài khoản mẫu nạp sẵn từ seed dev. Khi người dùng đăng ký mới hoặc đổi mật khẩu trên ứng dụng, hệ thống yêu cầu mật khẩu tối thiểu **8 ký tự** theo validation schema.
 
 ---
 
