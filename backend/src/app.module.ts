@@ -7,6 +7,7 @@ import { AdminModule } from './admin/admin.module';
 import { CustomerModule } from './customer/customer.module';
 import { NotificationModule } from './notification/notification.module';
 import { AppController } from './app.controller';
+import { AutoCancelService } from './services/autoCancelService';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { AppController } from './app.controller';
   ],
   controllers: [AppController],
   providers: [
+    AutoCancelService,
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,

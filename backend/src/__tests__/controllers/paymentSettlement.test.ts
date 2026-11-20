@@ -18,12 +18,12 @@ jest.mock('../../utils/momoService', () => ({
   verifyMomoSignature: jest.fn().mockReturnValue(true),
 }));
 
-jest.mock('../../utils/socket', () => ({
+jest.mock('../../../test-fixtures/utils/socket', () => ({
   sendNotification: jest.fn().mockResolvedValue(undefined),
 }));
 
 import prisma from '../../../prisma/client';
-import { momoCallback } from '../../controllers/customer/paymentController';
+import { momoCallback } from '../../../test-fixtures/controllers/customer/paymentController';
 
 function mockRes() {
   return {

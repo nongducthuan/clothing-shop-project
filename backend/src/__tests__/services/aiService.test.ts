@@ -8,19 +8,9 @@ jest.mock('@google/generative-ai', () => ({
     })),
 }));
 
-jest.mock('../../../prisma/client', () => ({
-    __esModule: true,
-    default: {
-        product: { findMany: jest.fn() },
-        category: { findMany: jest.fn() },
-        sale: { findMany: jest.fn() },
-        voucher: { findMany: jest.fn() },
-    },
-}));
-
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import prisma from '../../../prisma/client';
-import { generateAiResponse } from '../../services/aiService';
+import { AiService } from '../../services/aiService';
+import type { PrismaService } from '../../prisma/prisma.service';
 
 type MockPrisma = {
     product: { findMany: jest.Mock };
@@ -29,7 +19,13 @@ type MockPrisma = {
     voucher: { findMany: jest.Mock };
 };
 
-const mockPrisma = prisma as unknown as MockPrisma;
+const mockPrisma = {
+    product: { findMany: jest.fn() },
+    category: { findMany: jest.fn() },
+    sale: { findMany: jest.fn() },
+    voucher: { findMany: jest.fn() },
+} as unknown as MockPrisma & PrismaService;
+const aiService = new AiService(mockPrisma);
 
 describe('AI sales assistant context and conversation style', () => {
     beforeAll(() => {
@@ -102,7 +98,7 @@ describe('AI sales assistant context and conversation style', () => {
     });
 
     it('uses conversational instructions and fetches currently valid promotions on each turn', async () => {
-        const answer = await generateAiResponse('Mình đang tìm quần nữ để đi làm.');
+        const answer = await aiService.generateAiResponse('Mình đang tìm quần nữ để đi làm.');
         expect(answer).toBe('Mình có thể giúp bạn chọn mẫu phù hợp.');
 
         expect(mockPrisma.sale.findMany).toHaveBeenCalledWith(expect.objectContaining({
@@ -137,7 +133,7 @@ describe('AI sales assistant context and conversation style', () => {
         expect(modelOptions.systemInstruction).toContain('LOOM10');
         expect(modelOptions.systemInstruction).not.toContain('EXHAUSTED');
 
-        await generateAiResponse('Còn voucher nào đang dùng được không?', [
+        await aiService.generateAiResponse('Còn voucher nào đang dùng được không?', [
             { role: 'user', content: 'Mình đang tìm quần nữ để đi làm.' },
             { role: 'ai', content: answer },
         ]);

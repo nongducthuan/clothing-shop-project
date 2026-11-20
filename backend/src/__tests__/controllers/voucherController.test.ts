@@ -17,7 +17,7 @@ jest.mock('../../../prisma/client', () => ({
 }));
 
 import prisma from '../../../prisma/client';
-import { applyVoucherCustomer } from '../../controllers/customer/voucherController';
+import { applyVoucherCustomer } from '../../../test-fixtures/controllers/customer/voucherController';
 
 function mockRes() {
   const res = {

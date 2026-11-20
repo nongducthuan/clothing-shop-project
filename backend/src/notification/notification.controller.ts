@@ -1,35 +1,29 @@
-import {
-  Controller,
-  Get,
-  Put,
-  UseGuards,
-  Req,
-  Res,
-  Next,
-} from '@nestjs/common';
-import type { Request, Response, NextFunction } from 'express';
+import { Controller, Get, Param, ParseIntPipe, Put, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
-import * as notificationController from '../controllers/notificationController';
-
-type ExpressHandler = (req: Request, res: Response, next: NextFunction) => unknown;
-
-const run = (fn: ExpressHandler, req: Request, res: Response, next: NextFunction) => fn(req, res, next);
+import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { JwtPayload } from '../common/interfaces/jwt-payload.interface';
+import { NotificationService } from './notification.service';
 
 @UseGuards(JwtAuthGuard)
 @Controller('notifications')
 export class NotificationController {
+  constructor(private readonly notificationService: NotificationService) {}
+
   @Get()
-  getNotifications(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(notificationController.getNotifications, req, res, next);
+  getNotifications(@CurrentUser() user: JwtPayload) {
+    return this.notificationService.getNotifications(user);
   }
 
   @Put(':id/read')
-  markAsRead(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(notificationController.markAsRead, req, res, next);
+  markAsRead(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    return this.notificationService.markAsRead(id, user);
   }
 
   @Put('read-all')
-  markAllAsRead(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(notificationController.markAllAsRead, req, res, next);
+  markAllAsRead(@CurrentUser() user: JwtPayload) {
+    return this.notificationService.markAllAsRead(user);
   }
 }

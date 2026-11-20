@@ -5,317 +5,326 @@ import {
   Put,
   Delete,
   UseGuards,
-  Req,
-  Res,
-  Next,
+  Body,
+  Param,
+  Query,
+  HttpCode,
 } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
-import type { Request, Response, NextFunction } from 'express';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { AdminGuard } from '../common/guards/admin.guard';
+import { AdminStatsService } from './services/admin-stats.service';
+import { AdminCatalogService, BannerPayload, ColorPayload, SizePayload, CategoryPayload, MembershipPayload } from './services/admin-catalog.service';
+import { AdminPromotionService, PromotionPayload } from './services/admin-promotion.service';
+import { AdminProductService, AdminProductPayload, AdminProductQuery } from './services/admin-product.service';
+import { AdminUserService } from './services/admin-user.service';
+import { AdminSaleService, SalePayload } from './services/admin-sale.service';
+import { AdminVoucherService, VoucherPayload } from './services/admin-voucher.service';
 
-import * as statsController from '../controllers/admin/statsController';
-import * as productController from '../controllers/admin/productController';
-import * as colorController from '../controllers/admin/colorController';
-import * as sizeController from '../controllers/admin/sizeController';
-import * as categoryController from '../controllers/admin/categoryController';
-import * as inventoryController from '../controllers/admin/inventoryController';
-import * as membershipController from '../controllers/admin/membershipController';
-import * as userController from '../controllers/admin/userController';
-import * as orderController from '../controllers/admin/orderController';
-import * as adminReturnController from '../controllers/admin/adminReturnController';
-import * as promotionController from '../controllers/admin/promotionController';
-import * as saleController from '../controllers/admin/saleController';
-import * as voucherController from '../controllers/admin/voucherController';
-import * as bannerController from '../controllers/admin/bannerController';
-
-type ExpressHandler = (req: Request, res: Response, next: NextFunction) => unknown;
-
-const run = (fn: ExpressHandler, req: Request, res: Response, next: NextFunction) => fn(req, res, next);
+import { AdminOrderService } from './services/admin-order.service';
+import { AdminReturnService } from './services/admin-return.service';
 
 @UseGuards(JwtAuthGuard, AdminGuard)
 @Controller('admin')
 export class AdminController {
-  // Stats
+  constructor(
+    private readonly adminStatsService: AdminStatsService,
+    private readonly adminCatalogService: AdminCatalogService,
+    private readonly adminPromotionService: AdminPromotionService,
+    private readonly adminProductService: AdminProductService,
+    private readonly adminUserService: AdminUserService,
+    private readonly adminSaleService: AdminSaleService,
+    private readonly adminVoucherService: AdminVoucherService,
+    private readonly adminOrderService: AdminOrderService,
+    private readonly adminReturnService: AdminReturnService,
+  ) {}
+
+  // Stats – native NestJS controller/service flow.
   @Get('stats')
-  getAdminStats(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(statsController.getAdminStats, req, res, next);
+  getAdminStats() {
+    return this.adminStatsService.getAdminStats();
   }
 
   // Products
   @Get('products')
-  getProducts(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(productController.getProducts, req, res, next);
+  getProducts(@Query() query: AdminProductQuery) {
+    return this.adminProductService.getProducts(query);
   }
 
   @Post('products')
-  addProduct(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(productController.addProduct, req, res, next);
+  addProduct(@Body() body: AdminProductPayload) {
+    return this.adminProductService.addProduct(body);
   }
 
   @Get('products/:id')
-  getProductDetail(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(productController.getProductDetail, req, res, next);
+  getProductDetail(@Param('id') id: string) {
+    return this.adminProductService.getProductDetail(id);
   }
 
   @Put('products/:id')
-  editProduct(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(productController.editProduct, req, res, next);
+  editProduct(@Param('id') id: string, @Body() body: AdminProductPayload) {
+    return this.adminProductService.editProduct(id, body);
   }
 
   @Delete('products/:id')
-  removeProduct(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(productController.removeProduct, req, res, next);
+  removeProduct(@Param('id') id: string) {
+    return this.adminProductService.removeProduct(id);
   }
 
   // Colors & Sizes
   @Post('products/:productId/colors')
-  addColor(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(colorController.addColor, req, res, next);
+  @HttpCode(200)
+  addColor(@Param('productId') productId: string, @Body() body: ColorPayload) {
+    return this.adminCatalogService.addColor(productId, body);
   }
 
   @Delete('colors/:id')
-  removeColor(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(colorController.removeColor, req, res, next);
+  removeColor(@Param('id') id: string) {
+    return this.adminCatalogService.removeColor(id);
   }
 
   @Post('colors/:colorId/sizes')
-  addSize(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(sizeController.addSize, req, res, next);
+  @HttpCode(200)
+  addSize(@Param('colorId') colorId: string, @Body() body: SizePayload) {
+    return this.adminCatalogService.addSize(colorId, body);
   }
 
   @Put('sizes/:id')
-  updateSize(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(sizeController.updateSize, req, res, next);
+  updateSize(@Param('id') id: string, @Body('stock') stock: number | string) {
+    return this.adminCatalogService.updateSize(id, stock);
   }
 
   @Delete('sizes/:id')
-  removeSize(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(sizeController.removeSize, req, res, next);
+  removeSize(@Param('id') id: string) {
+    return this.adminCatalogService.removeSize(id);
   }
 
   // Categories
   @Get('categories')
-  getCategories(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(categoryController.getCategories, req, res, next);
+  getCategories() {
+    return this.adminCatalogService.getCategories();
   }
 
   @Post('categories')
-  createCategory(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(categoryController.createCategory, req, res, next);
+  createCategory(@Body() body: CategoryPayload) {
+    return this.adminCatalogService.createCategory(body);
   }
 
   @Get('categories/recommend')
-  getCategoryRecommendations(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(categoryController.getCategoryRecommendations, req, res, next);
+  getCategoryRecommendations(@Query('gender') gender?: string) {
+    return this.adminCatalogService.getCategoryRecommendations(gender);
   }
 
   @Get('categories/:id/images')
-  getCategoryImages(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(categoryController.getCategoryImages, req, res, next);
+  getCategoryImages(@Param('id') id: string) {
+    return this.adminCatalogService.getCategoryImages(id);
   }
 
   @Put('categories/:id')
-  updateCategory(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(categoryController.updateCategory, req, res, next);
+  updateCategory(@Param('id') id: string, @Body() body: CategoryPayload) {
+    return this.adminCatalogService.updateCategory(id, body);
   }
 
   @Delete('categories/:id')
-  deleteCategory(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(categoryController.deleteCategory, req, res, next);
+  deleteCategory(@Param('id') id: string) {
+    return this.adminCatalogService.deleteCategory(id);
   }
 
   // Inventory
   @Get('inventory')
-  getInventory(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(inventoryController.getInventory, req, res, next);
+  getInventory() {
+    return this.adminCatalogService.getInventory();
   }
 
   // Memberships
   @Get('memberships')
-  getMemberships(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(membershipController.getMemberships, req, res, next);
+  getMemberships() {
+    return this.adminCatalogService.getMemberships();
   }
 
   @Post('memberships')
-  createMembership(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(membershipController.createMembership, req, res, next);
+  createMembership(@Body() body: MembershipPayload) {
+    return this.adminCatalogService.createMembership(body);
   }
 
   @Put('memberships/:id')
-  updateMembership(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(membershipController.updateMembership, req, res, next);
+  updateMembership(@Param('id') id: string, @Body() body: MembershipPayload) {
+    return this.adminCatalogService.updateMembership(id, body);
   }
 
   @Delete('memberships/:id')
-  deleteMembership(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(membershipController.deleteMembership, req, res, next);
+  deleteMembership(@Param('id') id: string) {
+    return this.adminCatalogService.deleteMembership(id);
   }
 
   // Users
   @Get('users')
-  getUsers(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(userController.getUsers, req, res, next);
+  getUsers(@Query() query: { search?: string; role?: string; page?: string; limit?: string }) {
+    return this.adminUserService.getUsers(query);
   }
 
   @Post('users')
-  createUser(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(userController.createUser, req, res, next);
+  createUser(@Body() body: Record<string, unknown>) {
+    return this.adminUserService.createUser(body);
   }
 
   @Get('users/:id')
-  getUserDetail(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(userController.getUserDetail, req, res, next);
+  getUserDetail(@Param('id') id: string) {
+    return this.adminUserService.getUserDetail(id);
   }
 
   @Put('users/:id')
-  updateUser(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(userController.updateUser, req, res, next);
+  updateUser(@Param('id') id: string, @Body() body: Record<string, unknown>, @CurrentUser() user: { id: number }) {
+    return this.adminUserService.updateUser(id, user?.id, body);
   }
 
   @Put('users/:id/password')
-  resetUserPassword(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(userController.resetUserPassword, req, res, next);
+  resetUserPassword(@Param('id') id: string, @Body() body: Record<string, unknown>) {
+    return this.adminUserService.resetUserPassword(id, body);
   }
 
   @Delete('users/:id')
-  deleteUser(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(userController.deleteUser, req, res, next);
+  deleteUser(@Param('id') id: string, @CurrentUser() user: { id: number }) {
+    return this.adminUserService.deleteUser(id, user?.id);
   }
 
   // Orders
   @Get('orders')
-  getOrders(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(orderController.getOrders, req, res, next);
+  getOrders(@Query() query: { page?: string; limit?: string; tab?: string; status?: string }) {
+    return this.adminOrderService.getOrders(query);
   }
 
   @Put('orders/:id/status')
-  updateOrderStatus(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(orderController.updateOrderStatus, req, res, next);
+  updateOrderStatus(@Param('id') id: string, @Body('status') status: string) {
+    return this.adminOrderService.updateOrderStatus(id, status);
   }
 
   @Put('orders/:id/payment')
-  confirmPayment(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(orderController.confirmPayment, req, res, next);
+  confirmPayment(@Param('id') id: string, @Body('payment_status') paymentStatus: unknown, @CurrentUser() user?: { id: number }) {
+    return this.adminOrderService.confirmPayment(id, paymentStatus, user?.id);
   }
 
   @Post('orders/:id/return/approve')
-  approveReturn(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(adminReturnController.approveReturn, req, res, next);
+  @HttpCode(200)
+  approveReturn(@Param('id') id: string) {
+    return this.adminReturnService.approveReturn(id);
   }
 
   @Post('orders/:id/return/reject')
-  rejectReturn(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(adminReturnController.rejectReturn, req, res, next);
+  @HttpCode(200)
+  rejectReturn(@Param('id') id: string, @Body('adminNote') adminNote?: string) {
+    return this.adminReturnService.rejectReturn(id, adminNote);
   }
 
   @Throttle({ default: { limit: 5, ttl: 60000 } })
   @Post('orders/:id/return/undo-approve')
-  undoApproveReturn(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(adminReturnController.undoApproveReturn, req, res, next);
+  @HttpCode(200)
+  undoApproveReturn(@Param('id') id: string, @Body() body: { stock_returned?: boolean; money_refunded?: boolean }, @CurrentUser() user?: { id: number }) {
+    return this.adminReturnService.undoApproveReturn(id, body, user?.id);
   }
 
   // Promotions
   @Get('promotions')
-  getAdminPromotions(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(promotionController.getAdminPromotions, req, res, next);
+  getAdminPromotions() {
+    return this.adminPromotionService.getAdminPromotions();
   }
 
   @Post('promotions')
-  createPromotion(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(promotionController.createPromotion, req, res, next);
+  createPromotion(@Body() body: PromotionPayload) {
+    return this.adminPromotionService.createPromotion(body);
   }
 
   @Put('promotions/:id')
-  updatePromotion(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(promotionController.updatePromotion, req, res, next);
+  updatePromotion(@Param('id') id: string, @Body() body: PromotionPayload) {
+    return this.adminPromotionService.updatePromotion(id, body);
   }
 
   @Delete('promotions/:id')
-  deletePromotion(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(promotionController.deletePromotion, req, res, next);
+  deletePromotion(@Param('id') id: string) {
+    return this.adminPromotionService.deletePromotion(id);
   }
 
   // Sales
   @Get('sales')
-  getAllSalesAdmin(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(saleController.getAllSalesAdmin, req, res, next);
+  getAllSalesAdmin() {
+    return this.adminSaleService.findAll();
   }
 
   @Post('sales')
-  createSaleAdmin(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(saleController.createSaleAdmin, req, res, next);
+  createSaleAdmin(@Body() body: SalePayload) {
+    return this.adminSaleService.create(body);
   }
 
   @Put('sales/:id')
-  updateSaleAdmin(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(saleController.updateSaleAdmin, req, res, next);
+  updateSaleAdmin(@Param('id') id: string, @Body() body: SalePayload) {
+    return this.adminSaleService.update(id, body);
   }
 
   @Put('sales/:id/status')
-  toggleSaleStatus(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(saleController.toggleSaleStatus, req, res, next);
+  toggleSaleStatus(@Param('id') id: string, @Body('status') status: unknown) {
+    return this.adminSaleService.toggleStatus(id, status);
   }
 
   @Delete('sales/:id')
-  removeSale(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(saleController.removeSale, req, res, next);
+  removeSale(@Param('id') id: string) {
+    return this.adminSaleService.remove(id);
   }
 
   @Get('sales/:id/details')
-  getSaleDetailsAdmin(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(saleController.getSaleDetailsAdmin, req, res, next);
+  getSaleDetailsAdmin(@Param('id') id: string, @Query('type') type?: string) {
+    return this.adminSaleService.getDetails(id, type);
   }
 
   // Vouchers
   @Get('vouchers')
-  getAllVouchersAdmin(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(voucherController.getAllVouchersAdmin, req, res, next);
+  getAllVouchersAdmin(@Query('includeDeleted') includeDeleted?: string) {
+    return this.adminVoucherService.findAll(includeDeleted === 'true');
   }
 
   @Post('vouchers')
-  createVoucherAdmin(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(voucherController.createVoucherAdmin, req, res, next);
+  createVoucherAdmin(@Body() body: VoucherPayload) {
+    return this.adminVoucherService.create(body);
   }
 
   @Put('vouchers/:id')
-  updateVoucherAdmin(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(voucherController.updateVoucherAdmin, req, res, next);
+  updateVoucherAdmin(@Param('id') id: string, @Body() body: VoucherPayload) {
+    return this.adminVoucherService.update(id, body);
   }
 
   @Put('vouchers/:id/status')
-  toggleVoucherStatus(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(voucherController.toggleVoucherStatus, req, res, next);
+  toggleVoucherStatus(@Param('id') id: string, @Body('status') status: unknown) {
+    return this.adminVoucherService.toggleStatus(id, status);
   }
 
   @Delete('vouchers/:id')
-  removeVoucher(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(voucherController.removeVoucher, req, res, next);
+  removeVoucher(@Param('id') id: string) {
+    return this.adminVoucherService.remove(id);
   }
 
   @Get('vouchers/:id/details')
-  getVoucherDetails(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(voucherController.getVoucherDetails, req, res, next);
+  getVoucherDetails(@Param('id') id: string) {
+    return this.adminVoucherService.getDetails(id);
   }
 
   // Banners
   @Get('banners')
-  getBanners(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(bannerController.getBanners, req, res, next);
+  getBanners() {
+    return this.adminCatalogService.getBanners();
   }
 
   @Post('banners')
-  addBanner(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(bannerController.addBanner, req, res, next);
+  addBanner(@Body() body: BannerPayload) {
+    return this.adminCatalogService.addBanner(body);
   }
 
   @Put('banners/:id')
-  editBanner(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(bannerController.editBanner, req, res, next);
+  editBanner(@Param('id') id: string, @Body() body: BannerPayload) {
+    return this.adminCatalogService.editBanner(id, body);
   }
 
   @Delete('banners/:id')
-  removeBanner(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(bannerController.removeBanner, req, res, next);
+  removeBanner(@Param('id') id: string) {
+    return this.adminCatalogService.removeBanner(id);
   }
 }

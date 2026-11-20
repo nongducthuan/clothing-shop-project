@@ -9,7 +9,7 @@ jest.mock('../../../prisma/client', () => ({
 }));
 
 import prisma from '../../../prisma/client';
-import { calculateCart } from '../../controllers/customer/promotionController';
+import { calculateCart } from '../../../test-fixtures/controllers/customer/promotionController';
 
 const mockedPrisma = prisma as unknown as {
   buyXGetYPromotion: { findMany: jest.Mock };

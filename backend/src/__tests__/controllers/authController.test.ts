@@ -22,7 +22,7 @@ jest.mock('bcryptjs', () => ({
 
 import prisma from '../../../prisma/client';
 import bcrypt from 'bcryptjs';
-import { register, login } from '../../controllers/customer/authController';
+import { register, login } from '../../../test-fixtures/controllers/customer/authController';
 
 function mockRes() {
   const res = {

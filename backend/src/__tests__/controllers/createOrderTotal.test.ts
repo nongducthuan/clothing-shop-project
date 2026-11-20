@@ -15,7 +15,7 @@ jest.mock('../../utils/emailQueue', () => ({
   queueEmail: jest.fn(),
 }));
 
-jest.mock('../../utils/socket', () => ({
+jest.mock('../../../test-fixtures/utils/socket', () => ({
   __esModule: true,
   getIO: jest.fn(),
   sendNotification: jest.fn().mockResolvedValue(true),
@@ -27,7 +27,7 @@ jest.mock('../../services/interactionService', () => ({
 }));
 
 import prisma from '../../../prisma/client';
-import { createOrderController } from '../../controllers/customer/orderController';
+import { createOrderController } from '../../../test-fixtures/controllers/customer/orderController';
 
 function mockRes() {
   return {

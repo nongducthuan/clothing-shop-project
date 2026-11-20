@@ -1,7 +1,6 @@
 import type { Prisma } from '../generated/prisma/client';
-import prisma from '../../prisma/client';
 
-export type TxClient = Parameters<Parameters<typeof prisma.$transaction>[0]>[0];
+export type TxClient = Prisma.TransactionClient;
 
 export type OrderWithItems = Prisma.OrderGetPayload<{
     include: { items: true };

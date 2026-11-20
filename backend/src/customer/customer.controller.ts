@@ -5,19 +5,38 @@ import {
   Put,
   Delete,
   UseGuards,
-  Req,
-  Res,
-  Next,
+  UseInterceptors,
+  Param,
+  Query,
+  Headers,
+  HttpCode,
+  UploadedFiles,
+  Body,
+  BadRequestException,
+  Ip,
 } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
-import type { Request, Response, NextFunction } from 'express';
+import { FilesInterceptor } from '@nestjs/platform-express';
+import multer from 'multer';
 
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { OptionalJwtAuthGuard } from '../common/guards/optional-jwt-auth.guard';
 import { GuestOrderAccessGuard } from '../common/guards/guest-order-access.guard';
 
-import { validate } from '../middleware/validateMiddleware';
-import { upload, persistUploadedImages } from '../middleware/uploadMiddleware';
+import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
+import { PersistImagesInterceptor } from '../common/interceptors/persist-images.interceptor';
+import { CustomerCatalogService } from './services/customer-catalog.service';
+import { CustomerChatService, ChatPayload } from './services/customer-chat.service';
+import { CustomerProductService } from './services/customer-product.service';
+import { CustomerPromotionService } from './services/customer-promotion.service';
+import { CustomerVoucherService } from './services/customer-voucher.service';
+import { CustomerAuthService } from './services/customer-auth.service';
+import { CustomerOrderLookupService } from './services/customer-order-lookup.service';
+import { CustomerOrderService } from './services/customer-order.service';
+import { CustomerReturnService, PersistedReturnImage } from './services/customer-return.service';
+import { CustomerPaymentService } from './services/customer-payment.service';
+import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { GuestEmail } from '../common/decorators/guest-email.decorator';
 import {
   registerSchema,
   loginSchema,
@@ -26,284 +45,315 @@ import {
   createOrderSchema,
 } from '../types/schemas';
 
-import * as authController from '../controllers/customer/authController';
-import * as bannerController from '../controllers/customer/bannerController';
-import * as categoryController from '../controllers/customer/categoryController';
-import * as chatController from '../controllers/customer/chatController';
-import * as membershipController from '../controllers/customer/membershipController';
-import * as orderController from '../controllers/customer/orderController';
-import * as orderLookupController from '../controllers/customer/orderLookupController';
-import * as paymentController from '../controllers/customer/paymentController';
-import * as productController from '../controllers/customer/productController';
-import * as productDetailController from '../controllers/customer/productDetailController';
-import * as promotionController from '../controllers/customer/promotionController';
-import * as returnController from '../controllers/customer/returnController';
-import * as saleController from '../controllers/customer/saleController';
-import * as voucherController from '../controllers/customer/voucherController';
-
-type ExpressHandler = (req: Request, res: Response, next: NextFunction) => unknown;
-
-const run = (fn: ExpressHandler, req: Request, res: Response, next: NextFunction) => fn(req, res, next);
 
 @Controller()
 export class CustomerController {
-  // Auth
+  constructor(
+    private readonly customerCatalogService: CustomerCatalogService,
+    private readonly customerChatService: CustomerChatService,
+    private readonly customerProductService: CustomerProductService,
+    private readonly customerPromotionService: CustomerPromotionService,
+    private readonly customerVoucherService: CustomerVoucherService,
+    private readonly customerAuthService: CustomerAuthService,
+    private readonly customerOrderLookupService: CustomerOrderLookupService,
+    private readonly customerOrderService: CustomerOrderService,
+    private readonly customerReturnService: CustomerReturnService,
+    private readonly customerPaymentService: CustomerPaymentService,
+  ) {}
+  // Authentication – native NestJS controller/service flow.
   @Throttle({ default: { limit: 5, ttl: 60 * 60 * 1000 } })
   @Post('auth/register')
-  register(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    validate(registerSchema)(req, res, (err) => {
-      if (err) return next(err);
-      return run(authController.register, req, res, next);
-    });
+  register(@Body(new ZodValidationPipe(registerSchema)) body: { name?: string; email?: string; phone?: string; password?: string }) {
+    return this.customerAuthService.register(body);
   }
 
   @Throttle({ default: { limit: 5, ttl: 15 * 60 * 1000 } })
   @Post('auth/login')
-  login(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    validate(loginSchema)(req, res, (err) => {
-      if (err) return next(err);
-      return run(authController.login, req, res, next);
-    });
+  @HttpCode(200)
+  login(@Body(new ZodValidationPipe(loginSchema)) body: { identifier?: string; password?: string }) {
+    return this.customerAuthService.login(body);
   }
 
   @Post('auth/refresh')
-  refreshToken(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(authController.refreshToken, req, res, next);
+  @HttpCode(200)
+  refreshToken(@Body() body: { refreshToken?: string }) {
+    return this.customerAuthService.refreshToken(body);
   }
 
   @UseGuards(JwtAuthGuard)
   @Post('auth/logout')
-  logout(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(authController.logout, req, res, next);
+  @HttpCode(200)
+  logout(@CurrentUser() user?: { id: number }) {
+    return this.customerAuthService.logout(user?.id);
   }
 
   @UseGuards(JwtAuthGuard)
   @Get('auth/me')
-  getMe(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(authController.getMe, req, res, next);
+  getMe(@CurrentUser() user?: { id: number }) {
+    return this.customerAuthService.getMe(user?.id);
   }
 
   @UseGuards(JwtAuthGuard)
   @Put('auth/profile')
-  updateProfile(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(authController.updateProfile, req, res, next);
+  updateProfile(@Body() body: { phone?: string }, @CurrentUser() user?: Record<string, unknown> & { id?: number }) {
+    return this.customerAuthService.updateProfile(user?.id, body, user);
   }
 
   @UseGuards(JwtAuthGuard)
   @Put('auth/password')
-  changePassword(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    validate(changePasswordSchema)(req, res, (err) => {
-      if (err) return next(err);
-      return run(authController.changePassword, req, res, next);
-    });
+  changePassword(
+    @Body(new ZodValidationPipe(changePasswordSchema)) body: { currentPassword?: string; newPassword?: string },
+    @CurrentUser() user?: { id: number },
+  ) {
+    return this.customerAuthService.changePassword(user?.id, body);
   }
 
   // Banners
   @Get('banners')
-  getBanners(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(bannerController.getBanners, req, res, next);
+  getBanners() {
+    return this.customerCatalogService.getBanners();
   }
 
   // Categories
   @Get('categories')
-  getCategories(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(categoryController.getCategories, req, res, next);
+  getCategories() {
+    return this.customerCatalogService.getCategories();
   }
 
   @Get('categories/preview')
-  getCategoriesWithPreview(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(categoryController.getCategoriesWithPreview, req, res, next);
+  getCategoriesWithPreview() {
+    return this.customerCatalogService.getCategoriesWithPreview();
   }
 
   @Get('categories/recommend')
-  getRecommendCategories(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(categoryController.getRecommendCategories, req, res, next);
+  getRecommendCategories(@Query('gender') gender?: string) {
+    return this.customerCatalogService.getRecommendCategories(gender);
   }
 
   // Chat
   @Post('chat')
-  handleChat(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(chatController.handleChat, req, res, next);
+  @HttpCode(200)
+  handleChat(
+    @Body() body: ChatPayload,
+    @Headers('accept-language') acceptLanguage?: string,
+    @Headers('language') languageHeader?: string,
+  ) {
+    return this.customerChatService.handleChat(body, acceptLanguage, languageHeader);
   }
 
   @Post('chat/history')
-  handleChatWithHistory(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(chatController.handleChatWithHistory, req, res, next);
+  @HttpCode(200)
+  handleChatWithHistory(
+    @Body() body: ChatPayload,
+    @Headers('accept-language') acceptLanguage?: string,
+    @Headers('language') languageHeader?: string,
+  ) {
+    return this.customerChatService.handleChatWithHistory(body, acceptLanguage, languageHeader);
   }
 
   @Delete('chat/history')
-  clearChatHistory(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(chatController.clearChatHistory, req, res, next);
+  clearChatHistory(@Body() body: ChatPayload) {
+    return this.customerChatService.clearChatHistory(body);
   }
 
   // Memberships
   @Get('memberships')
-  getMemberships(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(membershipController.getMemberships, req, res, next);
+  getMemberships() {
+    return this.customerCatalogService.getMemberships();
   }
 
   // Order OTP lookup
   @Throttle({ default: { limit: 5, ttl: 15 * 60 * 1000 } })
   @Post('orders/otp/send')
-  sendOtpController(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(orderLookupController.sendOtpController, req, res, next);
+  @HttpCode(200)
+  sendOtpController(@Body() body: { email?: string; lang?: string; language?: string }, @Headers('accept-language') acceptLanguage?: string, @Headers('language') languageHeader?: string) {
+    return this.customerOrderLookupService.sendOtp(body.email, body.lang || body.language, acceptLanguage, languageHeader);
   }
 
   @Throttle({ default: { limit: 10, ttl: 15 * 60 * 1000 } })
   @Post('orders/otp/verify')
-  verifyOtpAndGetOrders(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(orderLookupController.verifyOtpAndGetOrders, req, res, next);
+  @HttpCode(200)
+  verifyOtpAndGetOrders(@Body() body: { email?: string; code?: string }) {
+    return this.customerOrderLookupService.verifyOtp(body.email, body.code);
   }
 
   // Orders
   @UseGuards(OptionalJwtAuthGuard)
   @Post('orders')
-  createOrderController(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    validate(createOrderSchema)(req, res, (err) => {
-      if (err) return next(err);
-      return run(orderController.createOrderController, req, res, next);
-    });
+  createOrderController(
+    @Body(new ZodValidationPipe(createOrderSchema)) body: { address?: string; items?: import('../types/orderTypes').OrderRequestItem[]; phone?: string; name?: string; email?: string; payment_method?: string; voucher_id?: string | number },
+    @CurrentUser() user?: import('../common/interfaces/jwt-payload.interface').JwtPayload,
+    @Headers('accept-language') acceptLanguage?: string,
+    @Headers('language') language?: string,
+    @Headers('x-forwarded-for') forwardedFor?: string,
+    @Ip() ip?: string,
+  ) {
+    return this.customerOrderService.createOrder(body, user, { acceptLanguage, language, forwardedFor, remoteAddress: ip });
   }
 
   @UseGuards(JwtAuthGuard)
   @Get('orders')
-  getOrders(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(orderController.getOrders, req, res, next);
+  getOrders(@CurrentUser() user?: { id: number }) {
+    return this.customerOrderService.getOrders(user?.id);
   }
 
   @UseGuards(OptionalJwtAuthGuard, GuestOrderAccessGuard)
   @Put('orders/status')
-  changeOrderStatus(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(orderController.changeOrderStatus, req, res, next);
+  changeOrderStatus(@Body() body: { order_id?: string | number; new_status?: string }, @CurrentUser() user?: import('../common/interfaces/jwt-payload.interface').JwtPayload, @GuestEmail() guestEmail?: string) {
+    return this.customerOrderService.changeOrderStatus(body, user, guestEmail);
   }
 
   @UseGuards(OptionalJwtAuthGuard, GuestOrderAccessGuard)
   @Post('orders/:id/repay')
-  repayMoMoController(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(paymentController.repayMoMoController, req, res, next);
+  @HttpCode(200)
+  repayMoMoController(@Param('id') id: string, @Body() body: { new_payment_method?: string }, @CurrentUser() user?: import('../common/interfaces/jwt-payload.interface').JwtPayload, @GuestEmail() guestEmail?: string, @Headers('x-forwarded-for') forwardedFor?: string, @Ip() ip?: string) {
+    return this.customerPaymentService.repayMoMo(id, body, user, guestEmail, forwardedFor, ip);
   }
 
   @UseGuards(OptionalJwtAuthGuard, GuestOrderAccessGuard)
+  @UseInterceptors(
+    FilesInterceptor('images', 5, {
+      storage: multer.memoryStorage(),
+      limits: { fileSize: 5 * 1024 * 1024, files: 5 },
+      fileFilter: (_request, file, callback) => {
+        const allowedMimeTypes = new Set(['image/jpeg', 'image/png', 'image/webp']);
+        const allowedExtensions = new Set(['.jpg', '.jpeg', '.png', '.webp']);
+        const extension = file.originalname.split('.').pop()?.toLowerCase();
+        if (!allowedMimeTypes.has(file.mimetype) || !extension || !allowedExtensions.has(`.${extension}`)) {
+          callback(new BadRequestException('Only JPEG, PNG, and WebP images are allowed.'), false);
+          return;
+        }
+        callback(null, true);
+      },
+    }),
+    PersistImagesInterceptor,
+  )
   @Post('orders/:id/return')
-  submitReturnRequest(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    upload.array('images')(req, res, (err) => {
-      if (err) return next(err);
-      persistUploadedImages(req, res, (pErr) => {
-        if (pErr) return next(pErr);
-        return run(returnController.submitReturnRequest, req, res, next);
-      });
-    });
+  @HttpCode(200)
+  submitReturnRequest(
+    @Param('id') id: string,
+    @Body() body: { reason_code?: string; description?: string; returnItems?: unknown; refund_bank_info?: unknown; bankInfo?: unknown },
+    @UploadedFiles() files: PersistedReturnImage[] = [],
+    @CurrentUser() user?: import('../common/interfaces/jwt-payload.interface').JwtPayload,
+    @GuestEmail() guestEmail?: string,
+  ) {
+    return this.customerReturnService.submitReturnRequest(id, body, files, user, guestEmail);
   }
 
   @UseGuards(OptionalJwtAuthGuard, GuestOrderAccessGuard)
   @Delete('orders/:id/return')
-  cancelReturnRequest(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(returnController.cancelReturnRequest, req, res, next);
+  cancelReturnRequest(@Param('id') id: string, @CurrentUser() user?: import('../common/interfaces/jwt-payload.interface').JwtPayload, @GuestEmail() guestEmail?: string) {
+    return this.customerReturnService.cancelReturnRequest(id, user, guestEmail);
   }
 
   // Payment Webhooks & Callbacks
   @Post('orders/momo-callback')
-  momoCallback(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(paymentController.momoCallback, req, res, next);
+  @HttpCode(204)
+  momoCallback(@Body() body: Record<string, unknown>) {
+    return this.customerPaymentService.momoCallback(body);
   }
 
   @Get('orders/momo-return')
-  momoReturn(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(paymentController.momoReturn, req, res, next);
+  momoReturn(@Query() query: Record<string, unknown>) {
+    return this.customerPaymentService.momoReturn(query);
   }
 
   @Get('orders/vnpay-ipn')
-  vnpayIpnGet(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(paymentController.vnpayIpn, req, res, next);
+  vnpayIpnGet(@Query() query: Record<string, unknown>) {
+    return this.customerPaymentService.vnpayIpn(query);
   }
 
   @Post('orders/vnpay-ipn')
-  vnpayIpnPost(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(paymentController.vnpayIpn, req, res, next);
+  @HttpCode(200)
+  vnpayIpnPost(@Query() query: Record<string, unknown>) {
+    return this.customerPaymentService.vnpayIpn(query);
   }
 
   @Get('orders/vnpay-return')
-  vnpayReturn(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(paymentController.vnpayReturn, req, res, next);
+  vnpayReturn(@Query() query: Record<string, unknown>) {
+    return this.customerPaymentService.vnpayReturn(query);
   }
 
   // Products
   @Get('products')
-  getProducts(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(productController.getProducts, req, res, next);
+  getProducts(@Query() query: { category_id?: string; gender?: string; page?: string; limit?: string }) {
+    return this.customerProductService.getProducts(query);
   }
 
   @Get('products/search')
-  searchProducts(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(productController.searchProducts, req, res, next);
+  searchProducts(@Query() query: { q?: string; gender?: string; category?: string; page?: string; limit?: string }) {
+    return this.customerProductService.searchProducts(query);
   }
 
   @Get('products/representative')
-  getRepresentative(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(productController.getRepresentative, req, res, next);
+  getRepresentative(@Query('category_id') categoryId?: string) {
+    return this.customerProductService.getRepresentative(categoryId);
   }
 
   @Post('products/prices')
-  getProductPrices(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(productController.getProductPrices, req, res, next);
+  @HttpCode(200)
+  getProductPrices(@Body() body: { productIds?: unknown }) {
+    return this.customerProductService.getProductPrices(body);
   }
 
   @UseGuards(OptionalJwtAuthGuard)
   @Get('products/recommendations/:userId')
-  getRecommendations(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(productController.getRecommendations, req, res, next);
+  getRecommendations(@CurrentUser() user?: { id: number }) {
+    return this.customerProductService.getRecommendations(user?.id);
   }
 
   @UseGuards(OptionalJwtAuthGuard)
   @Get('products/:id')
-  getProduct(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(productController.getProduct, req, res, next);
+  getProduct(@Param('id') id: string, @CurrentUser() user?: { id: number }) {
+    return this.customerProductService.getProduct(id, user?.id);
   }
 
   @Get('products/:id/options')
-  getProductOptions(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(productController.getProductOptions, req, res, next);
+  getProductOptions(@Param('id') id: string) {
+    return this.customerProductService.getProductOptions(id);
   }
 
   @Get('products/:id/details')
-  getProductDetail(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(productDetailController.getProductDetail, req, res, next);
+  getProductDetail(@Param('id') id: string) {
+    return this.customerCatalogService.getProductDetail(id);
   }
 
   @UseGuards(JwtAuthGuard)
   @Post('products/interaction')
-  logInteraction(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(productController.logInteraction, req, res, next);
+  @HttpCode(200)
+  logInteraction(@Body() body: { productId?: number | string; type?: string }, @CurrentUser() user?: { id: number }) {
+    return this.customerProductService.logInteraction(user?.id, body);
   }
 
   // Promotions
   @Get('promotions')
-  getActivePromotions(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(promotionController.getActivePromotions, req, res, next);
+  getActivePromotions() {
+    return this.customerPromotionService.getActivePromotions();
   }
 
   @Post('promotions/calculate')
-  calculateCart(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(promotionController.calculateCart, req, res, next);
+  @HttpCode(200)
+  calculateCart(@Body() body: { cartItems?: unknown }) {
+    return this.customerPromotionService.calculateCart(body);
   }
 
   // Sales
   @Get('sales')
-  getCustomerSales(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(saleController.getCustomerSales, req, res, next);
+  getCustomerSales() {
+    return this.customerCatalogService.getCustomerSales();
   }
 
   // Vouchers
   @Get('vouchers')
-  getActiveVouchers(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    return run(voucherController.getActiveVouchers, req, res, next);
+  getActiveVouchers(@Query() query: { category_id?: string; product_id?: string }) {
+    return this.customerVoucherService.getActiveVouchers(query);
   }
 
   @Post('vouchers/apply')
-  applyVoucherCustomer(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-    validate(applyVoucherSchema)(req, res, (err) => {
-      if (err) return next(err);
-      return run(voucherController.applyVoucherCustomer, req, res, next);
-    });
+  @HttpCode(200)
+  applyVoucherCustomer(@Body(new ZodValidationPipe(applyVoucherSchema)) validatedBody: {
+    code?: string; orderTotal?: number | string; subtotal?: number | string; membershipDiscountableSubtotal?: number | string; cartItems?: unknown;
+  }) {
+    return this.customerVoucherService.applyVoucher(validatedBody);
   }
 }

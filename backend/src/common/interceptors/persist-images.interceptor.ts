@@ -9,7 +9,14 @@ import { Observable } from 'rxjs';
 import path from 'path';
 import fs from 'fs';
 import { randomUUID } from 'crypto';
-import { Request } from 'express';
+
+type UploadedImage = {
+  fieldname: string;
+  mimetype: string;
+  buffer: Buffer;
+  filename?: string;
+};
+type UploadRequest = { files?: UploadedImage[] };
 
 const uploadDir = path.join(process.cwd(), 'uploads');
 if (!fs.existsSync(uploadDir)) {
@@ -31,7 +38,7 @@ function isSupportedImage(buffer: Buffer): boolean {
 @Injectable()
 export class PersistImagesInterceptor implements NestInterceptor {
   async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<unknown>> {
-    const request = context.switchToHttp().getRequest<Request>();
+    const request = context.switchToHttp().getRequest<UploadRequest>();
     const files = request.files;
 
     if (!Array.isArray(files) || files.length === 0) {

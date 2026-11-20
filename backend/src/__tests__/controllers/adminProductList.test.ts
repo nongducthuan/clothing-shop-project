@@ -8,7 +8,7 @@ jest.mock('../../../prisma/client', () => ({
 }));
 
 import prisma from '../../../prisma/client';
-import { getProducts } from '../../controllers/admin/productController';
+import { getProducts } from '../../../test-fixtures/controllers/admin/productController';
 
 /** 1 sản phẩm tối thiểu để controller tính tồn kho/lợi nhuận. */
 const sampleProduct = (overrides: Record<string, unknown> = {}) => ({

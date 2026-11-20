@@ -34,7 +34,7 @@ import {
   getUsers,
   resetUserPassword,
   updateUser,
-} from '../../controllers/admin/userController';
+} from '../../../test-fixtures/controllers/admin/userController';
 
 const ADMIN = { id: 1, name: 'Admin', email: 'admin@shop.com', role: 'admin' };
 

@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import fs from 'fs';
 import path from 'path';
 import { z, ZodType } from 'zod';
-import { validate } from '../../middleware/validateMiddleware';
+import { validate } from '../../../test-fixtures/middleware/validateMiddleware';
 import {
   applyVoucherSchema,
   createOrderSchema,

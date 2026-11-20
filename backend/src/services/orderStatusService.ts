@@ -1,5 +1,4 @@
-import prisma from '../../prisma/client';
-import type { Prisma, OrderStatus, PaymentStatus } from '../generated/prisma/client';
+import type { Prisma, PrismaClient, OrderStatus, PaymentStatus } from '../generated/prisma/client';
 import type { TxClient } from '../types/orderTypes';
 import { updateOrderInventory } from './orderStatusInventoryService';
 import { updateOrderFinancials } from './orderStatusFinancialService';
@@ -98,9 +97,10 @@ export type StatusLogicOpts = {
 export const changeOrderStatusLogic = async (
     orderId: number,
     newStatus: string,
-    opts?: StatusLogicOpts
+    db: PrismaClient,
+    opts?: StatusLogicOpts,
 ) => {
-    return await prisma.$transaction(async (tx) => {
+    return await db.$transaction(async (tx) => {
         await changeOrderStatusLogicTx(tx, orderId, newStatus, opts);
     });
 };
@@ -216,9 +216,10 @@ export const changeOrderStatusLogicTx = async (
  */
 export const updateOrderStatusByAdmin = async (
     orderId: number,
-    status: string
+    status: string,
+    db: PrismaClient,
 ): Promise<{ userId: number | null }> => {
-    const order = await prisma.order.findUnique({
+    const order = await db.order.findUnique({
         where: { id: orderId },
         select: { status: true, user_id: true }
     });
@@ -258,7 +259,7 @@ export const updateOrderStatusByAdmin = async (
         // đối xứng với undoApproveReturn — để admin bấm Approve/Reject lại ngay mà
         // khách không phải gửi lại yêu cầu đổi trả lần 2. Đơn về "Return Requested"
         // (không phải "Delivered") vì yêu cầu đổi trả vẫn đang mở.
-        await prisma.$transaction(async (tx) => {
+        await db.$transaction(async (tx) => {
             await changeOrderStatusLogicTx(tx, orderId, status, { isUndo, skipFinancial });
             await tx.returnRequest.updateMany({
                 where: { order_id: orderId },
@@ -266,7 +267,7 @@ export const updateOrderStatusByAdmin = async (
             });
         });
     } else {
-        await changeOrderStatusLogic(orderId, status, { isUndo, skipFinancial });
+        await changeOrderStatusLogic(orderId, status, db, { isUndo, skipFinancial });
     }
 
     return { userId: order.user_id ?? null };
@@ -293,9 +294,10 @@ const ALLOWED_PAYMENT_TRANSITIONS: Record<string, string[]> = {
 export const confirmPaymentStatus = async (
     orderId: number,
     paymentStatus: unknown,
-    changedBy: number | null
+    changedBy: number | null,
+    db: PrismaClient,
 ): Promise<void> => {
-    const order = await prisma.order.findUnique({ where: { id: orderId } });
+    const order = await db.order.findUnique({ where: { id: orderId } });
     if (!order) throw new OrderServiceError(404, 'Order not found.');
 
     const from: PaymentStatus = order.payment_status;
@@ -320,9 +322,9 @@ export const confirmPaymentStatus = async (
 
     if (from === to) return;
 
-    await prisma.$transaction([
-        prisma.order.update({ where: { id: orderId }, data: { payment_status: to } }),
-        prisma.paymentStatusLog.create({
+    await db.$transaction([
+        db.order.update({ where: { id: orderId }, data: { payment_status: to } }),
+        db.paymentStatusLog.create({
             data: {
                 order_id: orderId,
                 from_status: from,

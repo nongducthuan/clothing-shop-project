@@ -1,25 +1,26 @@
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
-import { Request } from 'express';
 import jwt from 'jsonwebtoken';
 import { JwtPayload } from '../interfaces/jwt-payload.interface';
+
+type AuthenticatedRequest = {
+  headers: { authorization?: string | string[] };
+  user?: JwtPayload;
+};
 
 @Injectable()
 export class OptionalJwtAuthGuard implements CanActivate {
   canActivate(context: ExecutionContext): boolean {
-    const request = context.switchToHttp().getRequest<Request>();
-    const authHeader = request.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
+    const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
+    const authHeader = request.headers.authorization;
+    const token = typeof authHeader === 'string' ? authHeader.split(' ')[1] : undefined;
+    if (!token || token === 'null') return true;
 
-    if (!token || token === 'null') {
-      return true;
-    }
-
-    const SECRET = process.env.JWT_SECRET as string;
+    const secret = process.env.JWT_SECRET;
+    if (!secret) return true;
     try {
-      const decoded = jwt.verify(token, SECRET) as JwtPayload;
-      request.user = decoded;
+      request.user = jwt.verify(token, secret) as JwtPayload;
     } catch {
-      // Invalid token treated as unauthenticated
+      // Invalid token is treated as unauthenticated for optional-auth routes.
     }
     return true;
   }

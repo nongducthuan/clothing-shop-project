@@ -11,11 +11,12 @@
     "postinstall": "prisma generate",
     "test": "jest",
     "test:coverage": "jest --coverage",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit -p tsconfig.build.json",
     "check:no-any": "node scripts/check-no-any.cjs",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "check:nestjs-migration": "node scripts/check-nestjs-migration.cjs"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
@@ -73,16 +74,28 @@
   },
   "jest": {
     "testEnvironment": "node",
-    "setupFiles": ["<rootDir>/src/__tests__/setup.ts"],
-    "testMatch": ["**/__tests__/**/*.test.ts"],
+    "setupFiles": [
+      "<rootDir>/src/__tests__/setup.ts"
+    ],
+    "testMatch": [
+      "**/__tests__/**/*.test.ts"
+    ],
     "transform": {
-      "^.+\\.tsx?$": ["@swc/jest", {
-        "jsc": {
-          "parser": { "syntax": "typescript", "decorators": true },
-          "target": "es2020"
-        },
-        "module": { "type": "commonjs" }
-      }]
+      "^.+\\.tsx?$": [
+        "@swc/jest",
+        {
+          "jsc": {
+            "parser": {
+              "syntax": "typescript",
+              "decorators": true
+            },
+            "target": "es2020"
+          },
+          "module": {
+            "type": "commonjs"
+          }
+        }
+      ]
     }
   }
 }

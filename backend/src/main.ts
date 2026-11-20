@@ -2,13 +2,12 @@ import 'reflect-metadata';
 import dotenv from 'dotenv';
 dotenv.config();
 
-import { NestFactory } from '@nestjs/core';
+import { HttpAdapterHost, NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { SocketIoAdapter } from './socket/socket-io.adapter';
 import { SocketService } from './socket/socket.service';
 import { checkCriticalEnv } from './utils/envCheck';
-import { startAutoCancelJob } from './services/autoCancelService';
 import helmet from 'helmet';
 import path from 'path';
 import { NestExpressApplication } from '@nestjs/platform-express';
@@ -46,7 +45,7 @@ async function bootstrap() {
   app.useStaticAssets(path.resolve(process.cwd(), 'uploads'), { prefix: '/uploads' });
 
   // Global exception filter
-  app.useGlobalFilters(new AllExceptionsFilter());
+  app.useGlobalFilters(new AllExceptionsFilter(app.get(HttpAdapterHost)));
 
   // Global prefix for all API routes
   app.setGlobalPrefix('api');
@@ -63,8 +62,6 @@ async function bootstrap() {
 
   console.log(`Server is running at port ${PORT}`);
 
-  // Tự động hủy đơn MoMo/VNPay quá hạn chưa thanh toán
-  startAutoCancelJob();
 }
 
 bootstrap();

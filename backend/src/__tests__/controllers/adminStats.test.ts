@@ -1,16 +1,23 @@
-import { Request, Response } from 'express';
+import { InternalServerErrorException } from '@nestjs/common';
+import { PrismaService } from '../../prisma/prisma.service';
+import { AdminStatsService } from '../../admin/services/admin-stats.service';
 
-jest.mock('../../../prisma/client', () => ({
-  __esModule: true,
-  default: {
-    $queryRawUnsafe: jest.fn(),
-  },
-}));
+const prismaMock = {
+  $queryRaw: jest.fn(),
+};
+const service = new AdminStatsService(prismaMock as unknown as PrismaService);
 
-import prisma from '../../../prisma/client';
-import { getAdminStats } from '../../controllers/admin/statsController';
+/** Prisma.sql returns a Sql object; its sql field contains the SQL text with placeholders. */
+const sqlText = (query: unknown): string => {
+  if (typeof query === 'string') return query;
+  if (query && typeof query === 'object') {
+    const candidate = query as { sql?: unknown; text?: unknown };
+    if (typeof candidate.sql === 'string') return candidate.sql;
+    if (typeof candidate.text === 'string') return candidate.text;
+  }
+  return String(query);
+};
 
-/** COUNT/SUM của PostgreSQL trả BigInt => controller phải ép về number trước khi trả JSON. */
 const DASHBOARD_ROW = {
   totalStock: 137n,
   orders: 42n,
@@ -21,46 +28,24 @@ const DASHBOARD_ROW = {
   activePromotions: 1n,
   users: 17n,
 };
-
 const SUMMARY_ROW = { weeklyOrders: 10n, weeklyRevenue: '1500000' };
 
-const queryRawUnsafe = () => prisma.$queryRawUnsafe as jest.Mock;
-
-const isDashboardSql = (sql: unknown) => String(sql).includes('AS \"activePromotions\"');
-
-const dashboardSql = () =>
-  queryRawUnsafe().mock.calls.find(([sql]) => isDashboardSql(sql))?.[0] as string | undefined;
-
-function mockRes() {
-  return {
-    status: jest.fn().mockReturnThis(),
-    json: jest.fn().mockReturnThis(),
-  } as unknown as Response;
-}
-
-/** getAdminStats là async function thường (không bọc catchAsync) nên await là đủ. */
-async function invoke() {
-  const res = mockRes();
-  await getAdminStats({} as Request, res);
-  return res;
-}
-
-const jsonBody = (res: Response) => (res.json as jest.Mock).mock.calls[0][0];
+const isDashboardSql = (query: unknown) => sqlText(query).includes('AS "activePromotions"');
+const queryRaw = () => prismaMock.$queryRaw;
 
 beforeEach(() => {
   jest.clearAllMocks();
-
-  queryRawUnsafe().mockImplementation((sql: string) => {
-    if (isDashboardSql(sql)) return Promise.resolve([DASHBOARD_ROW]);
-    if (String(sql).includes('AS \"weeklyOrders\"')) return Promise.resolve([SUMMARY_ROW]);
+  queryRaw().mockImplementation((query: unknown) => {
+    const sql = sqlText(query);
+    if (isDashboardSql(query)) return Promise.resolve([DASHBOARD_ROW]);
+    if (sql.includes('AS "weeklyOrders"')) return Promise.resolve([SUMMARY_ROW]);
     return Promise.resolve([]);
   });
 });
 
-describe('getAdminStats – 8 số đếm cho Dashboard', () => {
-  it('trả về dashboard counters dạng number, không mất dữ liệu báo cáo cũ', async () => {
-    const res = await invoke();
-    const body = jsonBody(res);
+describe('AdminStatsService', () => {
+  it('returns dashboard counters as numbers and preserves the existing report fields', async () => {
+    const body = await service.getAdminStats();
 
     expect(body.dashboard).toEqual({
       totalStock: 137,
@@ -77,59 +62,58 @@ describe('getAdminStats – 8 số đếm cho Dashboard', () => {
     expect(body.orderStatus).toEqual([]);
   });
 
-  it('chỉ đếm bản ghi đang hoạt động, giống điều kiện lọc của các trang quản lý', async () => {
-    await invoke();
-    const sql = dashboardSql() || '';
+  it('counts only active records using the existing dashboard filters', async () => {
+    await service.getAdminStats();
+    const query = queryRaw().mock.calls.find(([value]) => isDashboardSql(value))?.[0];
+    const sql = sqlText(query);
 
-    // Tồn kho: chỉ sản phẩm is_active, cộng stock của mọi size.
     expect(sql).toContain('JOIN products p ON pc.product_id = p.id');
     expect(sql).toContain('p.is_active IS TRUE');
     expect(sql).toContain('FROM product_sizes ps');
-    // Danh mục xóa mềm không tính.
     expect(sql).toContain('FROM categories WHERE is_active IS TRUE');
-    // Sale/Voucher dùng cờ boolean.
     expect(sql).toContain('FROM sales WHERE status IS TRUE');
     expect(sql).toContain('FROM vouchers WHERE status IS TRUE');
-    // Khuyến mãi: chỉ status active và chưa xóa mềm.
     expect(sql).toContain("status = 'active' AND is_active IS TRUE");
     expect(sql).toContain('FROM buy_x_get_y_promotions');
-    // Đơn hàng / người dùng / banner đếm toàn bộ.
     expect(sql).toContain('FROM orders');
     expect(sql).toContain('FROM users');
     expect(sql).toContain('FROM banners');
   });
 
-  it('dùng snapshot/fallback giá vốn và chỉ tính doanh thu từ trạng thái được ghi nhận', async () => {
-    await invoke();
-    const summarySql = queryRawUnsafe().mock.calls.find(([sql]) => String(sql).includes('AS \"weeklyProfit\"'))?.[0] as string;
+  it('keeps the cost snapshot fallback and excludes returned orders from weekly order counts', async () => {
+    await service.getAdminStats();
+    const query = queryRaw().mock.calls.find(([value]) => sqlText(value).includes('AS "weeklyProfit"'))?.[0];
+    const sql = sqlText(query);
 
-    expect(summarySql).toContain('COALESCE(oi.import_price_snapshot, p.import_price)');
-    expect(summarySql).toContain('THEN o.id END) AS \"weeklyOrders\"'); // all created orders are counted
-    expect(summarySql).toContain("o.status IN ('Delivered','Return Requested','Return Rejected')"); // Return Approved excluded: refunded orders should not inflate order count
+    expect(sql).toContain('COALESCE(oi.import_price_snapshot, p.import_price)');
+    expect(sql).toContain('THEN o.id END) AS "weeklyOrders"');
+    expect(sql).toContain("o.status IN ('Delivered','Return Requested','Return Rejected')");
   });
 
-  it('gộp 8 ô dashboard vào đúng 1 truy vấn SQL', async () => {
-    await invoke();
-
-    const dashboardCalls = queryRawUnsafe().mock.calls.filter(([sql]) => isDashboardSql(sql));
+  it('executes the eight dashboard counters in a single SQL query', async () => {
+    await service.getAdminStats();
+    const dashboardCalls = queryRaw().mock.calls.filter(([query]) => isDashboardSql(query));
     expect(dashboardCalls).toHaveLength(1);
   });
 
-  it('không có dòng nào trả về thì dashboard là object rỗng (không crash)', async () => {
-    queryRawUnsafe().mockImplementation(() => Promise.resolve([]));
-
-    const res = await invoke();
-
-    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ dashboard: {} }));
+  it('returns an empty dashboard object when the database returns no dashboard row', async () => {
+    queryRaw().mockImplementation(() => Promise.resolve([]));
+    const body = await service.getAdminStats();
+    expect(body.dashboard).toEqual({});
   });
 
-  it('truy vấn lỗi thì trả 500 kèm message cũ', async () => {
+  it('throws a Nest HTTP exception with the previous error message on database failure', async () => {
     jest.spyOn(console, 'error').mockImplementation(() => undefined);
-    queryRawUnsafe().mockRejectedValue(new Error('DB down'));
+    queryRaw().mockRejectedValue(new Error('DB down'));
 
-    const res = await invoke();
-
-    expect(res.status).toHaveBeenCalledWith(500);
-    expect(jsonBody(res)).toEqual({ message: 'Server error fetching statistics' });
+    try {
+      await service.getAdminStats();
+      throw new Error('Expected getAdminStats to throw');
+    } catch (error) {
+      expect(error).toBeInstanceOf(InternalServerErrorException);
+      expect((error as InternalServerErrorException).getResponse()).toEqual({
+        message: 'Server error fetching statistics',
+      });
+    }
   });
 });

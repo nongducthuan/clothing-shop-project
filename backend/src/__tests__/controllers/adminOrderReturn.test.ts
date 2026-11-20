@@ -9,7 +9,7 @@ jest.mock('../../../prisma/client', () => ({
 }));
 
 import prisma from '../../../prisma/client';
-import { updateOrderStatus, rejectReturn } from '../../controllers/admin/orderController';
+import { updateOrderStatus, rejectReturn } from '../../../test-fixtures/controllers/admin/orderController';
 
 function mockRes() {
   const res = {

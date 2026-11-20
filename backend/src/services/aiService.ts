@@ -1,5 +1,6 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import prisma from '../../prisma/client';
+import { Injectable } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
 import type { ProductModel, CategoryModel } from '../generated/prisma/models.js';
 
 export interface ChatMessageHistory {
@@ -38,7 +39,7 @@ function summarizeScope(scope: string, productNames: string[], categoryNames: st
     return 'Áp dụng toàn bộ cửa hàng';
 }
 
-async function getCachedCatalogContext(): Promise<string> {
+async function getCachedCatalogContext(prisma: PrismaService): Promise<string> {
     const now = Date.now();
     if (catalogContextCache && now - lastCatalogCacheTime < CATALOG_CACHE_TTL_MS) {
         return catalogContextCache;
@@ -93,7 +94,7 @@ Cửa hàng thời trang Clothing Shop.
     }
 }
 
-async function getLivePromotionContext(now: Date): Promise<string> {
+async function getLivePromotionContext(prisma: PrismaService, now: Date): Promise<string> {
     try {
         const [promotions, vouchers] = await Promise.all([
             prisma.sale.findMany({
@@ -180,23 +181,23 @@ Hiện không thể xác minh trạng thái chương trình/voucher. Không kh�
     }
 }
 
-async function getShopContext(): Promise<string> {
+async function getShopContext(prisma: PrismaService): Promise<string> {
     const now = new Date();
     const [catalogContext, promotionContext] = await Promise.all([
-        getCachedCatalogContext(),
-        getLivePromotionContext(now),
+        getCachedCatalogContext(prisma),
+        getLivePromotionContext(prisma, now),
     ]);
     return `${catalogContext}\n${promotionContext}`;
 }
 
-export async function generateAiResponse(message: string, history: ChatMessageHistory[] = [], language: string = 'vi'): Promise<string> {
+async function generateAiResponseWithPrisma(prisma: PrismaService, message: string, history: ChatMessageHistory[] = [], language: string = 'vi'): Promise<string> {
     const apiKey = process.env.GOOGLE_API_KEY;
     if (!apiKey) {
         throw new Error('GOOGLE_API_KEY is not configured in backend environment variables.');
     }
 
     const genAI = new GoogleGenerativeAI(apiKey);
-    const shopContext = await getShopContext();
+    const shopContext = await getShopContext(prisma);
 
     const defaultLanguage = language === 'en' ? 'English' : 'Vietnamese';
     const languageInstruction = `Match the language of the user's latest message. Reply in Vietnamese to Vietnamese messages and English to English messages. If unclear, use ${defaultLanguage}.`;
@@ -245,4 +246,14 @@ ${shopContext}`;
     const result = await model.generateContent({ contents });
     const response = await result.response;
     return response.text();
+}
+
+
+@Injectable()
+export class AiService {
+    constructor(private readonly prisma: PrismaService) {}
+
+    generateAiResponse(message: string, history: ChatMessageHistory[] = [], language = 'vi'): Promise<string> {
+        return generateAiResponseWithPrisma(this.prisma, message, history, language);
+    }
 }

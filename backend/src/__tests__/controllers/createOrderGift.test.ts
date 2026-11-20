@@ -10,13 +10,13 @@ jest.mock('../../utils/emailService', () => ({
   sendEmail: jest.fn().mockResolvedValue({ success: true }),
 }));
 
-jest.mock('../../utils/socket', () => ({
+jest.mock('../../../test-fixtures/utils/socket', () => ({
   __esModule: true,
   sendNotification: jest.fn().mockResolvedValue(undefined),
 }));
 
 import prisma from '../../../prisma/client';
-import { createOrderController } from '../../controllers/customer/orderController';
+import { createOrderController } from '../../../test-fixtures/controllers/customer/orderController';
 
 function mockRes() {
   return {
