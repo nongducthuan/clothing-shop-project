@@ -42,15 +42,11 @@ export class CustomerCatalogService {
   }
 
   async getCategories() {
-    try {
-      const categories = await this.prisma.category.findMany({
-        where: { is_active: true },
-        orderBy: { id: 'asc' },
-      });
-      return { data: categories };
-    } catch (error) {
-      throw error;
-    }
+    const categories = await this.prisma.category.findMany({
+      where: { is_active: true },
+      orderBy: { id: 'asc' },
+    });
+    return { data: categories };
   }
 
   async getRecommendCategories(gender?: string) {
@@ -58,29 +54,25 @@ export class CustomerCatalogService {
       throw new BadRequestException({ status: 'fail', message: 'Missing gender' });
     }
 
-    try {
-      const validGender = gender as 'male' | 'female' | 'unisex';
-      const categoriesOfTarget = await this.prisma.category.findMany({
-        where: { gender: validGender, is_active: true },
-        select: { name: true },
-      });
-      const targetNames = categoriesOfTarget.map((category) => category.name);
+    const validGender = gender as 'male' | 'female' | 'unisex';
+    const categoriesOfTarget = await this.prisma.category.findMany({
+      where: { gender: validGender, is_active: true },
+      select: { name: true },
+    });
+    const targetNames = categoriesOfTarget.map((category) => category.name);
 
-      const recommendCategories = await this.prisma.category.findMany({
-        where: {
-          gender: { not: validGender },
-          name: { notIn: targetNames },
-          is_active: true,
-        },
-        select: { name: true },
-        distinct: ['name'],
-        orderBy: { name: 'asc' },
-      });
+    const recommendCategories = await this.prisma.category.findMany({
+      where: {
+        gender: { not: validGender },
+        name: { notIn: targetNames },
+        is_active: true,
+      },
+      select: { name: true },
+      distinct: ['name'],
+      orderBy: { name: 'asc' },
+    });
 
-      return { data: recommendCategories };
-    } catch (error) {
-      throw error;
-    }
+    return { data: recommendCategories };
   }
 
   async getCategoriesWithPreview() {
@@ -90,56 +82,52 @@ export class CustomerCatalogService {
       return { data: cachedData };
     }
 
-    try {
-      const categories = await this.prisma.category.findMany({
-        where: {
-          is_active: true,
-          products: { some: { is_active: true } },
-        },
-        orderBy: { id: 'asc' },
-        include: {
-          products: {
-            take: 1,
-            orderBy: { id: 'asc' },
-            include: {
-              colors: {
-                where: { image_url: { not: '' } },
-                take: 1,
-              },
+    const categories = await this.prisma.category.findMany({
+      where: {
+        is_active: true,
+        products: { some: { is_active: true } },
+      },
+      orderBy: { id: 'asc' },
+      include: {
+        products: {
+          take: 1,
+          orderBy: { id: 'asc' },
+          include: {
+            colors: {
+              where: { image_url: { not: '' } },
+              take: 1,
             },
           },
         },
-      });
+      },
+    });
 
-      const rows = categories.map((category) => {
-        let previewImage: string | null = null;
-        if (category.image_url) {
-          previewImage = category.image_url;
-        } else if (category.products.length > 0) {
-          const product = category.products[0];
-          if (product.colors.length > 0 && product.colors[0].image_url) {
-            previewImage = product.colors[0].image_url;
-          } else if (product.image_url) {
-            previewImage = product.image_url;
-          }
+    const rows = categories.map((category) => {
+      let previewImage: string | null = null;
+      if (category.image_url) {
+        previewImage = category.image_url;
+      } else if (category.products.length > 0) {
+        const product = category.products[0];
+        if (product.colors.length > 0 && product.colors[0].image_url) {
+          previewImage = product.colors[0].image_url;
+        } else if (product.image_url) {
+          previewImage = product.image_url;
         }
+      }
 
-        return {
-          id: category.id,
-          name: category.name,
-          name_vi: category.name_vi,
-          name_en: category.name_en,
-          gender: category.gender,
-          image_url: category.image_url,
-          preview_image: previewImage,
-        };
-      });
+      return {
+        id: category.id,
+        name: category.name,
+        name_vi: category.name_vi,
+        name_en: category.name_en,
+        gender: category.gender,
+        image_url: category.image_url,
+        preview_image: previewImage,
+      };
+    });
 
-      appCache.set(cacheKey, rows);
-      return { data: rows };
-    } catch (error) {
-      throw error;
-    }
+    appCache.set(cacheKey, rows);
+    return { data: rows };
   }
 
   async getProductDetail(id: string) {

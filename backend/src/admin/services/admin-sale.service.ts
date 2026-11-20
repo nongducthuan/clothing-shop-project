@@ -27,6 +27,7 @@ export class AdminSaleService {
   async create(payload: SalePayload) {
     try {
       const baseName = payload.name || payload.name_vi || payload.name_en;
+      if (!baseName) throw new BadRequestException({ message: 'Sale name is required' });
       await this.prisma.$transaction(async (tx) => {
         const sale = await tx.sale.create({
           data: {

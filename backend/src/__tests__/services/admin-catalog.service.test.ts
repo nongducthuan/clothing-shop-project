@@ -1,6 +1,10 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AdminCatalogService } from '../../admin/services/admin-catalog.service';
+import { AdminBannerService } from '../../admin/services/admin-banner.service';
+import { AdminProductVariantService } from '../../admin/services/admin-product-variant.service';
+import { AdminCategoryService } from '../../admin/services/admin-category.service';
+import { AdminMembershipService } from '../../admin/services/admin-membership.service';
 
 const prismaMock = {
   banner: { findMany: jest.fn(), create: jest.fn(), update: jest.fn(), delete: jest.fn() },
@@ -8,7 +12,13 @@ const prismaMock = {
   productSize: { findFirst: jest.fn(), create: jest.fn(), update: jest.fn(), delete: jest.fn(), findUnique: jest.fn() },
   product: { findMany: jest.fn() },
 };
-const service = new AdminCatalogService(prismaMock as unknown as PrismaService);
+const prisma = prismaMock as unknown as PrismaService;
+const service = new AdminCatalogService(
+  new AdminBannerService(prisma),
+  new AdminProductVariantService(prisma),
+  new AdminCategoryService(prisma),
+  new AdminMembershipService(prisma),
+);
 
 beforeEach(() => jest.clearAllMocks());
 

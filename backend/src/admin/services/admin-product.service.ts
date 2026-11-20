@@ -112,6 +112,7 @@ export class AdminProductService {
     try {
       await this.validateGenderAndCategory(payload.gender, payload.category_id);
       const baseName = payload.name || payload.name_vi || payload.name_en;
+      if (!baseName) throw new BadRequestException({ message: 'Product name is required' });
       const baseDescription = payload.description || payload.description_vi || payload.description_en || '';
       const product = await this.prisma.product.create({
         data: {

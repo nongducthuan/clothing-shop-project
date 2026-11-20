@@ -26,6 +26,7 @@ export class CustomerReturnService {
     guestOrderEmail?: string,
   ) {
     const orderId = Number(orderIdValue);
+    if (!body.reason_code) throw new BadRequestException({ message: 'Return reason is required.' });
     try {
       let parsedReturnItems: { order_item_id: number; return_quantity: number }[] = [];
       if (body.returnItems) {

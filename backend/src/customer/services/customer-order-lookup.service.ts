@@ -2,13 +2,20 @@ import {
   BadRequestException,
   Injectable,
   InternalServerErrorException,
-  TooManyRequestsException,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 import { createHmac, randomInt, timingSafeEqual } from 'crypto';
 import jwt from 'jsonwebtoken';
 import { PrismaService } from '../../prisma/prisma.service';
 import { sendOtpEmail } from '../../utils/emailService';
 import { formatOrderResponse } from '../../utils/formatOrder';
+
+class TooManyRequestsException extends HttpException {
+  constructor(response: string | object) {
+    super(response, HttpStatus.TOO_MANY_REQUESTS);
+  }
+}
 
 function hashOtp(code: string): string {
   const secret = process.env.JWT_SECRET;

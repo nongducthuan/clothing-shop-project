@@ -65,7 +65,7 @@ export class CustomerVoucherService {
       const goodsSubtotal = safeCartItems.length
         ? safeCartItems.reduce((sum, item) => sum + (priceMap.get(Number(item.product_id || item.id)) ?? 0) * Number(item.quantity), 0)
         : fallbackSubtotal;
-      const orderTotalNum = Number(orderTotal || 0);
+      const orderTotalNum = Number(orderTotal ?? fallbackSubtotal);
       const eligibleForMembership = safeCartItems.filter((item) => item.block_other_discounts !== true);
       const membershipBase = eligibleForMembership.reduce((sum, item) => sum + (priceMap.get(Number(item.product_id || item.id)) ?? 0) * Number(item.quantity), 0);
       const suppliedMembershipBase = Number(membershipDiscountableSubtotal);
@@ -105,7 +105,7 @@ export class CustomerVoucherService {
         data: {
           ...voucher,
           discount_amount: discountAmount,
-          final_total: Math.max(0, toVnd(orderTotal) - discountAmount),
+          final_total: Math.max(0, toVnd(orderTotalNum) - discountAmount),
           applied_to_total: eligibleTotal,
         },
       };
