@@ -1,6 +1,7 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import type { PrismaClient } from '../generated/prisma/client';
 import type { ProductModel, CategoryModel } from '../generated/prisma/models.js';
 
 export interface ChatMessageHistory {
@@ -39,7 +40,7 @@ function summarizeScope(scope: string, productNames: string[], categoryNames: st
     return 'Áp dụng toàn bộ cửa hàng';
 }
 
-async function getCachedCatalogContext(prisma: PrismaService): Promise<string> {
+async function getCachedCatalogContext(prisma: PrismaClient): Promise<string> {
     const now = Date.now();
     if (catalogContextCache && now - lastCatalogCacheTime < CATALOG_CACHE_TTL_MS) {
         return catalogContextCache;
@@ -94,7 +95,7 @@ Cửa hàng thời trang Clothing Shop.
     }
 }
 
-async function getLivePromotionContext(prisma: PrismaService, now: Date): Promise<string> {
+async function getLivePromotionContext(prisma: PrismaClient, now: Date): Promise<string> {
     try {
         const [promotions, vouchers] = await Promise.all([
             prisma.sale.findMany({
@@ -181,7 +182,7 @@ Hiện không thể xác minh trạng thái chương trình/voucher. Không kh�
     }
 }
 
-async function getShopContext(prisma: PrismaService): Promise<string> {
+async function getShopContext(prisma: PrismaClient): Promise<string> {
     const now = new Date();
     const [catalogContext, promotionContext] = await Promise.all([
         getCachedCatalogContext(prisma),
@@ -190,7 +191,7 @@ async function getShopContext(prisma: PrismaService): Promise<string> {
     return `${catalogContext}\n${promotionContext}`;
 }
 
-async function generateAiResponseWithPrisma(prisma: PrismaService, message: string, history: ChatMessageHistory[] = [], language: string = 'vi'): Promise<string> {
+async function generateAiResponseWithPrisma(prisma: PrismaClient, message: string, history: ChatMessageHistory[] = [], language: string = 'vi'): Promise<string> {
     const apiKey = process.env.GOOGLE_API_KEY;
     if (!apiKey) {
         throw new Error('GOOGLE_API_KEY is not configured in backend environment variables.');
@@ -248,6 +249,11 @@ ${shopContext}`;
     return response.text();
 }
 
+
+// Backward-compatible API for the legacy Express chat controller.
+export function generateAiResponse(db: PrismaClient, message: string, history: ChatMessageHistory[] = [], language = 'vi'): Promise<string> {
+    return generateAiResponseWithPrisma(db, message, history, language);
+}
 
 @Injectable()
 export class AiService {

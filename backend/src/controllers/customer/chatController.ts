@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import prisma from '../../../prisma/client';
 import { generateAiResponse, ChatMessageHistory } from '../../services/aiService';
 import { getErrorMessage } from '../../utils/errorMessage';
 
@@ -15,7 +16,7 @@ export const handleChat = async (req: Request, res: Response): Promise<void> => 
             return;
         }
 
-        const reply = await generateAiResponse(message, [], lang as string);
+        const reply = await generateAiResponse(prisma, message, [], lang as string);
         res.status(200).json({ reply });
     } catch (err: unknown) {
         console.error(`[AI Engine Error]:`, getErrorMessage(err) || err);
@@ -38,7 +39,7 @@ export const handleChatWithHistory = async (req: Request, res: Response): Promis
         }
 
         const history = activeChatSessions[sessionId];
-        const reply = await generateAiResponse(message, history, lang as string);
+        const reply = await generateAiResponse(prisma, message, history, lang as string);
 
         activeChatSessions[sessionId].push({ role: 'user', content: message });
         activeChatSessions[sessionId].push({ role: 'ai', content: reply });

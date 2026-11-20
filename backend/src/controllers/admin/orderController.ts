@@ -161,7 +161,7 @@ export const getOrders = async (req: Request, res: Response): Promise<void> => {
 export const confirmPayment = async (req: Request, res: Response): Promise<void> => {
     const { payment_status } = req.body;
     try {
-        await confirmPaymentStatus(Number(req.params.id), payment_status, req.user?.id ?? null);
+        await confirmPaymentStatus(Number(req.params.id), payment_status, req.user?.id ?? null, prisma);
         res.json({ message: `Payment status updated to ${payment_status}` });
     } catch (err) {
         if (isOrderServiceError(err)) {
@@ -177,7 +177,7 @@ export const updateOrderStatus = async (req: Request, res: Response): Promise<vo
     const { status } = req.body;
     try {
         const orderId = Number(req.params.id);
-        const { userId } = await updateOrderStatusByAdmin(orderId, status);
+        const { userId } = await updateOrderStatusByAdmin(orderId, status, prisma);
 
         if (userId) {
             await sendNotification(

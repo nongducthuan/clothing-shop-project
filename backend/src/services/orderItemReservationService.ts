@@ -3,6 +3,7 @@ import { calculateDiscountedUnitPrice } from '../utils/pricing';
 import { OrderCreationError } from './orderCreationErrors';
 import {
     loadOrderValidationContext,
+    type ActiveSale,
     type GiftPromotion,
     type OrderValidationContext,
     type ProductWithOptions,

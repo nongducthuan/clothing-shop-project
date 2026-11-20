@@ -190,7 +190,7 @@ export const getProduct = async (req: Request, res: Response): Promise<void> => 
 
         const userId = req.user?.id;
         if (userId) {
-            recordInteraction(userId, productId, "view").catch((err: unknown) =>
+            recordInteraction(userId, productId, "view", prisma).catch((err: unknown) =>
                 console.error("âš ï¸ Failed to log view:", getErrorMessage(err)),
             );
         }
@@ -208,7 +208,7 @@ export const logInteraction = async (req: Request, res: Response): Promise<void>
         const { productId, type } = req.body;
 
         if (userId && type === "add_to_cart") {
-            await recordInteraction(userId, Number(productId), "add_to_cart");
+            await recordInteraction(userId, Number(productId), "add_to_cart", prisma);
         }
 
         res.status(200).json({ message: "Interaction recorded" });

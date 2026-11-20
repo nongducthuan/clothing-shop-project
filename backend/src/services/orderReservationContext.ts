@@ -5,7 +5,7 @@ export type ProductWithOptions = Prisma.ProductGetPayload<{
     include: { colors: { include: { sizes: true } } };
 }>;
 
-type ActiveSale = Prisma.SaleGetPayload<{
+export type ActiveSale = Prisma.SaleGetPayload<{
     include: { product_sales: true; sale_categories: true };
 }>;
 

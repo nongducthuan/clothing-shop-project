@@ -27,6 +27,7 @@ export class CustomerReturnService {
   ) {
     const orderId = Number(orderIdValue);
     if (!body.reason_code) throw new BadRequestException({ message: 'Return reason is required.' });
+    const reasonCode = body.reason_code;
     try {
       let parsedReturnItems: { order_item_id: number; return_quantity: number }[] = [];
       if (body.returnItems) {
@@ -65,7 +66,7 @@ export class CustomerReturnService {
         await tx.returnRequest.create({
           data: {
             order_id: orderId,
-            reason_code: body.reason_code,
+            reason_code: reasonCode,
             description: body.description || null,
             images: JSON.stringify(images),
             refund_bank_info: JSON.stringify(finalBankInfo),

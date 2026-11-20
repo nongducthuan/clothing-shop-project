@@ -141,7 +141,7 @@ export const createOrderController = async (req: Request, res: Response): Promis
         }
 
         if (userId) {
-            items.forEach((item: OrderRequestItem) => recordInteraction(userId, Number(item.product_id), 'purchase'));
+            items.forEach((item: OrderRequestItem) => recordInteraction(userId, Number(item.product_id), 'purchase', prisma));
         }
 
         if (normalizedPaymentMethod === "momo") {
@@ -293,7 +293,7 @@ export const changeOrderStatus = async (req: Request, res: Response): Promise<vo
             return;
         }
 
-        await changeOrderStatusLogic(Number(order_id), new_status);
+        await changeOrderStatusLogic(Number(order_id), new_status, prisma);
 
         // Payment_status transition (Paid → Refunded) is now handled
         // atomically inside changeOrderStatusLogic (orderStatusService.ts L167-169).
