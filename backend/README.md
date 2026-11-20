@@ -143,3 +143,12 @@ npm run check:no-any
 ```
 
 Các lệnh kiểm tra source tĩnh không thay thế unit tests, HTTP integration tests, kiểm thử database hoặc sandbox webhook MoMo/VNPay. Xem [`NESTJS_MIGRATION_STATUS.md`](./NESTJS_MIGRATION_STATUS.md) để biết kết quả static review và những bước verification còn cần chạy.
+
+## CI tests and diagnostics
+
+- Run tests locally with `npm test`.
+- Run the quieter CI-style test command with `npm run test:ci` (`--runInBand --silent`).
+- GitHub Actions captures the full Jest output as the `backend-test-log` artifact and prints a bounded failure summary in the job log.
+- Type checking, architecture checks, and the production build are configured to run even when unit tests fail, provided dependency installation and Prisma Client generation succeeded.
+
+The concise job output is only a log-display improvement; it does not hide or fix failing tests. Download the `backend-test-log` artifact to inspect full diagnostics.

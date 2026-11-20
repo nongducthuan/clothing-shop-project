@@ -335,3 +335,7 @@ Sau khi chạy lệnh `npm run seed`, tất cả tài khoản mẫu dùng chung 
 > Lưu ý: Các thông tin thẻ trên chỉ dùng trong môi trường **Sandbox/Test**, không áp dụng cho giao dịch thật. Nếu MoMo/VNPay cập nhật lại bộ thẻ test, vui lòng tham khảo tài liệu chính thức:
 > MoMo Sandbox: https://developers.momo.vn/v3/vi/docs/payment/onboarding/test-instructions/
 > VNPay Sandbox: https://sandbox.vnpayment.vn/apis/docs/huong-dan-tich-hop/
+
+## Backend CI diagnostics
+
+Backend GitHub Actions logs now show a concise failure summary while preserving the full Jest output in the `backend-test-log` artifact. The CI pipeline also runs typecheck, migration checks, and production build after unit-test failures when setup and Prisma generation have succeeded.

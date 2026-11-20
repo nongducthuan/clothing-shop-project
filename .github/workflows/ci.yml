@@ -23,38 +23,75 @@ jobs:
         cache-dependency-path: backend/package-lock.json
         
     - name: Install Dependencies
+      id: install_backend_dependencies
       working-directory: ./backend
       run: npm ci --legacy-peer-deps
       env:
         DATABASE_URL: "postgresql://user:pass@localhost:5432/dummy?schema=public"
       
     - name: Generate Prisma Client
+      id: generate_backend_prisma
       working-directory: ./backend
       run: npx prisma generate
       env:
         DATABASE_URL: "postgresql://user:pass@localhost:5432/dummy?schema=public"
       
     - name: Run Backend Tests
+      id: backend_unit_tests
       working-directory: ./backend
-      run: npm test
+      shell: bash
+      run: |
+        set +e
+        npm run test:ci > backend-test.log 2>&1
+        test_exit_code=$?
+        echo "exit_code=${test_exit_code}" >> "$GITHUB_OUTPUT"
+
+        if [ "$test_exit_code" -eq 0 ]; then
+          echo "Backend unit tests passed. Summary:"
+          tail -n 30 backend-test.log | cut -c1-500
+        else
+          echo "Backend unit tests failed (exit ${test_exit_code}). Showing concise diagnostics:"
+          echo "::group::Backend unit test failure summary"
+          if grep -Eq '(^FAIL |^Test Suites:|^Tests:|^Snapshots:|^Time:|^  ● |Error:|TypeError:|ReferenceError:|AssertionError:|Expected:|Received:|Cannot find module|PrismaClient[A-Za-z]+Error)' backend-test.log; then
+            grep -nE '(^FAIL |^Test Suites:|^Tests:|^Snapshots:|^Time:|^  ● |Error:|TypeError:|ReferenceError:|AssertionError:|Expected:|Received:|Cannot find module|PrismaClient[A-Za-z]+Error)' backend-test.log | tail -n 100 | cut -c1-500
+          else
+            tail -n 80 backend-test.log | cut -c1-500
+          fi
+          echo "::endgroup::"
+          echo "The complete log is available in the backend-test-log artifact."
+        fi
+        exit "$test_exit_code"
       env:
         DATABASE_URL: "postgresql://user:pass@localhost:5432/dummy?schema=public"
         JWT_SECRET: "dummy_secret"
         JWT_REFRESH_SECRET: "dummy_refresh_secret"
 
+    - name: Upload Backend Test Log
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: backend-test-log
+        path: backend/backend-test.log
+        if-no-files-found: ignore
+        retention-days: 7
+
     - name: Backend Type Check
+      if: always() && steps.install_backend_dependencies.outcome == 'success' && steps.generate_backend_prisma.outcome == 'success'
       working-directory: ./backend
       run: npm run typecheck
 
     - name: Check Backend Any Usage
+      if: always() && steps.install_backend_dependencies.outcome == 'success' && steps.generate_backend_prisma.outcome == 'success'
       working-directory: ./backend
       run: npm run check:no-any
 
     - name: Check NestJS Migration Architecture
+      if: always() && steps.install_backend_dependencies.outcome == 'success' && steps.generate_backend_prisma.outcome == 'success'
       working-directory: ./backend
       run: npm run check:nestjs-migration
 
     - name: Backend Production Build
+      if: always() && steps.install_backend_dependencies.outcome == 'success' && steps.generate_backend_prisma.outcome == 'success'
       working-directory: ./backend
       run: npm run build
 
