@@ -113,7 +113,7 @@ export class CustomerPaymentService {
           await this.socketService.sendNotification(null, 'Thanh toán thành công', `Đơn hàng #${realOrderId} đã thanh toán qua MoMo`, 'Payment Successful', `Order #${realOrderId} has been paid via MoMo`, 'payment_success', { orderId: realOrderId, amount: body.amount, method: 'MoMo' });
         }
       }
-      return undefined; // The controller responds with HTTP 204.
+      return undefined; // The HTTP handler responds with status 204.
     } catch (error) {
       if (error instanceof BadRequestException) throw error;
       console.error('FULL IPN ERROR LOG:', error);

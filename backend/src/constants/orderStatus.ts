@@ -1,4 +1,4 @@
-// Hằng số trạng thái đơn hàng dùng chung cho admin/customer controller và orderStatusService.
+// Shared order-status rules for admin/customer APIs and order lifecycle services.
 
 export const ENUM_TO_DISPLAY_STATUS: Record<string, string> = {
     "Return_Requested": "Return Requested",

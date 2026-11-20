@@ -40,7 +40,6 @@ export class AdminController {
     private readonly adminReturnService: AdminReturnService,
   ) {}
 
-  // Stats – native NestJS controller/service flow.
   @Get('stats')
   getAdminStats() {
     return this.adminStatsService.getAdminStats();

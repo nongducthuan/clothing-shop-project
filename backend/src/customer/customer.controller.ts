@@ -60,7 +60,6 @@ export class CustomerController {
     private readonly customerReturnService: CustomerReturnService,
     private readonly customerPaymentService: CustomerPaymentService,
   ) {}
-  // Authentication – native NestJS controller/service flow.
   @Throttle({ default: { limit: 5, ttl: 60 * 60 * 1000 } })
   @Post('auth/register')
   register(@Body(new ZodValidationPipe(registerSchema)) body: { name?: string; email?: string; phone?: string; password?: string }) {

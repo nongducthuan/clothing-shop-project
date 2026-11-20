@@ -61,7 +61,6 @@ async function bootstrap() {
   socketService.init(app.getHttpServer(), allowedOrigins);
 
   console.log(`Server is running at port ${PORT}`);
-
 }
 
 bootstrap();

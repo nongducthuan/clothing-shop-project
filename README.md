@@ -2,9 +2,9 @@
 
 Website thương mại điện tử chuyên bán quần áo và thời trang, tích hợp hệ thống quản lý bán hàng, gợi ý sản phẩm liên quan, xác thực OTP và thanh toán trực tuyến dành cho đồ án sinh viên.
 
-![Tests](https://img.shields.io/badge/tests-308%20cases-blue?logo=jest)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.8%20/%207.0-3178C6?logo=typescript&logoColor=white)
-![Node.js](https://img.shields.io/badge/Node.js-NestJS%2011-E0234E?logo=nestjs&logoColor=white)
+![Test suites](https://img.shields.io/badge/test--suites-50-blue?logo=jest)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?logo=typescript&logoColor=white)
+![NestJS](https://img.shields.io/badge/NestJS-11-E0234E?logo=nestjs&logoColor=white)
 ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
 ![Prisma](https://img.shields.io/badge/Prisma-ORM-2D3748?logo=prisma&logoColor=white)
 ![TailwindCSS](https://img.shields.io/badge/TailwindCSS-3.x-06B6D4?logo=tailwindcss&logoColor=white)
@@ -26,7 +26,7 @@ Website thương mại điện tử chuyên bán quần áo và thời trang, t�
 - **Chế độ Giao diện Sáng / Tối (Dark & Light Mode)**: Hỗ trợ chuyển đổi giao diện mượt mà giữa chế độ Tối (Dark) và Sáng (Light), tự động nhận diện theme hệ thống và ghi nhớ cài đặt qua `localStorage`.
 - **Hỗ trợ Đa ngôn ngữ (i18n & DB Localization)**: Chuyển đổi ngôn ngữ hiển thị linh hoạt cho cả giao diện tĩnh lẫn nội dung động trong CSDL.
 - **Tài khoản & Đăng nhập**: Đăng nhập & Đăng ký bảo mật qua JWT Auth (băm mật khẩu `bcryptjs`, yêu cầu mật khẩu tối thiểu 8 ký tự khi đăng ký và đổi mật khẩu), hỗ trợ phân hạng thành viên (Membership) tự động theo tổng chi tiêu và % chiết khấu theo hạng. Luồng **Access Token (15 phút) + Refresh Token (7 ngày)** tự động làm mới phiên ngầm qua Axios interceptor — người dùng không bị đăng xuất đột ngột.
-- **Gợi ý sản phẩm liên quan (Collaborative Filtering)**: Khối "Gợi ý cho bạn" trên **Trang chủ** trả về tối đa 8 sản phẩm dựa trên hành vi tương tác (`view` / `add_to_cart` / `purchase`) của những người dùng tương tự; khách chưa đăng nhập nhận sản phẩm ngẫu nhiên. Hệ thống loại các sản phẩm có tương tác `purchase` đã ghi nhận cho tài khoản. Lưu ý: hiện tương tác `purchase` được ghi nhận ngay khi tạo đơn, nên không đồng nghĩa đơn đã thanh toán thành công. Logic nằm trong `productController.getRecommendations` và `productService.getRecommendedProducts`.
+- **Gợi ý sản phẩm liên quan (Collaborative Filtering)**: Khối "Gợi ý cho bạn" trên **Trang chủ** trả về tối đa 8 sản phẩm dựa trên hành vi tương tác (`view` / `add_to_cart` / `purchase`) của những người dùng tương tự; khách chưa đăng nhập nhận sản phẩm ngẫu nhiên. Hệ thống loại các sản phẩm có tương tác `purchase` đã ghi nhận cho tài khoản. Lưu ý: hiện tương tác `purchase` được ghi nhận ngay khi tạo đơn, nên không đồng nghĩa đơn đã thanh toán thành công. Logic nằm trong `CustomerController.getRecommendations` và `CustomerProductService.getRecommendations`.
 - **Tối ưu hiệu năng & SEO cơ bản**: Tối ưu tốc độ tải trang bằng Code-splitting với `React.lazy()` và `Suspense` (chỉ tải trang chủ ban đầu, tách riêng các bundle Admin và trang phụ); quản lý thẻ tiêu đề, mô tả và chia sẻ mạng xã hội (Open Graph) động theo từng sản phẩm/danh mục thông qua `react-helmet-async`.
 - **Trợ lý AI Chatbot**: Tư vấn, giải đáp thắc mắc khách hàng trực tiếp sử dụng Google Gemini AI API.
 - **Trang Chính sách bán hàng (`/sales-policy`)**: Tổng hợp chính sách giao hàng – đổi trả – thanh toán cùng ưu đãi giảm giá và đặc quyền hội viên VIP.
@@ -45,7 +45,7 @@ Website thương mại điện tử chuyên bán quần áo và thời trang, t�
 - **Chiến dịch Giảm giá (Flash Sale / Discounts)**: Thiết lập các đợt giảm giá trực tiếp theo % trên từng sản phẩm hoặc danh mục sản phẩm theo khung thời gian.
 - **Chương trình Khuyến mãi (Promotions - Buy X Get Y)**: Cấu hình quy tắc mua sản phẩm X tặng kèm sản phẩm Y, tự động bổ sung quà tặng vào đơn hàng và ràng buộc khi đổi trả.
 - **Thông báo Real-time + Lịch sử (Socket.io + DB)**: Admin nhận thông báo Toast tức thì ở mọi trang quản trị khi có: *Đơn hàng mới*, *Khách gửi yêu cầu đổi trả*, *Khách hủy đơn hàng*, hoặc *Thanh toán trực tuyến thành công*. Đồng thời lưu lịch sử thông báo vào DB (bảng `notifications`), hiển thị qua **Dropdown Chuông** trên navbar, hỗ trợ đánh dấu đã đọc đơn lẻ hoặc tất cả. **Khách hàng** cũng nhận thông báo realtime khi admin cập nhật trạng thái đơn hàng hoặc duyệt trả hàng.
-- **CI/CD Pipeline**: Tích hợp GitHub Actions tự động cài đặt dependency, generate Prisma Client, rà soát chuỗi dịch i18n (`npm run check:i18n`) và chạy kiểm tra (**Backend 207 test cases, Frontend 101 test cases** — gồm kiểm tra key song ngữ `vi`/`en` khớp nhau). Workflow chạy khi push lên nhánh `main` / `master` hoặc tạo Pull Request nhắm đến các nhánh này.
+- **CI/CD Pipeline**: Tích hợp GitHub Actions tự động cài đặt dependency, generate Prisma Client, rà soát chuỗi dịch i18n (`npm run check:i18n`) và chạy kiểm tra (gồm Jest/Vitest, kiểm tra kiến trúc NestJS, typecheck, lint/build và kiểm tra key song ngữ `vi`/`en`). Workflow chạy khi push lên nhánh `main` / `master` hoặc tạo Pull Request nhắm đến các nhánh này.
 
 ---
 
@@ -107,7 +107,7 @@ Website thương mại điện tử chuyên bán quần áo và thời trang, t�
 ## Công Nghệ Sử Dụng
 
 - **Frontend**: React.js (Vite), TypeScript, React Router, TailwindCSS, Axios, @tanstack/react-query, react-helmet-async (SEO & Meta Tags), Lucide Icons, React Google Charts, OpenStreetMap Nominatim API, React Context API, `socket.io-client`.
-- **Backend**: Node.js, TypeScript, **NestJS 11** (`@nestjs/common`, `@nestjs/core`, `@nestjs/platform-express`, `@nestjs/throttler`, `@nestjs/websockets`), Prisma ORM (Multilingual DB Schema, `schema.prisma` + `client.ts`), PostgreSQL (`@prisma/adapter-pg` + `pg` driver), JSON Web Token (JWT), `bcryptjs`, Multer, `helmet`, `zod`, `node-cache`, `async`, `node-cron`, `socket.io`.
+- **Backend**: Node.js, TypeScript, **NestJS 11** (`@nestjs/common`, `@nestjs/core`, `@nestjs/platform-express`, `@nestjs/throttler`, `@nestjs/websockets`), Prisma ORM (`schema.prisma`, generated Prisma Client và `PrismaService` dùng Dependency Injection), PostgreSQL (`@prisma/adapter-pg` + `pg` driver), JSON Web Token (JWT), `bcryptjs`, Multer, `helmet`, `zod`, `node-cache`, `async`, `node-cron`, `socket.io`.
 - **Testing & CI/CD**:
   - **Backend**: Jest + `@swc/jest` + `jest-mock-extended` + `supertest` (mock toàn bộ — không cần DB thật).
   - **Frontend**: Vitest.
@@ -123,63 +123,40 @@ Website thương mại điện tử chuyên bán quần áo và thời trang, t�
 
 ## Cấu Trúc Thư Mục
 
-```
+```text
 clothing-shop-project/
-├── .github/workflows/ci.yml     # CI: backend (test + typecheck + no-any) và frontend (test + i18n + lint + typecheck + build)
+├── .github/workflows/ci.yml       # CI: backend Jest/build/typecheck/architecture + frontend checks
 ├── backend/
-│   ├── prisma/                  # schema.prisma + client.ts + seed.ts (prisma.config.ts ở root backend)
+│   ├── prisma/                    # schema.prisma, seed.ts, test-only legacy client.ts
 │   ├── src/
-│   │   ├── main.ts              # entrypoint NestJS: CORS + /public + /uploads static + global prefix /api + SocketIoAdapter + autoCancelJob
-│   │   ├── app.module.ts        # Root module: ThrottlerModule + PrismaModule + SocketModule + AdminModule + CustomerModule + NotificationModule
-│   │   ├── common/
-│   │   │   ├── guards/          # JwtAuthGuard / OptionalJwtAuthGuard / AdminGuard / GuestOrderAccessGuard
-│   │   │   ├── filters/         # AllExceptionsFilter (global error handler)
-│   │   │   ├── pipes/           # ZodValidationPipe
-│   │   │   ├── interceptors/    # PersistImagesInterceptor (Multer)
-│   │   │   └── decorators/      # @CurrentUser / @GuestEmail
-│   │   ├── socket/              # SocketService + SocketIoAdapter (Socket.io)
-│   │   ├── prisma/              # PrismaService (singleton DI)
-│   │   ├── admin/               # AdminController (45 routes) + AdminModule
-│   │   ├── customer/            # CustomerController (40 routes) + CustomerModule
-│   │   ├── notification/        # NotificationController (3 routes) + NotificationModule
-│   │   ├── controllers/
-│   │   │   ├── admin/           # 14 files: adminReturn/banner/category/color/inventory/membership/order/product/promotion/sale/size/stats/user/voucher
-│   │   │   └── customer/        # 14 files: auth/banner/category/chat/membership/order/orderLookup/payment/product/productDetail/promotion/return/sale/voucher
-│   │   ├── middleware/          # 2 files: uploadMiddleware / validateMiddleware (Zod) (xác thực/phân quyền dùng NestJS Guards tại common/guards)
-│   │   ├── services/            # 12 files: AI / auto-cancel / discount allocation / interaction / order creation / filtering / order status (+ financial, inventory) / product / return / user
-│   │   ├── utils/               # 14 files: error handling / cache / email (+ queue) / payment (MoMo, VNPay) / socket / PostgreSQL connection pool / shipping / env / pricing / order formatting
-│   │   ├── constants/           # orderStatus.ts (luật chuyển trạng thái đơn) + returnPolicy.ts (đổi trả 7 ngày)
-│   │   ├── validators/          # user.ts
-│   │   ├── types/               # express.d.ts (mở rộng Request.user) + orderTypes.ts + schemas.ts (Zod validation schemas)
-│   │   ├── generated/prisma/    # Prisma Client do `prisma generate` sinh ra (không commit, không sửa tay)
-│   │   ├── public/images/       # Ảnh sản phẩm + banner seed (serve tại /public)
-│   │   └── __tests__/           # setup.ts + controllers(14) / middleware(1) / services(4) / utils(7) / prisma(1) — 27 suites, 207 tests
-│   ├── scripts/                 # check-no-any.cjs (CI chặn `any` tường minh)
-│   ├── uploads/                 # Ảnh upload runtime qua Multer (tự tạo khi chạy, serve tại /uploads)
-│   ├── nest-cli.json            # NestJS CLI config
-│   ├── prisma.config.ts         # trỏ schema ./prisma/schema.prisma
-│   └── package.json             # scripts: dev/start/seed/test/test:coverage (tsx + jest)
-└── frontend/              # 17 test suites, 101 test cases
-    ├── src/
-    │   ├── pages/
-    │   │   ├── customer/        # 10: Home/Category/ProductDetail/Cart/Checkout/Search/OrderLookup/PaymentReturn/Profile/SalesPolicy
-    │   │   ├── admin/           # 11: Dashboard/Report/OrderManager/ProductManager/ProductDetailManager/CategoryManager/BannerManager/SaleManager/VoucherManager/PromotionManager/UserManager
-    │   │   ├── auth/            # 2: Login/Register
-    │   │   └── NotFound.tsx     # Trang 404 hiển thị khi truy cập URL không hợp lệ
-    │   ├── components/          # 117 files: admin (39) / auth (3) / common (4) / customer (71)
-    │   ├── context/             # 6 cặp Context + Provider: Auth/Cart/AIChat/Theme/Language/Toast; kèm CartProvider.test.tsx
-    │   ├── hooks/               # admin (12 + product/ 5 + user/ 5) / customer (16, gồm profileTypes.ts) / auth (2) + 2 hook dùng chung; 4 test hook
-    │   ├── services/            # apiClient.ts (Axios) + aiService.ts; chưa có test file trong services/
-    │   ├── utils/               # 12 helper + 9 file *.test.ts (Vitest), gồm priceUtils và productSearchUtils
-    │   ├── locales/             # translations.ts + apiMessagePatterns.ts (vi/en, check bằng npm run check:i18n trước build) + 2 file *.test.ts
-    │   ├── constants/           # tierConfig.ts
-    │   ├── types/               # index.ts + aos.d.ts
-    │   └── styles/              # app.css + index.css
-    ├── scripts/                 # check-i18n.cjs (chạy trước vite build) + fix-mojibake.cjs (sửa lỗi double-encode)
-    ├── public/                  # Assets tĩnh (public/assets + vite.svg)
-    └── vite.config.ts + vitest.config.ts + tailwind.config.js + postcss.config.js + vercel.json + eslint.config.js
+│   │   ├── main.ts                # NestJS bootstrap trên Express HTTP adapter
+│   │   ├── app.module.ts          # Root module
+│   │   ├── admin/                 # AdminController (54 routes), module và domain services
+│   │   ├── customer/              # CustomerController (42 routes), module và domain services
+│   │   ├── notification/          # NotificationController (3 routes), module và service
+│   │   ├── common/                # Guards, decorators, exception filter, validation pipe, upload interceptor
+│   │   ├── prisma/                # PrismaModule + PrismaService (DI)
+│   │   ├── socket/                # SocketService + SocketIoAdapter
+│   │   ├── services/              # Shared order, inventory, email và automation services
+│   │   ├── utils/                 # Payment, email, shipping, cache và helpers
+│   │   ├── constants/             # Order status và return policy
+│   │   ├── types/                 # Domain types và Zod schemas
+│   │   ├── validators/            # Domain validation helpers
+│   │   ├── public/images/         # Ảnh seed/static, serve tại /public
+│   │   └── __tests__/             # 33 Jest suites: legacy regression, services, utilities, migration
+│   ├── test-fixtures/             # Snapshot Express cũ chỉ dùng bởi regression tests, không chạy runtime
+│   ├── scripts/                   # check-nestjs-migration.cjs và check-no-any.cjs
+│   ├── uploads/                   # Ảnh upload runtime, không commit file upload
+│   ├── prisma.config.ts
+│   ├── nest-cli.json
+│   └── package.json
+└── frontend/
+    ├── src/                       # React pages, components, hooks, context, services, utils, locales
+    ├── scripts/                   # i18n validation và tiện ích source
+    └── vite.config.ts / vitest.config.ts / tailwind.config.js
 ```
 
+**Lưu ý kiến trúc:** NestJS xử lý toàn bộ controller và business services; Express được giữ lại duy nhất làm HTTP adapter qua `@nestjs/platform-express`. Các snapshot Express trong `backend/test-fixtures/` và `backend/prisma/client.ts` chỉ phục vụ một số regression tests, không được import vào runtime.
 ---
 
 ## Cấu Hình Biến Môi Trường (Environment Variables)
@@ -233,7 +210,7 @@ cp .env.example .env
   ```
 - Cập nhật các thông tin tích hợp nếu sử dụng: Brevo (`BREVO_API_KEY`), MoMo (`MOMO_SECRET_KEY`...), Google Gemini (`GOOGLE_API_KEY`). Sau đó cài dependencies:
   ```bash
-  npm install --legacy-peer-deps
+  npm ci --legacy-peer-deps
   ```
 - Khởi tạo bảng và đồng bộ Schema vào CSDL PostgreSQL bằng Prisma:
   ```bash
@@ -278,87 +255,52 @@ npm install
 
 ## Testing
 
-Dự án có hệ thống Test tự động bao phủ cả Backend và Frontend, được cấu hình độc lập nhưng đều không yêu cầu kết nối CSDL thực (mock hoàn toàn).
+Repository hiện có **33 backend Jest suites** và **17 frontend Vitest suites**. Đây là số test suite được kiểm kê từ source; số test case thực tế sẽ do Jest/Vitest báo tại thời điểm chạy.
 
-### 1. Backend Testing (Jest)
-Sử dụng **Jest** với **@swc/jest** transformer, `jest-mock-extended` và `supertest`.
+### 1. Backend (Jest)
 
 ```bash
 cd backend
-
-# Chạy toàn bộ unit tests
-npm test
-
-# Chạy kèm coverage report
-npm run test:coverage
+npm ci --legacy-peer-deps
+npm run db:generate
+npm run check:nestjs-migration
+npm run build
+npm run typecheck
+npm test -- --runInBand
+npm run check:no-any
 ```
 
-**Theo các test case được liệt kê trong source hiện có:** `207 test cases` across 27 test suites trong `backend/`.
+Các nhóm test backend:
 
-| Test Suite | Số tests | Module được test |
-| --- | --- | --- |
-| `vnpayService.test.ts` | 12 | sortObject, verifyVnPayReturn, generateVnPayUrl |
-| `momoService.test.ts` | 5 | HMAC-SHA256 signature verification |
-| `authController.test.ts` | 8 | register, login (với Prisma mock) |
-| `voucherController.test.ts` | 12 | Validation, discount calculation, điều kiện "đơn tối thiểu" tính theo tiền hàng gốc, quy tắc Buy X Get Y không cộng dồn |
-| `discountAllocationService.test.ts` | 10 | allocateItemDiscounts (pro-rata, gift, edge cases) |
-| `returnRequest.test.ts` | 10 | submitReturnRequest (ràng buộc Buy X Get Y; chính sách đổi trả 7 ngày: quá hạn → 400 và không tạo yêu cầu, dùng `updated_at` khi đơn cũ thiếu `delivered_at`, admin được xử lý ngoại lệ, người không phải chủ đơn vẫn nhận 403) |
-| `createOrderGift.test.ts` | 7 | createOrder (quà Buy X Get Y, phân bổ qua size và snapshot giá vốn) |
-| `createOrderTotal.test.ts` | 5 | createOrder (total_price, membership/voucher, làm tròn giá sale và snapshot giá vốn) |
-| `repayOrder.test.ts` | 7 | Chặn đơn `Return_Approved`, `Shipping`, `Delivered`, `Return_Requested`, `Return_Rejected`; cho chuyển sang COD khi đơn còn `Pending` / `Confirmed` |
-| `paymentSettlement.test.ts` | 2 | Chấp nhận callback hợp lệ và ghi nhận callback thành công đến muộn để đối soát, không tự đánh dấu đơn đang giao là đã thanh toán |
-| `adminOrderReturn.test.ts` | 4 | updateOrderStatus, rejectReturn (hoàn tác duyệt/từ chối) |
-| `adminPaymentStatus.test.ts` | 4 | confirmPayment (chuyển đổi trạng thái thanh toán) |
-| `adminUser.test.ts` | 19 | getUsers, createUser, updateUser, resetUserPassword, deleteUser (chốt an toàn vai trò/xóa, gán hạng mặc định khi null) |
-| `adminStats.test.ts` | 6 | getAdminStats (Dashboard, điều kiện lọc, lỗi 500, dùng snapshot và fallback giá vốn cho đơn cũ) |
-| `adminOrderList.test.ts` | 9 | getOrders (phân trang, tab Đơn hàng/Đổi trả, lọc trạng thái, chặn limit, lỗi 500) |
-| `adminProductList.test.ts` | 8 | getProducts (phân trang, tìm kiếm 3 tên, giới tính, nhóm danh mục, chế độ trả mảng cũ) |
-| `postgres.test.ts` | 6 | Cấu hình kết nối PostgreSQL, kiểm tra URL, adapter và seed cleanup |
-| `seedEncoding.test.ts` | 2 | Chặn mojibake trong `prisma/seed.ts` (chuỗi tiếng Việt phải lưu UTF-8) |
-| `validationSchemas.test.ts` | 19 | Chốt contract schema ↔ frontend (chặn tái phát lỗi strip `cartItems` → 500, payload checkout → 400, SĐT đa định dạng, mật khẩu tối thiểu 8 ký tự, mọi message lỗi đều có bản dịch `api_msg.*`) |
-| `returnPolicy.test.ts` | 7 | Quy tắc đổi trả 7 ngày (`constants/returnPolicy.ts`): mốc `delivered_at` → fallback `updated_at`, biên đúng 7 ngày, cờ `can_return`/`return_deadline` trong `formatOrderResponse` |
-| `envCheck.test.ts` | 15 | Kiểm tra biến môi trường bắt buộc khi khởi động (DATABASE_URL, JWT_SECRET, JWT_REFRESH_SECRET, FRONTEND_URL, BACKEND_URL, VNP_TMNCODE, VNP_HASHSECRET, VNP_URL, VNP_RETURNURL) và chế độ fail-fast `STRICT_ENV_CHECK` |
-| `promotionController.test.ts` | 3 | Phân bổ chung tồn kho quà cho nhiều khuyến mãi; từ chối giỏ hàng rỗng trước khi truy vấn DB |
-| `pricing.test.ts` | 3 | Làm tròn giá sale và chuẩn hóa VNĐ nguyên. |
-| `orderGiftQuota.test.ts` | 3 | Hoàn/trừ lại hạn mức quà khi hủy/khôi phục đơn. |
-| `shippingUtils.test.ts` | 14 | Phí ship phía server: tách tỉnh/thành (bỏ mã bưu chính và "Việt Nam" ở cuối), so khớp theo cụm từ nguyên vẹn, vùng giao hàng, phụ phí số lượng. Phải khớp bản frontend. |
-| `emailService.test.ts` | 6 | `sendEmail` gửi đúng tiêu đề/nội dung (escape HTML) thay vì mẫu OTP; `sendOtpEmail` dùng mẫu OTP vi/en; lỗi thiếu API key hoặc Brevo từ chối. |
-| `aiService.test.ts` | 1 | Quy tắc hội thoại tự nhiên; lọc ngày hiệu lực và hạn mức voucher; chỉ áp dụng ưu đãi đúng phạm vi; làm mới khuyến mãi mỗi lượt chat. |
-| **Tổng cộng** | **207** | **27 test suites** — mock Prisma, không cần kết nối CSDL thật |
+| Nhóm | Số suite | Phạm vi |
+|---|---:|---|
+| `legacy-regression/` | 14 | Regression tests cho quy tắc nghiệp vụ/response lịch sử; một số test import snapshot Express từ `test-fixtures`, không phải HTTP test của NestJS runtime |
+| `services/` | 9 | Unit tests cho catalog, promotion, notification, pricing, AI, discount allocation và order gift quota |
+| `utils/` | 7 | Payment signature, email, environment, PostgreSQL config, return policy và shipping |
+| `migration/` | 1 | Guardrails kiến trúc NestJS: 99 routes, DI, adapter, SQL và validation/upload |
+| `pipes/` | 1 | ZodValidationPipe và response validation |
+| `prisma/` | 1 | Seed/client-related checks |
+| **Tổng** | **33** | Test suites hiện có trong `backend/src/__tests__/` |
 
-### 2. Frontend Testing (Vitest)
-Sử dụng **Vitest** cho utility tests và test hook/component bằng React Testing Library khi cần; các test không gọi backend/database thật.
+**Giới hạn:** regression tests dựa trên `test-fixtures` khóa lại các quy tắc cũ, không thay thế việc kiểm thử trực tiếp NestJS HTTP layer. Cần bổ sung/chạy integration tests với database staging và sandbox payment trước khi deploy.
+
+### 2. Frontend (Vitest)
 
 ```bash
 cd frontend
-
-# Chạy toàn bộ frontend unit tests
+npm ci
 npm test
+npm run check:i18n
+npm run lint
+npm run typecheck
+npm run build
 ```
 
-**Theo các test case được liệt kê trong source hiện có:** `101 test cases` across 17 test suites trong `frontend/`.
+Frontend có 17 test suites bao phủ shipping/order/currency/promotion, i18n và API errors, return requests, checkout/cart pricing, các customer hooks và AI chat UI. Một số test component/hook dùng React Testing Library và `jsdom`.
 
-| Test Suite | Số tests | Module được test |
-| --- | --- | --- |
-| `shippingUtils.test.ts` | 20 | Test phí vận chuyển, tách tên tỉnh/thành (bỏ mã bưu chính và "Việt Nam" ở cuối), so khớp theo cụm từ nguyên vẹn, vùng giao hàng, phụ thu. Phải khớp bản backend. |
-| `orderUtils.test.ts` | 17 | Test luồng chuyển đổi trạng thái đơn hàng, validate thanh toán, điều kiện hiện nút thanh toán lại (`canRepayOrder`) và phân bổ số tiền hoàn (làm tròn VNĐ + bù trừ chênh lệch) cho từng sản phẩm trả hàng. |
-| `currencyUtils.test.ts` | 7 | Test format tiền tệ Việt Nam Đồng (VND). |
-| `translations.test.ts` | 3 | Chặn tái phát lỗi double-encode (mojibake), kiểm tra key vi/en khớp nhau. |
-| `promotionUtils.test.ts` | 11 | Test rule Buy X Get Y: xác định sản phẩm X của quà tặng, và gom quà tặng Y phải hoàn kèm khi trả X. |
-| `apiMessagePatterns.test.ts` | 5 | Dịch message backend ĐỘNG (có nội suy tên sản phẩm/mã đơn) qua regex → template, đủ cả 2 locale. |
-| `apiErrorUtils.test.ts` | 6 | Ưu tiên hiển thị lỗi field cụ thể (`errors[0].message`) thay vì "Validation failed" chung chung; lỗi ngưỡng `min_order_value`; fallback khi mất mạng. |
-| `returnRequestUtils.test.ts` | 6 | Test helper dựng danh sách sản phẩm trả, FormData và optimistic return request. |
-| `useOrderActions.test.tsx` | 7 | Test hook thao tác đơn hàng: thanh toán lại, hủy đơn, hủy yêu cầu trả hàng và xử lý lỗi. |
-| `checkoutPricing.test.ts` | 1 | Kiểm tra member discount chỉ tính trên sản phẩm đủ điều kiện cộng dồn. |
-| `CartProvider.test.tsx` | 4 | Giỏ hàng chặn thêm sản phẩm hết hàng, giới hạn số lượng, giữ xử lý tồn kho bằng 0 và phục hồi khi localStorage lỗi. |
-| `priceUtils.test.ts` | 3 | Giá sale được làm tròn theo VNĐ và xử lý discount sai/ngoài phạm vi. |
-| `productSearchUtils.test.ts` | 5 | Tìm theo tên/mô tả tiếng Việt và tiếng Anh, không phân biệt dấu, xử lý query rỗng. |
-| `useCategoryPage.test.tsx` | 1 | Chuyển danh mục từ trang 2 vẫn yêu cầu trang 1 của danh mục mới. |
-| `useProductDetail.test.tsx` | 1 | Không giữ voucher/khuyến mãi/quà của sản phẩm trước khi mở sản phẩm không có ưu đãi. |
-| `useCartPage.test.tsx` | 2 | Khuyến mãi không cộng dồn và tồn kho quà dùng chung được tính đúng. |
-| `AIMessage.test.tsx` | 2 | Hiển thị tên sản phẩm thành liên kết, ẩn đường dẫn nội bộ và sửa link khi AI xuống dòng sai. |
-| **Tổng cộng** | **101** | **17 test suites** |
+### 3. CI
 
+GitHub Actions chạy backend tests, Prisma Client generation, typecheck, `check:no-any`, migration architecture checker và production build; frontend chạy tests, i18n check, lint, typecheck và production build. Workflow được định nghĩa tại [`.github/workflows/ci.yml`](.github/workflows/ci.yml).
 ---
 
 ## Tài Khoản Mặc Định (Seed)

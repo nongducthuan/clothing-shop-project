@@ -10,7 +10,7 @@ import {
     isUndoTransition,
 } from '../constants/orderStatus';
 
-/** Lỗi nghiệp vụ có kèm HTTP status — controller chỉ việc map sang response. */
+/** Business error carrying the HTTP status the HTTP layer should return. */
 export class OrderServiceError extends Error {
     readonly httpStatus: number;
     constructor(httpStatus: number, message: string) {

@@ -16,7 +16,7 @@ export interface ChatPayload {
 export class CustomerChatService {
   constructor(private readonly aiService: AiService) {}
 
-  // A singleton provider preserves the in-memory session behavior of the old module.
+  // Keep session history in the singleton provider so it survives across requests.
   private readonly activeChatSessions: Record<string, ChatMessageHistory[]> = {};
 
   async handleChat(

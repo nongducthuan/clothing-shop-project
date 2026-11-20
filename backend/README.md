@@ -1,93 +1,145 @@
-# NestJS Backend – Clothing Shop
+# Clothing Shop Backend — NestJS 11
 
-Backend đã được migrate từ Express sang **NestJS**, giữ nguyên 100% business logic, chỉ thay đổi framework layer.
+Backend của Clothing Shop được xây dựng bằng **NestJS 11**, sử dụng **Express làm HTTP adapter** thông qua `@nestjs/platform-express`. Express chỉ là lớp tiếp nhận HTTP; controller, nghiệp vụ, validation, phân quyền và truy cập dữ liệu thuộc kiến trúc NestJS.
 
-## Cấu trúc
+## Kiến trúc hiện tại
 
-```
+- **99 route native NestJS**: `AdminController` 54 route, `CustomerController` 42 route và `NotificationController` 3 route. Mọi handler gọi method của service được inject qua constructor.
+- **Services theo domain**: nghiệp vụ admin, customer, notification và các service dùng chung được tách khỏi controller.
+- **Database**: PostgreSQL + Prisma 7. Runtime sử dụng `PrismaService` thông qua `PrismaModule` global; không import Prisma singleton cũ.
+- **Authentication/authorization**: `JwtAuthGuard`, `OptionalJwtAuthGuard`, `AdminGuard`, `GuestOrderAccessGuard`, `@CurrentUser()` và `@GuestEmail()`.
+- **Validation**: Zod schema qua `ZodValidationPipe`.
+- **Upload**: `FilesInterceptor` + `PersistImagesInterceptor`; file được kiểm tra loại và giới hạn trước khi lưu.
+- **Exception handling**: `AllExceptionsFilter` sử dụng `HttpAdapterHost`, không phụ thuộc trực tiếp Express `Response`.
+- **Realtime**: Socket.IO được quản lý qua `SocketService` và `SocketIoAdapter`.
+- **Scheduled task**: `AutoCancelService` quản lý vòng đời job tự hủy đơn chưa thanh toán.
+
+### Cấu trúc thư mục
+
+```text
 backend/
+├── prisma/
+│   ├── schema.prisma             # Database schema
+│   ├── seed.ts                   # Dữ liệu demo (reset dữ liệu — xem cảnh báo bên dưới)
+│   └── client.ts                 # Prisma singleton legacy chỉ phục vụ regression tests
 ├── src/
-│   ├── main.ts                    # Entry point (thay thế index.ts)
-│   ├── app.module.ts              # Root module
-│   ├── app.controller.ts          # GET / health check
-│   ├── prisma/
-│   │   ├── prisma.module.ts       # Global Prisma module
-│   │   └── prisma.service.ts      # PrismaService (extends PrismaClient)
-│   ├── common/
-│   │   ├── guards/                # JWT, Admin, GuestOrderAccess guards
-│   │   ├── filters/               # AllExceptionsFilter (global error handler)
-│   │   ├── pipes/                 # ZodValidationPipe
-│   │   ├── interceptors/          # PersistImagesInterceptor
-│   │   └── decorators/            # @CurrentUser, @GuestEmail
-│   ├── socket/
-│   │   ├── socket.module.ts
-│   │   ├── socket.service.ts      # SocketService (sendNotification...)
-│   │   └── socket-io.adapter.ts   # Custom SocketIo adapter
-│   ├── admin/
-│   │   ├── admin.controller.ts    # Tất cả admin routes
-│   │   └── admin.module.ts
-│   ├── customer/
-│   │   ├── customer.controller.ts # Tất cả customer routes
-│   │   └── customer.module.ts
-│   ├── notification/
-│   │   ├── notification.controller.ts
-│   │   └── notification.module.ts
-│   ├── controllers/               # Controllers nghiệp vụ (14 admin, 14 customer)
-│   ├── services/                  # 12 services nghiệp vụ
-│   ├── middleware/                # Upload & Validate middleware (xác thực/phân quyền dùng common/guards)
-│   ├── utils/                     # 14 utilities (PostgreSQL, email, socket, MoMo, VNPay...)
-│   ├── constants/                 # Constants (order status, return policy)
-│   └── types/                     # Types & Zod schemas (đồng bộ validation)
-├── prisma/                        # Prisma schema & seed
-├── uploads/                       # File uploads
+│   ├── main.ts                   # NestJS bootstrap + Express adapter
+│   ├── app.module.ts             # Root module
+│   ├── app.controller.ts         # Health endpoint
+│   ├── admin/                    # AdminController, AdminModule và domain services
+│   ├── customer/                 # CustomerController, CustomerModule và domain services
+│   ├── notification/             # NotificationController, NotificationModule, service
+│   ├── common/                   # Guards, decorators, filters, pipes, interceptors
+│   ├── prisma/                   # Global PrismaModule và PrismaService
+│   ├── socket/                   # SocketService, SocketModule, SocketIoAdapter
+│   ├── services/                 # Order lifecycle, inventory, email/AI automation...
+│   ├── utils/                    # Payment providers, email, shipping, cache, helpers
+│   ├── constants/                # Order status và return policy
+│   ├── types/                    # Domain types và Zod schemas
+│   ├── validators/               # Domain input helpers
+│   ├── public/images/            # Ảnh seed/static, phục vụ tại /public
+│   └── __tests__/
+│       ├── legacy-regression/    # Regression tests chạy trên snapshot cũ
+│       ├── migration/             # Kiểm tra kiến trúc NestJS
+│       ├── services/              # Unit tests cho services
+│       ├── pipes/                 # Unit tests cho pipes
+│       ├── prisma/                # Tests liên quan seed/client
+│       └── utils/                 # Unit tests cho utilities
+├── test-fixtures/                 # Snapshot Express cũ chỉ dành cho regression tests
+├── scripts/                       # Source architecture checker và no-any checker
+├── uploads/                       # Ảnh tải lên runtime; không commit file upload
+├── prisma.config.ts
+├── nest-cli.json
 ├── package.json
-├── tsconfig.json
-└── nest-cli.json
+└── tsconfig.build.json
 ```
+
+`src/generated/prisma/` được tạo bởi `prisma generate` và không commit. `test-fixtures/` cùng `prisma/client.ts` không được import bởi ứng dụng runtime; một số regression test còn dùng chúng để khóa các quy tắc nghiệp vụ lịch sử. Không xóa các fixture còn được test import nếu chưa thay thế test tương ứng bằng test của NestJS service.
+
+## Yêu cầu
+
+- Node.js 22 LTS (CI sử dụng Node 22).
+- npm tương thích với Node.js đang dùng.
+- PostgreSQL 14+.
+
+## Cài đặt và chạy local
+
+```bash
+cd backend
+cp .env.example .env
+```
+
+Cập nhật `DATABASE_URL` và các secret/URL cần thiết trong `.env` trước khi cài dependencies. Sau đó:
+
+```bash
+npm ci --legacy-peer-deps
+npm run db:generate
+npm run db:push
+npm run start:dev
+```
+
+Backend mặc định chạy tại `http://localhost:5000`; API có global prefix `/api` và health endpoint ở `/`.
+
+### Seed dữ liệu demo
+
+```bash
+npm run seed
+```
+
+**Cảnh báo:** seed hiện xóa và tạo lại dữ liệu demo trong database được cấu hình. Chỉ chạy trên database local/demo mới tạo hoặc khi chủ động muốn reset dữ liệu. Không chạy trên database production hoặc database chứa dữ liệu cần giữ.
+
+## Biến môi trường
+
+Các tên biến và giá trị mẫu đầy đủ nằm trong [`.env.example`](.env.example).
+
+| Biến | Mục đích |
+|---|---|
+| `PORT` | Cổng HTTP, mặc định `5000` |
+| `DATABASE_URL` | PostgreSQL connection string |
+| `FRONTEND_URL` | Origin frontend được phép qua CORS |
+| `BACKEND_URL` | URL backend public dùng cho callback/webhook |
+| `JWT_SECRET` | Ký access token và xác thực request |
+| `JWT_REFRESH_SECRET` | Ký refresh token |
+| `MOMO_PARTNER_CODE`, `MOMO_ACCESS_KEY`, `MOMO_SECRET_KEY` | Cấu hình MoMo |
+| `VNP_TMNCODE`, `VNP_HASHSECRET`, `VNP_URL`, `VNP_RETURNURL` | Cấu hình VNPay |
+| `EMAIL_USER`, `BREVO_API_KEY` | Gửi email giao dịch/OTP qua Brevo |
+| `GOOGLE_API_KEY` | Google Gemini chatbot |
+| `STRICT_ENV_CHECK` | Bật kiểm tra fail-fast các biến quan trọng khi khởi động |
+
+Không commit `.env`, secret, API key hay dữ liệu upload.
 
 ## Scripts
 
+| Lệnh | Mục đích |
+|---|---|
+| `npm run start:dev` | Chạy NestJS ở chế độ watch |
+| `npm run build` | Build production bằng Nest CLI |
+| `npm run start:prod` | Chạy bundle đã build (`dist/main.js`) |
+| `npm run start` | Chạy entrypoint TypeScript bằng `tsx` |
+| `npm run db:generate` | Generate Prisma Client |
+| `npm run db:push` | Đồng bộ schema vào database hiện tại |
+| `npm run db:studio` | Mở Prisma Studio |
+| `npm run seed` | Reset và nạp dữ liệu demo |
+| `npm test -- --runInBand` | Chạy Jest tests |
+| `npm run test:coverage` | Chạy Jest với coverage |
+| `npm run typecheck` | Type-check phần production build |
+| `npm run check:no-any` | Kiểm tra `any` tường minh theo quy tắc repo |
+| `npm run check:nestjs-migration` | Kiểm tra 99 route/service và guardrails kiến trúc |
+
+## Kiểm thử và phạm vi xác minh
+
+Có 33 Jest test suites trong source hiện tại. Các suite được chia thành regression tests (một số vẫn dùng snapshot Express cũ trong `test-fixtures`), unit tests cho NestJS services/pipes/utilities và architecture guardrails. Regression fixtures không thuộc runtime production.
+
+Chạy đủ các bước sau trước khi phát hành:
+
 ```bash
-# Development
-npm run start:dev
-
-# Production build
-npm run build
-npm run start
-
-# Database
+npm ci --legacy-peer-deps
 npm run db:generate
-npm run db:push
-npm run db:studio
-npm run seed
-
-# Tests
-npm test
-npm run test:coverage
-
-# Quality & Type check
+npm run check:nestjs-migration
+npm run build
 npm run typecheck
+npm test -- --runInBand
 npm run check:no-any
 ```
 
-## So sánh với Express
-
-| Express | NestJS |
-|---------|--------|
-| `src/index.ts` | `src/main.ts` |
-| `express-rate-limit` | `@nestjs/throttler` |
-| `authenticateToken` middleware | `JwtAuthGuard` (đã migrate hoàn toàn, loại bỏ authMiddleware) |
-| `requireAdmin` middleware | `AdminGuard` |
-| `guestOrderAccess` middleware | `GuestOrderAccessGuard` |
-| `globalErrorHandler` | `AllExceptionsFilter` |
-| `validate(schema)` middleware | `ZodValidationPipe` |
-| `initSocket()` | `SocketService.init()` + `SocketIoAdapter` |
-| Singleton `prisma` import | `PrismaService` (DI) |
-
-## Notes
-
-- Business logic và luồng nghiệp vụ được bảo toàn – controllers, services, utils được kế thừa và tinh gọn cho NestJS
-- Các middleware xác thực cũ của Express (`authMiddleware.ts`, `errorMiddleware.ts`, `guestOrderAccessMiddleware.ts`) và kết nối MariaDB cũ (`mariadbPool.ts`) đã được loại bỏ hoàn toàn, hệ thống chạy thuần NestJS Guards/Filters và Prisma PostgreSQL adapter
-- NestJS controllers gọi thẳng controller functions qua `run(fn, req, res, next)`
-- Rate limiting dùng `@nestjs/throttler` thay `express-rate-limit`
-- Socket.io khởi tạo qua `SocketService.init()` trong `main.ts` sau khi app listen
+Các lệnh kiểm tra source tĩnh không thay thế unit tests, HTTP integration tests, kiểm thử database hoặc sandbox webhook MoMo/VNPay. Xem [`NESTJS_MIGRATION_STATUS.md`](./NESTJS_MIGRATION_STATUS.md) để biết kết quả static review và những bước verification còn cần chạy.

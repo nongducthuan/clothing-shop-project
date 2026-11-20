@@ -13,14 +13,14 @@ The target is native NestJS controllers and providers/services, dependency-injec
 - **99/99 route handlers** are declared by NestJS decorators across `AdminController` (54), `CustomerController` (42) and `NotificationController` (3).
 - All 99 handlers delegate to injected NestJS services. No route calls `run(req, res, next)` or forwards to the former Express controllers.
 - The old runtime `src/controllers` directory has been removed.
-- Fourteen source snapshots of former controllers are retained under `test-fixtures/controllers` for legacy regression-test support only. They are outside the production TypeScript build and are not imported by application runtime modules.
+- Eleven source snapshots of former controllers are retained under `test-fixtures/controllers` for legacy regression-test support only. They are outside the production TypeScript build and are not imported by application runtime modules.
 
 ### Application services and dependency injection
 
 - Admin domain services: `AdminStatsService`, `AdminCatalogService`, `AdminPromotionService`, `AdminProductService`, `AdminUserService`, `AdminSaleService`, `AdminVoucherService`, `AdminOrderService` and `AdminReturnService`.
 - Customer domain services: `CustomerAuthService`, `CustomerCatalogService`, `CustomerChatService`, `CustomerOrderLookupService`, `CustomerOrderService`, `CustomerPaymentService`, `CustomerProductService`, `CustomerPromotionService` and `CustomerVoucherService`, plus `CustomerReturnService`.
 - Notification routes use `NotificationService`.
-- `PrismaService` is provided by the global `PrismaModule` and injected into runtime services. Runtime code does not import the old shared Prisma singleton. The legacy `prisma/client.ts` file is retained only for the test fixtures/older regression tests and is not used by the runtime application.
+- `PrismaService` is provided by the global `PrismaModule` and injected into runtime services. Runtime code does not import the old shared Prisma singleton. The legacy `prisma/client.ts` file is retained only for older regression tests and is not used by the runtime application.
 - Socket notifications use the injected `SocketService`; the service persists notifications through injected `PrismaService`.
 - `AiService` and `AutoCancelService` are Nest providers managed by the application lifecycle.
 
@@ -57,12 +57,17 @@ The target is native NestJS controllers and providers/services, dependency-injec
 
 ## Verification still required before production
 
-The dependency installation attempt (`npm ci --no-audit --no-fund`) timed out, leaving no usable local Nest CLI/Jest dependencies and no generated Prisma client. The observed results were: `npm run build` stopped with `nest: not found`; `npm run typecheck` stopped because required `@types/*` packages were missing from the incomplete dependency tree; and `npm test -- --runInBand` stopped with `jest: not found`. A TypeScript parser/transpile syntax check passed for 126 TypeScript files, and the AST migration checker passed for all 99 routes. These checks do **not** establish strict type correctness, test success or runtime behavior. Do not treat this source migration as production-verified.
+The following source-level checks passed in the cleanup workspace:
 
-In an environment with npm registry access and the configured database, run:
+- `npm run check:nestjs-migration`: passed; all 99 route handlers delegate to injected NestJS service methods.
+- `npm run check:no-any`: passed; zero explicit `any` annotations were found in the scanned TypeScript files.
+- TypeScript parser/transpile syntax scan: passed for 122 TypeScript files with zero syntax errors.
+- `npm ci --dry-run --ignore-scripts --offline --no-audit --no-fund`: passed, confirming that `package.json` and `package-lock.json` are synchronized.
+
+A real dependency installation could not complete in this environment: `npm ci --offline --legacy-peer-deps --no-audit --no-fund` failed with `ENOTCACHED` because the npm cache did not contain `zod-4.6.7.tgz`. Therefore, the full Nest build, strict typecheck and Jest suites have **not** been rerun after cleanup. Static checks do not establish runtime behavior or full type correctness. Do not deploy until the commands below pass in an environment with npm registry access and the configured database:
 
 ```bash
-npm ci
+npm ci --legacy-peer-deps
 npm run check:nestjs-migration
 npm run build
 npm run typecheck
@@ -70,3 +75,12 @@ npm test -- --runInBand
 ```
 
 Then run the database-backed tests against a non-production database and verify payment-provider webhook signatures/callbacks in the provider sandbox before deployment.
+
+## Repository cleanup
+
+- Removed unused direct dependencies `cors`, `express-rate-limit` and `@types/cors`. CORS is configured through NestJS `app.enableCors`; rate limiting uses `@nestjs/throttler`. The lockfile was updated and `npm ci --dry-run --offline` confirmed manifest/lockfile consistency.
+- Removed four unreferenced legacy snapshots: `test-fixtures/controllers/admin/saleController.ts`, `test-fixtures/controllers/admin/voucherController.ts`, `test-fixtures/controllers/customer/productController.ts` and `test-fixtures/services/productService.ts`.
+- The eleven remaining controller snapshots and their supporting middleware/service/utility fixtures are retained because regression tests import them directly or transitively. They are outside the production build/runtime boundary.
+- Express-era controller/middleware regression tests are grouped under `src/__tests__/legacy-regression/`; the `AdminStatsService` test is grouped with NestJS service tests.
+- Removed stale migration comments/references and redundant section comments while retaining comments that explain business rules, security checks and non-obvious behavior.
+- Backend and root README files were rewritten/updated to document the current module/service layout, test-fixture boundary, install/run scripts, suite counts and verification requirements.

@@ -19,10 +19,12 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: '22'
+        cache: 'npm'
+        cache-dependency-path: backend/package-lock.json
         
     - name: Install Dependencies
       working-directory: ./backend
-      run: npm install --legacy-peer-deps
+      run: npm ci --legacy-peer-deps
       env:
         DATABASE_URL: "postgresql://user:pass@localhost:5432/dummy?schema=public"
       
@@ -47,6 +49,14 @@ jobs:
     - name: Check Backend Any Usage
       working-directory: ./backend
       run: npm run check:no-any
+
+    - name: Check NestJS Migration Architecture
+      working-directory: ./backend
+      run: npm run check:nestjs-migration
+
+    - name: Backend Production Build
+      working-directory: ./backend
+      run: npm run build
 
   test-frontend:
     name: Frontend Unit Tests

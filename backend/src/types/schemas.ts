@@ -8,7 +8,7 @@ const positiveQuantitySchema = z.coerce
 
 /**
  * QUY ƯỚC: zod 4 dùng message tiếng Anh mặc định cho constraint không có message riêng
- * (`Too big: ...`, `Invalid input: ...`, `Invalid option: ...`). Middleware forward
+ * (`Too big: ...`, `Invalid input: ...`, `Invalid option: ...`). ZodValidationPipe chuyển
  * thẳng `issue.message` cho frontend ⇒ MỌI constraint phải truyền message tường minh,
  * và message đó phải có key `api_msg.<message>` trong translations.ts.
  */
@@ -42,7 +42,7 @@ export const changePasswordSchema = z.object({
  * Cart item as sent by the frontend (frontend/src/utils/useCartPage.ts → `cart`).
  * `id` là product id (CartItem.id), `quantity` là số lượng.
  * `product_id` được chấp nhận như alias.
- * `.passthrough()` là BẮT BUỘC: voucherController đọc trực tiếp các field này,
+ * `.passthrough()` là BẮT BUỘC: CustomerVoucherService cần các field này,
  * mà zod mặc định strip (xóa) mọi key không khai báo → gây lỗi 500.
  */
 const cartItemSchema = z
@@ -58,14 +58,13 @@ export const applyVoucherSchema = z.object({
     .string({ error: 'Voucher code is required' })
     .min(1, 'Voucher code is required')
     .max(50, 'Voucher code is too long'),
-  // Cho phép 0 (giỏ hàng rỗng / subtotal sau giảm hạng = 0) để controller trả
+  // Cho phép 0 (giỏ hàng rỗng / subtotal sau giảm hạng = 0) để service trả
   // thông báo NGHIỆP VỤ dễ hiểu, thay vì chặn bằng lỗi validation chung chung.
   orderTotal: z.number({ error: 'Invalid order total' }).nonnegative('Invalid order total'),
   // Tiền hàng GỐC (trước membership/voucher) — CHỈ dùng để kiểm tra điều kiện "đơn tối thiểu".
-  // Optional để tương thích ngược; thiếu thì controller fallback về orderTotal.
+  // Optional để tương thích ngược; thiếu thì service fallback về orderTotal.
   subtotal: z.number({ error: 'Invalid subtotal' }).nonnegative('Invalid subtotal').optional(),
-  // Phải forward xuống controller: với scope 'product'/'category' controller
-  // tự tính lại phần tiền đủ điều kiện từ chính các item này.
+  // Với scope 'product'/'category', CustomerVoucherService tự tính lại tiền đủ điều kiện từ các item này.
   cartItems: z.array(cartItemSchema, { error: 'Invalid cart items' }).optional(),
 });
 
@@ -111,9 +110,9 @@ export const createOrderSchema = z
     items: z
       .array(orderItemSchema, { error: 'Order must have at least one item' })
       .min(1, 'Order must have at least one item'),
-    // Bảng orders + controller dùng `address` (không phải `shipping_address`).
+    // API/DB field dùng `address` (không phải `shipping_address`).
     address: z.string({ error: 'Invalid address' }).optional(),
-    // DB enum lưu chữ thường ('cod' | 'momo' | 'vnpay') và controller so sánh
+    // DB enum lưu chữ thường ('cod' | 'momo' | 'vnpay') và service so sánh
     // bằng giá trị chữ thường → schema phải khớp.
     payment_method: z
       .enum(['cod', 'momo', 'vnpay'], { error: 'Invalid payment method' })
@@ -138,7 +137,7 @@ export const createOrderSchema = z
       .max(500, 'Note is too long (max 500 characters)')
       .optional(),
 
-    // ── Field controller THỰC SỰ đọc nhưng không cần validate: khai báo tường minh
+    // ── Field nghiệp vụ cần giữ lại nhưng không cần validate: khai báo tường minh
     // bằng `z.unknown()` để chúng không bị strip mà cũng không sinh thêm lỗi 400.
     // (Trước đây chúng chỉ "sống sót" nhờ `.passthrough()` — ai xoá là hỏng checkout,
     // đúng kiểu lỗi đã xảy ra với `cartItems` của voucher. Tiền/số lượng server tự
