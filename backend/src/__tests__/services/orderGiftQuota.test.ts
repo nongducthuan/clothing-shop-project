@@ -1,8 +1,3 @@
-jest.mock('../../../prisma/client', () => ({
-  __esModule: true,
-  default: { $transaction: jest.fn() },
-}));
-
 import type { TxClient } from '../../types/orderTypes';
 import { updateGiftPromotionQuota } from '../../services/orderStatusService';
 

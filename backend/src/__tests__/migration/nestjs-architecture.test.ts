@@ -13,7 +13,7 @@ function listTypeScriptFiles(directory: string): string[] {
   return fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
     const entryPath = path.join(directory, entry.name);
     if (entry.isDirectory()) {
-      if (entry.name === '__tests__') return [];
+      if (entry.name === '__tests__' || entry.name === 'generated') return [];
       return listTypeScriptFiles(entryPath);
     }
     return entry.isFile() && entry.name.endsWith('.ts') ? [entryPath] : [];
@@ -43,6 +43,8 @@ describe('NestJS migration architecture guardrails', () => {
     expect(controllers.join('\n')).not.toMatch(/\brun\s*\(/);
     expect(controllers.join('\n')).not.toMatch(/\b(next|res)\s*\(/);
     expect(fs.existsSync(path.join(sourceRoot, 'controllers'))).toBe(false);
+    expect(fs.existsSync(path.join(backendRoot, 'test-fixtures'))).toBe(false);
+    expect(fs.existsSync(path.join(backendRoot, 'prisma', 'client.ts'))).toBe(false);
   });
 
   it('keeps Express only as the NestJS HTTP adapter, not as a runtime application import', () => {

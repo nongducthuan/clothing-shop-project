@@ -20,8 +20,7 @@ Backend của Clothing Shop được xây dựng bằng **NestJS 11**, sử dụ
 backend/
 ├── prisma/
 │   ├── schema.prisma             # Database schema
-│   ├── seed.ts                   # Dữ liệu demo (reset dữ liệu — xem cảnh báo bên dưới)
-│   └── client.ts                 # Prisma singleton legacy chỉ phục vụ regression tests
+│   └── seed.ts                   # Dữ liệu demo (reset dữ liệu — xem cảnh báo bên dưới)
 ├── src/
 │   ├── main.ts                   # NestJS bootstrap + Express adapter
 │   ├── app.module.ts             # Root module
@@ -39,13 +38,11 @@ backend/
 │   ├── validators/               # Domain input helpers
 │   ├── public/images/            # Ảnh seed/static, phục vụ tại /public
 │   └── __tests__/
-│       ├── legacy-regression/    # Regression tests chạy trên snapshot cũ
-│       ├── migration/             # Kiểm tra kiến trúc NestJS
-│       ├── services/              # Unit tests cho services
-│       ├── pipes/                 # Unit tests cho pipes
-│       ├── prisma/                # Tests liên quan seed/client
-│       └── utils/                 # Unit tests cho utilities
-├── test-fixtures/                 # Snapshot Express cũ chỉ dành cho regression tests
+│       ├── services/              # Unit tests cho NestJS domain services
+│       ├── pipes/                 # Unit tests cho ZodValidationPipe & schemas
+│       ├── utils/                 # Unit tests cho utilities & payment providers
+│       ├── migration/             # Guardrails kiểm tra kiến trúc NestJS & SQL safety
+│       └── prisma/                # Tests liên quan seed/database
 ├── scripts/                       # Source architecture checker và no-any checker
 ├── uploads/                       # Ảnh tải lên runtime; không commit file upload
 ├── prisma.config.ts
@@ -54,7 +51,7 @@ backend/
 └── tsconfig.build.json
 ```
 
-`src/generated/prisma/` được tạo bởi `prisma generate` và không commit. `test-fixtures/` cùng `prisma/client.ts` không được import bởi ứng dụng runtime; một số regression test còn dùng chúng để khóa các quy tắc nghiệp vụ lịch sử. Không xóa các fixture còn được test import nếu chưa thay thế test tương ứng bằng test của NestJS service.
+`src/generated/prisma/` được tạo bởi `prisma generate` và không commit. Toàn bộ controllers, middleware, và fixtures Express cũ đã được loại bỏ hoàn toàn; 100% test suites kiểm thử trực tiếp trên các NestJS services và pipes native.
 
 ## Yêu cầu
 
@@ -128,7 +125,7 @@ Không commit `.env`, secret, API key hay dữ liệu upload.
 
 ## Kiểm thử và phạm vi xác minh
 
-Có 33 Jest test suites trong source hiện tại. Các suite được chia thành regression tests (một số vẫn dùng snapshot Express cũ trong `test-fixtures`), unit tests cho NestJS services/pipes/utilities và architecture guardrails. Regression fixtures không thuộc runtime production.
+Có 34 Jest test suites (238 unit tests) trong source hiện tại. Tất cả các suite đều là unit tests native kiểm thử trực tiếp các NestJS services, pipes, utilities và architecture guardrails. Toàn bộ tàn dư Express và test-fixtures đã được loại bỏ hoàn toàn.
 
 Chạy đủ các bước sau trước khi phát hành:
 

@@ -2,7 +2,7 @@
 
 Website thương mại điện tử chuyên bán quần áo và thời trang, tích hợp hệ thống quản lý bán hàng, gợi ý sản phẩm liên quan, xác thực OTP và thanh toán trực tuyến dành cho đồ án sinh viên.
 
-![Test suites](https://img.shields.io/badge/test--suites-50-blue?logo=jest)
+![Test suites](https://img.shields.io/badge/test--suites-51-blue?logo=jest)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?logo=typescript&logoColor=white)
 ![NestJS](https://img.shields.io/badge/NestJS-11-E0234E?logo=nestjs&logoColor=white)
 ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
@@ -255,7 +255,7 @@ npm install
 
 ## Testing
 
-Repository hiện có **33 backend Jest suites** và **17 frontend Vitest suites**. Đây là số test suite được kiểm kê từ source; số test case thực tế sẽ do Jest/Vitest báo tại thời điểm chạy.
+Repository hiện có **34 backend Jest suites** (238 tests) và **17 frontend Vitest suites** (101 tests), tổng cộng **51 test suites** (339 tests).
 
 ### 1. Backend (Jest)
 
@@ -274,15 +274,14 @@ Các nhóm test backend:
 
 | Nhóm | Số suite | Phạm vi |
 |---|---:|---|
-| `legacy-regression/` | 14 | Regression tests cho quy tắc nghiệp vụ/response lịch sử; một số test import snapshot Express từ `test-fixtures`, không phải HTTP test của NestJS runtime |
-| `services/` | 9 | Unit tests cho catalog, promotion, notification, pricing, AI, discount allocation và order gift quota |
-| `utils/` | 7 | Payment signature, email, environment, PostgreSQL config, return policy và shipping |
-| `migration/` | 1 | Guardrails kiến trúc NestJS: 99 routes, DI, adapter, SQL và validation/upload |
-| `pipes/` | 1 | ZodValidationPipe và response validation |
-| `prisma/` | 1 | Seed/client-related checks |
-| **Tổng** | **33** | Test suites hiện có trong `backend/src/__tests__/` |
+| `services/` | 23 | Unit tests cho NestJS domain services (auth, catalog, order, payment, voucher, promotion, user, return, stats, AI...) |
+| `pipes/` | 2 | Unit tests cho `ZodValidationPipe` và các validation schema contracts |
+| `utils/` | 7 | Payment signature (MoMo, VNPay), email, environment, PostgreSQL config, return policy và shipping |
+| `migration/` | 1 | Guardrails kiến trúc NestJS: 99 routes, DI, adapter, SQL safety, không fixture / singleton |
+| `prisma/` | 1 | Seed data encoding và database checks |
+| **Tổng** | **34** | Test suites native NestJS trong `backend/src/__tests__/` (238 tests passed) |
 
-**Giới hạn:** regression tests dựa trên `test-fixtures` khóa lại các quy tắc cũ, không thay thế việc kiểm thử trực tiếp NestJS HTTP layer. Cần bổ sung/chạy integration tests với database staging và sandbox payment trước khi deploy.
+100% test suites kiểm thử trực tiếp mã nguồn NestJS (services, pipes, guards). Không còn bất kỳ test nào phụ thuộc vào Express hay test-fixtures cũ.
 
 ### 2. Frontend (Vitest)
 

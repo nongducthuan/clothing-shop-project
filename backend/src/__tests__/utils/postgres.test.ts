@@ -37,7 +37,7 @@ describe('PostgreSQL connection configuration', () => {
   });
 
   it('the app and seed both use PrismaPg and the shared PostgreSQL pool config', () => {
-    const files = ['prisma/client.ts', 'prisma/seed.ts'];
+    const files = ['src/prisma/prisma.service.ts', 'prisma/seed.ts'];
     for (const file of files) {
       const source = fs.readFileSync(path.resolve(__dirname, '../../../', file), 'utf8');
       expect(source).toContain("from '@prisma/adapter-pg'");

@@ -127,6 +127,8 @@ if (counts.routes !== 99) errors.push(`Expected 99 decorated routes; found ${cou
 if (counts.routeHandlersDelegatingToServices !== 99) errors.push(`Expected all 99 routes to delegate to injectable services; found ${counts.routeHandlersDelegatingToServices}`);
 if (/\brun\s*\(|\bnext\s*\(|\bres\s*\(/.test(controllerText)) errors.push('Legacy Express forwarding patterns found in route controllers');
 if (fs.existsSync(path.join(src, 'controllers'))) errors.push('Legacy src/controllers directory still exists');
+if (fs.existsSync(path.join(root, 'test-fixtures'))) errors.push('Legacy test-fixtures directory still exists');
+if (fs.existsSync(path.join(root, 'prisma', 'client.ts'))) errors.push('Legacy prisma/client.ts singleton still exists');
 if (/from\s+['"]express(?:-serve-static-core)?['"]/.test(runtimeText)) errors.push('Direct Express imports found in application runtime');
 if (/import\s+prisma\s+from\s+['"][^'"]*\/prisma\/client['"]/.test(runtimeText)) errors.push('Shared Prisma singleton import found in application runtime');
 if (runtimeText.includes('$queryRawUnsafe')) errors.push('$queryRawUnsafe remains in application runtime');
