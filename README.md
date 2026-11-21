@@ -77,8 +77,8 @@ Website thương mại điện tử chuyên bán quần áo và thời trang, t�
 │                                                                              │
 │ ┌──────────────────┐   ┌───────────────────────┐   ┌───────────────────────┐ │
 │ │     Modules      │   │      Controllers      │   │     Prisma Client     │ │
-│ │ customer / admin │ → │    customer / admin   │ → │    PostgreSQL    │ │
-│ │  notifications   │   │ order / payment / ... │   │    adapter-pg    │ │
+│ │ customer / admin │ → │    customer / admin   │ → │    PostgreSQL         │ │
+│ │  notifications   │   │ order / payment / ... │   │    adapter-pg         │ │
 │ └──────────────────┘   └───────────────────────┘   └───────────────────────┘ │
 │                                                                              │
 │ Guards · Authentication / guest OTP · Zod validation                         │
@@ -156,7 +156,6 @@ clothing-shop-project/
     └── vite.config.ts / vitest.config.ts / tailwind.config.js
 ```
 
-**Lưu ý kiến trúc:** NestJS xử lý toàn bộ controller và business services; Express được giữ lại duy nhất làm HTTP adapter qua `@nestjs/platform-express`. Các snapshot Express trong `backend/test-fixtures/` và `backend/prisma/client.ts` chỉ phục vụ một số regression tests, không được import vào runtime.
 ---
 
 ## Cấu Hình Biến Môi Trường (Environment Variables)
@@ -222,7 +221,6 @@ cp .env.example .env
   npm run seed
   ```
   > **Lưu ý:** lệnh seed là *reset toàn bộ* — nó xoá hết người dùng, đơn hàng, sản phẩm, voucher... rồi tạo lại dữ liệu mẫu (kể cả tài khoản Admin). Chỉ chạy khi mới thiết lập dự án hoặc khi muốn xoá sạch dữ liệu. Tài khoản đăng nhập sau khi seed: xem mục **Tài Khoản Mặc Định (Seed)** bên dưới.
-  > Source code/schema đã chuyển sang PostgreSQL nhưng không tự sao chép dữ liệu đang nằm trong máy chủ MySQL cũ. Nếu cần giữ dữ liệu thật, phải export/dump MySQL và chuyển dữ liệu riêng; không chạy seed trên database đã có dữ liệu cần giữ.
   > Seed có PostgreSQL advisory lock `pg_try_advisory_lock(...)`: nếu một tiến trình seed khác đang chạy, lệnh thứ hai sẽ dừng ngay và báo lỗi thay vì xoá dữ liệu giữa chừng.
 
 - Chạy ứng dụng Backend:
@@ -277,11 +275,9 @@ Các nhóm test backend:
 | `services/` | 23 | Unit tests cho NestJS domain services (auth, catalog, order, payment, voucher, promotion, user, return, stats, AI...) |
 | `pipes/` | 2 | Unit tests cho `ZodValidationPipe` và các validation schema contracts |
 | `utils/` | 7 | Payment signature (MoMo, VNPay), email, environment, PostgreSQL config, return policy và shipping |
-| `migration/` | 1 | Guardrails kiến trúc NestJS: 99 routes, DI, adapter, SQL safety, không fixture / singleton |
+| `migration/` | 1 | Guardrails kiến trúc NestJS |
 | `prisma/` | 1 | Seed data encoding và database checks |
 | **Tổng** | **34** | Test suites native NestJS trong `backend/src/__tests__/` (238 tests passed) |
-
-100% test suites kiểm thử trực tiếp mã nguồn NestJS (services, pipes, guards). Không còn bất kỳ test nào phụ thuộc vào Express hay test-fixtures cũ.
 
 ### 2. Frontend (Vitest)
 
@@ -334,7 +330,3 @@ Sau khi chạy lệnh `npm run seed`, tất cả tài khoản mẫu dùng chung 
 > Lưu ý: Các thông tin thẻ trên chỉ dùng trong môi trường **Sandbox/Test**, không áp dụng cho giao dịch thật. Nếu MoMo/VNPay cập nhật lại bộ thẻ test, vui lòng tham khảo tài liệu chính thức:
 > MoMo Sandbox: https://developers.momo.vn/v3/vi/docs/payment/onboarding/test-instructions/
 > VNPay Sandbox: https://sandbox.vnpayment.vn/apis/docs/huong-dan-tich-hop/
-
-## Backend CI diagnostics
-
-Backend GitHub Actions logs now show a concise failure summary while preserving the full Jest output in the `backend-test-log` artifact. The CI pipeline also runs typecheck, migration checks, and production build after unit-test failures when setup and Prisma generation have succeeded.

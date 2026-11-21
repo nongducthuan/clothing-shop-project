@@ -2,10 +2,12 @@ import { IoAdapter } from '@nestjs/platform-socket.io';
 import { ServerOptions } from 'socket.io';
 import { INestApplicationContext } from '@nestjs/common';
 
+export type CorsOriginMatcher = string[] | ((origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => void);
+
 export class SocketIoAdapter extends IoAdapter {
   constructor(
     private readonly app: INestApplicationContext,
-    private readonly allowedOrigins: string[],
+    private readonly allowedOrigins: CorsOriginMatcher,
   ) {
     super(app);
   }

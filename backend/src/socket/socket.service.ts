@@ -10,7 +10,10 @@ export class SocketService {
 
   constructor(private readonly prisma: PrismaService) {}
 
-  init(server: HttpServer, allowedOrigins: string[]) {
+  init(
+    server: HttpServer,
+    allowedOrigins: string[] | ((origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => void),
+  ) {
     this.io = new SocketIOServer(server, {
       cors: {
         origin: allowedOrigins,

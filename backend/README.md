@@ -6,11 +6,11 @@ Backend của Clothing Shop được xây dựng bằng **NestJS 11**, sử dụ
 
 - **99 route native NestJS**: `AdminController` 54 route, `CustomerController` 42 route và `NotificationController` 3 route. Mọi handler gọi method của service được inject qua constructor.
 - **Services theo domain**: nghiệp vụ admin, customer, notification và các service dùng chung được tách khỏi controller.
-- **Database**: PostgreSQL + Prisma 7. Runtime sử dụng `PrismaService` thông qua `PrismaModule` global; không import Prisma singleton cũ.
+- **Database**: PostgreSQL + Prisma 7. Runtime sử dụng `PrismaService` thông qua `PrismaModule` global.
 - **Authentication/authorization**: `JwtAuthGuard`, `OptionalJwtAuthGuard`, `AdminGuard`, `GuestOrderAccessGuard`, `@CurrentUser()` và `@GuestEmail()`.
 - **Validation**: Zod schema qua `ZodValidationPipe`.
 - **Upload**: `FilesInterceptor` + `PersistImagesInterceptor`; file được kiểm tra loại và giới hạn trước khi lưu.
-- **Exception handling**: `AllExceptionsFilter` sử dụng `HttpAdapterHost`, không phụ thuộc trực tiếp Express `Response`.
+- **Exception handling**: `AllExceptionsFilter` sử dụng `HttpAdapterHost`.
 - **Realtime**: Socket.IO được quản lý qua `SocketService` và `SocketIoAdapter`.
 - **Scheduled task**: `AutoCancelService` quản lý vòng đời job tự hủy đơn chưa thanh toán.
 
@@ -50,8 +50,6 @@ backend/
 ├── package.json
 └── tsconfig.build.json
 ```
-
-`src/generated/prisma/` được tạo bởi `prisma generate` và không commit. Toàn bộ controllers, middleware, và fixtures Express cũ đã được loại bỏ hoàn toàn; 100% test suites kiểm thử trực tiếp trên các NestJS services và pipes native.
 
 ## Yêu cầu
 
@@ -125,8 +123,6 @@ Không commit `.env`, secret, API key hay dữ liệu upload.
 
 ## Kiểm thử và phạm vi xác minh
 
-Có 34 Jest test suites (238 unit tests) trong source hiện tại. Tất cả các suite đều là unit tests native kiểm thử trực tiếp các NestJS services, pipes, utilities và architecture guardrails. Toàn bộ tàn dư Express và test-fixtures đã được loại bỏ hoàn toàn.
-
 Chạy đủ các bước sau trước khi phát hành:
 
 ```bash
@@ -138,14 +134,3 @@ npm run typecheck
 npm test -- --runInBand
 npm run check:no-any
 ```
-
-Các lệnh kiểm tra source tĩnh không thay thế unit tests, HTTP integration tests, kiểm thử database hoặc sandbox webhook MoMo/VNPay. Xem [`NESTJS_MIGRATION_STATUS.md`](./NESTJS_MIGRATION_STATUS.md) để biết kết quả static review và những bước verification còn cần chạy.
-
-## CI tests and diagnostics
-
-- Run tests locally with `npm test`.
-- Run the quieter CI-style test command with `npm run test:ci` (`--runInBand --silent`).
-- GitHub Actions captures the full Jest output as the `backend-test-log` artifact and prints a bounded failure summary in the job log.
-- Type checking, architecture checks, and the production build are configured to run even when unit tests fail, provided dependency installation and Prisma Client generation succeeded.
-
-The concise job output is only a log-display improvement; it does not hide or fix failing tests. Download the `backend-test-log` artifact to inspect full diagnostics.
