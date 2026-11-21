@@ -167,7 +167,7 @@ clothing-shop-project/
 | `PORT` | Cổng chạy server Backend | `5000` |
 | `FRONTEND_URL` | Địa chỉ URL của Frontend | `http://localhost:5173` |
 | `BACKEND_URL` | URL public Backend (dùng cho Webhook IPN Callback) | `https://your-ngrok-url.ngrok-free.app/api` |
-| `DATABASE_URL` | Chuỗi kết nối CSDL PostgreSQL qua Prisma ORM | `postgresql://username:password@localhost:5432/shopdb?schema=public` |
+| `DATABASE_URL` | Chuỗi kết nối CSDL PostgreSQL qua Prisma ORM | `postgresql://username:password@ep-sample-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require` |
 | `JWT_SECRET` | Khóa bí mật dùng để mã hóa & xác thực Access Token (15 phút) | `your_super_secret_jwt_key` |
 | `JWT_REFRESH_SECRET` | Khóa bí mật riêng để mã hóa Refresh Token (7 ngày) | `your_super_secret_refresh_key` |
 | `MOMO_PARTNER_CODE` | Partner Code do MoMo cấp (Test Sandbox) | `your_partner_code` |
@@ -205,7 +205,7 @@ cp .env.example .env
 
 - Chỉnh `DATABASE_URL` trong `backend/.env` trước khi cài dependencies (Prisma 7 đọc biến này khi generate client), ví dụ:
   ```env
-  DATABASE_URL="postgresql://postgres:your_password@localhost:5432/shopdb?schema=public"
+  DATABASE_URL="postgresql://username:password@ep-sample-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require"
   ```
 - Cập nhật các thông tin tích hợp nếu sử dụng: Brevo (`BREVO_API_KEY`), MoMo (`MOMO_SECRET_KEY`...), Google Gemini (`GOOGLE_API_KEY`). Sau đó cài dependencies:
   ```bash
