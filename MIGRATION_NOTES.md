@@ -63,3 +63,27 @@
   - [x] `build`: Cả `admin` (Vite) và `storefront` (Next.js 16 Turbopack) build thành công.
   - [x] `check:i18n`: Pass 252 files, 815 keys.
 - **Commit**: `feat(storefront): bootstrap Next.js app shell`
+
+### Phase 3: Di chuyển từng route sang Next.js App Router (`src/app/`)
+- **Trạng thái**: Hoàn thành (PASS Gate 3)
+- **Chi tiết thực hiện**:
+  1. Route 1: `*` NotFound -> `app/not-found.tsx`
+  2. Route 2: `/sales-policy` -> `app/sales-policy/page.tsx` + `SalesPolicyClient.tsx` (tĩnh + metadata)
+  3. Route 3: `/login` và `/register` -> `app/login/page.tsx`, `app/register/page.tsx` + client components
+  4. Route 4: `/` Home -> `app/page.tsx` + `HomeClient.tsx` (tĩnh + metadata)
+  5. Route 5: `/category/[id]` -> `app/category/[id]/page.tsx` (Next 16 async params: `await params` + `generateMetadata`)
+  6. Route 6: `/products/[id]` -> `app/products/[id]/page.tsx` (Next 16 async params: `await params` + `generateMetadata`)
+  7. Route 7: `/search` -> `app/search/page.tsx` (bọc `Suspense` quanh `SearchClient` xử lý `useSearchParams`)
+  8. Route 8: `/cart` -> `app/cart/page.tsx` + `CartClient.tsx`
+  9. Route 9: `/checkout` -> `app/checkout/page.tsx` + `CheckoutClient.tsx`
+  10. Route 10: `/payment-return` -> `app/payment-return/page.tsx` (bọc `Suspense` quanh `PaymentReturnClient` xử lý `useSearchParams`)
+  11. Route 11: `/order` (OrderLookup) -> `app/order/page.tsx` + `OrderLookupClient.tsx`
+  12. Route 12: `/profile` -> `app/profile/page.tsx` (bọc `Suspense` quanh `ProfileClient` xử lý `useSearchParams` tab)
+- **Gate 3 Checklist**:
+  - [x] `next build` biên dịch thành công toàn bộ 13 routes (11 static + 2 dynamic `category/[id]`, `products/[id]`).
+  - [x] `typecheck`: Pass 100% 3/3 workspace (`@shop/shared`, `admin`, `storefront`).
+  - [x] `lint`: Pass 100% (0 errors).
+  - [x] `test`: Pass 17/17 test files, 101/101 tests pass.
+  - [x] `build`: Cả `admin` (Vite) và `storefront` (Next.js 16 Turbopack) build thành công.
+  - [x] `check:i18n`: Pass 275 files, 815 keys.
+- **Commit**: `feat(storefront): migrate all routes to Next.js 16 App Router`
