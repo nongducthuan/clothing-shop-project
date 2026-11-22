@@ -18,21 +18,21 @@ import Footer from "./components/customer/layout/Footer";
 import AIChatBubble from "./components/customer/chatbot/AIChatBubble";
 
 // Eager loaded for instant first page render
-import Home from "./pages/customer/Home";
+import Home from "./views/customer/Home";
 
 // Customer & Auth Pages (Lazy loaded)
-const Cart = lazy(() => import("./pages/customer/Cart"));
-const Login = lazy(() => import("./pages/auth/Login"));
-const Register = lazy(() => import("./pages/auth/Register"));
-const Checkout = lazy(() => import("./pages/customer/Checkout"));
-const Order = lazy(() => import("./pages/customer/OrderLookup"));
-const Search = lazy(() => import("./pages/customer/Search"));
-const ProductDetail = lazy(() => import("./pages/customer/ProductDetail"));
-const Category = lazy(() => import("./pages/customer/Category"));
-const Profile = lazy(() => import("./pages/customer/Profile"));
-const SalesPolicy = lazy(() => import("./pages/customer/SalesPolicy"));
-const PaymentReturn = lazy(() => import("./pages/customer/PaymentReturn"));
-const NotFound = lazy(() => import("./pages/NotFound"));
+const Cart = lazy(() => import("./views/customer/Cart"));
+const Login = lazy(() => import("./views/auth/Login"));
+const Register = lazy(() => import("./views/auth/Register"));
+const Checkout = lazy(() => import("./views/customer/Checkout"));
+const Order = lazy(() => import("./views/customer/OrderLookup"));
+const Search = lazy(() => import("./views/customer/Search"));
+const ProductDetail = lazy(() => import("./views/customer/ProductDetail"));
+const Category = lazy(() => import("./views/customer/Category"));
+const Profile = lazy(() => import("./views/customer/Profile"));
+const SalesPolicy = lazy(() => import("./views/customer/SalesPolicy"));
+const PaymentReturn = lazy(() => import("./views/customer/PaymentReturn"));
+const NotFound = lazy(() => import("./views/NotFound"));
 
 const queryClient = new QueryClient({
   defaultOptions: {

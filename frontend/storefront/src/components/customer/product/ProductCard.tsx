@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "@/lib/router";
 import { getImageUrl, PLACEHOLDER_IMG } from "@shop/shared/utils/imageUtils";
 import { useLanguage } from "@shop/shared/context/LanguageContext";
 

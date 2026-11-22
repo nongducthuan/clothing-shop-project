@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "@/lib/router";
 import API from "@shop/shared/services/apiClient";
 import { AuthContext } from "@shop/shared/context/AuthContext";
 import { useLanguage } from "@shop/shared/context/LanguageContext";

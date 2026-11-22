@@ -7,6 +7,7 @@ interface CartProviderProps {
 }
 
 const readSavedCart = (): CartItem[] => {
+  if (typeof window === "undefined") return [];
   try {
     const savedCart = localStorage.getItem("clothing-cart");
     if (!savedCart) return [];
@@ -56,7 +57,11 @@ export function CartProvider({ children }: CartProviderProps) {
   const [cart, setCart] = useState<CartItem[]>(readSavedCart);
 
   useEffect(() => {
-    localStorage.setItem("clothing-cart", JSON.stringify(cart));
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem("clothing-cart", JSON.stringify(cart));
+      } catch {}
+    }
   }, [cart]);
 
   const addToCart = (product: CartItem) => {

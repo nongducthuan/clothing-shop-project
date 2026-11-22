@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { useParams, useSearchParams, useLocation } from "react-router-dom";
+import { useParams, useSearchParams, useLocation } from "@/lib/router";
 import { useLanguage } from "@shop/shared/context/LanguageContext";
 import API from "@shop/shared/services/apiClient";
 

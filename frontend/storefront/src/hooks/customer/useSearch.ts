@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useRef, type FormEvent } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams } from "@/lib/router";
 import API from "@shop/shared/services/apiClient";
-import { PRICE_RANGES, GENDERS } from "../../components/customer/search/searchConstants.ts";
+import { PRICE_RANGES, GENDERS } from "../../components/customer/search/searchConstants";
 import { matchesProductSearch } from "@shop/shared/utils/productSearchUtils";
 import { calculateSalePrice } from "@shop/shared/utils/priceUtils";
 import { useLanguage } from "@shop/shared/context/LanguageContext";

@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { CartContext } from "../../context/CartContext.tsx";
+import { CartContext } from "../../context/CartContext";
 import { AuthContext } from "@shop/shared/context/AuthContext";
 import { useLanguage } from "@shop/shared/context/LanguageContext";
 import { formatCurrency } from "@shop/shared/utils/currencyUtils";

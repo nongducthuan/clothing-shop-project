@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "@/lib/router";
 import { useCartPage } from "../../hooks/customer/useCartPage";
 import { useLanguage } from "@shop/shared/context/LanguageContext";
 import CartItem from "../../components/customer/cart/CartItem";

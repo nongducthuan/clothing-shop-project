@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "@/lib/router";
 import { GENDER_PROMOS } from "./homeData";
 import { useLanguage } from "@shop/shared/context/LanguageContext";
 

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useSearchParams, useNavigate, Link } from "react-router-dom";
+import { useSearchParams, useNavigate, Link } from "@/lib/router";
 import API from "@shop/shared/services/apiClient";
 import PaymentBadge from "@shop/shared/components/common/PaymentBadge";
 import ChangePaymentModal from "../../components/customer/common/ChangePaymentModal";

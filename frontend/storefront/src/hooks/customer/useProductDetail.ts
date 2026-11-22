@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { CartContext } from "../../context/CartContext.tsx";
+import { useParams, useNavigate } from "@/lib/router";
+import { CartContext } from "../../context/CartContext";
 import { useLanguage } from "@shop/shared/context/LanguageContext";
 import API from "@shop/shared/services/apiClient";
 import { getImageUrl, PLACEHOLDER_IMG } from "@shop/shared/utils/imageUtils";

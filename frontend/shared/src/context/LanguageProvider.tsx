@@ -33,16 +33,27 @@ const LABEL_MAPS: Record<LabelType, Record<string, string>> = {
   },
 };
 
-export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [language, setLanguageState] = useState<Language>(() => {
+const getInitialLanguage = (): Language => {
+  if (typeof window === "undefined") return "vi";
+  try {
     const saved = localStorage.getItem("language");
     if (saved === "vi" || saved === "en") return saved;
     return "vi";
-  });
+  } catch {
+    return "vi";
+  }
+};
+
+export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [language, setLanguageState] = useState<Language>(getInitialLanguage);
 
   useEffect(() => {
-    localStorage.setItem("language", language);
-    document.documentElement.lang = language;
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem("language", language);
+        document.documentElement.lang = language;
+      } catch {}
+    }
   }, [language]);
 
   const setLanguage = (lang: Language) => {

@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link } from "@/lib/router";
 import { useLanguage } from "@shop/shared/context/LanguageContext";
 import type { CartItem as CartItemType } from "@shop/shared/types";
 import type { useCartPage } from "../../../hooks/customer/useCartPage";

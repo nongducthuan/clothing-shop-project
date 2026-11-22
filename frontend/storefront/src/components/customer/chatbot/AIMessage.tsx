@@ -1,5 +1,5 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link } from "@/lib/router";
 import { useLanguage } from "@shop/shared/context/LanguageContext";
 
 export default function AIMessage({ role, content }: { role: string; content: string }) {

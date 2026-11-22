@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link } from "@/lib/router";
 import { useLogin } from "../../hooks/auth/useLogin";
 import { useLanguage } from "@shop/shared/context/LanguageContext";
 import AuthInput from "@shop/shared/components/auth/AuthInput";

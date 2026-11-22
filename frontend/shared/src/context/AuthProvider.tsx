@@ -7,17 +7,19 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
+const getInitialUser = (): User | null => {
+  if (typeof window === "undefined") return null;
+  try {
+    const storedUser = localStorage.getItem("user");
+    return storedUser ? (JSON.parse(storedUser) as User) : null;
+  } catch {
+    try { localStorage.removeItem("user"); } catch {}
+    return null;
+  }
+};
+
 export const AuthProvider = ({ children }: AuthProviderProps) => {
-  const [user, setUser] = useState<User | null>(() => {
-    try {
-      const storedUser = localStorage.getItem("user");
-      return storedUser ? (JSON.parse(storedUser) as User) : null;
-    } catch {
-      // Ignore corrupted browser storage rather than preventing the app from mounting.
-      try { localStorage.removeItem("user"); } catch { /* Storage may be unavailable. */ }
-      return null;
-    }
-  });
+  const [user, setUser] = useState<User | null>(getInitialUser);
 
   const tier = user?.tier_name ?? "Normal";
   const discount = user?.discount_percent ?? 0;

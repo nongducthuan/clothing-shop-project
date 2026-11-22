@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef, type ChangeEvent } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { CartContext } from "../../context/CartContext.tsx";
+import { useNavigate, useLocation } from "@/lib/router";
+import { CartContext } from "../../context/CartContext";
 import { AuthContext } from "@shop/shared/context/AuthContext";
 import { useLanguage } from "@shop/shared/context/LanguageContext";
 import API from "@shop/shared/services/apiClient";

@@ -1,4 +1,4 @@
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "@/lib/router";
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
 import { AuthContext } from "@shop/shared/context/AuthContext";

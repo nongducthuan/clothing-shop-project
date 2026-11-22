@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "@/lib/router";
 
 export default function NotFound() {
   const navigate = useNavigate();

@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { AuthContext } from "@shop/shared/context/AuthContext";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "@/lib/router";
 import { getImageUrl } from "@shop/shared/utils/imageUtils";
 import { useToast } from "@shop/shared/context/ToastContext";
 import { useLanguage } from "@shop/shared/context/LanguageContext";

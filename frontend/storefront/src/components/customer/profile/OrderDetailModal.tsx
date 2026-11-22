@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "@/lib/router";
 import { ModernStatusBadge, PaymentStatusBadge } from "./OrderBadges";
 import OrderDetailHeader from "./order-detail/OrderDetailHeader";
 import OrderDetailReturnInfo from "./order-detail/OrderDetailReturnInfo";
@@ -8,7 +8,7 @@ import OrderDetailSummary from "./order-detail/OrderDetailSummary";
 import OrderDetailActions from "./order-detail/OrderDetailActions";
 import { useLanguage } from "@shop/shared/context/LanguageContext";
 import { useToast } from "@shop/shared/context/ToastContext";
-import { CartContext } from "../../../context/CartContext.tsx";
+import { CartContext } from "../../../context/CartContext";
 import { buyAgainFromOrder, applySubstitutions, SubstitutionSuggestion, VariantChoice } from "@shop/shared/utils/buyAgainUtils";
 import BuyAgainVariantModal from "../common/BuyAgainVariantModal";
 import { useRequiredContext } from "@shop/shared/hooks/useRequiredContext";

@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "@/lib/router";
 import SectionHeader from "./SectionHeader";
 import { COLLECTIONS } from "./homeData";
 import { useLanguage } from "@shop/shared/context/LanguageContext";

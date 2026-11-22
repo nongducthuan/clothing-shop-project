@@ -7,7 +7,7 @@ import tsParser from "@typescript-eslint/parser";
 import { defineConfig, globalIgnores } from "eslint/config";
 
 export default defineConfig([
-  globalIgnores(["dist"]),
+  globalIgnores(["dist", ".next"]),
   // JavaScript / JSX files
   {
     files: ["**/*.{js,jsx}"],

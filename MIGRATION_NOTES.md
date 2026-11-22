@@ -42,3 +42,24 @@
   - [x] `check:i18n` bắt được lỗi: Đã thử nghiệm xóa tạm `nav.home` ở locale `en` -> script chặn và báo lỗi `[thiếu "en"] nav.home` chính xác, sau đó phục hồi.
   - [x] `grep -rn "react-router-dom" shared/src` -> Rỗng 100% (shared hoàn toàn độc lập với router).
 - **Commit**: `refactor(frontend): split into shared/admin/storefront workspaces`
+
+### Phase 2: Dựng khung Next.js 16.4.6 trong storefront
+- **Trạng thái**: Hoàn thành (PASS Gate 2)
+- **Chi tiết thực hiện**:
+  1. Nâng cấp storefront lên Next.js 16.4.6 (`next@^16.4.6`), React 19.1.1, Turbopack.
+  2. Cấu hình `next.config.ts` với `transpilePackages: ["@shop/shared"]`, `turbopack.root`, `images.remotePatterns`.
+  3. Tạo adapter `src/lib/router.tsx` tương thích song song Next.js navigation và React Router context (giúp 100% test cũ trong Vitest dùng `MemoryRouter` tiếp tục pass mượt mà không cần sửa test harness).
+  4. Tạo `src/lib/shared-config.ts` gọi `configureShared` tự động khởi tạo biến môi trường `NEXT_PUBLIC_*`.
+  5. Tạo `src/app/layout.tsx` (RootLayout với script chống FOUC dark mode, FontAwesome CSS, `Providers`).
+  6. Tạo `src/app/providers.tsx` (wrap Theme, Language, Toast, Auth, Cart, AIChat, Navbar, Footer, AIChatBubble, Suspense).
+  7. Tạo `src/app/page.tsx` và `src/app/not-found.tsx`.
+  8. Xử lý SSR-safe cho `localStorage` trong tất cả providers khi Next.js prerender tĩnh.
+  9. Đổi tên `src/pages` sang `src/views` để Next.js 16 App Router không bị nhầm lẫn với Pages Router.
+- **Gate 2 Checklist**:
+  - [x] `next build` biên dịch thành công qua Turbopack (`/` và `/_not-found`).
+  - [x] `typecheck`: Pass 100% 3/3 workspace (`@shop/shared`, `admin`, `storefront`).
+  - [x] `lint`: Pass 100% (0 errors).
+  - [x] `test`: Pass 17/17 test files, 101/101 tests pass.
+  - [x] `build`: Cả `admin` (Vite) và `storefront` (Next.js 16 Turbopack) build thành công.
+  - [x] `check:i18n`: Pass 252 files, 815 keys.
+- **Commit**: `feat(storefront): bootstrap Next.js app shell`
