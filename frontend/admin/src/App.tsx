@@ -8,22 +8,22 @@ import { ToastProvider } from "@shop/shared/context/ToastProvider";
 import PageLoader from "@shop/shared/components/common/PageLoader";
 
 import ProtectedRoute from "./components/auth/ProtectedRoute";
-import AdminLayout from "./components/admin/layout/AdminLayout";
+import AdminLayout from "./components/layout/AdminLayout";
 import Login from "./pages/auth/Login";
 import NotFound from "./pages/NotFound";
 
 // Admin Pages (Lazy loaded)
-const Dashboard = lazy(() => import("./pages/admin/Dashboard"));
-const ProductDetailManager = lazy(() => import("./pages/admin/ProductDetailManager"));
-const BannerManager = lazy(() => import("./pages/admin/BannerManager"));
-const ProductManager = lazy(() => import("./pages/admin/ProductManager"));
-const OrderManager = lazy(() => import("./pages/admin/OrderManager"));
-const CategoryManager = lazy(() => import("./pages/admin/CategoryManager"));
-const Report = lazy(() => import("./pages/admin/Report"));
-const SaleManager = lazy(() => import("./pages/admin/SaleManager"));
-const VoucherManager = lazy(() => import("./pages/admin/VoucherManager"));
-const PromotionManager = lazy(() => import("./pages/admin/PromotionManager"));
-const UserManager = lazy(() => import("./pages/admin/UserManager"));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const ProductDetailManager = lazy(() => import("./pages/ProductDetailManager"));
+const BannerManager = lazy(() => import("./pages/BannerManager"));
+const ProductManager = lazy(() => import("./pages/ProductManager"));
+const OrderManager = lazy(() => import("./pages/OrderManager"));
+const CategoryManager = lazy(() => import("./pages/CategoryManager"));
+const Report = lazy(() => import("./pages/Report"));
+const SaleManager = lazy(() => import("./pages/SaleManager"));
+const VoucherManager = lazy(() => import("./pages/VoucherManager"));
+const PromotionManager = lazy(() => import("./pages/PromotionManager"));
+const UserManager = lazy(() => import("./pages/UserManager"));
 
 const queryClient = new QueryClient({
   defaultOptions: {

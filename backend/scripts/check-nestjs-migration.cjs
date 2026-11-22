@@ -9,7 +9,7 @@ const root = path.resolve(__dirname, '..');
 const src = path.join(root, 'src');
 const routeControllerPaths = [
   'admin/admin.controller.ts',
-  'customer/customer.controller.ts',
+  'storefront/storefront.controller.ts',
   'notification/notification.controller.ts',
 ];
 const routeMethods = new Set(['Get', 'Post', 'Put', 'Patch', 'Delete']);
@@ -44,7 +44,7 @@ function isRouteHandler(method) {
 
 const serviceFiles = [
   path.join(src, 'admin/services'),
-  path.join(src, 'customer/services'),
+  path.join(src, 'storefront/services'),
   path.join(src, 'notification'),
 ].flatMap(walk);
 const serviceMethods = new Map();
@@ -135,7 +135,7 @@ if (runtimeText.includes('$queryRawUnsafe')) errors.push('$queryRawUnsafe remain
 if (runtimeText.includes('validateMiddleware')) errors.push('Legacy Express validation middleware remains in application runtime');
 if (!read('main.ts').includes("from '@nestjs/platform-express'")) errors.push('NestJS Express adapter bootstrap is missing');
 if (!read('common/filters/all-exceptions.filter.ts').includes('HttpAdapterHost')) errors.push('Exception filter is not adapter-agnostic');
-if (!read('customer/customer.controller.ts').includes('FilesInterceptor') || !read('customer/customer.controller.ts').includes('PersistImagesInterceptor')) errors.push('NestJS upload interceptor integration is missing');
+if (!read('storefront/storefront.controller.ts').includes('FilesInterceptor') || !read('storefront/storefront.controller.ts').includes('PersistImagesInterceptor')) errors.push('NestJS upload interceptor integration is missing');
 if (!runtimeText.includes('ZodValidationPipe')) errors.push('ZodValidationPipe is not used by runtime code');
 
 console.log(JSON.stringify({ ...counts, passed: errors.length === 0, errors }, null, 2));

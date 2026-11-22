@@ -8,6 +8,7 @@
     "storefront"
   ],
   "scripts": {
+    "dev": "npm run dev -w storefront",
     "dev:admin": "npm run dev -w admin",
     "dev:storefront": "npm run dev -w storefront",
     "typecheck": "npm run typecheck --workspaces --if-present",

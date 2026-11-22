@@ -1,68 +1,158 @@
-# Clothing Shop — Frontend (React + Vite + TypeScript)
+# Clothing Shop — Frontend Workspace
 
-Giao diện khách hàng và trang quản trị của đồ án **Clothing Shop**.
+Frontend của đồ án **Clothing Shop** được tổ chức dưới dạng **npm workspace monorepo** gồm 3 packages:
+- **`shared` (`@shop/shared`)**: Thư viện dùng chung core types, contexts (Auth, Cart, Language, Theme, Toast), API client, i18n locales và tiện ích.
+- **`storefront`**: Giao diện khách hàng xây dựng trên **Next.js 16.4.6 (App Router, Turbopack, React 19.1, TailwindCSS 3.4)** chạy tại cổng `5173`.
+- **`admin`**: Bảng điều khiển quản trị xây dựng trên **Vite 7 (React 19.1, React Router 7, React Google Charts, TailwindCSS 3.4)** chạy tại cổng `5174`.
 
-Đây là phần frontend trong monorepo. Tài liệu đầy đủ (kiến trúc, danh sách API, tài khoản test, thẻ sandbox MoMo/VNPay, hướng dẫn seed...) nằm ở **[README gốc của dự án](../README.md)**.
+Tài liệu toàn diện về toàn bộ hệ thống (kiến trúc, backend, API endpoints, tài khoản test, thẻ sandbox MoMo/VNPay...) xem tại **[README gốc của dự án](../README.md)**.
 
 ---
 
-## Yêu cầu
+## Cấu Trúc Monorepo
 
-- **Node.js tương thích với Vitest 5**: dùng một trong các dải `^22.12.0`, `^24.0.0` hoặc `>=26.0.0`. Vite 7 riêng lẻ còn hỗ trợ `^20.19.0`, nhưng dải này không đáp ứng yêu cầu engine của Vitest 5. Repository đã được kiểm thử với Node 24.
-- Backend phải đang chạy (mặc định `http://localhost:5000`) để gọi API.
-
-## Cài đặt & chạy
-
-```bash
-npm install
-cp .env.example .env      # Windows CMD/PowerShell: copy .env.example .env
-npm run dev               # http://localhost:5173
+```text
+frontend/
+├── shared/                         # Package @shop/shared
+│   ├── src/
+│   │   ├── context/                # Auth, Cart, Theme, Language, Toast contexts
+│   │   ├── locales/                # translations.ts (vi/en), apiMessagePatterns.ts
+│   │   ├── services/               # apiClient (Axios instance), token storage
+│   │   ├── types/                  # Shared data types, API responses, status enums
+│   │   └── utils/                  # Price, shipping, order, return, currency, search helpers
+│   ├── scripts/                    # check-i18n.cjs
+│   └── package.json
+├── admin/                          # Package admin (Vite 7 SPA · Port 5174)
+│   ├── src/
+│   │   ├── components/             # Admin layout, sidebar, tables, modals, charts
+│   │   ├── hooks/                  # Admin data management hooks
+│   │   ├── pages/                  # Dashboard, Products, Categories, Orders, Reports, Users...
+│   │   └── main.tsx
+│   ├── vite.config.ts
+│   └── package.json
+├── storefront/                     # Package storefront (Next.js 16 App Router · Port 5173)
+│   ├── src/
+│   │   ├── app/                    # App Router routes: layout, page, cart, checkout, profile...
+│   │   ├── components/             # UI components: cart, category, chatbot, checkout, home, layout...
+│   │   └── hooks/                  # Storefront hooks & types
+│   ├── next.config.ts
+│   └── package.json
+└── package.json                    # Root npm workspace
 ```
 
-### Biến môi trường (`frontend/.env`)
+---
 
-| Tên biến | Mô tả | Mẫu |
-| --- | --- | --- |
-| `VITE_API_URL` | URL gốc của API backend (Axios `apiClient`) | `http://localhost:5000/api` |
-| `VITE_IMAGE_URL` | URL gốc phục vụ ảnh (`/public`, `/uploads`) | `http://localhost:5000` |
+## Yêu Cầu Môi Trường
 
-> Vite nhúng biến `VITE_*` vào bundle **lúc build**, nên khi đổi domain backend phải cập nhật 2 biến này rồi build lại. Nhớ thêm domain frontend vào `FRONTEND_URL` của backend (CORS) — mặc định backend chỉ cho phép `http://localhost:5173`.
+- **Node.js**: Phiên bản tương thích với Vitest 5 (`^22.12.0`, `^24.0.0` hoặc `>=26.0.0`). Dự án khuyến nghị Node.js 22 LTS hoặc Node.js 24.
+- **Backend API**: Backend NestJS phải đang chạy (mặc định tại `http://localhost:5000/api`) để xử lý dữ liệu và thanh toán.
 
-## Scripts
+---
 
-| Lệnh | Việc |
-| --- | --- |
-| `npm run dev` | Dev server Vite kèm HMR (cổng mặc định 5173) |
-| `npm run build` | Chạy `check:i18n` rồi build production ra `dist/` |
-| `npm run preview` | Chạy thử bundle production |
-| `npm run lint` | ESLint |
-| `npm run test` | Unit test bằng Vitest (`vitest run`) |
-| `npm run check:i18n` | Kiểm tra bản dịch vi/en (được gọi tự động trước `build`) |
+## Cài Đặt & Khởi Động
 
-## Kiểm thử
+### 1. Cài đặt dependencies (tại thư mục `frontend`)
 
 ```bash
+cd frontend
+npm install
+```
+
+### 2. Cấu hình biến môi trường
+
+Tạo file `.env` cho từng ứng dụng từ file mẫu `.env.example`:
+
+```bash
+cp storefront/.env.example storefront/.env
+cp admin/.env.example admin/.env
+```
+
+#### Biến môi trường Storefront (`frontend/storefront/.env`)
+
+| Biến | Mô tả | Mẫu giá trị |
+| --- | --- | --- |
+| `NEXT_PUBLIC_API_URL` | URL gốc của Backend REST API | `http://localhost:5000/api` |
+| `NEXT_PUBLIC_IMAGE_URL` | URL gốc phục vụ file ảnh tĩnh từ Backend | `http://localhost:5000` |
+| `NEXT_PUBLIC_ADMIN_URL` | URL trang Admin (dùng cho link chuyển trang quản trị) | `http://localhost:5174` |
+
+#### Biến môi trường Admin (`frontend/admin/.env`)
+
+| Biến | Mô tả | Mẫu giá trị |
+| --- | --- | --- |
+| `VITE_API_URL` | URL gốc của Backend REST API | `http://localhost:5000/api` |
+| `VITE_IMAGE_URL` | URL gốc phục vụ file ảnh tĩnh từ Backend | `http://localhost:5000` |
+
+### 3. Chạy môi trường phát triển (Development)
+
+Chạy từ thư mục `frontend`:
+
+```bash
+# Chạy Storefront (Next.js 16 tại http://localhost:5173)
+npm run dev:storefront
+# hoặc
+npm run dev
+
+# Chạy Admin (Vite SPA tại http://localhost:5174)
+npm run dev:admin
+```
+
+---
+
+## Các Lệnh Scripts Chính
+
+| Lệnh | Ý nghĩa |
+| --- | --- |
+| `npm run dev` | Khởi động dev server Storefront (Next.js 16 trên port 5173) |
+| `npm run dev:storefront` | Khởi động dev server Storefront (Next.js 16 trên port 5173) |
+| `npm run dev:admin` | Khởi động dev server Admin (Vite 7 trên port 5174) |
+| `npm run build` | Build production cho tất cả packages trong workspace |
+| `npm run typecheck` | Kiểm tra TypeScript (`tsc --noEmit`) toàn bộ packages |
+| `npm run lint` | Chạy linter ESLint cho toàn bộ workspace |
+| `npm run test` | Chạy bộ kiểm thử unit test Vitest cho toàn bộ workspace |
+| `npm run check:i18n` | Rà soát tính toàn vẹn và đồng bộ chuỗi dịch song ngữ `vi`/`en` |
+
+---
+
+## Kiểm Thử (Testing)
+
+Frontend sở hữu **17 test suites (101 tests)** chạy với Vitest:
+
+```bash
+cd frontend
 npm test
 ```
 
-**Theo các test case được liệt kê trong source:** `101 test cases` across 17 test suites — `shippingUtils`, `orderUtils`, `currencyUtils`, `promotionUtils`, `translations`, `apiMessagePatterns`, `apiErrorUtils`, `returnRequestUtils`, `useOrderActions`, `checkoutPricing`, `CartProvider`, `priceUtils`, `productSearchUtils`, `useCategoryPage`, `useProductDetail`, `useCartPage`, `AIMessage`. Chi tiết xem [bảng test trong README gốc](../README.md#2-frontend-testing-vitest).
+### Phân Bổ Test Suites
 
-- Cấu hình ở `vitest.config.ts`: `environment: 'node'`, include `src/**/*.test.ts(x)`; test được đặt cạnh file nguồn trong `src/`. Riêng 6 file (`CartProvider.test.tsx`, `AIMessage.test.tsx` và 4 test hook trong `hooks/customer/`) bật `jsdom` bằng dòng `// @vitest-environment jsdom` vì cần `localStorage`/React Testing Library.
-- `locales/translations.test.ts` chốt 2 lỗi đã từng gặp: chuỗi tiếng Việt bị double-encode (mojibake) và key `vi`/`en` lệch nhau.
-- `context/CartProvider.test.tsx` chạy trong `jsdom` để kiểm tra tồn kho bằng 0, giới hạn số lượng, và phục hồi khi dữ liệu giỏ hàng trong `localStorage` bị lỗi.
-- Nút **Đổi trả** chỉ hiển thị khi backend trả `can_return !== false` (quy tắc 7 ngày tính ở backend, frontend không tự tính lại); lỗi quá hạn từ API được dịch qua key `api_msg.Return period has expired...`.
-- `hooks/customer/useOrderActions.test.tsx` kiểm tra các action nghiệp vụ của hook đơn hàng cho cả guest và user đăng nhập. `useCategoryPage.test.tsx` kiểm tra reset phân trang khi đổi danh mục; `useProductDetail.test.tsx` kiểm tra không giữ ưu đãi của sản phẩm trước; `useCartPage.test.tsx` kiểm tra ưu tiên khuyến mãi và tồn kho quà dùng chung.
-- `utils/returnRequestUtils.test.ts` kiểm tra helper phục vụ luồng đổi trả và optimistic UI. Nếu file bị mojibake, dùng `scripts/fix-mojibake.cjs` để sửa rồi mở lại file bằng editor UTF-8.
+1. **Package `@shop/shared` (11 test suites · 84 tests)**:
+   - `currencyUtils.test.ts`: Định dạng tiền tệ VND / USD, tỷ giá hiển thị.
+   - `translations.test.ts`: Rà soát chống lỗi double-encode (mojibake) và lệch key giữa 2 locale `vi` / `en`.
+   - `productSearchUtils.test.ts`: Tìm kiếm, chuẩn hóa ký tự tiếng Việt có dấu/không dấu, lọc đa trường.
+   - `priceUtils.test.ts`: Tính toán giá trị giảm, tỷ lệ chiết khấu, giá hiển thị.
+   - `checkoutPricing.test.ts`: Kiểm tra logic phân bổ voucher và tổng tiền thanh toán.
+   - `promotionUtils.test.ts`: Quy tắc khuyến mãi Buy X Get Y, kiểm tra điều kiện tặng quà.
+   - `shippingUtils.test.ts`: Tính phí ship theo khu vực, ngưỡng miễn phí vận chuyển.
+   - `apiMessagePatterns.test.ts`: Khớp nối mã phản hồi API và thông điệp người dùng.
+   - `orderUtils.test.ts`: Xử lý trạng thái đơn hàng, trạng thái thanh toán, quyền đổi trả.
+   - `apiErrorUtils.test.ts`: Bóc tách thông điệp lỗi HTTP từ Axios/NestJS.
+   - `returnRequestUtils.test.ts`: Helper cho luồng đổi trả và cập nhật optimistic UI.
 
-## Đa ngôn ngữ (i18n)
+2. **Package `storefront` (6 test suites · 17 tests)**:
+   - `src/hooks/useOrderActions.test.tsx`: Hành động đơn hàng (hủy đơn, nhận hàng, thanh toán lại) cho cả khách vãng lai và thành viên.
+   - `src/context/CartProvider.test.tsx`: Giỏ hàng, kiểm soát tồn kho, giới hạn số lượng và phục hồi an toàn từ `localStorage`.
+   - `src/components/chatbot/__tests__/AIMessage.test.tsx`: Hiển thị link gợi ý sản phẩm thân thiện trong tin nhắn AI.
+   - `src/hooks/useCartPage.test.tsx`: Tương tác giỏ hàng, ưu tiên khuyến mãi, kiểm tra quà tặng.
+   - `src/hooks/useCategoryPage.test.tsx`: Chuyển đổi danh mục, reset phân trang tự động.
+   - `src/hooks/useProductDetail.test.tsx`: Xử lý biến thể kích thước/màu sắc, tránh giữ ưu đãi cũ khi đổi sản phẩm.
 
-- Toàn bộ chuỗi nằm ở `src/locales/translations.ts` với 2 locale `vi` / `en`, dùng qua `t("key", "mặc định")`.
-- `scripts/check-i18n.cjs` (chạy trước `vite build`) sẽ **chặn build** khi: key chỉ có ở 1 locale, key trùng lặp, placeholder `{...}` lệch nhau giữa vi/en, hoặc code gọi `t("...")` mà key chưa được khai báo ở cả 2 locale.
+3. **Package `admin`**: Cấu hình Vitest `--passWithNoTests`.
 
-## Ghi chú cấu trúc & Tối ưu
+---
 
-- **Tối ưu hiệu năng (Code-splitting)**: Sử dụng `React.lazy()` và `Suspense` bọc `PageLoader` cho toàn bộ các trang Admin (Dashboard, Reports, Quản lý sản phẩm/đơn hàng...) và các trang thứ cấp phía khách hàng. Trang chủ (`Home`) được load trực tiếp (eager loading) giúp FCP (First Contentful Paint) nhanh nhất, tránh tải dư thừa bundle của phần quản trị.
-- **Tối ưu SEO (Dynamic Meta & Open Graph)**: Tích hợp `react-helmet-async` qua component `SEO.tsx` bọc `HelmetProvider`. Tự động cập nhật `<title>`, `<meta name="description">` và thẻ Open Graph preview Facebook/Zalo theo từng sản phẩm, danh mục và từ khóa tìm kiếm.
-- Alias `@` → `src/` (khai báo trong `vite.config.ts`).
-- SPA rewrite mọi route về `/` trong `vercel.json` → deploy Vercel chạy đúng khi refresh ở route con.
-- Các nhánh chính trong `src/`: `pages/` (customer 10 / admin 11 / auth 2 + `NotFound`), `components/` (admin, auth, common gồm `SEO.tsx` và `PageLoader.tsx`, customer), `hooks/` (admin, customer, auth), `context/` (Theme, Language, Cart, Auth, AIChat, Toast), `services/` (`apiClient.ts` + `aiService.ts`), `utils/` (helper & test files), `locales/` (`translations.ts` + `apiMessagePatterns.ts`), `constants/`, `types/`.
+## Đa Ngôn Ngữ (i18n)
+
+- Dữ liệu dịch được quản lý tập trung tại `shared/src/locales/translations.ts` với 2 ngôn ngữ: Tiếng Việt (`vi`) và Tiếng Anh (`en`), truy xuất qua hàm `t("key", "mặc định")`.
+- Script `npm run check:i18n` tự động kiểm tra trước khi build:
+  - Chặn build nếu thiếu key ở một trong hai ngôn ngữ.
+  - Phát hiện các placeholder `{...}` không đồng bộ giữa `vi` và `en`.
+  - Báo lỗi nếu trong code xuất hiện lệnh `t("...")` gọi key chưa được khai báo.

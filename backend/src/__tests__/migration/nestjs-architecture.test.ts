@@ -22,9 +22,9 @@ function listTypeScriptFiles(directory: string): string[] {
 
 describe('NestJS migration architecture guardrails', () => {
   const adminController = readSource('admin/admin.controller.ts');
-  const customerController = readSource('customer/customer.controller.ts');
+  const storefrontController = readSource('storefront/storefront.controller.ts');
   const notificationController = readSource('notification/notification.controller.ts');
-  const controllers = [adminController, customerController, notificationController];
+  const controllers = [adminController, storefrontController, notificationController];
   const runtimeFiles = listTypeScriptFiles(sourceRoot);
   const runtimeText = runtimeFiles.map((file) => fs.readFileSync(file, 'utf8')).join('\n');
 
@@ -35,7 +35,7 @@ describe('NestJS migration architecture guardrails', () => {
     );
     expect(routeCount).toBe(99);
     expect(adminController).toContain('@Controller(\'admin\')');
-    expect(customerController).toContain('@Controller()');
+    expect(storefrontController).toContain('@Controller()');
     expect(notificationController).toContain('@Controller(\'notifications\')');
   });
 
@@ -70,8 +70,8 @@ describe('NestJS migration architecture guardrails', () => {
 
   it('uses Nest pipes and interceptors for validation and uploaded images', () => {
     expect(runtimeText).toContain('ZodValidationPipe');
-    expect(customerController).toContain('FilesInterceptor');
-    expect(customerController).toContain('PersistImagesInterceptor');
+    expect(storefrontController).toContain('FilesInterceptor');
+    expect(storefrontController).toContain('PersistImagesInterceptor');
     expect(runtimeText).not.toMatch(/validateMiddleware/);
   });
 

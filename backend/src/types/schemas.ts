@@ -42,7 +42,7 @@ export const changePasswordSchema = z.object({
  * Cart item as sent by the frontend (frontend/src/utils/useCartPage.ts → `cart`).
  * `id` là product id (CartItem.id), `quantity` là số lượng.
  * `product_id` được chấp nhận như alias.
- * `.passthrough()` là BẮT BUỘC: CustomerVoucherService cần các field này,
+ * `.passthrough()` là BẮT BUỘC: StorefrontVoucherService cần các field này,
  * mà zod mặc định strip (xóa) mọi key không khai báo → gây lỗi 500.
  */
 const cartItemSchema = z
@@ -64,7 +64,7 @@ export const applyVoucherSchema = z.object({
   // Tiền hàng GỐC (trước membership/voucher) — CHỈ dùng để kiểm tra điều kiện "đơn tối thiểu".
   // Optional để tương thích ngược; thiếu thì service fallback về orderTotal.
   subtotal: z.number({ error: 'Invalid subtotal' }).nonnegative('Invalid subtotal').optional(),
-  // Với scope 'product'/'category', CustomerVoucherService tự tính lại tiền đủ điều kiện từ các item này.
+  // Với scope 'product'/'category', StorefrontVoucherService tự tính lại tiền đủ điều kiện từ các item này.
   cartItems: z.array(cartItemSchema, { error: 'Invalid cart items' }).optional(),
 });
 

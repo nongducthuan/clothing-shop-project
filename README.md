@@ -2,7 +2,7 @@
 
 Website thương mại điện tử chuyên bán quần áo và thời trang, tích hợp hệ thống quản lý bán hàng, gợi ý sản phẩm liên quan, xác thực OTP và thanh toán trực tuyến dành cho đồ án sinh viên.
 
-![Test suites](https://img.shields.io/badge/test--suites-51-blue?logo=jest)
+![Test suites](https://img.shields.io/badge/test--suites-52-blue?logo=jest)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?logo=typescript&logoColor=white)
 ![NestJS](https://img.shields.io/badge/NestJS-11-E0234E?logo=nestjs&logoColor=white)
 ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
@@ -26,7 +26,7 @@ Website thương mại điện tử chuyên bán quần áo và thời trang, t�
 - **Chế độ Giao diện Sáng / Tối (Dark & Light Mode)**: Hỗ trợ chuyển đổi giao diện mượt mà giữa chế độ Tối (Dark) và Sáng (Light), tự động nhận diện theme hệ thống và ghi nhớ cài đặt qua `localStorage`.
 - **Hỗ trợ Đa ngôn ngữ (i18n & DB Localization)**: Chuyển đổi ngôn ngữ hiển thị linh hoạt cho cả giao diện tĩnh lẫn nội dung động trong CSDL.
 - **Tài khoản & Đăng nhập**: Đăng nhập & Đăng ký bảo mật qua JWT Auth (băm mật khẩu `bcryptjs`, yêu cầu mật khẩu tối thiểu 8 ký tự khi đăng ký và đổi mật khẩu), hỗ trợ phân hạng thành viên (Membership) tự động theo tổng chi tiêu và % chiết khấu theo hạng. Luồng **Access Token (15 phút) + Refresh Token (7 ngày)** tự động làm mới phiên ngầm qua Axios interceptor — người dùng không bị đăng xuất đột ngột.
-- **Gợi ý sản phẩm liên quan (Collaborative Filtering)**: Khối "Gợi ý cho bạn" trên **Trang chủ** trả về tối đa 8 sản phẩm dựa trên hành vi tương tác (`view` / `add_to_cart` / `purchase`) của những người dùng tương tự; khách chưa đăng nhập nhận sản phẩm ngẫu nhiên. Hệ thống loại các sản phẩm có tương tác `purchase` đã ghi nhận cho tài khoản. Lưu ý: hiện tương tác `purchase` được ghi nhận ngay khi tạo đơn, nên không đồng nghĩa đơn đã thanh toán thành công. Logic nằm trong `CustomerController.getRecommendations` và `CustomerProductService.getRecommendations`.
+- **Gợi ý sản phẩm liên quan (Collaborative Filtering)**: Khối "Gợi ý cho bạn" trên **Trang chủ** trả về tối đa 8 sản phẩm dựa trên hành vi tương tác (`view` / `add_to_cart` / `purchase`) của những người dùng tương tự; khách chưa đăng nhập nhận sản phẩm ngẫu nhiên. Hệ thống loại các sản phẩm có tương tác `purchase` đã ghi nhận cho tài khoản. Lưu ý: hiện tương tác `purchase` được ghi nhận ngay khi tạo đơn, nên không đồng nghĩa đơn đã thanh toán thành công. Logic nằm trong `StorefrontController.getRecommendations` và `StorefrontProductService.getRecommendations`.
 - **Tối ưu hiệu năng & SEO cơ bản**: Tối ưu tốc độ tải trang bằng Code-splitting với `React.lazy()` và `Suspense` (chỉ tải trang chủ ban đầu, tách riêng các bundle Admin và trang phụ); quản lý thẻ tiêu đề, mô tả và chia sẻ mạng xã hội (Open Graph) động theo từng sản phẩm/danh mục thông qua `react-helmet-async`.
 - **Trợ lý AI Chatbot**: Tư vấn, giải đáp thắc mắc khách hàng trực tiếp sử dụng Google Gemini AI API.
 - **Trang Chính sách bán hàng (`/sales-policy`)**: Tổng hợp chính sách giao hàng – đổi trả – thanh toán cùng ưu đãi giảm giá và đặc quyền hội viên VIP.
@@ -57,7 +57,7 @@ Website thương mại điện tử chuyên bán quần áo và thời trang, t�
 │ React 19 · TypeScript · Vite · TailwindCSS                                   │
 │                                                                              │
 │ ┌────────────────────┐  ┌────────────────────┐  ┌──────────────────────────┐ │
-│ │    Customer UI     │  │      Admin UI      │  │     Shared frontend      │ │
+│ │   Storefront UI   │  │      Admin UI      │  │     Shared frontend      │ │
 │ │Shop / cart / search│  │Dashboard / reports │  │   Context / Providers    │ │
 │ │ Checkout / orders  │  │ Products / orders  │  │  Hooks · API · Services  │ │
 │ └────────────────────┘  └────────────────────┘  └──────────────────────────┘ │
@@ -110,7 +110,7 @@ Website thương mại điện tử chuyên bán quần áo và thời trang, t�
   - **Storefront**: Next.js 16.4.6 (App Router, Turbopack, React 19.1), TailwindCSS 3.4, Lucide Icons, Socket.io client.
   - **Admin**: React 19, TypeScript, Vite, TailwindCSS, React Google Charts, Lucide Icons, Socket.io client.
   - **Shared (`@shop/shared`)**: Source-first shared package (API client, context, i18n, common components & utilities).
-- **Backend**: Node.js, TypeScript, **NestJS 11** (`@nestjs/common`, `@nestjs/core`, `@nestjs/platform-express`, `@nestjs/throttler`, `@nestjs/websockets`), Prisma ORM (`schema.prisma`, generated Prisma Client và `PrismaService` dùng Dependency Injection), PostgreSQL (`@prisma/adapter-pg` + `pg` driver), JSON Web Token (JWT), `bcryptjs`, Multer, `helmet`, `zod`, `node-cache`, `async`, `node-cron`, `socket.io`.
+- **Backend**: Node.js, TypeScript, **NestJS 11** (`@nestjs/common`, `@nestjs/core`, `@nestjs/platform-express`, `@nestjs/throttler`, `@nestjs/websockets`), Prisma ORM (`schema.prisma`, generated Prisma Client và `PrismaService` dùng Dependency Injection), PostgreSQL (`@prisma/adapter-pg` + `pg` driver), Redis (`ioredis` + in-memory store fallback), JSON Web Token (JWT), `bcryptjs`, Multer, `helmet`, `zod`, `async`, `node-cron`, `socket.io`.
 - **Testing & CI/CD**:
   - **Backend**: Jest + `@swc/jest` + `jest-mock-extended` + `supertest` (mock toàn bộ — không cần DB thật).
   - **Frontend**: Vitest.
@@ -129,14 +129,19 @@ Website thương mại điện tử chuyên bán quần áo và thời trang, t�
 ```text
 clothing-shop-project/
 ├── .github/workflows/ci.yml       # CI: backend Jest/build/typecheck/architecture + frontend checks
+├── docker-compose.yml             # Docker stack: PostgreSQL 16 + Redis 7 + Backend NestJS
+├── .dockerignore
 ├── backend/
+│   ├── Dockerfile                 # Multi-stage Docker build cho NestJS
+│   ├── .dockerignore
 │   ├── prisma/                    # schema.prisma, seed.ts, test-only legacy client.ts
 │   ├── src/
 │   │   ├── main.ts                # NestJS bootstrap trên Express HTTP adapter
 │   │   ├── app.module.ts          # Root module
 │   │   ├── admin/                 # AdminController (54 routes), module và domain services
-│   │   ├── customer/              # CustomerController (42 routes), module và domain services
+│   │   ├── storefront/            # StorefrontController (42 routes), module và domain services
 │   │   ├── notification/          # NotificationController (3 routes), module và service
+│   │   ├── redis/                 # RedisModule + RedisService (ioredis + memory fallback)
 │   │   ├── common/                # Guards, decorators, exception filter, validation pipe, upload interceptor
 │   │   ├── prisma/                # PrismaModule + PrismaService (DI)
 │   │   ├── socket/                # SocketService + SocketIoAdapter
@@ -146,7 +151,7 @@ clothing-shop-project/
 │   │   ├── types/                 # Domain types và Zod schemas
 │   │   ├── validators/            # Domain validation helpers
 │   │   ├── public/images/         # Ảnh seed/static, serve tại /public
-│   │   └── __tests__/             # 33 Jest suites: legacy regression, services, utilities, migration
+│   │   └── __tests__/             # 35 Jest suites: services, pipes, utils, redis, migration, prisma
 │   ├── test-fixtures/             # Snapshot Express cũ chỉ dùng bởi regression tests, không chạy runtime
 │   ├── scripts/                   # check-nestjs-migration.cjs và check-no-any.cjs
 │   ├── uploads/                   # Ảnh upload runtime, không commit file upload
@@ -160,8 +165,8 @@ clothing-shop-project/
     │   └── vite.config.ts
     ├── storefront/                # Package storefront: Next.js 16.4.6 App Router chạy port 5173
     │   ├── src/app/               # App Router pages & layouts
-    │   ├── src/components/        # Customer components
-    │   ├── src/hooks/             # Customer hooks
+    │   ├── src/components/        # Storefront UI components (cart, category, chatbot, checkout, home, layout...)
+    │   ├── src/hooks/             # Storefront hooks & types
     │   └── next.config.ts
     └── package.json               # Root npm workspace quản lý 3 packages
 ```
@@ -301,7 +306,7 @@ npm install
 
 ## Testing
 
-Repository hiện có **34 backend Jest suites** (238 tests) và **17 frontend Vitest suites** (101 tests), tổng cộng **51 test suites** (339 tests).
+Repository hiện có **35 backend Jest suites** (244 tests) và **17 frontend Vitest suites** (101 tests), tổng cộng **52 test suites** (345 tests).
 
 ### 1. Backend (Jest)
 
@@ -320,12 +325,12 @@ Các nhóm test backend:
 
 | Nhóm | Số suite | Phạm vi |
 |---|---:|---|
-| `services/` | 23 | Unit tests cho NestJS domain services (auth, catalog, order, payment, voucher, promotion, user, return, stats, AI...) |
+| `services/` | 24 | Unit tests cho NestJS domain services (auth, catalog, order, payment, voucher, promotion, user, return, stats, AI, redis...) |
 | `pipes/` | 2 | Unit tests cho `ZodValidationPipe` và các validation schema contracts |
 | `utils/` | 7 | Payment signature (MoMo, VNPay), email, environment, PostgreSQL config, return policy và shipping |
 | `migration/` | 1 | Guardrails kiến trúc NestJS |
 | `prisma/` | 1 | Seed data encoding và database checks |
-| **Tổng** | **34** | Test suites native NestJS trong `backend/src/__tests__/` (238 tests passed) |
+| **Tổng** | **35** | Test suites native NestJS trong `backend/src/__tests__/` (243 passed, 1 skipped) |
 
 ### 2. Frontend (Vitest)
 
@@ -339,7 +344,7 @@ npm run typecheck
 npm run build
 ```
 
-Frontend có 17 test suites bao phủ shipping/order/currency/promotion, i18n và API errors, return requests, checkout/cart pricing, các customer hooks và AI chat UI. Một số test component/hook dùng React Testing Library và `jsdom`.
+Frontend có 17 test suites bao phủ shipping/order/currency/promotion, i18n và API errors, return requests, checkout/cart pricing, các storefront hooks và AI chat UI. Một số test component/hook dùng React Testing Library và `jsdom`.
 
 ### 3. CI
 

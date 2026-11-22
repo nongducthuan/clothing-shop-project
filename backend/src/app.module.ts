@@ -5,7 +5,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { RedisModule } from './redis/redis.module';
 import { SocketModule } from './socket/socket.module';
 import { AdminModule } from './admin/admin.module';
-import { CustomerModule } from './customer/customer.module';
+import { StorefrontModule } from './storefront/storefront.module';
 import { NotificationModule } from './notification/notification.module';
 import { AppController } from './app.controller';
 import { AutoCancelService } from './services/autoCancelService';
@@ -20,7 +20,7 @@ import { AutoCancelService } from './services/autoCancelService';
     RedisModule,
     SocketModule,
     AdminModule,
-    CustomerModule,
+    StorefrontModule,
     NotificationModule,
   ],
   controllers: [AppController],

@@ -4,13 +4,14 @@ Backend của Clothing Shop được xây dựng bằng **NestJS 11**, sử dụ
 
 ## Kiến trúc hiện tại
 
-- **99 route native NestJS**: `AdminController` 54 route, `CustomerController` 42 route và `NotificationController` 3 route. Mọi handler gọi method của service được inject qua constructor.
-- **Services theo domain**: nghiệp vụ admin, customer, notification và các service dùng chung được tách khỏi controller.
+- **99 route native NestJS**: `AdminController` 54 route, `StorefrontController` 42 route và `NotificationController` 3 route. Mọi handler gọi method của service được inject qua constructor.
+- **Services theo domain**: nghiệp vụ admin, storefront, notification và các service dùng chung được tách khỏi controller.
 - **Database**: PostgreSQL + Prisma 7. Runtime sử dụng `PrismaService` thông qua `PrismaModule` global.
 - **Authentication/authorization**: `JwtAuthGuard`, `OptionalJwtAuthGuard`, `AdminGuard`, `GuestOrderAccessGuard`, `@CurrentUser()` và `@GuestEmail()`.
 - **Validation**: Zod schema qua `ZodValidationPipe`.
 - **Upload**: `FilesInterceptor` + `PersistImagesInterceptor`; file được kiểm tra loại và giới hạn trước khi lưu.
 - **Exception handling**: `AllExceptionsFilter` sử dụng `HttpAdapterHost`.
+- **Caching & Performance**: `RedisService` (`ioredis`) kết nối Redis khi có `REDIS_URL` với cơ chế tự động fallback in-memory store; `appCache` quản lý in-memory cache đồng bộ độc lập.
 - **Realtime**: Socket.IO được quản lý qua `SocketService` và `SocketIoAdapter`.
 - **Scheduled task**: `AutoCancelService` quản lý vòng đời job tự hủy đơn chưa thanh toán.
 
@@ -26,8 +27,9 @@ backend/
 │   ├── app.module.ts             # Root module
 │   ├── app.controller.ts         # Health endpoint
 │   ├── admin/                    # AdminController, AdminModule và domain services
-│   ├── customer/                 # CustomerController, CustomerModule và domain services
+│   ├── storefront/               # StorefrontController, StorefrontModule và domain services
 │   ├── notification/             # NotificationController, NotificationModule, service
+│   ├── redis/                    # RedisModule, RedisService (ioredis + in-memory fallback)
 │   ├── common/                   # Guards, decorators, filters, pipes, interceptors
 │   ├── prisma/                   # Global PrismaModule và PrismaService
 │   ├── socket/                   # SocketService, SocketModule, SocketIoAdapter
@@ -43,6 +45,8 @@ backend/
 │       ├── utils/                 # Unit tests cho utilities & payment providers
 │       ├── migration/             # Guardrails kiểm tra kiến trúc NestJS & SQL safety
 │       └── prisma/                # Tests liên quan seed/database
+├── Dockerfile                     # Multi-stage Docker build
+├── .dockerignore
 ├── scripts/                       # Source architecture checker và no-any checker
 ├── uploads/                       # Ảnh tải lên runtime; không commit file upload
 ├── prisma.config.ts
@@ -91,6 +95,7 @@ Các tên biến và giá trị mẫu đầy đủ nằm trong [`.env.example`](
 |---|---|
 | `PORT` | Cổng HTTP, mặc định `5000` |
 | `DATABASE_URL` | PostgreSQL connection string |
+| `REDIS_URL` | Chuỗi kết nối Redis (tùy chọn, tự động fallback in-memory nếu không cấu hình) |
 | `FRONTEND_URL` | Origin frontend được phép qua CORS |
 | `BACKEND_URL` | URL backend public dùng cho callback/webhook |
 | `JWT_SECRET` | Ký access token và xác thực request |
