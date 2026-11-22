@@ -211,7 +211,7 @@ export class CustomerCatalogService {
     }
   }
 
-  async getCustomerSales() {
+  async getActiveSales() {
     try {
       const now = new Date();
       const sales = await this.prisma.sale.findMany({
@@ -223,7 +223,7 @@ export class CustomerCatalogService {
       });
       return { success: true, data: sales };
     } catch (error) {
-      console.error('Error fetching customer sales:', error);
+      console.error('Error fetching active sales:', error);
       throw new InternalServerErrorException({ success: false, message: getErrorMessage(error) });
     }
   }

@@ -338,8 +338,8 @@ export class CustomerController {
 
   // Sales
   @Get('sales')
-  getCustomerSales() {
-    return this.customerCatalogService.getCustomerSales();
+  getActiveSales() {
+    return this.customerCatalogService.getActiveSales();
   }
 
   // Vouchers
@@ -350,7 +350,7 @@ export class CustomerController {
 
   @Post('vouchers/apply')
   @HttpCode(200)
-  applyVoucherCustomer(@Body(new ZodValidationPipe(applyVoucherSchema)) validatedBody: {
+  applyVoucher(@Body(new ZodValidationPipe(applyVoucherSchema)) validatedBody: {
     code?: string; orderTotal?: number | string; subtotal?: number | string; membershipDiscountableSubtotal?: number | string; cartItems?: unknown;
   }) {
     return this.customerVoucherService.applyVoucher(validatedBody);

@@ -2,9 +2,9 @@
   "name": "nestjs-clothing-shop",
   "version": "1.0.0",
   "scripts": {
-    "start": "tsx src/main.ts",
-    "dev": "tsx watch src/main.ts",
-    "start:dev": "tsx watch src/main.ts",
+    "start": "node dist/main.js",
+    "dev": "nest start --watch",
+    "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "build": "nest build",
     "seed": "tsx prisma/seed.ts",

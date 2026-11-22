@@ -54,7 +54,7 @@ describe('CustomerCatalogService', () => {
 
   it('returns active customer sales in the existing response envelope', async () => {
     prismaMock.sale.findMany.mockResolvedValue([{ id: 9 }]);
-    await expect(service.getCustomerSales()).resolves.toEqual({
+    await expect(service.getActiveSales()).resolves.toEqual({
       success: true,
       data: [{ id: 9 }],
     });
