@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 /**
  * Returns a live countdown string "M:SS" until the order is auto-cancelled,
@@ -11,11 +11,11 @@ export function useAutoCancelCountdown(
   createdAt: string | undefined | null,
   timeoutMin = 30,
 ): string | null {
-  const getRemaining = (): number => {
+  const getRemaining = useCallback((): number => {
     if (!createdAt) return 0;
     const deadline = new Date(createdAt).getTime() + timeoutMin * 60 * 1000;
     return Math.max(0, deadline - Date.now());
-  };
+  }, [createdAt, timeoutMin]);
 
   const [remaining, setRemaining] = useState<number>(getRemaining);
 
@@ -30,8 +30,7 @@ export function useAutoCancelCountdown(
     }, 1000);
 
     return () => clearInterval(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [createdAt, timeoutMin]);
+  }, [createdAt, getRemaining]);
 
   if (remaining <= 0) return null;
 

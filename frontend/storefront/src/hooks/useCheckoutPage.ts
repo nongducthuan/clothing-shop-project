@@ -128,6 +128,7 @@ export function useCheckoutPage() {
   const [paymentMethod, setPaymentMethod] = useState("cod");
   const [guestInfo, setGuestInfo] = useState({ name: "", phone: "", email: "" });
   const [giftDetails, setGiftDetails] = useState<Record<number, CheckoutGiftDetail>>({});
+  const fetchedGiftIdsRef = useRef<Set<number>>(new Set());
 
   const routeState = routeLocation.state as CheckoutRouteState | null;
   const appliedVoucher = routeState?.appliedVoucher ?? null;
@@ -138,18 +139,19 @@ export function useCheckoutPage() {
 
   useEffect(() => {
     earnedGifts.forEach((gift) => {
-      if (!giftDetails[gift.giftProductId]) {
+      if (!fetchedGiftIdsRef.current.has(gift.giftProductId)) {
+        fetchedGiftIdsRef.current.add(gift.giftProductId);
         API.get(`/products/${gift.giftProductId}`)
           .then((res) => {
             const product = res.data?.data || res.data;
             setGiftDetails((prev) => ({ ...prev, [gift.giftProductId]: product }));
           })
-          .catch((err) => console.error("Gift fetch error:", err));
+          .catch((err) => {
+            fetchedGiftIdsRef.current.delete(gift.giftProductId);
+            console.error("Gift fetch error:", err);
+          });
       }
     });
-  // giftDetails is intentionally excluded: we use functional setState to read latest value
-  // without triggering a new fetch loop on every giftDetails change.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [earnedGifts]);
 
   const subtotal = useMemo(() =>

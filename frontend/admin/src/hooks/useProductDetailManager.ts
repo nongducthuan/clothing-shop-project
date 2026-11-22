@@ -42,15 +42,15 @@ export function useProductInventory(productId: number | string) {
         setProduct(data as InventoryProduct);
         if (data.colors) {
           setColors([...data.colors]);
-          if (!selectedColorId && data.colors.length > 0) {
-            setSelectedColorId(data.colors[0].id);
+          if (data.colors.length > 0) {
+            setSelectedColorId((prev) => prev ?? data.colors[0].id);
           }
         }
       }, 0);
     } catch (err) {
       console.error("Fetch Error:", err);
     }
-  }, [productId, token, selectedColorId]);
+  }, [productId, token]);
 
   /**
    * Handles uploading a color image to the server and updates the form state.
@@ -205,8 +205,7 @@ export function useProductInventory(productId: number | string) {
 
   useEffect(() => {
     fetchProductData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [productId]);
+  }, [fetchProductData]);
 
   return {
     product,

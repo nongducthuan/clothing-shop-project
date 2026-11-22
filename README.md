@@ -2,12 +2,12 @@
 
 Website thương mại điện tử chuyên bán quần áo và thời trang, tích hợp hệ thống quản lý bán hàng, gợi ý sản phẩm liên quan, xác thực OTP và thanh toán trực tuyến dành cho đồ án sinh viên.
 
-![Test suites](https://img.shields.io/badge/test--suites-52-blue?logo=jest)
+![Test suites](https://img.shields.io/badge/test--suites-53-blue?logo=jest)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?logo=typescript&logoColor=white)
-![NestJS](https://img.shields.io/badge/NestJS-11-E0234E?logo=nestjs&logoColor=white)
+![NestJS](https://img.shields.io/badge/NestJS-12-E0234E?logo=nestjs&logoColor=white)
 ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
 ![Prisma](https://img.shields.io/badge/Prisma-ORM-2D3748?logo=prisma&logoColor=white)
-![TailwindCSS](https://img.shields.io/badge/TailwindCSS-3.x-06B6D4?logo=tailwindcss&logoColor=white)
+![TailwindCSS](https://img.shields.io/badge/TailwindCSS-4.x-06B6D4?logo=tailwindcss&logoColor=white)
 
 ---
 
@@ -73,7 +73,7 @@ Website thương mại điện tử chuyên bán quần áo và thời trang, t�
                        HTTP / REST API · JWT bearer token                       
                                        ▼                                        
 ┌──────────────────────────────────────────────────────────────────────────────┐
-│ BACKEND — Node.js + NestJS 11 + TypeScript                                   │
+│ BACKEND — Node.js + NestJS 12 + TypeScript                                   │
 │                                                                              │
 │ ┌──────────────────┐   ┌───────────────────────┐   ┌───────────────────────┐ │
 │ │     Modules      │   │      Controllers      │   │     Prisma Client     │ │
@@ -107,10 +107,10 @@ Website thương mại điện tử chuyên bán quần áo và thời trang, t�
 ## Công Nghệ Sử Dụng
 
 - **Frontend**:
-  - **Storefront**: Next.js 16.4.6 (App Router, Turbopack, React 19.1), TailwindCSS 3.4, Lucide Icons, Socket.io client.
+  - **Storefront**: Next.js 16.4.6 (App Router, Turbopack, React 19.1), TailwindCSS 4, Lucide Icons, Socket.io client.
   - **Admin**: React 19, TypeScript, Vite, TailwindCSS, React Google Charts, Lucide Icons, Socket.io client.
   - **Shared (`@shop/shared`)**: Source-first shared package (API client, context, i18n, common components & utilities).
-- **Backend**: Node.js, TypeScript, **NestJS 11** (`@nestjs/common`, `@nestjs/core`, `@nestjs/platform-express`, `@nestjs/throttler`, `@nestjs/websockets`), Prisma ORM (`schema.prisma`, generated Prisma Client và `PrismaService` dùng Dependency Injection), PostgreSQL (`@prisma/adapter-pg` + `pg` driver), Redis (`ioredis` + in-memory store fallback), JSON Web Token (JWT), `bcryptjs`, Multer, `helmet`, `zod`, `async`, `node-cron`, `socket.io`.
+- **Backend**: Node.js, TypeScript, **NestJS 12** (`@nestjs/common`, `@nestjs/core`, `@nestjs/platform-express`, `@nestjs/throttler`, `@nestjs/websockets`), Prisma ORM (`schema.prisma`, generated Prisma Client và `PrismaService` dùng Dependency Injection), PostgreSQL (`@prisma/adapter-pg` + `pg` driver), Redis (`ioredis` + in-memory store fallback), JSON Web Token (JWT), `bcryptjs`, Multer, `helmet`, `zod`, `async`, `node-cron`, `socket.io`.
 - **Testing & CI/CD**:
   - **Backend**: Jest + `@swc/jest` + `jest-mock-extended` + `supertest` (mock toàn bộ — không cần DB thật).
   - **Frontend**: Vitest.
@@ -134,7 +134,7 @@ clothing-shop-project/
 ├── backend/
 │   ├── Dockerfile                 # Multi-stage Docker build cho NestJS
 │   ├── .dockerignore
-│   ├── prisma/                    # schema.prisma, seed.ts, test-only legacy client.ts
+│   ├── prisma/                    # schema.prisma, seed.ts
 │   ├── src/
 │   │   ├── main.ts                # NestJS bootstrap trên Express HTTP adapter
 │   │   ├── app.module.ts          # Root module
@@ -151,8 +151,7 @@ clothing-shop-project/
 │   │   ├── constants/             # Order status và return policy
 │   │   ├── types/                 # Domain types và Zod schemas
 │   │   ├── public/images/         # Ảnh seed/static, serve tại /public
-│   │   └── __tests__/             # 35 Jest suites: services, payment, pipes, utils, redis, migration, prisma
-│   ├── test-fixtures/             # Snapshot Express cũ chỉ dùng bởi regression tests, không chạy runtime
+│   │   └── __tests__/             # 36 Jest suites: services, payment, pipes, utils, redis, migration, prisma
 │   ├── scripts/                   # check-nestjs-migration.cjs và check-no-any.cjs
 │   ├── uploads/                   # Ảnh upload runtime, không commit file upload
 │   ├── prisma.config.ts
@@ -199,10 +198,24 @@ clothing-shop-project/
 | `GOOGLE_API_KEY` | API Key Google Gemini AI (dùng cho Chatbot / AI) | `your_google_gemini_api_key` |
 | `STRICT_ENV_CHECK` | Khi `true`, server dừng khởi động nếu thiếu biến môi trường bắt buộc; production luôn kiểm tra nghiêm ngặt | `false` |
 
-### 2. Frontend (`frontend/.env`)
+### 2. Frontend
+
+**Storefront** (`frontend/storefront/.env`):
 
 | Tên biến | Mô tả | Mẫu giá trị |
 | --- | --- | --- |
+| `NEXT_PUBLIC_API_URL` | URL gốc của API Backend | `http://localhost:5000/api` |
+| `NEXT_PUBLIC_IMAGE_URL` | URL gốc phục vụ ảnh tĩnh từ Backend | `http://localhost:5000` |
+| `NEXT_PUBLIC_ADMIN_URL` | URL trang Admin | `http://localhost:5174` |
+
+**Admin** (`frontend/admin/.env`):
+
+| Tên biến | Mô tả | Mẫu giá trị |
+| --- | --- | --- |
+| `VITE_API_URL` | URL gốc của API Backend | `http://localhost:5000/api` |
+| `VITE_IMAGE_URL` | URL gốc phục vụ ảnh tĩnh từ Backend | `http://localhost:5000` |
+
+--- | --- | --- |
 | `VITE_API_URL` | URL gốc của API Backend | `http://localhost:5000/api` |
 | `VITE_IMAGE_URL` | URL gốc phục vụ file ảnh tĩnh từ Backend | `http://localhost:5000` |
 
@@ -307,7 +320,7 @@ npm install
 
 ## Testing
 
-Repository hiện có **35 backend Jest suites** (244 tests) và **17 frontend Vitest suites** (101 tests), tổng cộng **52 test suites** (345 tests).
+Repository hiện có **36 backend Jest suites** và **17 frontend Vitest suites**, tổng cộng **53 test suites**.
 
 ### 1. Backend (Jest)
 
@@ -328,10 +341,10 @@ Các nhóm test backend:
 |---|---:|---|
 | `services/` | 24 | Unit tests cho NestJS domain services (auth, catalog, order, payment, voucher, promotion, user, return, stats, AI, redis...) |
 | `pipes/` | 2 | Unit tests cho `ZodValidationPipe` và các validation schema contracts |
-| `utils/` | 7 | Payment signature (MoMo, VNPay), email, environment, PostgreSQL config, return policy và shipping |
+| `utils/` + `payment/` | 8 | Payment signature (MoMo, VNPay), email, environment, PostgreSQL config, return policy và shipping |
 | `migration/` | 1 | Guardrails kiến trúc NestJS |
 | `prisma/` | 1 | Seed data encoding và database checks |
-| **Tổng** | **35** | Test suites native NestJS trong `backend/src/__tests__/` (243 passed, 1 skipped) |
+| **Tổng** | **36** | Test suites native NestJS trong `backend/src/__tests__/` |
 
 ### 2. Frontend (Vitest)
 

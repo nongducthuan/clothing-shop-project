@@ -1,9 +1,9 @@
 # Clothing Shop — Frontend Workspace
 
 Frontend của đồ án **Clothing Shop** được tổ chức dưới dạng **npm workspace monorepo** gồm 3 packages:
-- **`shared` (`@shop/shared`)**: Thư viện dùng chung core types, contexts (Auth, Cart, Language, Theme, Toast), API client, i18n locales và tiện ích.
-- **`storefront`**: Giao diện khách hàng xây dựng trên **Next.js 16.4.6 (App Router, Turbopack, React 19.1, TailwindCSS 3.4)** chạy tại cổng `5173`.
-- **`admin`**: Bảng điều khiển quản trị xây dựng trên **Vite 7 (React 19.1, React Router 7, React Google Charts, TailwindCSS 3.4)** chạy tại cổng `5174`.
+- **`shared` (`@shop/shared`)**: Thư viện dùng chung core types, contexts (Auth, Language, Theme, Toast), API client, i18n locales và tiện ích.
+- **`storefront`**: Giao diện khách hàng xây dựng trên **Next.js 16.4.6 (App Router, Turbopack, React 19.1, TailwindCSS 4)** chạy tại cổng `5173`.
+- **`admin`**: Bảng điều khiển quản trị xây dựng trên **Vite 7 (React 19.1, React Router 7, React Google Charts, TailwindCSS 4)** chạy tại cổng `5174`.
 
 Tài liệu toàn diện về toàn bộ hệ thống (kiến trúc, backend, API endpoints, tài khoản test, thẻ sandbox MoMo/VNPay...) xem tại **[README gốc của dự án](../README.md)**.
 
@@ -15,7 +15,7 @@ Tài liệu toàn diện về toàn bộ hệ thống (kiến trúc, backend, AP
 frontend/
 ├── shared/                         # Package @shop/shared
 │   ├── src/
-│   │   ├── context/                # Auth, Cart, Theme, Language, Toast contexts
+│   │   ├── context/                # Auth, Theme, Language, Toast contexts
 │   │   ├── locales/                # translations.ts (vi/en), apiMessagePatterns.ts
 │   │   ├── services/               # apiClient (Axios instance), token storage
 │   │   ├── types/                  # Shared data types, API responses, status enums

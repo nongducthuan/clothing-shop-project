@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useLanguage } from "@shop/shared/context/LanguageContext";
-import Toast from "../layout/Toast";
+import Toast from "@shop/shared/components/common/Toast";
 import type { useProductDetail } from "@/hooks/useProductDetail";
 
 type Props = Pick<ReturnType<typeof useProductDetail>, "state" | "helpers">;

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { AuthContext } from "@shop/shared/context/AuthContext";
 import { useNavigate, useSearchParams } from "@/lib/router";
 import { getImageUrl } from "@shop/shared/utils/imageUtils";
@@ -56,28 +56,33 @@ export function useProfilePage() {
     return Math.min(rawProgress, 100);
   }, [totalSpent, currentConfig.next]);
 
+  const isLoggedIn = Boolean(user);
+  const resultCode = searchParams.get("resultCode");
+  const initActionsRef = useRef({ refreshUser, showToast, t, fetchOrders, setSearchParams });
   useEffect(() => {
-    if (!user) {
+    initActionsRef.current = { refreshUser, showToast, t, fetchOrders, setSearchParams };
+  });
+
+  useEffect(() => {
+    if (!isLoggedIn) {
       navigate("/login");
       return;
     }
 
-    refreshUser();
+    initActionsRef.current.refreshUser();
 
-    const paymentResult = searchParams.get("resultCode");
-    if (paymentResult) {
-      if (paymentResult === "0") {
-        showToast(t("profile.order_paid"), "success");
-        fetchOrders(); // Refresh orders to show 'Paid' status
+    if (resultCode) {
+      if (resultCode === "0") {
+        initActionsRef.current.showToast(initActionsRef.current.t("profile.order_paid"), "success");
+        initActionsRef.current.fetchOrders();
       } else {
-        showToast(t("profile.payment_failed"), "error");
+        initActionsRef.current.showToast(initActionsRef.current.t("profile.payment_failed"), "error");
       }
-      const newParams = new URLSearchParams(searchParams);
+      const newParams = new URLSearchParams(window.location.search);
       newParams.delete("resultCode");
-      setSearchParams(newParams);
+      initActionsRef.current.setSearchParams(newParams);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, navigate]);
+  }, [isLoggedIn, navigate, resultCode]);
 
   // Buy Again + các thao tác trên đơn (dùng chung với trang tra cứu đơn của guest)
   const {

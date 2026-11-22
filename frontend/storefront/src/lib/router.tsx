@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/rules-of-hooks */
 "use client";
 
 import React, { useCallback, useMemo, useState, useEffect } from "react";
@@ -26,16 +25,27 @@ function useSafeRouter() {
   }
 }
 
-function useSafePathname() {
+function useSafeNextPathname() {
   try {
-    const p = useNextPathname();
-    if (p) return p;
-  } catch {}
+    return useNextPathname();
+  } catch {
+    return null;
+  }
+}
+
+function useSafeRRDPathname() {
   try {
     const loc = RRD.useLocation();
-    if (loc?.pathname) return loc.pathname;
-  } catch {}
-  return "";
+    return loc?.pathname || "";
+  } catch {
+    return "";
+  }
+}
+
+function useSafePathname() {
+  const nextPath = useSafeNextPathname();
+  const rrdPath = useSafeRRDPathname();
+  return nextPath || rrdPath || "";
 }
 
 function useSafeSearchParams() {
@@ -46,15 +56,27 @@ function useSafeSearchParams() {
   }
 }
 
+function useSafeNextParams() {
+  try {
+    return useNextParams();
+  } catch {
+    return null;
+  }
+}
+
+function useSafeRRDParams() {
+  try {
+    return RRD.useParams();
+  } catch {
+    return null;
+  }
+}
+
 function useSafeParams() {
-  try {
-    const p = useNextParams();
-    if (p && Object.keys(p).length > 0) return p;
-  } catch {}
-  try {
-    const rp = RRD.useParams();
-    if (rp && Object.keys(rp).length > 0) return rp;
-  } catch {}
+  const nextP = useSafeNextParams();
+  const rrdP = useSafeRRDParams();
+  if (nextP && Object.keys(nextP).length > 0) return nextP;
+  if (rrdP && Object.keys(rrdP).length > 0) return rrdP;
   return {};
 }
 

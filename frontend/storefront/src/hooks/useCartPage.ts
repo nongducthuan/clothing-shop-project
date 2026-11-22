@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { CartContext } from "@/context/CartContext";
 import { AuthContext } from "@shop/shared/context/AuthContext";
 import { useLanguage } from "@shop/shared/context/LanguageContext";
@@ -89,8 +89,10 @@ export function useCartPage() {
   // Refresh prices and variant stock on mount. localStorage can outlive a sale or
   // inventory change, so don't rely on the snapshot captured when an item was added.
   const { setCart } = useRequiredContext(CartContext, 'CartContext');
+  const hasRefreshedCartRef = useRef(false);
   useEffect(() => {
-    if (cart.length === 0) return;
+    if (hasRefreshedCartRef.current || cart.length === 0) return;
+    hasRefreshedCartRef.current = true;
     let cancelled = false;
     const productIds = [...new Set(cart.map(item => item.id))];
 
@@ -143,9 +145,7 @@ export function useCartPage() {
 
     void refreshCartItems().catch((error) => console.error("Cart refresh failed", error));
     return () => { cancelled = true; };
-  // Load only when the cart page hook mounts; the server revalidates inventory at checkout too.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [cart, setCart]);
 
   // Logic: Calculate earned gifts grouped by Product ID with chosen/default variants
   const earnedGifts = useMemo(() => {
@@ -314,13 +314,13 @@ export function useCartPage() {
 
   // Lỗi áp voucher: ưu tiên thông báo ngưỡng đơn tối thiểu (có số tiền), rồi mới tới
   // lỗi field / message chung của backend.
-  const buildVoucherErrorText = (data: ApiErrorPayload | undefined | null): string =>
+  const buildVoucherErrorText = useCallback((data: ApiErrorPayload | undefined | null): string =>
     buildMinOrderValueMessage(data, t, (value) => formatCurrency(value, language)) ??
     extractApiErrorMessage(
       data,
       translateApiMessage,
       t("cart.server_error", "Server connection error")
-    );
+    ), [t, language, translateApiMessage]);
 
   // Dịch lại thông báo theo `language` hiện tại (reactive) thay vì lưu chuỗi đã dịch.
   const voucherMessage = useMemo(() => {
@@ -331,13 +331,10 @@ export function useCartPage() {
       return { type: "error", text: buildVoucherErrorText(voucherStatus.errorPayload) };
     }
     return { type: "", text: "" };
-    // `language` nằm trong deps để dịch lại khi người dùng đổi ngôn ngữ;
-    // buildVoucherErrorText/translateApiMessage là closure mới mỗi render nên không cần liệt kê.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [voucherStatus, language]);
+  }, [voucherStatus, translateApiMessage, buildVoucherErrorText]);
 
   // Payload gửi /vouchers/apply — dùng chung cho áp mới và tính lại khi giỏ thay đổi.
-  const buildVoucherPayload = (code: string) => ({
+  const buildVoucherPayload = useCallback((code: string) => ({
     code,
     orderTotal: subtotal - membershipDiscount,
     // Tiền hàng gốc (trước membership/voucher) để backend kiểm tra điều kiện "đơn tối thiểu"
@@ -348,14 +345,15 @@ export function useCartPage() {
       ...item,
       block_other_discounts: blockedProductIds.has(Number(item.id)),
     })),
-  });
+  }), [subtotal, membershipDiscount, cart, blockedProductIds]);
 
   // Voucher đã áp là kết quả "chụp" tại thời điểm bấm Áp dụng. Khi giỏ / hạng thành viên
   // thay đổi (đổi số lượng, xóa món, ...) phải tính lại để số tiền giảm khớp với đơn thật.
+  const appliedVoucherCode = appliedVoucher?.code;
   useEffect(() => {
-    if (!appliedVoucher?.code) return;
+    if (!appliedVoucherCode) return;
     let cancelled = false;
-    API.post("/vouchers/apply", buildVoucherPayload(appliedVoucher.code))
+    API.post("/vouchers/apply", buildVoucherPayload(appliedVoucherCode))
       .then(res => {
         if (cancelled) return;
         if (res.data?.success) {
@@ -376,9 +374,7 @@ export function useCartPage() {
         setVoucherStatus({ type: "error", errorPayload: payload });
       });
     return () => { cancelled = true; };
-  // Chỉ chạy lại khi dữ liệu giỏ thay đổi; không đưa appliedVoucher vào deps để tránh vòng lặp.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cart, subtotal, membershipDiscount, blockedProductIds]);
+  }, [appliedVoucherCode, buildVoucherPayload]);
 
   const handleApplyVoucher = async () => {
     if (!voucherCode.trim()) return;

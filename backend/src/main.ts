@@ -10,6 +10,7 @@ import { SocketService } from './socket/socket.service';
 import { checkCriticalEnv } from './utils/envCheck';
 import helmet from 'helmet';
 import path from 'path';
+import { Logger } from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
 
 checkCriticalEnv();
@@ -89,7 +90,7 @@ async function bootstrap() {
   const socketService = app.get(SocketService);
   socketService.init(app.getHttpServer(), corsOriginCallback);
 
-  console.log(`Server is running at port ${PORT}`);
+  new Logger('Bootstrap').log(`Server is running at port ${PORT}`);
 }
 
 bootstrap();

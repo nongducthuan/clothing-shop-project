@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useLanguage } from "@shop/shared/context/LanguageContext";
 import { formatCurrency as formatCurrencyUtil } from "@shop/shared/utils/currencyUtils";
-import Toast from "../layout/Toast";
+import Toast from "@shop/shared/components/common/Toast";
 
 interface VoucherData { code: string; usage_limit?: number | null; discount_percent: number | string; min_order_value?: number; max_discount_amount?: number; [key: string]: unknown }
 interface CategoryData { name: string; name_vi?: string; name_en?: string; [key: string]: unknown }

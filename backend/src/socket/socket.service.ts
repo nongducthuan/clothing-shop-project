@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { Server as SocketIOServer } from 'socket.io';
 import { Server as HttpServer } from 'http';
 import jwt from 'jsonwebtoken';
@@ -6,6 +6,7 @@ import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class SocketService {
+  private readonly logger = new Logger(SocketService.name);
   private io: SocketIOServer | null = null;
 
   constructor(private readonly prisma: PrismaService) {}
@@ -44,7 +45,7 @@ export class SocketService {
 
     this.io.on('connection', (socket) => {
       if (process.env.NODE_ENV !== 'production') {
-        console.log('🔗 [Socket.io] A client connected:', socket.id);
+        this.logger.debug(`Client connected: ${socket.id}`);
       }
 
       socket.on('join_admin_room', () => {
@@ -62,7 +63,7 @@ export class SocketService {
 
       socket.on('disconnect', () => {
         if (process.env.NODE_ENV !== 'production') {
-          console.log('🔴 [Socket.io] A client disconnected:', socket.id);
+          this.logger.debug(`Client disconnected: ${socket.id}`);
         }
       });
     });

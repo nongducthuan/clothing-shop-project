@@ -1,4 +1,4 @@
-import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import cron, { ScheduledTask } from 'node-cron';
 import { PrismaService } from '../prisma/prisma.service';
 import { changeOrderStatusLogic } from './orderStatusService';
@@ -11,6 +11,7 @@ const BATCH_LIMIT = 50;
 
 @Injectable()
 export class AutoCancelService implements OnModuleInit, OnModuleDestroy {
+  private readonly logger = new Logger(AutoCancelService.name);
   private scheduledTask?: ScheduledTask;
 
   constructor(private readonly prisma: PrismaService) {}
@@ -18,7 +19,7 @@ export class AutoCancelService implements OnModuleInit, OnModuleDestroy {
   onModuleInit(): void {
     if (process.env.DISABLE_AUTO_CANCEL_JOB === 'true') return;
     this.scheduledTask = cron.schedule('*/5 * * * *', () => void this.runAutoCancel());
-    console.log(`⏱️ Auto-cancel job started: unpaid MoMo/VNPay orders will be cancelled after ${UNPAID_ONLINE_TIMEOUT_MINUTES} minutes.`);
+    this.logger.log(`Auto-cancel job started: unpaid MoMo/VNPay orders will be cancelled after ${UNPAID_ONLINE_TIMEOUT_MINUTES} minutes.`);
   }
 
   onModuleDestroy(): void {
@@ -56,7 +57,7 @@ export class AutoCancelService implements OnModuleInit, OnModuleDestroy {
           console.error(`⏱️ Auto-cancel failed for order #${order.id}:`, getErrorMessage(error));
         }
       }
-      console.log(`⏱️ Auto-cancel: ${cancelled}/${expired.length} unpaid online orders (older than ${UNPAID_ONLINE_TIMEOUT_MINUTES}m) cancelled — stock restored.`);
+      this.logger.log(`Cancelled ${cancelled}/${expired.length} unpaid online orders (older than ${UNPAID_ONLINE_TIMEOUT_MINUTES}m) cancelled — stock restored.`);
     } catch (error) {
       console.error('⏱️ Auto-cancel job error:', getErrorMessage(error));
     }

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "@/lib/router";
 import { CartContext } from "@/context/CartContext";
 import { useLanguage } from "@shop/shared/context/LanguageContext";
@@ -70,6 +70,10 @@ export function useProductDetail() {
   const [product, setProduct] = useState<Product | null>(null);
   const [selectedColor, setSelectedColor] = useState<ProductColor | null>(null);
   const [selectedSize, setSelectedSize] = useState<ProductSize | null>(null);
+  const selectedSizeRef = useRef(selectedSize);
+  useEffect(() => {
+    selectedSizeRef.current = selectedSize;
+  }, [selectedSize]);
   const [mainImage, setMainImage] = useState<string>("");
   const [quantity, setQuantity] = useState<number | ''>(1);
   const [error, setError] = useState<string | null>(null);
@@ -185,8 +189,9 @@ export function useProductDetail() {
 
       const sizes = selectedColor.sizes ?? [];
       if (sizes.length > 0) {
+        const currentSizeName = selectedSizeRef.current?.size;
         const sameSizeAvailable = sizes.find(
-          (size) => size.size === selectedSize?.size && size.stock > 0
+          (size) => size.size === currentSizeName && size.stock > 0
         );
         const firstAvailable = sizes.find((size) => size.stock > 0);
 
@@ -195,10 +200,6 @@ export function useProductDetail() {
         setSelectedSize(null);
       }
     }
-  // `selectedSize?.size` is read only to find the matching size name in the new colour's list.
-  // Adding `selectedSize` as a full dep would trigger the effect every time we *set* selectedSize
-  // (infinite loop). Intentionally depend on selectedColor only.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedColor]);
 
   useEffect(() => {

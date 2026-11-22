@@ -1,3 +1,7 @@
+import { Logger } from '@nestjs/common';
+
+const logger = new Logger('EmailService');
+
 export interface BrevoEmailResponse {
   message?: string;
   messageId?: string;
@@ -61,7 +65,7 @@ async function postToBrevo(to: string, subject: string, htmlContent: string): Pr
       );
     }
 
-    if (process.env.NODE_ENV !== 'production') console.log('✅ Email sent successfully via Brevo:', data);
+    if (process.env.NODE_ENV !== 'production') logger.debug(`Email sent via Brevo: ${JSON.stringify(data)}`);
     return { success: true, data };
   } catch (err: unknown) {
     const errorMessage = err instanceof Error ? err.message : 'Unknown email error';

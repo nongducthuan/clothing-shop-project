@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { AlertTriangle, CheckCircle, Info, X, XCircle } from "lucide-react";
 import { useLanguage } from "../../context/LanguageContext";
 import type { ToastType } from "../../context/ToastContext";
@@ -7,14 +7,19 @@ export default function Toast({ message, type = "success", onClose }: { message:
   const [isVisible, setIsVisible] = useState(false);
   const { t } = useLanguage();
 
-  const handleClose = () => {
+  const onCloseRef = useRef(onClose);
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
+
+  const handleClose = useCallback(() => {
     setIsVisible(false);
 
     // Wait for close animation (300ms) before calling onClose
     setTimeout(() => {
-      if (onClose) onClose();
+      onCloseRef.current?.();
     }, 300);
-  };
+  }, []);
 
   useEffect(() => {
     setIsVisible(true);
@@ -24,10 +29,7 @@ export default function Toast({ message, type = "success", onClose }: { message:
     }, 3000);
 
     return () => clearTimeout(timer);
-    // handleClose is defined in the same render scope; eslint would require it in deps
-    // but adding it would restart the timer on every render. Intentional stable ref.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [handleClose]);
 
   const config = {
     success: {

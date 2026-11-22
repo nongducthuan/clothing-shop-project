@@ -1,4 +1,5 @@
 import async from 'async';
+import { Logger } from '@nestjs/common';
 import { sendEmail as sendEmailDirect } from './emailService';
 
 interface EmailTask {
@@ -9,6 +10,8 @@ interface EmailTask {
   retries?: number;
 }
 
+const logger = new Logger('EmailQueue');
+
 export const emailQueue = async.queue(async (task: EmailTask) => {
   const { to, subject, text, language = 'vi', retries = 0 } = task;
 
@@ -17,12 +20,12 @@ export const emailQueue = async.queue(async (task: EmailTask) => {
     if (!result.success) {
       throw new Error(result.error);
     }
-    console.log(`[EmailQueue] Successfully sent email to ${to}`);
+    logger.log(`Successfully sent email to ${to}`);
   } catch (error) {
     console.error(`[EmailQueue] Failed to send email to ${to}:`, error);
 
     if (retries < 3) {
-      console.log(`[EmailQueue] Retrying email to ${to} (Attempt ${retries + 1}/3)...`);
+      logger.warn(`Retrying email to ${to} (Attempt ${retries + 1}/3)...`);
       setTimeout(() => {
         emailQueue.push({ ...task, retries: retries + 1 });
       }, 5000); // Wait 5 seconds before retrying
