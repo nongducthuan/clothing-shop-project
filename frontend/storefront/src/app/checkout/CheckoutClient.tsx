@@ -1,10 +1,10 @@
 "use client";
 
-import { useCheckoutPage } from "@/hooks/customer/useCheckoutPage";
+import { useCheckoutPage } from "@/hooks/useCheckoutPage";
 import { useLanguage } from "@shop/shared/context/LanguageContext";
-import { ShippingSection, GuestContactSection, PaymentSection } from "@/components/customer/checkout/CheckoutForms";
-import { CheckoutSummary } from "@/components/customer/checkout/CheckoutSummary";
-import { EmptyCheckout } from "@/components/customer/checkout/EmptyCheckout";
+import { ShippingSection, GuestContactSection, PaymentSection } from "@/components/checkout/CheckoutForms";
+import { CheckoutSummary } from "@/components/checkout/CheckoutSummary";
+import { EmptyCheckout } from "@/components/checkout/EmptyCheckout";
 import { CheckCircle, AlertCircle } from "lucide-react";
 
 export default function CheckoutClient() {

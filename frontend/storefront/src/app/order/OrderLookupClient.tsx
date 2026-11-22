@@ -1,14 +1,14 @@
 "use client";
 
-import { useOrderLookup } from "@/hooks/customer/useOrderLookup";
-import OrderLookupHeader from "@/components/customer/order-lookup/OrderLookupHeader";
-import EmailStep from "@/components/customer/order-lookup/EmailStep";
-import OtpStep from "@/components/customer/order-lookup/OtpStep";
-import OrdersStep from "@/components/customer/order-lookup/OrdersStep";
-import ReturnFormStep from "@/components/customer/order-lookup/ReturnFormStep";
-import ChangePaymentModal from "@/components/customer/common/ChangePaymentModal";
-import BuyAgainVariantModal from "@/components/customer/common/BuyAgainVariantModal";
-import type { ReturnFormOrder } from "@/components/customer/order-lookup/ReturnFormStep";
+import { useOrderLookup } from "@/hooks/useOrderLookup";
+import OrderLookupHeader from "@/components/order-lookup/OrderLookupHeader";
+import EmailStep from "@/components/order-lookup/EmailStep";
+import OtpStep from "@/components/order-lookup/OtpStep";
+import OrdersStep from "@/components/order-lookup/OrdersStep";
+import ReturnFormStep from "@/components/order-lookup/ReturnFormStep";
+import ChangePaymentModal from "@/components/common/ChangePaymentModal";
+import BuyAgainVariantModal from "@/components/common/BuyAgainVariantModal";
+import type { ReturnFormOrder } from "@/components/order-lookup/ReturnFormStep";
 
 export default function OrderLookupClient() {
   const { state, actions, helpers } = useOrderLookup();

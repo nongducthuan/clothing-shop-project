@@ -10,10 +10,10 @@ import { AuthProvider } from "@shop/shared/context/AuthProvider";
 import PageLoader from "@shop/shared/components/common/PageLoader";
 import { CartProvider } from "@/context/CartProvider";
 import { AIChatProvider } from "@/context/AIChatProvider";
-import Navbar from "@/components/customer/layout/Navbar";
-import Footer from "@/components/customer/layout/Footer";
-import AIChatBubble from "@/components/customer/chatbot/AIChatBubble";
-import AosInit from "@/components/customer/common/AosInit";
+import Navbar from "@/components/layout/Navbar";
+import Footer from "@/components/layout/Footer";
+import AIChatBubble from "@/components/chatbot/AIChatBubble";
+import AosInit from "@/components/common/AosInit";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(

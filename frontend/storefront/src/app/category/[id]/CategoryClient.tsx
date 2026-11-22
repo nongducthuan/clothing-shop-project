@@ -1,12 +1,12 @@
 "use client";
 
-import ProductCard from "@/components/customer/product/ProductCard";
-import { useCategoryPage } from "@/hooks/customer/useCategoryPage";
+import ProductCard from "@/components/product/ProductCard";
+import { useCategoryPage } from "@/hooks/useCategoryPage";
 import { useLanguage } from "@shop/shared/context/LanguageContext";
-import CategoryHeader from "@/components/customer/category/CategoryHeader";
-import VoucherBanner from "@/components/customer/category/VoucherBanner";
-import PaginationControls from "@/components/customer/category/PaginationControls";
-import { ProductGridSkeleton, EmptyState } from "@/components/customer/category/CategoryStates";
+import CategoryHeader from "@/components/category/CategoryHeader";
+import VoucherBanner from "@/components/category/VoucherBanner";
+import PaginationControls from "@/components/category/PaginationControls";
+import { ProductGridSkeleton, EmptyState } from "@/components/category/CategoryStates";
 
 export default function CategoryClient() {
   const { state, actions } = useCategoryPage();

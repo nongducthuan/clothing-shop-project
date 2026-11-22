@@ -1,12 +1,12 @@
 "use client";
 
-import { useProductDetail } from "@/hooks/customer/useProductDetail";
+import { useProductDetail } from "@/hooks/useProductDetail";
 import { useLanguage } from "@shop/shared/context/LanguageContext";
-import ProductImageGallery from "@/components/customer/product-detail/ProductImageGallery";
-import ProductMeta from "@/components/customer/product-detail/ProductMeta";
-import ProductVoucher from "@/components/customer/product-detail/ProductVoucher";
-import ProductSelectors from "@/components/customer/product-detail/ProductSelectors";
-import ProductActions from "@/components/customer/product-detail/ProductActions";
+import ProductImageGallery from "@/components/product-detail/ProductImageGallery";
+import ProductMeta from "@/components/product-detail/ProductMeta";
+import ProductVoucher from "@/components/product-detail/ProductVoucher";
+import ProductSelectors from "@/components/product-detail/ProductSelectors";
+import ProductActions from "@/components/product-detail/ProductActions";
 
 export default function ProductDetailClient() {
   const { state, actions, helpers } = useProductDetail();

@@ -178,6 +178,7 @@ clothing-shop-project/
 | `FRONTEND_URL` | Địa chỉ URL của Frontend | `http://localhost:5173` |
 | `BACKEND_URL` | URL public Backend (dùng cho Webhook IPN Callback) | `https://your-ngrok-url.ngrok-free.app/api` |
 | `DATABASE_URL` | Chuỗi kết nối CSDL PostgreSQL qua Prisma ORM | `postgresql://username:password@ep-sample-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require` |
+| `REDIS_URL` | Chuỗi kết nối Redis (tùy chọn; tự động fallback in-memory nếu không cấu hình) | `redis://localhost:6379` hoặc Upstash URL |
 | `JWT_SECRET` | Khóa bí mật dùng để mã hóa & xác thực Access Token (15 phút) | `your_super_secret_jwt_key` |
 | `JWT_REFRESH_SECRET` | Khóa bí mật riêng để mã hóa Refresh Token (7 ngày) | `your_super_secret_refresh_key` |
 | `MOMO_PARTNER_CODE` | Partner Code do MoMo cấp (Test Sandbox) | `your_partner_code` |
@@ -202,6 +203,30 @@ clothing-shop-project/
 ---
 
 ## Hướng Dẫn Cài Đặt & Khởi Động Dự Án
+
+### 🚀 Cách 1: Khởi Động Nhanh Bằng Docker (Khuyên Dùng Cho Local & Chấm Đồ Án)
+
+Dự án đã tích hợp sẵn `docker-compose.yml` gồm **PostgreSQL 16**, **Redis 7** và **Backend NestJS**:
+
+```bash
+# 1. Khởi động toàn bộ Postgres, Redis và Backend trong background
+docker compose up -d
+
+# 2. Xem logs hoạt động
+docker compose logs -f backend
+
+# 3. Dừng hệ thống khi không dùng
+docker compose down
+```
+
+Khi chạy Docker:
+- **Backend API**: `http://localhost:5000`
+- **PostgreSQL**: `localhost:5432` (`POSTGRES_USER=postgres`, `POSTGRES_PASSWORD=postgrespassword`, `DB=clothing_shop`)
+- **Redis**: `localhost:6379`
+
+---
+
+### 💻 Cách 2: Cài Đặt Thủ Công Trên Máy Local
 
 Yêu cầu database: PostgreSQL 14+ (local hoặc dịch vụ managed). Tạo database `shopdb` trước khi chạy backend, ví dụ `createdb shopdb`.
 

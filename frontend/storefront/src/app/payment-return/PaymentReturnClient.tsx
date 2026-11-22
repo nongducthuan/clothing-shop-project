@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams, useNavigate, Link } from "@/lib/router";
 import API from "@shop/shared/services/apiClient";
 import PaymentBadge from "@shop/shared/components/common/PaymentBadge";
-import ChangePaymentModal from "@/components/customer/common/ChangePaymentModal";
+import ChangePaymentModal from "@/components/common/ChangePaymentModal";
 import { AuthContext } from "@shop/shared/context/AuthContext";
 import { useLanguage } from "@shop/shared/context/LanguageContext";
 import { formatCurrency } from "@shop/shared/utils/currencyUtils";

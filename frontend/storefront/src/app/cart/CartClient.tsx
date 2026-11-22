@@ -1,11 +1,11 @@
 "use client";
 
 import { Link, useNavigate } from "@/lib/router";
-import { useCartPage } from "@/hooks/customer/useCartPage";
+import { useCartPage } from "@/hooks/useCartPage";
 import { useLanguage } from "@shop/shared/context/LanguageContext";
-import CartItem from "@/components/customer/cart/CartItem";
-import GiftItem from "@/components/customer/cart/GiftItem";
-import OrderSummary from "@/components/customer/cart/OrderSummary";
+import CartItem from "@/components/cart/CartItem";
+import GiftItem from "@/components/cart/GiftItem";
+import OrderSummary from "@/components/cart/OrderSummary";
 
 export default function CartClient() {
   const navigate = useNavigate();

@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { PrismaModule } from './prisma/prisma.module';
+import { RedisModule } from './redis/redis.module';
 import { SocketModule } from './socket/socket.module';
 import { AdminModule } from './admin/admin.module';
 import { CustomerModule } from './customer/customer.module';
@@ -16,6 +17,7 @@ import { AutoCancelService } from './services/autoCancelService';
       limit: 100,
     }]),
     PrismaModule,
+    RedisModule,
     SocketModule,
     AdminModule,
     CustomerModule,

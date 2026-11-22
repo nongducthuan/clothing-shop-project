@@ -1,0 +1,12 @@
+node_modules
+dist
+dist-ssr
+.swc
+.swc-cache
+.env
+.env.*
+!.env.example
+*.log
+npm-debug.log*
+uploads/*
+!uploads/.gitkeep

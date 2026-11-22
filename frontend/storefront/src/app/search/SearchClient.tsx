@@ -1,11 +1,11 @@
 "use client";
 
-import { useSearch } from "@/hooks/customer/useSearch";
+import { useSearch } from "@/hooks/useSearch";
 import { useLanguage } from "@shop/shared/context/LanguageContext";
-import SidebarFilters from "@/components/customer/search/SidebarFilters";
-import SearchBar from "@/components/customer/search/SearchBar";
-import SearchResultsGrid from "@/components/customer/search/SearchResultsGrid";
-import MobileFilterOverlay from "@/components/customer/search/MobileFilterOverlay";
+import SidebarFilters from "@/components/search/SidebarFilters";
+import SearchBar from "@/components/search/SearchBar";
+import SearchResultsGrid from "@/components/search/SearchResultsGrid";
+import MobileFilterOverlay from "@/components/search/MobileFilterOverlay";
 
 export default function SearchClient() {
   const { state, refs, actions } = useSearch();

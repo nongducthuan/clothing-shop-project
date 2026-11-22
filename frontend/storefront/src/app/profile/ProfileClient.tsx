@@ -1,14 +1,14 @@
 "use client";
 
-import { useProfilePage } from "@/hooks/customer/useProfilePage";
-import ProfileHeader from "@/components/customer/profile/ProfileHeader";
-import ProfileTabs from "@/components/customer/profile/ProfileTabs";
-import MembershipInfoTab from "@/components/customer/profile/MembershipInfoTab";
-import OrderListTab from "@/components/customer/profile/OrderListTab";
-import OrderDetailModal from "@/components/customer/profile/OrderDetailModal";
-import ReturnRequestModal from "@/components/customer/profile/ReturnRequestModal";
-import ChangePaymentModal from "@/components/customer/common/ChangePaymentModal";
-import BuyAgainVariantModal from "@/components/customer/common/BuyAgainVariantModal";
+import { useProfilePage } from "@/hooks/useProfilePage";
+import ProfileHeader from "@/components/profile/ProfileHeader";
+import ProfileTabs from "@/components/profile/ProfileTabs";
+import MembershipInfoTab from "@/components/profile/MembershipInfoTab";
+import OrderListTab from "@/components/profile/OrderListTab";
+import OrderDetailModal from "@/components/profile/OrderDetailModal";
+import ReturnRequestModal from "@/components/profile/ReturnRequestModal";
+import ChangePaymentModal from "@/components/common/ChangePaymentModal";
+import BuyAgainVariantModal from "@/components/common/BuyAgainVariantModal";
 
 export default function ProfileClient() {
   const { state, actions, helpers } = useProfilePage();

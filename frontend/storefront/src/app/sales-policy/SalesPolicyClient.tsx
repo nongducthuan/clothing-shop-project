@@ -1,10 +1,10 @@
 "use client";
 
-import { useSalesPolicy } from "@/hooks/customer/useSalesPolicy";
-import PolicyHeader from "@/components/customer/sales-policy/PolicyHeader";
-import PolicyCards from "@/components/customer/sales-policy/PolicyCards";
-import PolicyOffers from "@/components/customer/sales-policy/PolicyOffers";
-import PolicyFooter from "@/components/customer/sales-policy/PolicyFooter";
+import { useSalesPolicy } from "@/hooks/useSalesPolicy";
+import PolicyHeader from "@/components/sales-policy/PolicyHeader";
+import PolicyCards from "@/components/sales-policy/PolicyCards";
+import PolicyOffers from "@/components/sales-policy/PolicyOffers";
+import PolicyFooter from "@/components/sales-policy/PolicyFooter";
 
 export default function SalesPolicyClient() {
   const { state, actions } = useSalesPolicy();
