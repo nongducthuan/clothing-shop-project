@@ -7,7 +7,7 @@
     "dev": "next dev -p 5173",
     "build": "next build",
     "start": "next start -p 5173",
-    "preview": "vite preview",
+    "preview": "next start -p 5173",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"
@@ -21,7 +21,6 @@
     "next": "^16.4.6",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
-    "react-helmet-async": "^3.1.0",
     "react-router-dom": "^7.8.2",
     "socket.io-client": "^4.8.3"
   },

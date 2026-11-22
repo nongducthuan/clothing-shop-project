@@ -87,3 +87,20 @@
   - [x] `build`: Cả `admin` (Vite) và `storefront` (Next.js 16 Turbopack) build thành công.
   - [x] `check:i18n`: Pass 275 files, 815 keys.
 - **Commit**: `feat(storefront): migrate all routes to Next.js 16 App Router`
+
+### Phase 4: Dọn dẹp code Vite cũ trong storefront
+- **Trạng thái**: Hoàn thành (PASS Gate 4)
+- **Chi tiết thực hiện**:
+  1. Xóa toàn bộ `src/views/` (13 page views cũ của Vite SPA).
+  2. Xóa `src/App.tsx`, `src/main.tsx`, `index.html`, `vite.config.ts`.
+  3. Xóa `src/components/common/SEO.tsx` và gỡ bỏ `react-helmet-async` (thay bằng metadata chuẩn của Next.js).
+  4. Cập nhật script `preview` trong `storefront/package.json` thành `next start -p 5173`.
+  5. Chạy `npm install` để dọn dẹp và đồng bộ `package-lock.json`.
+- **Gate 4 Checklist**:
+  - [x] Không còn file dead-code của Vite trong storefront.
+  - [x] `typecheck`: Pass 100% 3/3 workspace (`@shop/shared`, `admin`, `storefront`).
+  - [x] `lint`: Pass 100% (0 errors).
+  - [x] `test`: Pass 17/17 test files, 101/101 tests pass.
+  - [x] `build`: Cả `admin` (Vite) và `storefront` (Next.js 16 Turbopack) build thành công.
+  - [x] `check:i18n`: Pass 259 files, 815 keys.
+- **Commit**: `chore(storefront): clean up legacy Vite files and unused packages`
