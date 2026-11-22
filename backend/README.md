@@ -97,7 +97,8 @@ Các tên biến và giá trị mẫu đầy đủ nằm trong [`.env.example`](
 | `PORT` | Cổng HTTP, mặc định `5000` |
 | `DATABASE_URL` | PostgreSQL connection string |
 | `REDIS_URL` | Chuỗi kết nối Redis (tùy chọn, tự động fallback in-memory nếu không cấu hình) |
-| `FRONTEND_URL` | Origin frontend được phép qua CORS |
+| `FRONTEND_URL` | Origin frontend được phép qua CORS (nhiều origin phân tách bằng dấu phẩy) |
+| `STOREFRONT_URL` | URL storefront dùng cho link quay về sau thanh toán MoMo (mặc định: origin đầu tiên của `FRONTEND_URL`) |
 | `BACKEND_URL` | URL backend public dùng cho callback/webhook |
 | `JWT_SECRET` | Ký access token và xác thực request |
 | `JWT_REFRESH_SECRET` | Ký refresh token |

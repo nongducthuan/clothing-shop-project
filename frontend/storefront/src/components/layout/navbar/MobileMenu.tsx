@@ -171,10 +171,10 @@ const MobileMenu = ({ isOpen, onClose, user, menuData, navigate, onLogout }: { i
           </div>
 
           {/* Admin Link Mobile */}
-          {user?.role === "admin" && import.meta.env.VITE_ADMIN_URL && (
+          {user?.role === "admin" && process.env.NEXT_PUBLIC_ADMIN_URL && (
             <div className="mt-6">
               <a
-                href={import.meta.env.VITE_ADMIN_URL}
+                href={process.env.NEXT_PUBLIC_ADMIN_URL}
                 className="w-full py-3.5 bg-slate-900 dark:bg-slate-700 text-white rounded-xl font-bold transition-all hover:bg-slate-800 dark:hover:bg-slate-600 flex items-center justify-center gap-2"
               >
                 {t("nav.dashboard", "Dashboard")}

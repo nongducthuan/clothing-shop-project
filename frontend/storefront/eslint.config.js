@@ -55,4 +55,12 @@ export default defineConfig([
       "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
     },
   },
+  // Next.js: page/layout được export `metadata`, `generateMetadata`... và lib/router.tsx
+  // export cả hook lẫn component, nên rule Fast Refresh của Vite không áp dụng.
+  {
+    files: ["src/app/**/*.{ts,tsx}", "src/lib/**/*.{ts,tsx}"],
+    rules: {
+      "react-refresh/only-export-components": "off",
+    },
+  },
 ]);

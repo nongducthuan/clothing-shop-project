@@ -36,9 +36,9 @@ const UserDropdown = ({ user, navigate, onLogout }: { user: User | null; navigat
                 {user.name}
               </div>
 
-              {user.role === "admin" && import.meta.env.VITE_ADMIN_URL && (
+              {user.role === "admin" && process.env.NEXT_PUBLIC_ADMIN_URL && (
                 <a
-                  href={import.meta.env.VITE_ADMIN_URL}
+                  href={process.env.NEXT_PUBLIC_ADMIN_URL}
                   className="px-4 py-2.5 hover:bg-violet-50 dark:hover:bg-slate-700 hover:text-violet-700 dark:hover:text-violet-400 font-medium text-gray-700 dark:text-slate-300 cursor-pointer transition-colors flex items-center"
                 >
                   <i className="fa-solid fa-screwdriver-wrench mr-2 w-4 text-center"></i> {t("nav.dashboard", "Dashboard")}

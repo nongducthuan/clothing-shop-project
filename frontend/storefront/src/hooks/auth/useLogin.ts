@@ -44,8 +44,10 @@ export function useLogin() {
 
       login(user, token, refreshToken);
 
-      if (user.role === "admin") {
-        navigate("/admin");
+      const adminUrl = process.env.NEXT_PUBLIC_ADMIN_URL;
+      if (user.role === "admin" && adminUrl) {
+        // Admin chạy ở app/domain riêng; phiên đăng nhập không dùng chung giữa 2 origin.
+        window.location.assign(adminUrl);
       } else {
         navigate("/");
       }

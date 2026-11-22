@@ -180,7 +180,8 @@ clothing-shop-project/
 | Tên biến | Mô tả | Mẫu giá trị |
 | --- | --- | --- |
 | `PORT` | Cổng chạy server Backend | `5000` |
-| `FRONTEND_URL` | Địa chỉ URL của Frontend | `http://localhost:5173` |
+| `FRONTEND_URL` | Các origin frontend được phép qua CORS, phân tách bằng dấu phẩy (storefront + admin) | `http://localhost:5173,http://localhost:5174` |
+| `STOREFRONT_URL` | URL storefront để MoMo đưa khách quay về `/payment-return` (mặc định: origin đầu tiên của `FRONTEND_URL`) | `http://localhost:5173` |
 | `BACKEND_URL` | URL public Backend (dùng cho Webhook IPN Callback) | `https://your-ngrok-url.ngrok-free.app/api` |
 | `DATABASE_URL` | Chuỗi kết nối CSDL PostgreSQL qua Prisma ORM | `postgresql://username:password@ep-sample-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require` |
 | `REDIS_URL` | Chuỗi kết nối Redis (tùy chọn; tự động fallback in-memory nếu không cấu hình) | `redis://localhost:6379` hoặc Upstash URL |

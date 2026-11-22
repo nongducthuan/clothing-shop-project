@@ -12,15 +12,15 @@ export class SocketIoAdapter extends IoAdapter {
     super(app);
   }
 
-  createIOServer(port: number, options?: ServerOptions) {
-    const server = super.createIOServer(port, {
-      ...options,
+  createIOServer(port: number, options?: any) {
+    const serverOptions = {
+      ...(options || {}),
       cors: {
         origin: this.allowedOrigins,
         methods: ['GET', 'POST'],
         credentials: true,
       },
-    });
-    return server;
+    };
+    return super.createIOServer(port, serverOptions);
   }
 }
