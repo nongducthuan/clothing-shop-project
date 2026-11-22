@@ -3,5 +3,6 @@ dist/
 .next/
 *.zip
 *.log
+*.tsbuildinfo
 .env
 .env.local
