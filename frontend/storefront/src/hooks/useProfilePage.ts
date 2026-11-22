@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { AuthContext } from "@shop/shared/context/AuthContext";
 import { useNavigate, useSearchParams } from "@/lib/router";
+import { buildLoginPath } from "@shop/shared/utils/redirectUtils";
 import { getImageUrl } from "@shop/shared/utils/imageUtils";
 import { useToast } from "@shop/shared/context/ToastContext";
 import { useLanguage } from "@shop/shared/context/LanguageContext";
@@ -63,11 +64,16 @@ export function useProfilePage() {
     initActionsRef.current = { refreshUser, showToast, t, fetchOrders, setSearchParams };
   });
 
+  const wasLoggedInRef = useRef(isLoggedIn);
   useEffect(() => {
     if (!isLoggedIn) {
-      navigate("/login");
+      // Logged out while on this page → plain /login; only visitors who never had a session get a return path.
+      const target = wasLoggedInRef.current ? "/login" : buildLoginPath(`/profile${window.location.search}`);
+      wasLoggedInRef.current = false;
+      navigate(target, { replace: true });
       return;
     }
+    wasLoggedInRef.current = true;
 
     initActionsRef.current.refreshUser();
 

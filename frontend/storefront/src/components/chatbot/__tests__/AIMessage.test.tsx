@@ -1,9 +1,10 @@
 /** @vitest-environment jsdom */
 import { render, screen } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import AIMessage from "../AIMessage";
 import { LanguageContext, type LanguageContextType } from "@shop/shared/context/LanguageContext";
+
+vi.mock("next/navigation", () => import("@/test/nextNavigationMock"));
 
 const languageContext = {
   t: (_key: string, fallback?: string) => fallback ?? _key,
@@ -12,9 +13,7 @@ const languageContext = {
 function renderMessage(content: string) {
   return render(
     <LanguageContext.Provider value={languageContext}>
-      <MemoryRouter>
-        <AIMessage role="ai" content={content} />
-      </MemoryRouter>
+      <AIMessage role="ai" content={content} />
     </LanguageContext.Provider>,
   );
 }

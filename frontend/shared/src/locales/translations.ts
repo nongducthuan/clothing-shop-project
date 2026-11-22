@@ -40,6 +40,8 @@ export const translations = {
     'auth.signup_link': 'Đăng ký',
     'auth.invalid_response': 'Phản hồi không hợp lệ từ máy chủ. Vui lòng thử lại.',
     'auth.login_failed': 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.',
+    'auth.no_permission_title': 'Bạn không có quyền truy cập',
+    'auth.no_permission_desc': 'Tài khoản hiện tại không có quyền quản trị. Hãy đăng xuất và đăng nhập bằng tài khoản quản trị viên.',
 
     'auth.register_title': 'Tạo tài khoản',
     'auth.register_subtitle': 'Tham gia với chúng tôi để có trải nghiệm mua sắm tốt nhất.',
@@ -1294,6 +1296,8 @@ export const translations = {
     'auth.signup_link': 'Sign up',
     'auth.invalid_response': 'Invalid response from server. Please try again.',
     'auth.login_failed': 'Login failed. Please check your credentials.',
+    'auth.no_permission_title': 'You do not have access',
+    'auth.no_permission_desc': 'The current account does not have admin permission. Log out and sign in with an admin account.',
 
     'auth.register_title': 'Create account',
     'auth.register_subtitle': 'Join us for the best shopping experience.',

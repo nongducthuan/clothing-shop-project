@@ -76,6 +76,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       const error = err as { response?: { status?: number } };
       if (error?.response?.status === 401 || error?.response?.status === 404) {
         localStorage.removeItem("token");
+        localStorage.removeItem("refreshToken");
         localStorage.removeItem("user");
         setUser(null);
       } else {

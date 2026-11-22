@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { getSafeRedirect, REDIRECT_PARAM } from "@shop/shared/utils/redirectUtils";
 import API from "@shop/shared/services/apiClient";
 import { AuthContext } from "@shop/shared/context/AuthContext";
 import { useLanguage } from "@shop/shared/context/LanguageContext";
@@ -52,7 +53,7 @@ export function useLogin() {
       }
 
       login(user, token, refreshToken);
-      navigate("/");
+      navigate(getSafeRedirect(new URLSearchParams(window.location.search).get(REDIRECT_PARAM)), { replace: true });
     } catch (err) {
       const axiosErr = err as { response?: { data?: ApiErrorPayload } };
       const errorMessage = extractApiErrorMessage(

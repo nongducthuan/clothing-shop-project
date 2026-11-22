@@ -1,4 +1,8 @@
+import { Navigate } from "react-router-dom";
 import { useLogin } from "../../hooks/auth/useLogin";
+import { AuthContext } from "@shop/shared/context/AuthContext";
+import { useRequiredContext } from "@shop/shared/hooks/useRequiredContext";
+import { getSafeRedirect, REDIRECT_PARAM } from "@shop/shared/utils/redirectUtils";
 import { useLanguage } from "@shop/shared/context/LanguageContext";
 import AuthInput from "@shop/shared/components/auth/AuthInput";
 import AuthAlert from "@shop/shared/components/auth/AuthAlert";
@@ -6,8 +10,15 @@ import AuthAlert from "@shop/shared/components/auth/AuthAlert";
 export default function Login() {
   const { state, actions } = useLogin();
   const { t } = useLanguage();
+  const { user } = useRequiredContext(AuthContext, "AuthContext");
   const { form, error, isLoading } = state;
   const { handleChange, handleSubmit } = actions;
+
+  // Already signed in as admin: skip the form.
+  if (user?.role === "admin") {
+    const target = getSafeRedirect(new URLSearchParams(window.location.search).get(REDIRECT_PARAM));
+    return <Navigate to={target} replace />;
+  }
 
   return (
     <div className="flex-1 bg-slate-50 dark:bg-slate-900 flex flex-col justify-center items-center py-12 px-6 min-h-screen">

@@ -1,6 +1,10 @@
 "use client";
 
-import { Link } from "@/lib/router";
+import { useEffect, useRef } from "react";
+import { Link, useNavigate } from "@/lib/router";
+import { AuthContext } from "@shop/shared/context/AuthContext";
+import { useRequiredContext } from "@shop/shared/hooks/useRequiredContext";
+import { getSafeRedirect, REDIRECT_PARAM } from "@shop/shared/utils/redirectUtils";
 import { useLogin } from "@/hooks/auth/useLogin";
 import { useLanguage } from "@shop/shared/context/LanguageContext";
 import AuthInput from "@shop/shared/components/auth/AuthInput";
@@ -9,6 +13,16 @@ import AuthAlert from "@shop/shared/components/auth/AuthAlert";
 export default function LoginClient() {
   const { state, actions } = useLogin();
   const { t } = useLanguage();
+  const { user } = useRequiredContext(AuthContext, "AuthContext");
+  const navigate = useNavigate();
+  // Only for people who open /login while already signed in. A fresh login is
+  // redirected by useLogin (which may send admins to the separate admin app).
+  const wasLoggedInOnMount = useRef(!!user);
+  useEffect(() => {
+    if (wasLoggedInOnMount.current) {
+      navigate(getSafeRedirect(new URLSearchParams(window.location.search).get(REDIRECT_PARAM)), { replace: true });
+    }
+  }, [navigate]);
   const { form, error, isLoading } = state;
   const { handleChange, handleSubmit } = actions;
 

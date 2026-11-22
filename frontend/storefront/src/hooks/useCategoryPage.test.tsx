@@ -1,11 +1,13 @@
 // @vitest-environment jsdom
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
-import { MemoryRouter, Route, Routes, useNavigate } from 'react-router-dom';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { useNavigate } from '@/lib/router';
+import { setMockLocation } from '@/test/nextNavigationMock';
 import API from "@shop/shared/services/apiClient";
 import { LanguageProvider } from "@shop/shared/context/LanguageProvider";
 import { useCategoryPage } from './useCategoryPage';
 
+vi.mock('next/navigation', () => import('@/test/nextNavigationMock'));
 vi.mock('@shop/shared/services/apiClient', () => ({ default: { get: vi.fn(), post: vi.fn() } }));
 
 const getMock = API.get as unknown as ReturnType<typeof vi.fn>;
@@ -21,6 +23,10 @@ function CategoryHarness() {
     </>
   );
 }
+
+beforeEach(() => {
+  setMockLocation('/category/1', '/category/:id');
+});
 
 afterEach(() => {
   localStorage.clear();
@@ -42,11 +48,7 @@ describe('useCategoryPage pagination regression', () => {
 
     render(
       <LanguageProvider>
-        <MemoryRouter initialEntries={['/category/1']}>
-          <Routes>
-            <Route path="/category/:id" element={<CategoryHarness />} />
-          </Routes>
-        </MemoryRouter>
+        <CategoryHarness />
       </LanguageProvider>,
     );
 

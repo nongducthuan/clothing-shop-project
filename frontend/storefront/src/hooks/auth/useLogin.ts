@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "@/lib/router";
+import { getSafeRedirect, REDIRECT_PARAM } from "@shop/shared/utils/redirectUtils";
 import API from "@shop/shared/services/apiClient";
 import { AuthContext } from "@shop/shared/context/AuthContext";
 import { useLanguage } from "@shop/shared/context/LanguageContext";
@@ -49,7 +50,7 @@ export function useLogin() {
         // Admin chạy ở app/domain riêng; phiên đăng nhập không dùng chung giữa 2 origin.
         window.location.assign(adminUrl);
       } else {
-        navigate("/");
+        navigate(getSafeRedirect(new URLSearchParams(window.location.search).get(REDIRECT_PARAM)), { replace: true });
       }
     } catch (err) {
       const axiosErr = err as { response?: { data?: ApiErrorPayload } };
