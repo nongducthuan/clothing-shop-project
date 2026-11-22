@@ -104,3 +104,22 @@
   - [x] `build`: Cả `admin` (Vite) và `storefront` (Next.js 16 Turbopack) build thành công.
   - [x] `check:i18n`: Pass 259 files, 815 keys.
 - **Commit**: `chore(storefront): clean up legacy Vite files and unused packages`
+
+### Phase 5: Hoàn tất tài liệu, kiểm tra tương thích & chuẩn bị merge
+- **Trạng thái**: Hoàn thành (PASS Gate 5)
+- **Chi tiết thực hiện**:
+  1. Kiểm tra CORS backend: Xác nhận backend đã hỗ trợ sẵn tất cả origin `localhost` / `127.0.0.1` (bao gồm cả port 5173 của storefront và 5174 của admin).
+  2. Cập nhật `README.md` phản ánh cấu trúc workspace 3 packages (`shared`, `admin`, `storefront`), cách cấu hình `.env` riêng biệt và lệnh chạy độc lập/đồng thời.
+  3. Kiểm tra toàn bộ các tiêu chí bất biến của dự án:
+     - Không thay đổi API contract backend.
+     - Không thay đổi text trong `translations.ts` (1217 keys song ngữ khớp 100%).
+     - 101/101 tests Vitest (17 files) tiếp tục pass 100%.
+     - Không phát sinh kiểu `any` mới (`strict: true`).
+     - Giữ nguyên phiên bản TailwindCSS 3.4.18.
+- **Gate 5 Checklist**:
+  - [x] `typecheck`: Pass 100% 3/3 workspace (`@shop/shared`, `admin`, `storefront`).
+  - [x] `lint`: Pass 100% (0 errors).
+  - [x] `test`: Pass 17/17 test files, 101/101 tests pass.
+  - [x] `build`: Cả `admin` (Vite) và `storefront` (Next.js 16 Turbopack) build thành công.
+  - [x] `check:i18n`: Pass 259 files, 815 keys.
+- **Commit**: `docs: update documentation for Next.js 16 storefront and admin workspace`

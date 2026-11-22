@@ -106,7 +106,10 @@ Website thương mại điện tử chuyên bán quần áo và thời trang, t�
 
 ## Công Nghệ Sử Dụng
 
-- **Frontend**: React.js (Vite), TypeScript, React Router, TailwindCSS, Axios, @tanstack/react-query, react-helmet-async (SEO & Meta Tags), Lucide Icons, React Google Charts, OpenStreetMap Nominatim API, React Context API, `socket.io-client`.
+- **Frontend**:
+  - **Storefront**: Next.js 16.4.6 (App Router, Turbopack, React 19.1), TailwindCSS 3.4, Lucide Icons, Socket.io client.
+  - **Admin**: React 19, TypeScript, Vite, TailwindCSS, React Google Charts, Lucide Icons, Socket.io client.
+  - **Shared (`@shop/shared`)**: Source-first shared package (API client, context, i18n, common components & utilities).
 - **Backend**: Node.js, TypeScript, **NestJS 11** (`@nestjs/common`, `@nestjs/core`, `@nestjs/platform-express`, `@nestjs/throttler`, `@nestjs/websockets`), Prisma ORM (`schema.prisma`, generated Prisma Client và `PrismaService` dùng Dependency Injection), PostgreSQL (`@prisma/adapter-pg` + `pg` driver), JSON Web Token (JWT), `bcryptjs`, Multer, `helmet`, `zod`, `node-cache`, `async`, `node-cron`, `socket.io`.
 - **Testing & CI/CD**:
   - **Backend**: Jest + `@swc/jest` + `jest-mock-extended` + `supertest` (mock toàn bộ — không cần DB thật).
@@ -151,9 +154,16 @@ clothing-shop-project/
 │   ├── nest-cli.json
 │   └── package.json
 └── frontend/
-    ├── src/                       # React pages, components, hooks, context, services, utils, locales
-    ├── scripts/                   # i18n validation và tiện ích source
-    └── vite.config.ts / vitest.config.ts / tailwind.config.js
+    ├── shared/                    # Package @shop/shared: API client, types, context, locales, utils, common components
+    ├── admin/                     # Package admin: Vite SPA chạy port 5174 (Dashboard, Products, Orders, Reports...)
+    │   ├── src/                   # Admin pages, components, hooks
+    │   └── vite.config.ts
+    ├── storefront/                # Package storefront: Next.js 16.4.6 App Router chạy port 5173
+    │   ├── src/app/               # App Router pages & layouts
+    │   ├── src/components/        # Customer components
+    │   ├── src/hooks/             # Customer hooks
+    │   └── next.config.ts
+    └── package.json               # Root npm workspace quản lý 3 packages
 ```
 
 ---
@@ -233,21 +243,34 @@ cp .env.example .env
 
 ### 2. Cấu hình & Khởi động Frontend (`/frontend`)
 
+Frontend là một **npm workspace** gồm 3 packages:
+- `shared` (`@shop/shared`): Thư viện dùng chung core logic, API client, types, context và locales.
+- `storefront`: Next.js 16.4.6 App Router cho khách hàng (port `5173`).
+- `admin`: Vite React SPA cho ban quản trị (port `5174`).
+
 ```bash
 cd frontend
 npm install
 ```
 
-- Copy file `.env.example` thành `.env` trong thư mục `frontend`:
+- Cấu hình file môi trường cho từng ứng dụng:
   ```bash
-  cp .env.example .env
+  cp storefront/.env.example storefront/.env
+  cp admin/.env.example admin/.env
   ```
 
-- Khởi động ứng dụng Frontend:
+- Khởi động đồng thời cả Storefront và Admin:
   ```bash
   npm run dev
   ```
-  *(Frontend ứng dụng chạy tại: `http://localhost:5173`)*
+  - **Storefront (Khách hàng)**: `http://localhost:5173`
+  - **Admin (Quản trị)**: `http://localhost:5174`
+
+- Hoặc khởi động riêng lẻ từng ứng dụng:
+  ```bash
+  npm run dev -w storefront  # Chỉ chạy storefront (Next.js 16)
+  npm run dev -w admin       # Chỉ chạy admin (Vite SPA)
+  ```
 
 ---
 
