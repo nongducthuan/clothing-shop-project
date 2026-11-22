@@ -146,12 +146,12 @@ clothing-shop-project/
 │   │   ├── prisma/                # PrismaModule + PrismaService (DI)
 │   │   ├── socket/                # SocketService + SocketIoAdapter
 │   │   ├── services/              # Shared order, inventory, email và automation services
-│   │   ├── utils/                 # Payment, email, shipping, cache và helpers
+│   │   ├── payment/               # VNPay và MoMo payment integration helpers
+│   │   ├── utils/                 # Email, shipping, cache, formatters và helpers
 │   │   ├── constants/             # Order status và return policy
 │   │   ├── types/                 # Domain types và Zod schemas
-│   │   ├── validators/            # Domain validation helpers
 │   │   ├── public/images/         # Ảnh seed/static, serve tại /public
-│   │   └── __tests__/             # 35 Jest suites: services, pipes, utils, redis, migration, prisma
+│   │   └── __tests__/             # 35 Jest suites: services, payment, pipes, utils, redis, migration, prisma
 │   ├── test-fixtures/             # Snapshot Express cũ chỉ dùng bởi regression tests, không chạy runtime
 │   ├── scripts/                   # check-nestjs-migration.cjs và check-no-any.cjs
 │   ├── uploads/                   # Ảnh upload runtime, không commit file upload

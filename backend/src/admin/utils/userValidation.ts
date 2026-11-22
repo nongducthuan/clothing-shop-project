@@ -1,4 +1,4 @@
-import { AppError } from '../utils/AppError';
+import { AppError } from '../../utils/AppError';
 
 export const PHONE_REGEX = /^[0-9]{10,11}$/;
 export const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

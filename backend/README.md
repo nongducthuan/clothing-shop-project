@@ -34,15 +34,16 @@ backend/
 │   ├── prisma/                   # Global PrismaModule và PrismaService
 │   ├── socket/                   # SocketService, SocketModule, SocketIoAdapter
 │   ├── services/                 # Order lifecycle, inventory, email/AI automation...
-│   ├── utils/                    # Payment providers, email, shipping, cache, helpers
+│   ├── payment/                  # Tích hợp cổng thanh toán VNPay và MoMo
+│   ├── utils/                    # Email, shipping, cache, formatters, helpers
 │   ├── constants/                # Order status và return policy
 │   ├── types/                    # Domain types và Zod schemas
-│   ├── validators/               # Domain input helpers
 │   ├── public/images/            # Ảnh seed/static, phục vụ tại /public
 │   └── __tests__/
 │       ├── services/              # Unit tests cho NestJS domain services
+│       ├── payment/               # Unit tests cho cổng thanh toán VNPay & MoMo
 │       ├── pipes/                 # Unit tests cho ZodValidationPipe & schemas
-│       ├── utils/                 # Unit tests cho utilities & payment providers
+│       ├── utils/                 # Unit tests cho utilities & helpers
 │       ├── migration/             # Guardrails kiểm tra kiến trúc NestJS & SQL safety
 │       └── prisma/                # Tests liên quan seed/database
 ├── Dockerfile                     # Multi-stage Docker build

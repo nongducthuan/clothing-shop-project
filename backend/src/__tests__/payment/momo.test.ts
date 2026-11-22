@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import { verifyMomoSignature, type MomoCallbackBody } from '../../utils/momoService';
+import { verifyMomoSignature, type MomoCallbackBody } from '../../payment/momo';
 
 /** Helper: build a valid MoMo callback body and sign it with the test secret */
 function buildValidMomoBody(overrides: Partial<MomoCallbackBody> = {}): MomoCallbackBody {

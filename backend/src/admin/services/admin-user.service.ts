@@ -8,7 +8,7 @@ import {
   parseId,
   validatePassword,
   validatePhone,
-} from '../../validators/user';
+} from '../utils/userValidation';
 
 export const ADMIN_USER_SAFE_SELECT = {
   id: true,

@@ -8,8 +8,8 @@ import {
 import type { OrderStatus, PaymentStatus } from '../../generated/prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { changeOrderStatusLogicTx } from '../../services/orderStatusService';
-import { generateVnPayUrl, verifyVnPayReturn } from '../../utils/vnpayService';
-import { getMomoPayUrl, verifyMomoSignature } from '../../utils/momoService';
+import { generateVnPayUrl, verifyVnPayReturn } from '../../payment/vnpay';
+import { getMomoPayUrl, verifyMomoSignature } from '../../payment/momo';
 import { SocketService } from '../../socket/socket.service';
 import { getErrorMessage } from '../../utils/errorMessage';
 import type { JwtPayload } from '../../common/interfaces/jwt-payload.interface';

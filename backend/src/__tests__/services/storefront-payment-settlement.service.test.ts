@@ -6,7 +6,7 @@ jest.mock('../../services/orderStatusService', () => ({
   changeOrderStatusLogicTx: jest.fn().mockResolvedValue(undefined),
 }));
 
-jest.mock('../../utils/momoService', () => ({
+jest.mock('../../payment/momo', () => ({
   getMomoPayUrl: jest.fn(),
   verifyMomoSignature: jest.fn().mockReturnValue(true),
 }));

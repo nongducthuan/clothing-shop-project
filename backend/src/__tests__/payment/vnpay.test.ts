@@ -4,7 +4,7 @@ import {
   sortObject,
   verifyVnPayReturn,
   generateVnPayUrl,
-} from '../../utils/vnpayService';
+} from '../../payment/vnpay';
 
 describe('sortObject', () => {
   it('should sort keys alphabetically', () => {
