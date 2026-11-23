@@ -18,7 +18,8 @@ export class OptionalJwtAuthGuard implements CanActivate {
     const secret = process.env.JWT_SECRET;
     if (!secret) return true;
     try {
-      request.user = jwt.verify(token, secret) as JwtPayload;
+      const payload = jwt.verify(token, secret) as JwtPayload & { purpose?: string };
+      if (!payload.purpose) request.user = payload;
     } catch {
       // Invalid token is treated as unauthenticated for optional-auth routes.
     }

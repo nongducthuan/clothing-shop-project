@@ -8,7 +8,11 @@ let io: SocketIOServer | null = null;
 export const initSocket = (server: HttpServer) => {
   io = new SocketIOServer(server, {
     cors: {
-      origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+      // FRONTEND_URL may list several origins (storefront + admin) separated by commas.
+      origin: (process.env.FRONTEND_URL || 'http://localhost:5173')
+        .split(',')
+        .map((url) => url.trim().replace(/\/+$/, ''))
+        .filter(Boolean),
       methods: ['GET', 'POST'],
       credentials: true,
     },

@@ -12,7 +12,7 @@ import type { PaymentMethod } from '../../generated/prisma/enums';
 import { PrismaService } from '../../prisma/prisma.service';
 import { allocateItemDiscounts } from '../../services/discountAllocationService';
 import { MinimumOrderValueError, OrderCreationError, applyMembershipDiscount, applyVoucherDiscount, validateAndReserveItems } from '../../services/orderCreationService';
-import { changeOrderStatusLogic } from '../../services/orderStatusService';
+import { changeOrderStatusLogic, isOrderServiceError } from '../../services/orderStatusService';
 import { recordInteraction } from '../../services/interactionService';
 import { queueEmail } from '../../utils/emailQueue';
 import { SocketService } from '../../socket/socket.service';
@@ -20,6 +20,7 @@ import { toVnd } from '../../utils/pricing';
 import { formatOrderResponse } from '../../utils/formatOrder';
 import { generateVnPayUrl } from '../../payment/vnpay';
 import { getMomoPayUrl } from '../../payment/momo';
+import { getGatewayClientIp } from '../../utils/clientIp';
 import { calculateShippingFee, extractProvince } from '../../utils/shippingUtils';
 import type { OrderRequestItem } from '../../types/orderTypes';
 import type { JwtPayload } from '../../common/interfaces/jwt-payload.interface';
@@ -40,7 +41,7 @@ export class StorefrontOrderService {
       const userId = user?.id || null;
       const { address, items, phone, name, email, payment_method, voucher_id } = body;
       if (!address || !items || items.length === 0) throw new BadRequestException({ message: 'Invalid order data: Address or items are missing' });
-      const orderEmail = email || user?.email || '';
+      const orderEmail = String(email || user?.email || '').trim().toLowerCase();
       if (!orderEmail || typeof orderEmail !== 'string' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(orderEmail)) {
         throw new BadRequestException({ message: 'A valid email address is required to place an order.' });
       }
@@ -94,7 +95,8 @@ export class StorefrontOrderService {
 
       let guestOrderAccessToken: string | undefined;
       if (!userId && process.env.JWT_SECRET) {
-        guestOrderAccessToken = jwt.sign({ purpose: 'guest-order-access', email: orderEmail.toLowerCase() }, process.env.JWT_SECRET, { expiresIn: '2h' });
+        // Bound to this order only: the email is unverified at checkout (see GuestOrderAccessGuard).
+        guestOrderAccessToken = jwt.sign({ purpose: 'guest-order-access', email: orderEmail, order_id: orderId }, process.env.JWT_SECRET, { expiresIn: '2h' });
       }
       const lang = headers.acceptLanguage || headers.language || 'vi';
       const isEnglish = lang.startsWith('en');
@@ -126,7 +128,7 @@ export class StorefrontOrderService {
       }
       if (normalizedPaymentMethod === 'vnpay') {
         try {
-          const clientIp = headers.forwardedFor || headers.remoteAddress || '127.0.0.1';
+          const clientIp = getGatewayClientIp(headers.remoteAddress);
           const vnpayUrl = generateVnPayUrl({ orderId: orderId.toString(), amount: finalTotal, orderInfo: `Thanh toan don hang #${orderId}`, ipAddr: clientIp, bankCode: 'VNBANK' });
           return { message: 'Redirecting to VNPay', orderId, payUrl: vnpayUrl, guestOrderAccessToken };
         } catch (error) {
@@ -200,6 +202,7 @@ export class StorefrontOrderService {
       return { message: 'Order cancelled successfully!', payment_status: finalPaymentStatus };
     } catch (error) {
       if (error instanceof NotFoundException || error instanceof ForbiddenException || error instanceof BadRequestException) throw error;
+      if (isOrderServiceError(error)) throw new HttpException({ message: error.message }, error.httpStatus);
       console.error('Order status update failed:', error);
       throw new InternalServerErrorException({ message: 'Failed to update order status', error: error instanceof Error ? error.message : String(error) });
     }

@@ -16,12 +16,15 @@ export class StorefrontAuthService {
 
   async register(body: { name?: string; email?: string; phone?: string; password?: string }) {
     try {
-      const { name, email, phone, password } = body;
+      const { name, phone, password } = body;
+      // Emails are case-insensitive: store them lowercase so login/orders/OTP all match.
+      const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : body.email;
       if (!name || !email || !phone || !password) throw new BadRequestException({ message: 'Please enter all required information' });
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new BadRequestException({ message: 'Invalid email format' });
       if (!/^0\d{9,10}$/.test(phone)) throw new BadRequestException({ message: 'Invalid phone number format. Must be 10-11 digits starting with 0.' });
       if (typeof password !== 'string' || password.length < 8) throw new BadRequestException({ message: 'Password must be at least 8 characters' });
-      if (await this.prisma.user.findUnique({ where: { email } })) throw new BadRequestException({ message: 'Email is already registered' });
+      // Insensitive lookup also catches legacy accounts stored with mixed-case emails.
+      if (await this.prisma.user.findFirst({ where: { email: { equals: email, mode: 'insensitive' } } })) throw new BadRequestException({ message: 'Email is already registered' });
       if (await this.prisma.user.findUnique({ where: { phone } })) throw new BadRequestException({ message: 'Phone number is already in use' });
       const hashedPassword = await bcrypt.hash(password, 10);
       const membership = await this.prisma.membership.findFirst({ where: { min_spending: 0, is_active: true } });
@@ -40,8 +43,9 @@ export class StorefrontAuthService {
     try {
       const { identifier, password } = body;
       if (!identifier || !password) throw new BadRequestException({ message: 'Please enter email/phone and password' });
+      const loginId = identifier.trim();
       const user = await this.prisma.user.findFirst({
-        where: { OR: [{ email: identifier }, { phone: identifier }] },
+        where: { OR: [{ email: { equals: loginId, mode: 'insensitive' } }, { phone: loginId }] },
         include: { membership: true },
       });
       if (!user || !(await bcrypt.compare(password, user.password))) {
@@ -76,8 +80,9 @@ export class StorefrontAuthService {
   async updateProfile(userId: number | undefined, body: { phone?: string }, userPayload?: Record<string, unknown>) {
     try {
       if (!userId) throw new UnauthorizedException({ message: 'Unauthorized' });
-      const phone = body.phone;
+      const phone = typeof body.phone === 'string' ? body.phone.trim() : body.phone;
       if (!phone) throw new BadRequestException({ message: 'Please enter phone number' });
+      if (typeof phone !== 'string' || !/^0\d{9,10}$/.test(phone)) throw new BadRequestException({ message: 'Invalid phone number format. Must be 10-11 digits starting with 0.' });
       const existingPhone = await this.prisma.user.findUnique({ where: { phone } });
       if (existingPhone && existingPhone.id !== userId) throw new BadRequestException({ message: 'Phone number is already in use' });
       await this.prisma.user.update({ where: { id: userId }, data: { phone } });
@@ -158,8 +163,12 @@ export class StorefrontAuthService {
       if (!user) throw new NotFoundException({ message: 'User not found' });
       if (!(await bcrypt.compare(currentPassword, user.password))) throw new BadRequestException({ message: 'Current password is incorrect' });
       const hashed = await bcrypt.hash(newPassword, 10);
-      await this.prisma.user.update({ where: { id: userId }, data: { password: hashed } });
-      return { message: 'Password changed successfully' };
+      // Revoke every existing session (the old refresh token), then give the current
+      // device a fresh pair so it isn't logged out as soon as its access token expires.
+      const token = jwt.sign({ id: user.id, name: user.name, email: user.email, role: user.role }, process.env.JWT_SECRET as string, { expiresIn: '15m' });
+      const refreshToken = jwt.sign({ id: user.id }, process.env.JWT_REFRESH_SECRET as string, { expiresIn: '7d' });
+      await this.prisma.user.update({ where: { id: userId }, data: { password: hashed, refresh_token: await bcrypt.hash(refreshToken, 10) } });
+      return { message: 'Password changed successfully', token, refreshToken };
     } catch (error) {
       if (error instanceof UnauthorizedException || error instanceof NotFoundException || error instanceof BadRequestException) throw error;
       console.error(error);

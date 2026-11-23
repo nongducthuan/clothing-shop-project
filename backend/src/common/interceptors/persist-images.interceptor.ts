@@ -5,7 +5,7 @@ import {
   CallHandler,
   BadRequestException,
 } from '@nestjs/common';
-import { Observable } from 'rxjs';
+import { Observable, catchError, throwError } from 'rxjs';
 import path from 'path';
 import fs from 'fs';
 import { randomUUID } from 'crypto';
@@ -64,6 +64,12 @@ export class PersistImagesInterceptor implements NestInterceptor {
       throw error;
     }
 
-    return next.handle();
+    // If the handler rejects the request (validation, permissions...), don't leave orphan files behind.
+    return next.handle().pipe(
+      catchError((error: unknown) => {
+        void Promise.all(writtenPaths.map((p) => fs.promises.unlink(p).catch(() => undefined)));
+        return throwError(() => error);
+      }),
+    );
   }
 }

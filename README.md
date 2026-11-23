@@ -189,6 +189,7 @@ clothing-shop-project/
 | `MOMO_PARTNER_CODE` | Partner Code do MoMo cấp (Test Sandbox) | `your_partner_code` |
 | `MOMO_ACCESS_KEY` | Access Key kết nối cổng thanh toán MoMo | `your_access_key` |
 | `MOMO_SECRET_KEY` | Secret Key tạo chữ ký điện tử HMAC-SHA256 MoMo | `your_secret_key` |
+| `MOMO_API_HOST` | Host cổng MoMo. Mặc định sandbox `test-payment.momo.vn`; đặt `payment.momo.vn` khi chạy thật | `test-payment.momo.vn` |
 | `VNP_TMNCODE` | Terminal ID do VNPay cấp (Sandbox) | `your_vnp_tmncode` |
 | `VNP_HASHSECRET` | Secret Key tạo chữ ký HMAC-SHA512 VNPay | `your_vnp_hashsecret` |
 | `VNP_URL` | URL cổng thanh toán VNPay Sandbox | `https://sandbox.vnpayment.vn/paymentv2/vpcpay.html` |

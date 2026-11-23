@@ -22,6 +22,7 @@ import multer from 'multer';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { OptionalJwtAuthGuard } from '../common/guards/optional-jwt-auth.guard';
 import { GuestOrderAccessGuard } from '../common/guards/guest-order-access.guard';
+import { OrderOwnerGuard } from '../common/guards/order-owner.guard';
 
 import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
 import { PersistImagesInterceptor } from '../common/interceptors/persist-images.interceptor';
@@ -209,7 +210,8 @@ export class StorefrontController {
     return this.storefrontPaymentService.repayMoMo(id, body, user, guestEmail, forwardedFor, ip);
   }
 
-  @UseGuards(OptionalJwtAuthGuard, GuestOrderAccessGuard)
+  // OrderOwnerGuard runs before the upload interceptors so strangers can't make the server write files.
+  @UseGuards(OptionalJwtAuthGuard, GuestOrderAccessGuard, OrderOwnerGuard)
   @UseInterceptors(
     FilesInterceptor('images', 5, {
       storage: multer.memoryStorage(),

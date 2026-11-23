@@ -20,6 +20,7 @@ function createTransactionMock() {
     order: {
       findUnique: jest.fn().mockResolvedValue(deliveredOrder),
       update: jest.fn().mockResolvedValue({}),
+      updateMany: jest.fn().mockResolvedValue({ count: 1 }),
     },
     productSize: { findUnique: jest.fn(), update: jest.fn() },
     revenue: { findUnique: jest.fn(), update: jest.fn(), create: jest.fn() },
@@ -77,7 +78,7 @@ describe('AdminOrderService.updateOrderStatus – hoàn tác duyệt nhầm Reje
       .rejects.toThrow(HttpException);
 
     expect(prismaMock.$transaction).not.toHaveBeenCalled();
-    expect(tx.order.update).not.toHaveBeenCalled();
+    expect(tx.order.updateMany).not.toHaveBeenCalled();
     expect(tx.returnRequest.updateMany).not.toHaveBeenCalled();
     expect(tx.revenue.update).not.toHaveBeenCalled();
     expect(tx.revenue.create).not.toHaveBeenCalled();
@@ -91,7 +92,7 @@ describe('AdminOrderService.updateOrderStatus – hoàn tác từ chối nhầm 
 
     const result = await orderService.updateOrderStatus('326', 'Return Requested');
 
-    expect(tx.order.update).toHaveBeenCalledWith(
+    expect(tx.order.updateMany).toHaveBeenCalledWith(
       expect.objectContaining({ data: expect.objectContaining({ status: 'Return_Requested' }) })
     );
     expect(tx.returnRequest.updateMany).toHaveBeenCalledWith({
@@ -116,7 +117,7 @@ describe('AdminReturnService.rejectReturn – từ chối đổi trả', () => {
     expect(tx.returnRequest.update).toHaveBeenCalledWith(
       expect.objectContaining({ data: expect.objectContaining({ status: 'Rejected' }) })
     );
-    expect(tx.order.update).toHaveBeenCalledWith(
+    expect(tx.order.updateMany).toHaveBeenCalledWith(
       expect.objectContaining({ data: expect.objectContaining({ status: 'Return_Rejected' }) })
     );
     expect(tx.revenue.update).not.toHaveBeenCalled();
@@ -131,7 +132,7 @@ describe('AdminReturnService.rejectReturn – từ chối đổi trả', () => {
 
     const result = await returnService.rejectReturn('326', 'Đơn còn cần');
 
-    expect(tx.order.update).toHaveBeenCalledWith(
+    expect(tx.order.updateMany).toHaveBeenCalledWith(
       expect.objectContaining({ data: expect.objectContaining({ status: 'Return_Rejected' }) })
     );
     expect(tx.revenue.update).not.toHaveBeenCalled();

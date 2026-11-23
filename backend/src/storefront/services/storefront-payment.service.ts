@@ -5,18 +5,19 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import type { OrderStatus, PaymentStatus } from '../../generated/prisma/client';
+import type { OrderStatus, PaymentStatus, Prisma } from '../../generated/prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { changeOrderStatusLogicTx } from '../../services/orderStatusService';
 import { generateVnPayUrl, verifyVnPayReturn } from '../../payment/vnpay';
 import { getMomoPayUrl, verifyMomoSignature } from '../../payment/momo';
 import { SocketService } from '../../socket/socket.service';
 import { getErrorMessage } from '../../utils/errorMessage';
+import { getGatewayClientIp } from '../../utils/clientIp';
 import type { JwtPayload } from '../../common/interfaces/jwt-payload.interface';
 
 const CLOSED_ORDER_STATUSES: OrderStatus[] = ['Cancelled', 'Return_Approved'];
 const REPAYABLE_ORDER_STATUSES: OrderStatus[] = ['Pending', 'Confirmed'];
-type PaymentSettlement = 'paid' | 'closed' | 'late' | 'not-found' | 'mismatch';
+type PaymentSettlement = 'paid' | 'duplicate' | 'closed' | 'late' | 'not-found' | 'mismatch';
 type PaymentReference = string | number | undefined;
 
 function getOrderIdFromPaymentReference(reference: unknown): number | null {
@@ -32,6 +33,39 @@ function isExpectedPayment(order: { total_price: unknown }, method: string, amou
   if (!Number.isFinite(receivedAmount)) return false;
   const expectedAmount = Math.round(Number(order.total_price) * (method === 'vnpay' ? 100 : 1));
   return Number.isFinite(expectedAmount) && receivedAmount === expectedAmount;
+}
+
+const CONFIRMED_NOTE_PREFIX = 'Payment confirmed';
+const DUPLICATE_PAYMENT_MESSAGE = 'This order was already paid. Your additional payment has been recorded and the shop will refund it.';
+
+/**
+ * The order is already Paid and a gateway reports success again. Retried callbacks / the browser
+ * return for the SAME transaction are harmless, but a DIFFERENT transaction reference means the
+ * customer paid twice (e.g. two repay links) and needs a refund. We can only tell them apart for
+ * payments confirmed after confirmations started being recorded; older orders stay 'paid'.
+ */
+async function classifyRepeatPayment(
+  tx: Pick<Prisma.TransactionClient, 'paymentStatusLog'>,
+  orderId: number,
+  method: string,
+  providerReference: string,
+): Promise<'paid' | 'duplicate'> {
+  const confirmations = await tx.paymentStatusLog.findMany({
+    where: { order_id: orderId, note: { startsWith: CONFIRMED_NOTE_PREFIX } },
+    select: { note: true },
+  });
+  if (confirmations.length === 0) return 'paid';
+  if (confirmations.some((log) => log.note?.includes(`(${providerReference})`))) return 'paid';
+  await tx.paymentStatusLog.create({
+    data: {
+      order_id: orderId,
+      from_status: 'Paid',
+      to_status: 'Paid',
+      changed_by: null,
+      note: `Duplicate ${method} payment (${providerReference}); order was already paid by another transaction; refund required`.slice(0, 255),
+    },
+  });
+  return 'duplicate';
 }
 
 @Injectable()
@@ -55,7 +89,7 @@ export class StorefrontPaymentService {
         });
         return 'closed';
       }
-      if (order.payment_status === 'Paid') return 'paid';
+      if (order.payment_status === 'Paid') return classifyRepeatPayment(tx, orderId, method, providerReference);
       if (!REPAYABLE_ORDER_STATUSES.includes(order.status)) {
         await tx.paymentStatusLog.create({
           data: {
@@ -75,7 +109,7 @@ export class StorefrontPaymentService {
       if (update.count !== 1) {
         const current = await tx.order.findUnique({ where: { id: orderId } });
         if (!current) return 'not-found';
-        if (current.payment_status === 'Paid') return 'paid';
+        if (current.payment_status === 'Paid') return classifyRepeatPayment(tx, orderId, method, providerReference);
         if (CLOSED_ORDER_STATUSES.includes(current.status) || current.payment_status === 'Refunded') return 'closed';
         if (!REPAYABLE_ORDER_STATUSES.includes(current.status)) {
           await tx.paymentStatusLog.create({
@@ -91,6 +125,15 @@ export class StorefrontPaymentService {
         }
         return 'mismatch';
       }
+      await tx.paymentStatusLog.create({
+        data: {
+          order_id: orderId,
+          from_status: order.payment_status,
+          to_status: 'Paid',
+          changed_by: null,
+          note: `${CONFIRMED_NOTE_PREFIX} via ${method} (${providerReference})`.slice(0, 255),
+        },
+      });
       const current = await tx.order.findUnique({ where: { id: orderId } });
       if (!current) return 'not-found';
       if (current.status === 'Pending') await changeOrderStatusLogicTx(tx, orderId, 'Confirmed');
@@ -107,8 +150,8 @@ export class StorefrontPaymentService {
       if (resultCode === 0 || resultCode === '0') {
         const settlement = await this.settleSuccessfulPayment(realOrderId, 'momo', body.amount, String(orderId));
         if (settlement === 'not-found' || settlement === 'mismatch') throw new BadRequestException({ message: 'Order or amount mismatch' });
-        if (settlement === 'closed' || settlement === 'late') {
-          console.warn(`MoMo IPN: late payment for order #${realOrderId}; reconciliation required (${settlement}).`);
+        if (settlement === 'closed' || settlement === 'late' || settlement === 'duplicate') {
+          console.warn(`MoMo IPN: ${settlement} payment for order #${realOrderId}; reconciliation required.`);
         } else {
           await this.socketService.sendNotification(null, 'Thanh toán thành công', `Đơn hàng #${realOrderId} đã thanh toán qua MoMo`, 'Payment Successful', `Order #${realOrderId} has been paid via MoMo`, 'payment_success', { orderId: realOrderId, amount: body.amount, method: 'MoMo' });
         }
@@ -131,6 +174,9 @@ export class StorefrontPaymentService {
       if (String(resultCode) === '0') {
         const settlement = await this.settleSuccessfulPayment(realOrderId, 'momo', query.amount, String(orderId));
         if (settlement === 'not-found' || settlement === 'mismatch') throw new BadRequestException({ success: false, message: 'Order or amount mismatch' });
+        if (settlement === 'duplicate') {
+          return { success: true, orderId: realOrderId, payment_method: 'momo', message: DUPLICATE_PAYMENT_MESSAGE };
+        }
         if (settlement === 'closed' || settlement === 'late') {
           return { success: false, orderId: realOrderId, message: 'Payment arrived after the order became ineligible. The shop must reconcile the transaction and refund it if appropriate.' };
         }
@@ -156,7 +202,7 @@ export class StorefrontPaymentService {
       const settlement = await this.settleSuccessfulPayment(realOrderId, 'vnpay', verifyResult.amount, String(verifyResult.vnp_TxnRef));
       if (settlement === 'not-found') return { RspCode: '01', Message: 'Order not found' };
       if (settlement === 'mismatch') return { RspCode: '04', Message: 'Order or amount mismatch' };
-      if (settlement === 'closed' || settlement === 'late') return { RspCode: '00', Message: 'Callback recorded; manual reconciliation required' };
+      if (settlement === 'closed' || settlement === 'late' || settlement === 'duplicate') return { RspCode: '00', Message: 'Callback recorded; manual reconciliation required' };
       await this.socketService.sendNotification(null, 'Thanh toán thành công', `Đơn hàng #${realOrderId} đã thanh toán qua VNPay`, 'Payment Successful', `Order #${realOrderId} has been paid via VNPay`, 'payment_success', { orderId: realOrderId, amount: verifyResult.amount, method: 'VNPay' });
       return { RspCode: '00', Message: 'Confirm Success' };
     } catch (error) {
@@ -175,6 +221,7 @@ export class StorefrontPaymentService {
         const settlement = await this.settleSuccessfulPayment(realOrderId, 'vnpay', verifyResult.amount, String(verifyResult.vnp_TxnRef));
         if (settlement === 'not-found') throw new NotFoundException({ success: false, message: 'Order not found' });
         if (settlement === 'mismatch') throw new BadRequestException({ success: false, message: 'Order or amount mismatch' });
+        if (settlement === 'duplicate') return { success: true, orderId: realOrderId, payment_method: 'vnpay', message: DUPLICATE_PAYMENT_MESSAGE };
         if (settlement === 'closed' || settlement === 'late') return { success: false, orderId: realOrderId, message: 'Payment arrived after the order became ineligible. The shop must reconcile the transaction and refund it if appropriate.' };
         const order = await this.prisma.order.findUnique({ where: { id: realOrderId } });
         return { success: true, orderId: realOrderId, payment_method: 'vnpay', total_price: Number(order?.total_price ?? 0), message: 'Payment successful' };
@@ -216,7 +263,7 @@ export class StorefrontPaymentService {
         return { payUrl: momoResponse.payUrl, payment_method: 'momo' };
       }
       if (targetMethod === 'vnpay') {
-        const clientIp = forwardedFor || remoteAddress || '127.0.0.1';
+        const clientIp = getGatewayClientIp(remoteAddress);
         const vnpayUrl = generateVnPayUrl({ orderId: `${order.id}_${Date.now()}`, amount: Number(order.total_price), orderInfo: `Retry payment for order #${order.id}`, ipAddr: clientIp, bankCode: 'VNBANK' });
         return { payUrl: vnpayUrl, payment_method: 'vnpay' };
       }

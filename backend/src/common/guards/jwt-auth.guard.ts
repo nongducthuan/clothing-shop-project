@@ -18,7 +18,10 @@ export class JwtAuthGuard implements CanActivate {
     const secret = process.env.JWT_SECRET;
     if (!secret) throw new UnauthorizedException('Authentication is not configured');
     try {
-      request.user = jwt.verify(token, secret) as JwtPayload;
+      const payload = jwt.verify(token, secret) as JwtPayload & { purpose?: string };
+      // Other JWTs signed with the same secret (e.g. guest order access) are not login tokens.
+      if (payload.purpose) throw new Error('Not an access token');
+      request.user = payload;
       return true;
     } catch {
       throw new UnauthorizedException('Invalid token');

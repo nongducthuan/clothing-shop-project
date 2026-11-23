@@ -17,6 +17,10 @@ class TooManyRequestsException extends HttpException {
   }
 }
 
+function normalizeEmail(email: string): string {
+  return String(email).trim().toLowerCase();
+}
+
 function hashOtp(code: string): string {
   const secret = process.env.JWT_SECRET;
   if (!secret) throw new Error('JWT_SECRET is required to protect OTP data.');
@@ -34,8 +38,9 @@ function otpMatches(storedHash: string, submittedCode: string): boolean {
 export class StorefrontOrderLookupService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async sendOtp(email: string | undefined, bodyLanguage?: string, acceptLanguage?: string, languageHeader?: string) {
-    if (!email) throw new BadRequestException({ message: 'Email is required' });
+  async sendOtp(rawEmail: string | undefined, bodyLanguage?: string, acceptLanguage?: string, languageHeader?: string) {
+    if (!rawEmail) throw new BadRequestException({ message: 'Email is required' });
+    const email = normalizeEmail(rawEmail);
     const rawLang = String(bodyLanguage || acceptLanguage || languageHeader || 'vi').toLowerCase();
     const emailLang = rawLang.startsWith('en') ? 'en' : 'vi';
 
@@ -65,8 +70,9 @@ export class StorefrontOrderLookupService {
     }
   }
 
-  async verifyOtp(email: string | undefined, code: string | undefined) {
-    if (!email) throw new BadRequestException({ message: 'Invalid OTP code!' });
+  async verifyOtp(rawEmail: string | undefined, code: string | undefined) {
+    if (!rawEmail) throw new BadRequestException({ message: 'Invalid OTP code!' });
+    const email = normalizeEmail(rawEmail);
     try {
       const otpData = await this.prisma.otp.findFirst({ where: { email } });
       if (!otpData) throw new BadRequestException({ message: 'Invalid OTP code!' });
@@ -87,7 +93,8 @@ export class StorefrontOrderLookupService {
       }
 
       const orders = await this.prisma.order.findMany({
-        where: { email },
+        // Orders placed before emails were normalised may be stored with any casing.
+        where: { email: { equals: email, mode: 'insensitive' } },
         orderBy: { created_at: 'desc' },
         include: {
           return_request: { include: { items: { include: { order_item: { include: {

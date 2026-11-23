@@ -35,6 +35,24 @@ function isRecord(value: unknown): value is Record<string, unknown> {
     return typeof value === 'object' && value !== null;
 }
 
+const MOMO_REQUEST_TIMEOUT_MS = 15_000;
+const MOMO_SANDBOX_HOST = 'test-payment.momo.vn';
+let warnedAboutSandbox = false;
+
+/**
+ * Gateway host. Set MOMO_API_HOST=payment.momo.vn for live payments; it defaults to the sandbox
+ * so existing deployments that use sandbox credentials keep working.
+ */
+export function getMomoHost(): string {
+    const host = process.env.MOMO_API_HOST?.trim();
+    if (host) return host;
+    if (process.env.NODE_ENV === 'production' && !warnedAboutSandbox) {
+        warnedAboutSandbox = true;
+        console.warn(`MOMO_API_HOST is not set: using the MoMo sandbox (${MOMO_SANDBOX_HOST}). Set MOMO_API_HOST=payment.momo.vn for live payments.`);
+    }
+    return MOMO_SANDBOX_HOST;
+}
+
 /**
  * Generates a MoMo ATM/QR payment URL for redirection.
  */
@@ -77,7 +95,7 @@ export async function getMomoPayUrl(
 
     return new Promise((resolve, reject) => {
         const options = {
-            hostname: 'test-payment.momo.vn',
+            hostname: getMomoHost(),
             port: 443,
             path: '/v2/gateway/api/create',
             method: 'POST',
@@ -104,6 +122,7 @@ export async function getMomoPayUrl(
             });
         });
 
+        req.setTimeout(MOMO_REQUEST_TIMEOUT_MS, () => req.destroy(new Error('MoMo request timed out')));
         req.on('error', (e) => reject(e));
         req.write(requestBody);
         req.end();

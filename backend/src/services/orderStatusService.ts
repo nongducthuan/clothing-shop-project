@@ -83,6 +83,23 @@ export async function updateGiftPromotionQuota(
     }
 }
 
+/** Consume one use of a voucher again (mirror of the refund done when an order is cancelled). */
+async function reserveVoucherUse(tx: TxClient, voucherId: number): Promise<void> {
+    const voucher = await tx.voucher.findUnique({ where: { id: voucherId } });
+    if (!voucher) return; // Voucher was deleted since; nothing to consume.
+    if (voucher.usage_limit !== null && voucher.usage_limit !== undefined) {
+        const result = await tx.voucher.updateMany({
+            where: { id: voucherId, usage_limit: { gte: 1 } },
+            data: { usage_limit: { decrement: 1 }, used_count: { increment: 1 } },
+        });
+        if (result.count !== 1) {
+            throw new OrderServiceError(409, 'Voucher usage limit has been reached by other orders; this cancelled order cannot be restored.');
+        }
+    } else {
+        await tx.voucher.update({ where: { id: voucherId }, data: { used_count: { increment: 1 } } });
+    }
+}
+
 // Complex status change handling inventory and revenue
 // opts.partial: khi approve đổi trả 1 phần — chỉ hoàn kho + trừ tiền đúng các item
 // được trả (returnItems: [{size_id, return_quantity}], refundAmount), thay vì toàn bộ đơn.
@@ -153,12 +170,14 @@ export const changeOrderStatusLogicTx = async (
             await updateGiftPromotionQuota(tx, order.items, 'release');
         } else if (oldEnum === 'Cancelled' && normalizedStatus === 'Pending') {
             await updateGiftPromotionQuota(tx, order.items, 'reserve');
+            // Cancelling gave the voucher use back, so undoing the cancel must consume it again.
+            if (orderVoucherId) await reserveVoucherUse(tx, orderVoucherId);
         }
 
         const { deliveredAtUpdate } = await updateOrderFinancials(tx, order, oldEnum, normalizedStatus, opts);
 
         // 3. Update Order
-        const updateData: Prisma.OrderUpdateInput = { status: normalizedStatus as OrderStatus };
+        const updateData: Prisma.OrderUpdateManyMutationInput = { status: normalizedStatus as OrderStatus };
         if (deliveredAtUpdate) updateData.delivered_at = deliveredAtUpdate;
 
         // If money was collected, mark the order refunded when it enters a closed state.
@@ -169,10 +188,18 @@ export const changeOrderStatusLogicTx = async (
             paymentTransition = { from: 'Paid', to: 'Refunded' };
         }
 
-        await tx.order.update({
-            where: { id: orderId },
-            data: updateData
+        // Compare-and-swap on the state we read at the top of this transaction. Stock, gift
+        // quota, revenue and voucher changes above all depend on that state, so if another
+        // request (double click, auto-cancel cron, payment webhook, admin) changed the order
+        // meanwhile we must abort — the transaction rolls those side effects back — instead
+        // of applying them twice or cancelling an order that was just paid.
+        const swapped = await tx.order.updateMany({
+            where: { id: orderId, status: order.status, payment_status: order.payment_status },
+            data: updateData,
         });
+        if (swapped.count !== 1) {
+            throw new OrderServiceError(409, 'The order was just changed by another request. Please refresh and try again.');
+        }
 
         if (paymentTransition) {
             await tx.paymentStatusLog.create({

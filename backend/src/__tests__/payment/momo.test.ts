@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import { verifyMomoSignature, type MomoCallbackBody } from '../../payment/momo';
+import { getMomoHost, verifyMomoSignature, type MomoCallbackBody } from '../../payment/momo';
 
 /** Helper: build a valid MoMo callback body and sign it with the test secret */
 function buildValidMomoBody(overrides: Partial<MomoCallbackBody> = {}): MomoCallbackBody {
@@ -72,5 +72,23 @@ describe('verifyMomoSignature', () => {
   it('should return true for different valid amounts', () => {
     const body = buildValidMomoBody({ amount: 500000 });
     expect(verifyMomoSignature(body)).toBe(true);
+  });
+});
+
+describe('getMomoHost', () => {
+  const original = { host: process.env.MOMO_API_HOST, env: process.env.NODE_ENV };
+  afterEach(() => {
+    if (original.host === undefined) delete process.env.MOMO_API_HOST; else process.env.MOMO_API_HOST = original.host;
+    (process.env as Record<string, string | undefined>).NODE_ENV = original.env;
+  });
+
+  it('uses MOMO_API_HOST when set', () => {
+    process.env.MOMO_API_HOST = 'payment.momo.vn';
+    expect(getMomoHost()).toBe('payment.momo.vn');
+  });
+
+  it('defaults to the sandbox so existing sandbox deployments keep working', () => {
+    delete process.env.MOMO_API_HOST;
+    expect(getMomoHost()).toBe('test-payment.momo.vn');
   });
 });
