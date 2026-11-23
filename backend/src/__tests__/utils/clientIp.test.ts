@@ -5,8 +5,9 @@ describe('getGatewayClientIp', () => {
     expect(getGatewayClientIp('203.0.113.7')).toBe('203.0.113.7');
     expect(getGatewayClientIp('::ffff:203.0.113.7')).toBe('203.0.113.7');
   });
-  it('falls back to localhost when missing', () => {
+  it('falls back to localhost when missing or IPv6 loopback', () => {
     expect(getGatewayClientIp(undefined)).toBe('127.0.0.1');
     expect(getGatewayClientIp('  ')).toBe('127.0.0.1');
+    expect(getGatewayClientIp('::1')).toBe('127.0.0.1');
   });
 });

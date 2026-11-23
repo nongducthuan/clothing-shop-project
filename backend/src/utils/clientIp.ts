@@ -5,5 +5,6 @@
  */
 export function getGatewayClientIp(ip?: string): string {
   const value = (ip ?? '').trim().replace(/^::ffff:/i, '');
-  return value || '127.0.0.1';
+  if (!value || value === '::1') return '127.0.0.1';
+  return value;
 }

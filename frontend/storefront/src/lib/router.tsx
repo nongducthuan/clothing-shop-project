@@ -118,11 +118,14 @@ export function useParams<T extends Record<string, string | string[]> = Record<s
 // 5. useLocation
 export function useLocation() {
   const pathname = usePathname() ?? "";
-  const [search, setSearch] = useState("");
+  const nextSearchParams = useNextSearchParams();
+  const search = useMemo(() => {
+    const s = nextSearchParams?.toString();
+    return s ? `?${s}` : "";
+  }, [nextSearchParams]);
   const [state, setState] = useState<unknown>(null);
 
   useEffect(() => {
-    setSearch(window.location.search);
     setState(readRouterState(pathname));
   }, [pathname]);
 

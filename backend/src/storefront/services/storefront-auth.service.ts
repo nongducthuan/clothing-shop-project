@@ -16,7 +16,9 @@ export class StorefrontAuthService {
 
   async register(body: { name?: string; email?: string; phone?: string; password?: string }) {
     try {
-      const { name, phone, password } = body;
+      const name = typeof body.name === 'string' ? body.name.trim() : body.name;
+      const phone = typeof body.phone === 'string' ? body.phone.trim() : body.phone;
+      const password = body.password;
       // Emails are case-insensitive: store them lowercase so login/orders/OTP all match.
       const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : body.email;
       if (!name || !email || !phone || !password) throw new BadRequestException({ message: 'Please enter all required information' });

@@ -49,10 +49,11 @@ export class StorefrontReturnService {
         });
         if (!order) throw new BadRequestException({ message: 'The order is invalid or not delivered.' });
         const isAdmin = user?.role === 'admin';
-        if (order.user_id) {
-          if (!isAdmin && (!user || user.id !== order.user_id)) throw new ForbiddenException({ message: 'Forbidden: This order belongs to another member.' });
-        } else if (!isAdmin && (!guestOrderEmail || order.email.toLowerCase() !== guestOrderEmail)) {
-          throw new ForbiddenException({ message: 'Forbidden: Verify the guest order by OTP before requesting a return.' });
+        const ownsByAccount = order.user_id !== null && user?.id === order.user_id;
+        const verifiedEmail = guestOrderEmail || user?.email?.toLowerCase() || '';
+        const ownsByEmail = order.user_id === null && !!verifiedEmail && order.email.toLowerCase() === verifiedEmail;
+        if (!isAdmin && !ownsByAccount && !ownsByEmail) {
+          throw new ForbiddenException({ message: 'Forbidden: You do not have permission for this order.' });
         }
         if (!isAdmin && !isWithinReturnWindow(order)) throw new ReturnWindowExpiredError();
         const existing = await tx.returnRequest.findUnique({ where: { order_id: orderId } });

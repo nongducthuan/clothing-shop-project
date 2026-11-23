@@ -137,7 +137,9 @@ export default function PaymentReturnClient() {
       ? rawOrderId.split("_")[1]
       : rawOrderId.split("_")[0]
     : null;
-  const txnRef = searchParams.get("vnp_TxnRef") || parsedMoMoOrderId || status.orderId;
+  const rawVnPayRef = searchParams.get("vnp_TxnRef");
+  const parsedVnPayOrderId = rawVnPayRef ? rawVnPayRef.split("_")[0] : null;
+  const txnRef = status.orderId || parsedVnPayOrderId || parsedMoMoOrderId;
   const rawAmount = searchParams.get("amount") || searchParams.get("vnp_Amount");
   const bankCode = searchParams.get("vnp_BankCode") || searchParams.get("payType");
   const formattedAmount = rawAmount

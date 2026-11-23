@@ -1,10 +1,7 @@
 import { useNavigate } from "react-router-dom";
-import { useState, useRef, useEffect } from "react";
-import { io } from "socket.io-client";
-import { useToast } from "@shop/shared/context/ToastContext";
+import { useState, useRef } from "react";
 import { useDashboardStats } from "../hooks/useDashboard";
 import { useLanguage } from "@shop/shared/context/LanguageContext";
-import { formatCurrency } from "@shop/shared/utils/currencyUtils";
 import type { DashboardStats } from "../hooks/useDashboard";
 import type { NavigateFunction } from "react-router-dom";
 import type { MouseEvent } from "react";
@@ -139,31 +136,6 @@ const RevenueBanner = ({ onClick }: { onClick: () => void }) => {
 export default function Dashboard() {
   const navigate = useNavigate();
   const { stats } = useDashboardStats();
-  const { showToast } = useToast();
-  const { t, language } = useLanguage();
-
-  useEffect(() => {
-    const socket = io(import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000', {
-      withCredentials: true,
-      auth: { token: localStorage.getItem('token') },
-    });
-
-    socket.emit('join_admin_room');
-
-    socket.on('new_order', (data: { orderId: number; total: number; customerName: string }) => {
-      showToast(
-        t('admin.toast_new_order', `Đơn hàng mới #{orderId} từ {customerName} - {total}`)
-          .replace('{orderId}', String(data.orderId))
-          .replace('{customerName}', data.customerName)
-          .replace('{total}', formatCurrency(data.total, language)),
-        'info'
-      );
-    });
-
-    return () => {
-      socket.disconnect();
-    };
-  }, [showToast, t, language]);
 
   return (
     <div className="container mx-auto px-4 py-8 lg:px-8 max-w-7xl flex-1">

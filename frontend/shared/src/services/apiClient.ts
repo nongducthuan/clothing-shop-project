@@ -1,5 +1,6 @@
 import axios, { AxiosInstance, InternalAxiosRequestConfig } from "axios";
 import { getConfig } from "../config";
+import { buildLoginPath } from "../utils/redirectUtils";
 
 const API: AxiosInstance = axios.create();
 
@@ -79,6 +80,8 @@ API.interceptors.response.use(
             localStorage.setItem("token", data.token);
             localStorage.setItem("refreshToken", data.refreshToken);
             return data.token as string;
+          }).finally(() => {
+            refreshPromise = null;
           });
         }
 
@@ -91,12 +94,10 @@ API.interceptors.response.use(
           localStorage.removeItem("token");
           localStorage.removeItem("refreshToken");
           localStorage.removeItem("user");
-          window.location.href = "/login";
+          const target = buildLoginPath(`${window.location.pathname}${window.location.search}${window.location.hash}`);
+          window.location.href = target;
         }
         return Promise.reject(error);
-      } finally {
-        // Clear the promise only after everything is done (success or failure)
-        refreshPromise = null;
       }
     }
 

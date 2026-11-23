@@ -50,12 +50,18 @@ async function classifyRepeatPayment(
   method: string,
   providerReference: string,
 ): Promise<'paid' | 'duplicate'> {
-  const confirmations = await tx.paymentStatusLog.findMany({
-    where: { order_id: orderId, note: { startsWith: CONFIRMED_NOTE_PREFIX } },
+  const logs = await tx.paymentStatusLog.findMany({
+    where: { order_id: orderId },
     select: { note: true },
   });
-  if (confirmations.length === 0) return 'paid';
-  if (confirmations.some((log) => log.note?.includes(`(${providerReference})`))) return 'paid';
+  const hasConfirmation = logs.some((log) => log.note?.startsWith(CONFIRMED_NOTE_PREFIX));
+  if (!hasConfirmation) return 'paid';
+  if (logs.some((log) => log.note?.startsWith(CONFIRMED_NOTE_PREFIX) && log.note?.includes(`(${providerReference})`))) {
+    return 'paid';
+  }
+  if (logs.some((log) => log.note?.startsWith('Duplicate ') && log.note?.includes(`(${providerReference})`))) {
+    return 'duplicate';
+  }
   await tx.paymentStatusLog.create({
     data: {
       order_id: orderId,
@@ -246,10 +252,11 @@ export class StorefrontPaymentService {
       const order = await this.prisma.order.findUnique({ where: { id: Number(id) } });
       if (!order) throw new NotFoundException({ message: 'Order not found' });
       const isAdmin = user?.role === 'admin';
-      if (order.user_id) {
-        if (!isAdmin && (!user || user.id !== order.user_id)) throw new ForbiddenException({ message: 'Forbidden: You do not have permission to pay for this order.' });
-      } else if (!isAdmin && (!guestOrderEmail || order.email.toLowerCase() !== guestOrderEmail)) {
-        throw new ForbiddenException({ message: 'Forbidden: Verify the guest order by OTP before paying.' });
+      const ownsByAccount = order.user_id !== null && user?.id === order.user_id;
+      const verifiedEmail = guestOrderEmail || user?.email?.toLowerCase() || '';
+      const ownsByEmail = order.user_id === null && !!verifiedEmail && order.email.toLowerCase() === verifiedEmail;
+      if (!isAdmin && !ownsByAccount && !ownsByEmail) {
+        throw new ForbiddenException({ message: 'Forbidden: You do not have permission to pay for this order.' });
       }
       if (order.payment_status === 'Paid') throw new BadRequestException({ message: 'This order is already paid.' });
       if (CLOSED_ORDER_STATUSES.includes(order.status)) throw new BadRequestException({ message: 'Cannot change payment method or pay for a closed order.' });

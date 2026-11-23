@@ -184,10 +184,11 @@ export class StorefrontOrderService {
       const order = await this.prisma.order.findUnique({ where: { id: orderId } });
       if (!order) throw new NotFoundException({ message: 'Order not found.' });
       const isAdmin = user?.role === 'admin';
-      if (order.user_id) {
-        if (!isAdmin && (!user || user.id !== order.user_id)) throw new ForbiddenException({ message: 'Forbidden: This order does not belong to you.' });
-      } else if (!isAdmin && (!guestOrderEmail || order.email.toLowerCase() !== guestOrderEmail)) {
-        throw new ForbiddenException({ message: 'Forbidden: Verify the guest order by OTP before changing it.' });
+      const ownsByAccount = order.user_id !== null && user?.id === order.user_id;
+      const verifiedEmail = guestOrderEmail || user?.email?.toLowerCase() || '';
+      const ownsByEmail = order.user_id === null && !!verifiedEmail && order.email.toLowerCase() === verifiedEmail;
+      if (!isAdmin && !ownsByAccount && !ownsByEmail) {
+        throw new ForbiddenException({ message: 'Forbidden: You do not have permission for this order.' });
       }
       if (newStatus !== 'Cancelled') throw new ForbiddenException({ message: 'You are not allowed to set this order status.' });
       if (!['Pending', 'Confirmed'].includes(order.status)) throw new BadRequestException({ message: `Cannot cancel an order that is already "${order.status}".` });
