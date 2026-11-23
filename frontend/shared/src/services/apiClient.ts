@@ -24,19 +24,31 @@ API.interceptors.request.use((config) => {
   return config;
 });
 
+// Serialise refreshes across browser tabs (Web Locks API); falls back to running directly.
+function runExclusiveAcrossTabs<T>(task: () => Promise<T>): Promise<T> {
+  const locks = typeof navigator !== "undefined" ? navigator.locks : undefined;
+  return locks ? (locks.request("shop-token-refresh", task) as Promise<T>) : task();
+}
+
 // Track an in-flight refresh to avoid parallel refresh calls
 let refreshPromise: Promise<string> | null = null;
 
 API.interceptors.response.use(
   (response) => response,
   async (error) => {
-    const originalRequest: InternalAxiosRequestConfig & { _retry?: boolean } =
+    const originalRequest: (InternalAxiosRequestConfig & { _retry?: boolean }) | undefined =
       error.config;
+    if (!originalRequest) return Promise.reject(error);
 
     const status = error.response?.status;
-    const isRefreshRoute = originalRequest?.url?.includes("/auth/refresh");
+    // Login/register/refresh answer 401 for "wrong credentials" / "bad refresh token",
+    // not "expired access token": refreshing and redirecting there reloads the page
+    // and wipes the error message the user is meant to see.
+    const isAuthRoute = /\/auth\/(login|register|refresh)(?:[/?#]|$)/.test(originalRequest.url ?? "");
+    // Only a request that carried a token can have an expired session.
+    const hadAuthHeader = Boolean(originalRequest.headers?.Authorization);
 
-    if (status === 401 && !originalRequest._retry && !isRefreshRoute) {
+    if (status === 401 && !originalRequest._retry && !isAuthRoute && hadAuthHeader) {
       originalRequest._retry = true;
 
       try {
@@ -45,10 +57,17 @@ API.interceptors.response.use(
         // a third concurrent request from starting a second refresh after
         // the first resolves but before localStorage is updated.
         if (!refreshPromise) {
-          refreshPromise = (async () => {
+          const failedToken = String(originalRequest.headers?.Authorization ?? "").replace(/^Bearer\s+/i, "");
+          refreshPromise = runExclusiveAcrossTabs(async () => {
             if (typeof window === "undefined") {
               throw new Error("Cannot refresh token on server");
             }
+            // Refresh tokens are single-use. If another tab already refreshed while we
+            // waited for the lock, reuse its result instead of spending a stale token
+            // (which the server would reject and log this user out everywhere).
+            const currentToken = localStorage.getItem("token");
+            if (currentToken && currentToken !== "null" && currentToken !== failedToken) return currentToken;
+
             const storedRefreshToken = localStorage.getItem("refreshToken");
             if (!storedRefreshToken) throw new Error("No refresh token stored");
 
@@ -60,7 +79,7 @@ API.interceptors.response.use(
             localStorage.setItem("token", data.token);
             localStorage.setItem("refreshToken", data.refreshToken);
             return data.token as string;
-          })();
+          });
         }
 
         const newToken = await refreshPromise;

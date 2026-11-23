@@ -90,10 +90,16 @@ export function useCartPage() {
   // inventory change, so don't rely on the snapshot captured when an item was added.
   const { setCart } = useRequiredContext(CartContext, 'CartContext');
   const hasRefreshedCartRef = useRef(false);
+  // The refresh runs once, so it must only be dropped when the page unmounts —
+  // not when the cart changes while it is in flight (that would skip it for good).
+  const isMountedRef = useRef(true);
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => { isMountedRef.current = false; };
+  }, []);
   useEffect(() => {
     if (hasRefreshedCartRef.current || cart.length === 0) return;
     hasRefreshedCartRef.current = true;
-    let cancelled = false;
     const productIds = [...new Set(cart.map(item => item.id))];
 
     const refreshCartItems = async () => {
@@ -108,7 +114,7 @@ export function useCartPage() {
           }
         })),
       ]);
-      if (cancelled) return;
+      if (!isMountedRef.current) return;
 
       const priceMap: Record<number, number> = priceResult?.data?.data || {};
       const stockMap = new Map<string, number>();
@@ -144,7 +150,6 @@ export function useCartPage() {
     };
 
     void refreshCartItems().catch((error) => console.error("Cart refresh failed", error));
-    return () => { cancelled = true; };
   }, [cart, setCart]);
 
   // Logic: Calculate earned gifts grouped by Product ID with chosen/default variants

@@ -59,11 +59,17 @@ export function useProfileSettings() {
     setIsChangingPassword(true);
     try {
       const token = localStorage.getItem("token");
-      await API.put(
+      const res = await API.put(
         "/auth/password",
         { currentPassword, newPassword },
         { headers: { Authorization: `Bearer ${token}` } }
       );
+      // The server revokes all sessions on password change and returns a fresh pair
+      // for this device; without storing it we'd be logged out when the old token expires.
+      if (res.data?.token && res.data?.refreshToken) {
+        localStorage.setItem("token", res.data.token);
+        localStorage.setItem("refreshToken", res.data.refreshToken);
+      }
       showToast(t("profile.password_changed"), "success");
       setCurrentPassword("");
       setNewPassword("");
