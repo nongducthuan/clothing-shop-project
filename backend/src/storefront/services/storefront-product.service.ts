@@ -18,7 +18,7 @@ export class StorefrontProductService {
 
   private parseGender(value: unknown): Gender {
     if (value === Gender.male || value === Gender.female || value === Gender.unisex) return value;
-    throw new Error('Invalid gender');
+    throw new BadRequestException({ message: 'Invalid gender' });
   }
 
   private async getActiveSalesCache(): Promise<ActiveSale[]> {
@@ -92,6 +92,7 @@ export class StorefrontProductService {
       }));
       return { data: products, products, totalPages: Math.ceil(totalProducts / limit), currentPage: page, totalProducts };
     } catch (error) {
+      if (error instanceof BadRequestException) throw error;
       console.error('Error getProducts:', error);
       throw new InternalServerErrorException({ message: 'Server error when fetching product list' });
     }
@@ -105,8 +106,12 @@ export class StorefrontProductService {
       const where: Prisma.ProductWhereInput = {
         is_active: true,
         OR: [
-          { name: { contains: search } }, { name_vi: { contains: search } }, { name_en: { contains: search } },
-          { description: { contains: search } }, { description_vi: { contains: search } }, { description_en: { contains: search } },
+          { name: { contains: search, mode: 'insensitive' } },
+          { name_vi: { contains: search, mode: 'insensitive' } },
+          { name_en: { contains: search, mode: 'insensitive' } },
+          { description: { contains: search, mode: 'insensitive' } },
+          { description_vi: { contains: search, mode: 'insensitive' } },
+          { description_en: { contains: search, mode: 'insensitive' } },
         ],
       };
       if (query.category) where.category_id = Number(query.category);
@@ -129,6 +134,7 @@ export class StorefrontProductService {
       }));
       return { data: products, products, totalPages: Math.ceil(totalProducts / limit), currentPage: page, totalProducts };
     } catch (error) {
+      if (error instanceof BadRequestException) throw error;
       console.error('Error searchProducts:', error);
       throw new InternalServerErrorException({ message: 'Server error during search' });
     }

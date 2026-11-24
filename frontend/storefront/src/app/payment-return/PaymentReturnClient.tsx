@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useSearchParams, useNavigate, Link } from "@/lib/router";
 import API from "@shop/shared/services/apiClient";
 import PaymentBadge from "@shop/shared/components/common/PaymentBadge";
@@ -30,11 +30,14 @@ export default function PaymentReturnClient() {
   });
 
   const isMomo = Boolean(searchParams.get("partnerCode") || searchParams.get("resultCode"));
+  const verifiedQueryRef = useRef<string | null>(null);
 
   useEffect(() => {
     const verifyPayment = async () => {
       try {
         const query = searchParams.toString();
+        if (verifiedQueryRef.current === query) return;
+        verifiedQueryRef.current = query;
         if (!query) {
           setStatus({ success: false, message: t("payment_return.no_params", "No payment parameters found.") });
           setLoading(false);
@@ -142,8 +145,13 @@ export default function PaymentReturnClient() {
   const txnRef = status.orderId || parsedVnPayOrderId || parsedMoMoOrderId;
   const rawAmount = searchParams.get("amount") || searchParams.get("vnp_Amount");
   const bankCode = searchParams.get("vnp_BankCode") || searchParams.get("payType");
-  const formattedAmount = rawAmount
-    ? formatCurrency(isMomo ? Number(rawAmount) : Number(rawAmount) / 100, language)
+  const displayAmount = status.totalPrice !== undefined
+    ? status.totalPrice
+    : rawAmount
+    ? (isMomo ? Number(rawAmount) : Number(rawAmount) / 100)
+    : null;
+  const formattedAmount = displayAmount !== null
+    ? formatCurrency(displayAmount, language)
     : null;
 
   return (

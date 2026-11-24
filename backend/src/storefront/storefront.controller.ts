@@ -266,8 +266,9 @@ export class StorefrontController {
 
   @Post('orders/vnpay-ipn')
   @HttpCode(200)
-  vnpayIpnPost(@Query() query: Record<string, unknown>) {
-    return this.storefrontPaymentService.vnpayIpn(query);
+  vnpayIpnPost(@Query() query: Record<string, unknown>, @Body() body?: Record<string, unknown>) {
+    const params = query && Object.keys(query).length > 0 ? query : (body || {});
+    return this.storefrontPaymentService.vnpayIpn(params);
   }
 
   @Get('orders/vnpay-return')

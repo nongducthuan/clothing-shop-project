@@ -20,5 +20,5 @@ export function calculateMembershipDiscount(
   discountPercent: number,
   blockedProductIds: ReadonlySet<number>
 ): number {
-  return getDiscountableSubtotal(items, blockedProductIds) * (Number(discountPercent) / 100);
+  return Math.round(getDiscountableSubtotal(items, blockedProductIds) * (Number(discountPercent) / 100));
 }

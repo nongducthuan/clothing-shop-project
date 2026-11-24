@@ -32,11 +32,13 @@ export async function updateOrderInventory(
         if (!oldIsInactive && newIsInactive) {
             await tx.productSize.update({ where: { id: item.size_id }, data: { stock: { increment: item.quantity } } });
         } else if (oldIsInactive && !newIsInactive) {
-            const size = await tx.productSize.findUnique({ where: { id: item.size_id } });
-            if (!size || size.stock < item.quantity) {
+            const result = await tx.productSize.updateMany({
+                where: { id: item.size_id, stock: { gte: item.quantity } },
+                data: { stock: { decrement: item.quantity } },
+            });
+            if (result.count !== 1) {
                 throw new Error(`Insufficient stock for product (size_id=${item.size_id})`);
             }
-            await tx.productSize.update({ where: { id: item.size_id }, data: { stock: { decrement: item.quantity } } });
         }
     }
 }
