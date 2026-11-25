@@ -24,6 +24,7 @@ export default function HeroCarousel({ banners = [] }: { banners?: HeroBanner[] 
   const { getLocalizedText, t } = useLanguage();
   const [current, setCurrent] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
 
   const slides = banners.length > 0 ? banners : [null]; // null = fallback slide
 
@@ -41,13 +42,19 @@ export default function HeroCarousel({ banners = [] }: { banners?: HeroBanner[] 
   const next = useCallback(() => goTo(current + 1), [current, goTo]);
 
   useEffect(() => {
-    if (slides.length <= 1) return;
+    if (slides.length <= 1 || isPaused) return;
     const timer = setInterval(next, 5000);
     return () => clearInterval(timer);
-  }, [next, slides.length]);
+  }, [next, slides.length, isPaused]);
 
   return (
-    <div className="relative w-full overflow-hidden mb-8 group">
+    <div
+      className="relative w-full overflow-hidden mb-8 group"
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+      onFocus={() => setIsPaused(true)}
+      onBlur={() => setIsPaused(false)}
+    >
       {/* Slides */}
       <div
         className="flex transition-transform duration-500 ease-in-out"

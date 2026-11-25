@@ -42,6 +42,7 @@ export default function ProductSelectors({ state, actions }: Props) {
             <button
               key={color.id}
               onClick={() => setSelectedColor(color)}
+              aria-label={getLocalizedText(color, "color_name") || color.color_name}
               className={`w-10 h-10 rounded-full border border-slate-200 dark:border-slate-700 transition-transform focus:outline-none ${
                 selectedColor?.id === color.id
                   ? "ring-2 ring-offset-2 ring-slate-900 dark:ring-slate-100 dark:ring-offset-slate-900 scale-110"

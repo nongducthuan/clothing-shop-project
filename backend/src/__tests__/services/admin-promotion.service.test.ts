@@ -48,6 +48,31 @@ describe('AdminPromotionService', () => {
     }));
   });
 
+  it('rejects promotion when start_date >= end_date', async () => {
+    await expect(service.createPromotion({
+      name: 'Invalid',
+      buy_product_id: 1,
+      buy_quantity: 1,
+      gift_product_id: 2,
+      gift_quantity: 1,
+      start_date: '2026-12-20T00:00:00.000Z',
+      end_date: '2026-11-20T00:00:00.000Z',
+    })).rejects.toThrow();
+    expect(prismaMock.buyXGetYPromotion.create).not.toHaveBeenCalled();
+  });
+
+  it('partial updatePromotion omits undefined numeric/date fields instead of writing NaN', async () => {
+    prismaMock.buyXGetYPromotion.update.mockResolvedValue({ id: 9 });
+    await expect(service.updatePromotion('9', { name: 'Updated name' })).resolves.toEqual({
+      success: true,
+      message: 'Updated successfully',
+    });
+    const updateArg = prismaMock.buyXGetYPromotion.update.mock.calls[0][0];
+    expect(updateArg.data.buy_product_id).toBeUndefined();
+    expect(updateArg.data.start_date).toBeUndefined();
+    expect(updateArg.data.end_date).toBeUndefined();
+  });
+
   it('soft deletes a promotion', async () => {
     prismaMock.buyXGetYPromotion.update.mockResolvedValue({ id: 9, is_active: false });
     await expect(service.deletePromotion('9')).resolves.toEqual({

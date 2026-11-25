@@ -15,20 +15,11 @@ export default function OrderSummary({ state, actions, helpers, onCheckout }: {
   } = state;
   const { setVoucherCode, handleApplyVoucher, handleRemoveVoucher } = actions;
   const { formatPrice } = helpers;
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
   const getLocalizedTierName = (tierName: string) => {
     if (!tierName) return "";
-    if (language === "vi") {
-      const map: Record<string, string> = {
-        Normal: "Thường",
-        Bronze: "Đồng",
-        Silver: "Bạc",
-        Gold: "Vàng",
-        Diamond: "Kim Cương",
-      };
-      return map[tierName] || tierName;
-    }
-    return tierName;
+    const key = `membership.tier_${tierName.toLowerCase()}` as Parameters<typeof t>[0];
+    return t(key, tierName);
   };
 
   return (
@@ -98,19 +89,19 @@ export default function OrderSummary({ state, actions, helpers, onCheckout }: {
 
         {voucherDiscount > 0 && (
           <div className="flex justify-between text-slate-600 dark:text-slate-400 text-sm">
-            <span>{t("cart.voucher_discount", "Giảm giá voucher")} ({appliedVoucher?.code})</span>
+            <span>{t("cart.voucher_discount", "Voucher Discount")} ({appliedVoucher?.code})</span>
             <span className="font-medium text-emerald-600 dark:text-emerald-400">-{formatPrice(voucherDiscount)}</span>
           </div>
         )}
 
         <div className="flex justify-between text-slate-600 dark:text-slate-400 text-sm">
-          <span>{t("cart.shipping_label", "Phí vận chuyển")}</span>
+          <span>{t("cart.shipping_label", "Shipping")}</span>
           {shippingFee === null ? (
             <span className="font-medium text-slate-400 dark:text-slate-500 italic text-xs">{t("checkout.calculate_shipping", "Enter address to calculate")}</span>
           ) : shippingFee > 0 ? (
             <span className="font-medium text-slate-900 dark:text-slate-100">{formatPrice(shippingFee)}</span>
           ) : (
-            <span className="font-medium text-emerald-600 dark:text-emerald-400">{t("checkout.free", "Miễn phí")}</span>
+            <span className="font-medium text-emerald-600 dark:text-emerald-400">{t("checkout.free", "Free")}</span>
           )}
         </div>
       </div>

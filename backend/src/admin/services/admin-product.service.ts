@@ -108,11 +108,24 @@ export class AdminProductService {
     }
   }
 
+  private parsePrice(value: unknown, fieldName: string): number {
+    const num = Number(value);
+    if (value === undefined || value === null || value === '' || !Number.isFinite(num) || num < 0) {
+      throw new BadRequestException({ message: `Invalid ${fieldName}` });
+    }
+    return num;
+  }
+
   async addProduct(payload: AdminProductPayload) {
     try {
       await this.validateGenderAndCategory(payload.gender, payload.category_id);
       const baseName = payload.name || payload.name_vi || payload.name_en;
       if (!baseName) throw new BadRequestException({ message: 'Product name is required' });
+      const price = this.parsePrice(payload.price, 'price');
+      const importPrice =
+        payload.import_price !== undefined && payload.import_price !== null && payload.import_price !== ''
+          ? this.parsePrice(payload.import_price, 'import_price')
+          : 0;
       const baseDescription = payload.description || payload.description_vi || payload.description_en || '';
       const product = await this.prisma.product.create({
         data: {
@@ -122,8 +135,8 @@ export class AdminProductService {
           description: baseDescription,
           description_vi: payload.description_vi || baseDescription || null,
           description_en: payload.description_en || baseDescription || null,
-          price: payload.price as never,
-          import_price: (payload.import_price || 0) as never,
+          price,
+          import_price: importPrice,
           image_url: payload.image_url || null,
           gender: payload.gender as never,
           category_id: Number(payload.category_id),
@@ -140,6 +153,9 @@ export class AdminProductService {
   async editProduct(id: string, payload: AdminProductPayload) {
     try {
       await this.validateGenderAndCategory(payload.gender, payload.category_id);
+      const price = payload.price !== undefined ? this.parsePrice(payload.price, 'price') : undefined;
+      const importPrice =
+        payload.import_price !== undefined ? this.parsePrice(payload.import_price, 'import_price') : undefined;
       const baseName = payload.name || payload.name_vi || payload.name_en;
       const baseDescription = payload.description !== undefined ? payload.description : (payload.description_vi || payload.description_en);
       await this.prisma.product.update({
@@ -151,9 +167,9 @@ export class AdminProductService {
           description: baseDescription !== undefined ? (baseDescription || '') : undefined,
           description_vi: payload.description_vi !== undefined ? (payload.description_vi || baseDescription || null) : undefined,
           description_en: payload.description_en !== undefined ? (payload.description_en || baseDescription || null) : undefined,
-          price: payload.price as never,
-          import_price: (payload.import_price || 0) as never,
-          image_url: payload.image_url || null,
+          ...(price !== undefined && { price }),
+          ...(importPrice !== undefined && { import_price: importPrice }),
+          ...(payload.image_url !== undefined && { image_url: payload.image_url || null }),
           gender: payload.gender as never,
           category_id: Number(payload.category_id),
         },

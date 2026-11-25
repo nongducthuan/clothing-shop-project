@@ -98,7 +98,11 @@ export function useCartPage() {
     return () => { isMountedRef.current = false; };
   }, []);
   useEffect(() => {
-    if (hasRefreshedCartRef.current || cart.length === 0) return;
+    if (cart.length === 0) {
+      hasRefreshedCartRef.current = false;
+      return;
+    }
+    if (hasRefreshedCartRef.current) return;
     hasRefreshedCartRef.current = true;
     const productIds = [...new Set(cart.map(item => item.id))];
 

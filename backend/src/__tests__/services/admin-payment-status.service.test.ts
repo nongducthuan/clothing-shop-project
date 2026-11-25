@@ -5,7 +5,7 @@ import { SocketService } from '../../socket/socket.service';
 
 const prismaMock = {
   $transaction: jest.fn(),
-  order: { findUnique: jest.fn(), update: jest.fn() },
+  order: { findUnique: jest.fn(), update: jest.fn(), updateMany: jest.fn() },
   paymentStatusLog: { create: jest.fn() },
 };
 
@@ -20,9 +20,10 @@ const service = new AdminOrderService(
 
 beforeEach(() => {
   jest.clearAllMocks();
+  prismaMock.order.updateMany.mockResolvedValue({ count: 1 });
   prismaMock.$transaction.mockImplementation(async (arg: unknown) => {
     if (Array.isArray(arg)) return Promise.all(arg);
-    if (typeof arg === 'function') return arg({});
+    if (typeof arg === 'function') return arg(prismaMock);
     return undefined;
   });
 });
@@ -34,8 +35,8 @@ describe('AdminOrderService.confirmPayment – hoàn tác bấm nhầm trạng t
     const result = await service.confirmPayment('326', 'Unpaid', 9);
 
     expect(result).toEqual({ message: 'Payment status updated to Unpaid' });
-    expect(prismaMock.order.update).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { id: 326 }, data: { payment_status: 'Unpaid' } })
+    expect(prismaMock.order.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { id: 326, payment_status: 'Paid' }, data: { payment_status: 'Unpaid' } })
     );
     expect(prismaMock.paymentStatusLog.create).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -50,8 +51,8 @@ describe('AdminOrderService.confirmPayment – hoàn tác bấm nhầm trạng t
     const result = await service.confirmPayment('326', 'Paid', 9);
 
     expect(result).toEqual({ message: 'Payment status updated to Paid' });
-    expect(prismaMock.order.update).toHaveBeenCalledWith(
-      expect.objectContaining({ data: { payment_status: 'Paid' } })
+    expect(prismaMock.order.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { id: 326, payment_status: 'Unpaid' }, data: { payment_status: 'Paid' } })
     );
   });
 
@@ -74,6 +75,16 @@ describe('AdminOrderService.confirmPayment – hoàn tác bấm nhầm trạng t
     await expect(service.confirmPayment('326', 'Refunded', 9))
       .rejects.toThrow(HttpException);
 
-    expect(prismaMock.order.update).not.toHaveBeenCalled();
+    expect(prismaMock.order.updateMany).not.toHaveBeenCalled();
+  });
+
+  it('CAS conflict (concurrent update): trả 409 và không ghi audit log', async () => {
+    prismaMock.order.findUnique.mockResolvedValue({ id: 326, status: 'Pending', payment_status: 'Unpaid' });
+    prismaMock.order.updateMany.mockResolvedValue({ count: 0 });
+
+    await expect(service.confirmPayment('326', 'Paid', 9))
+      .rejects.toThrow(HttpException);
+
+    expect(prismaMock.paymentStatusLog.create).not.toHaveBeenCalled();
   });
 });

@@ -98,7 +98,7 @@ export class AdminReturnService {
         if (order.user_id && restoreAmount > 0) {
           const currentUser = await tx.user.findUnique({ where: { id: order.user_id } });
           if (currentUser) {
-            const newTotalSpent = Number(currentUser.total_spent) + restoreAmount;
+            const newTotalSpent = Math.max(0, Number(currentUser.total_spent) + restoreAmount);
             await tx.user.update({ where: { id: order.user_id }, data: { total_spent: newTotalSpent } });
             const tier = await tx.membership.findFirst({ where: { min_spending: { lte: newTotalSpent }, is_active: true }, orderBy: { min_spending: 'desc' } });
             await tx.user.update({ where: { id: order.user_id }, data: { membership_id: tier?.id ?? null } });

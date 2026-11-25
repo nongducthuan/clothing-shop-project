@@ -19,7 +19,7 @@ export default function ProductImageGallery({ state }: Pick<ReturnType<typeof us
       {/* SALE BADGE */}
       {isSale && (
         <span className="absolute top-6 left-6 bg-rose-500 text-white px-4 py-1.5 rounded-full text-sm font-bold shadow-md z-10 tracking-wider">
-          {t("product.sale_off_badge", "Giảm {percent}%").replace("{percent}", String(Math.round(product.sale_percent ?? 0)))}
+          {t("product.sale_off_badge", "-{percent}%").replace("{percent}", String(Math.round(product.sale_percent ?? 0)))}
         </span>
       )}
 

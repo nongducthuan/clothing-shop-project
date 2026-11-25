@@ -33,12 +33,16 @@ function createTransactionMock() {
   return {
     order: {
       findFirst: jest.fn().mockResolvedValue(order),
+      findUnique: jest.fn().mockResolvedValue(order),
       update: jest.fn().mockResolvedValue(order),
+      updateMany: jest.fn().mockResolvedValue({ count: 1 }),
     },
     returnRequest: {
       findUnique: jest.fn().mockResolvedValue(null),
       create: jest.fn().mockImplementation(({ data }: { data: Record<string, unknown> }) => Promise.resolve({ id: 999, ...data })),
     },
+    paymentStatusLog: { create: jest.fn() },
+    voucher: { findUnique: jest.fn(), update: jest.fn() },
   };
 }
 

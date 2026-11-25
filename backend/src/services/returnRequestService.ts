@@ -120,21 +120,22 @@ export function buildReturnPlan(order: ReturnOrder, requestedItems: RequestedRet
         targetTotalRefund = Math.round(nonGiftReturnItems.reduce((sum, it) => sum + it.rawRefund, 0));
     }
 
-    let allocatedSum = 0;
-    nonGiftReturnItems.forEach(item => {
-        const roundedRefund = Math.round(item.rawRefund);
-        returnItemsToCreate[item.targetIndex].refund_amount = roundedRefund;
-        allocatedSum += roundedRefund;
-    });
-
-    const refundDiff = targetTotalRefund - allocatedSum;
-    if (refundDiff !== 0 && nonGiftReturnItems.length > 0) {
-        let maxItem = nonGiftReturnItems[0];
-        for (let i = 1; i < nonGiftReturnItems.length; i++) {
-            if (nonGiftReturnItems[i].rawRefund > maxItem.rawRefund) maxItem = nonGiftReturnItems[i];
-        }
-        returnItemsToCreate[maxItem.targetIndex].refund_amount += refundDiff;
+    // Largest-remainder allocation: floors first, then give the remaining cents to
+    // items with the biggest fractional part (tie-break by insertion order).
+    // Guarantees sum(refund_amount) === targetTotalRefund exactly, same algorithm
+    // as distributeVnd() in discountAllocationService.ts.
+    const floors = nonGiftReturnItems.map(item => Math.floor(item.rawRefund));
+    const fractions = nonGiftReturnItems.map((item, i) => ({ i, frac: item.rawRefund - floors[i] }));
+    fractions.sort((a, b) => b.frac - a.frac || a.i - b.i);
+    let remainingCents = targetTotalRefund - floors.reduce((s, v) => s + v, 0);
+    for (const { i } of fractions) {
+        if (remainingCents <= 0) break;
+        floors[i] += 1;
+        remainingCents -= 1;
     }
+    nonGiftReturnItems.forEach((item, pos) => {
+        returnItemsToCreate[item.targetIndex].refund_amount = floors[pos];
+    });
 
     const returnedProductIds = new Set<number>();
     for (const ri of parsedReturnItems) {

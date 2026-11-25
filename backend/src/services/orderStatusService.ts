@@ -349,9 +349,15 @@ export const confirmPaymentStatus = async (
 
     if (from === to) return;
 
-    await db.$transaction([
-        db.order.update({ where: { id: orderId }, data: { payment_status: to } }),
-        db.paymentStatusLog.create({
+    await db.$transaction(async (tx) => {
+        const updated = await tx.order.updateMany({
+            where: { id: orderId, payment_status: from },
+            data: { payment_status: to },
+        });
+        if (updated.count !== 1) {
+            throw new OrderServiceError(409, 'Payment status was just changed by another request. Please refresh.');
+        }
+        await tx.paymentStatusLog.create({
             data: {
                 order_id: orderId,
                 from_status: from,
@@ -359,6 +365,6 @@ export const confirmPaymentStatus = async (
                 changed_by: changedBy,
                 note: 'Admin manual update',
             },
-        }),
-    ]);
+        });
+    });
 };

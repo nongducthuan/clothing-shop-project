@@ -9,10 +9,12 @@ import { AuthContext } from "@shop/shared/context/AuthContext";
 import { useLanguage } from "@shop/shared/context/LanguageContext";
 import { formatCurrency } from "@shop/shared/utils/currencyUtils";
 import { useRequiredContext } from "@shop/shared/hooks/useRequiredContext";
+import { useToast } from "@shop/shared/context/ToastContext";
 
 export default function PaymentReturnClient() {
   const { user } = useRequiredContext(AuthContext, "AuthContext");
   const { t, translateApiMessage, language } = useLanguage();
+  const { showToast } = useToast();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -116,7 +118,7 @@ export default function PaymentReturnClient() {
           apiMessage && translated !== apiMessage
             ? translated
             : t("lookup.payment_updated", "Payment method updated successfully!");
-        alert(safeMessage);
+        showToast(safeMessage, "success");
         setShowChangeModal(false);
         navigate(user ? "/profile?tab=orders" : "/order");
       }
@@ -128,7 +130,7 @@ export default function PaymentReturnClient() {
         apiMessage && translated !== apiMessage
           ? translated
           : t("lookup.payment_error", "Error initiating payment");
-      alert(safeMessage);
+      showToast(safeMessage, "error");
     } finally {
       setRepayLoading(false);
     }

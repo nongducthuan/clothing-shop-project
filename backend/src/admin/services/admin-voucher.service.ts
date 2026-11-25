@@ -22,7 +22,16 @@ export class AdminVoucherService {
 
   private parseApplyScope(value: unknown): ApplyScope {
     if (value === ApplyScope.all || value === ApplyScope.category || value === ApplyScope.product) return value;
-    throw new Error('Invalid apply scope');
+    throw new BadRequestException({ success: false, message: 'Invalid apply scope' });
+  }
+
+  private validateScopeTargets(applyScope: ApplyScope, payload: VoucherPayload) {
+    if (applyScope === ApplyScope.category && (!Array.isArray(payload.categoryIds) || payload.categoryIds.length === 0)) {
+      throw new BadRequestException({ success: false, message: 'Vui lòng chọn ít nhất một danh mục!' });
+    }
+    if (applyScope === ApplyScope.product && (!Array.isArray(payload.productIds) || payload.productIds.length === 0)) {
+      throw new BadRequestException({ success: false, message: 'Vui lòng chọn ít nhất một sản phẩm!' });
+    }
   }
 
   private relationData(payload: VoucherPayload, voucherId: number) {
@@ -37,17 +46,19 @@ export class AdminVoucherService {
 
   async create(payload: VoucherPayload) {
     try {
+      const applyScope = this.parseApplyScope(payload.apply_scope);
+      this.validateScopeTargets(applyScope, payload);
       await this.prisma.$transaction(async (tx) => {
         const voucher = await tx.voucher.create({
           data: {
             code: payload.code as string,
-            discount_percent: payload.discount_percent ? Number(payload.discount_percent) : null,
-            max_discount_amount: payload.max_discount_amount ? Number(payload.max_discount_amount) : null,
-            min_order_value: Number(payload.min_order_value) || 0,
-            usage_limit: payload.usage_limit ? Number(payload.usage_limit) : null,
+            discount_percent: payload.discount_percent != null ? Number(payload.discount_percent) : null,
+            max_discount_amount: payload.max_discount_amount != null ? Number(payload.max_discount_amount) : null,
+            min_order_value: payload.min_order_value != null ? Number(payload.min_order_value) : 0,
+            usage_limit: payload.usage_limit != null ? Number(payload.usage_limit) : null,
             start_date: payload.start_date ? new Date(payload.start_date) : null,
             end_date: payload.end_date ? new Date(payload.end_date) : null,
-            apply_scope: this.parseApplyScope(payload.apply_scope),
+            apply_scope: applyScope,
             status: true,
           },
         });
@@ -57,6 +68,7 @@ export class AdminVoucherService {
       });
       return { success: true, message: 'Voucher Created Successfully!' };
     } catch (error) {
+      if (error instanceof BadRequestException) throw error;
       console.error('BACKEND ERROR:', getErrorMessage(error));
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
         throw new BadRequestException({ success: false, message: 'Mã voucher này đã tồn tại. Vui lòng nhập mã khác!' });
@@ -67,18 +79,20 @@ export class AdminVoucherService {
 
   async update(id: string, payload: VoucherPayload) {
     try {
+      const applyScope = this.parseApplyScope(payload.apply_scope);
+      this.validateScopeTargets(applyScope, payload);
       await this.prisma.$transaction(async (tx) => {
         await tx.voucher.update({
           where: { id: Number(id) },
           data: {
             code: payload.code,
-            discount_percent: payload.discount_percent ? Number(payload.discount_percent) : null,
-            max_discount_amount: payload.max_discount_amount ? Number(payload.max_discount_amount) : null,
-            min_order_value: Number(payload.min_order_value) || 0,
-            usage_limit: payload.usage_limit ? Number(payload.usage_limit) : null,
+            discount_percent: payload.discount_percent != null ? Number(payload.discount_percent) : null,
+            max_discount_amount: payload.max_discount_amount != null ? Number(payload.max_discount_amount) : null,
+            min_order_value: payload.min_order_value != null ? Number(payload.min_order_value) : 0,
+            usage_limit: payload.usage_limit != null ? Number(payload.usage_limit) : null,
             start_date: payload.start_date ? new Date(payload.start_date) : null,
             end_date: payload.end_date ? new Date(payload.end_date) : null,
-            apply_scope: this.parseApplyScope(payload.apply_scope),
+            apply_scope: applyScope,
           },
         });
         await tx.voucherCategory.deleteMany({ where: { voucher_id: Number(id) } });
@@ -89,6 +103,7 @@ export class AdminVoucherService {
       });
       return { success: true, message: 'Voucher updated successfully!' };
     } catch (error) {
+      if (error instanceof BadRequestException) throw error;
       console.error('UPDATE VOUCHER ERROR:', getErrorMessage(error));
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
         throw new BadRequestException({ success: false, message: 'Mã voucher (code) này đã tồn tại. Vui lòng nhập mã khác!' });

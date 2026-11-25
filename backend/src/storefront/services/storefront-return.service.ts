@@ -76,7 +76,8 @@ export class StorefrontReturnService {
             items: { create: returnPlan.returnItemsToCreate },
           },
         });
-        await tx.order.update({ where: { id: orderId }, data: { status: 'Return_Requested' } });
+        // Go through the state machine so side-effects (CAS, audit hooks) are applied correctly.
+        await changeOrderStatusLogicTx(tx, orderId, 'Return_Requested');
       });
 
       try {

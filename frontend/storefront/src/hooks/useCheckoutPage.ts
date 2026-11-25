@@ -192,6 +192,13 @@ export function useCheckoutPage() {
   };
 
   const validateForm = () => {
+    const hasUnavailableItems = cart.some((item) =>
+      typeof item.stock === "number" && Number.isFinite(item.stock) &&
+      (item.stock <= 0 || (item.quantity ?? 1) > item.stock)
+    );
+    if (hasUnavailableItems) {
+      return t("checkout.error_unavailable_items", "Some items in your cart are out of stock or exceed available stock. Please update your cart.");
+    }
     if (!shippingAddress.trim()) return t("checkout.error_address", "Please enter a shipping address.");
     if (!user) {
       if (!guestInfo.name || !guestInfo.phone || !guestInfo.email) return t("checkout.error_contact", "Please fill in all contact information.");
@@ -255,7 +262,6 @@ export function useCheckoutPage() {
 
       const orderData = {
         user_id: user?.id || null,
-        total_price: finalTotal,
         voucher_id: appliedVoucher?.id || null,
         address: shippingAddress,
         phone: user?.phone || guestInfo.phone,
@@ -263,7 +269,6 @@ export function useCheckoutPage() {
         email: user?.email || guestInfo.email,
         payment_method: paymentMethod,
         items: itemsPayload,
-        shipping_fee: shippingFee,
       };
 
       const token = localStorage.getItem("token");

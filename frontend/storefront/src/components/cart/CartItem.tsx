@@ -66,6 +66,7 @@ export default function CartItem({ item, actions, helpers }: {
             <button
               onClick={() => updateQuantity(cartItemId, -1)}
               disabled={item.quantity <= 1 || (stockKnown && item.stock! <= 0)}
+              aria-label={t("cart.quantity_decrease", "Decrease quantity")}
               className="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 disabled:opacity-50 transition-colors"
             >
               <i className="fa-solid fa-minus text-xs"></i>
@@ -74,6 +75,7 @@ export default function CartItem({ item, actions, helpers }: {
               type="number"
               value={item.quantity}
               disabled={stockKnown && item.stock! <= 0}
+              aria-label={t("cart.quantity_label", "Quantity")}
               onChange={(e) => {
                 const val = parseInt(e.target.value);
                 if (!isNaN(val)) {
@@ -93,6 +95,7 @@ export default function CartItem({ item, actions, helpers }: {
             <button
               onClick={() => updateQuantity(cartItemId, 1)}
               disabled={(stockKnown && item.quantity >= item.stock!) || (stockKnown && item.stock! <= 0) || (!stockKnown && item.quantity >= 99)}
+              aria-label={t("cart.quantity_increase", "Increase quantity")}
               className="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 disabled:opacity-50 transition-colors"
             >
               <i className="fa-solid fa-plus text-xs"></i>

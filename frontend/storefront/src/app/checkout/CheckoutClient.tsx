@@ -53,9 +53,16 @@ export default function CheckoutClient() {
               <button
                 onClick={actions.handleSubmitOrder}
                 disabled={state.isSubmitting}
-                className="w-full md:w-80 md:mx-auto disabled:opacity-60 disabled:cursor-not-allowed bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 h-12 rounded-full font-semibold text-base hover:bg-slate-800 dark:hover:bg-white transition-all active:scale-[0.98] shadow-md flex items-center justify-center"
+                className="w-full md:w-80 md:mx-auto disabled:opacity-60 disabled:cursor-not-allowed bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 h-12 rounded-full font-semibold text-base hover:bg-slate-800 dark:hover:bg-white transition-all active:scale-[0.98] shadow-md flex items-center justify-center gap-2"
               >
-                {t("checkout.place_order", "Place Order")}
+                {state.isSubmitting ? (
+                  <>
+                    <i className="fa-solid fa-spinner animate-spin"></i>
+                    <span>{t("checkout.processing", "Processing...")}</span>
+                  </>
+                ) : (
+                  t("checkout.place_order", "Place Order")
+                )}
               </button>
 
               {state.statusMessage && (

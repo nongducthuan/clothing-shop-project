@@ -12,6 +12,12 @@ export async function updateOrderFinancials(
 ) {
     const totalPrice = Number(order.total_price);
     const userId = order.user_id;
+    // Only 'Delivered' adds revenue; 'Return_Requested' is included so that
+    // cancelling/approving a return from that state correctly reverses the revenue
+    // that was booked when the order reached 'Delivered'.
+    // NOTE: there is no path that takes an order from a pre-Delivered state directly
+    // to Return_Requested via changeOrderStatusLogicTx, so a double-subtract cannot
+    // happen through the normal admin API (guarded by ALLOWED_STATUS_TRANSITIONS).
     const REVENUE_COUNTED_STATUSES = new Set(['Delivered', 'Return_Requested']);
     let revenueChange = 0;
     let orderCountChange = 0;
