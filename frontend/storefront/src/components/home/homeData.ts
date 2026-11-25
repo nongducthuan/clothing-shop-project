@@ -7,6 +7,7 @@ export const COLLECTIONS = [
     title_vi: "Áo Phông Gia Đình",
     desc: "Discover colorful t-shirt palettes for all ages!",
     desc_vi: "Khám phá các bảng màu áo phông rực rỡ cho mọi lứa tuổi!",
+    gender: "unisex" as const,
   },
   {
     img: "/assets/images/banner-vietnam.png",
@@ -14,6 +15,7 @@ export const COLLECTIONS = [
     title_vi: "Tự Hào Việt Nam",
     desc: "Wear the national colors – honoring the spirit with meaningful designs, spreading love to every heart.",
     desc_vi: "Khoác lên màu cờ sắc áo – tôn vinh tinh thần với thiết kế ý nghĩa, lan tỏa yêu thương.",
+    gender: "male" as const,
   },
   {
     img: "/assets/images/banner-homewear.png",
@@ -21,6 +23,7 @@ export const COLLECTIONS = [
     title_vi: "Đồ Mặc Nhà",
     desc: "Experience comfort with delicate, soft designs – making every moment at home truly relaxing.",
     desc_vi: "Trải nghiệm sự thoải mái với thiết kế mềm mại, tinh tế – giúp mỗi khoảnh khắc tại nhà thật thư thái.",
+    gender: "female" as const,
   },
 ];
 
@@ -31,6 +34,7 @@ export const GENDER_PROMOS = [
     title_vi: "THỜI TRANG NAM",
     desc: "Use code LOOM10: 10% off up to 50K on orders from 300k",
     desc_vi: "Nhập mã LOOM10: Giảm 10% tối đa 50K cho đơn từ 300k",
+    gender: "male" as const,
   },
   {
     img: "/assets/images/women-active.png",
@@ -38,6 +42,7 @@ export const GENDER_PROMOS = [
     title_vi: "THỜI TRANG NỮ",
     desc: "Use code LOOM10: 10% off up to 50K on orders from 300k",
     desc_vi: "Nhập mã LOOM10: Giảm 10% tối đa 50K cho đơn từ 300k",
+    gender: "female" as const,
   },
 ];
 

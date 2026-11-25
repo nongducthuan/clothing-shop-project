@@ -36,9 +36,15 @@ export class AdminProductVariantService {
 
   async removeColor(id: string) {
     try {
-      await this.prisma.productColor.delete({ where: { id: Number(id) } });
+      const colorId = Number(id);
+      const orderItemCount = await this.prisma.orderItem.count({ where: { color_id: colorId } });
+      if (orderItemCount > 0) {
+        throw new BadRequestException({ message: 'Cannot delete color because existing orders reference it.' });
+      }
+      await this.prisma.productColor.delete({ where: { id: colorId } });
       return { message: 'Color deleted successfully' };
     } catch (error) {
+      if (error instanceof BadRequestException) throw error;
       console.error(error);
       throw new InternalServerErrorException({ message: 'Server error' });
     }
@@ -90,9 +96,15 @@ export class AdminProductVariantService {
 
   async removeSize(id: string) {
     try {
-      await this.prisma.productSize.delete({ where: { id: Number(id) } });
+      const sizeId = Number(id);
+      const orderItemCount = await this.prisma.orderItem.count({ where: { size_id: sizeId } });
+      if (orderItemCount > 0) {
+        throw new BadRequestException({ message: 'Cannot delete size because existing orders reference it.' });
+      }
+      await this.prisma.productSize.delete({ where: { id: sizeId } });
       return { message: 'Size deleted successfully' };
     } catch (error) {
+      if (error instanceof BadRequestException) throw error;
       console.error(error);
       throw new InternalServerErrorException({ message: 'Server error' });
     }

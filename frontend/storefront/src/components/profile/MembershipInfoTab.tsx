@@ -27,14 +27,22 @@ export default function MembershipInfoTab({ state, actions, helpers }: Props) {
       <div className="bg-slate-50 dark:bg-slate-800 rounded-[2rem] p-4 sm:p-6 border border-slate-200/80 dark:border-slate-700 shadow-sm flex flex-col md:flex-row items-center justify-between gap-6 overflow-hidden">
         {/* Left: Avatar + User Details */}
         <div className="flex items-center gap-4 sm:gap-5 w-full md:w-auto min-w-0">
-          <img
-            src={
-              user?.avatar ||
-              `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || "User")}&background=random`
-            }
-            alt="Profile"
-            className="w-14 h-14 sm:w-20 sm:h-20 rounded-full border-4 border-white dark:border-slate-700 shadow-sm object-cover bg-white dark:bg-slate-700 shrink-0"
-          />
+          {user?.avatar ? (
+            <img
+              src={user.avatar}
+              alt="Profile"
+              className="w-14 h-14 sm:w-20 sm:h-20 rounded-full border-4 border-white dark:border-slate-700 shadow-sm object-cover bg-white dark:bg-slate-700 shrink-0"
+            />
+          ) : (
+            <div
+              className="w-14 h-14 sm:w-20 sm:h-20 rounded-full border-4 border-white dark:border-slate-700 shadow-sm bg-violet-600 flex items-center justify-center shrink-0"
+              aria-label="Profile avatar"
+            >
+              <span className="text-white font-bold text-xl sm:text-3xl select-none">
+                {(user?.name || "U").charAt(0).toUpperCase()}
+              </span>
+            </div>
+          )}
           <div className="flex flex-col items-start gap-1 min-w-0 flex-1">
             <div className="flex items-center gap-2 flex-wrap w-full">
               <h2 className="text-lg sm:text-2xl font-bold text-slate-900 dark:text-slate-100 truncate">

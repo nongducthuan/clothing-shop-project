@@ -16,7 +16,7 @@ export default function GenderPromos() {
             <div
               key={idx}
               className="relative rounded-3xl overflow-hidden shadow-lg group cursor-pointer"
-              onClick={() => navigate("/search")}
+              onClick={() => navigate(`/search?gender=${promo.gender}`)}
             >
               <img
                 src={promo.img}

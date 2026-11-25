@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { useLanguage } from "@shop/shared/context/LanguageContext";
+import { useToast } from "@shop/shared/context/ToastContext";
 import type { useProductDetail } from "@/hooks/useProductDetail";
 
 type Props = Pick<ReturnType<typeof useProductDetail>, "state" | "actions" | "helpers">;
@@ -8,8 +10,23 @@ export default function ProductActions({ state, actions, helpers }: Props) {
   const { setQuantity, handleAddToCart } = actions;
   const { getStockMessage } = helpers;
   const { t } = useLanguage();
+  const { showToast } = useToast();
+  const [isAdding, setIsAdding] = useState(false);
 
   const isOutOfStock = currentStock === 0;
+
+  const handleAdd = async () => {
+    if (isAdding) return;
+    setIsAdding(true);
+    try {
+      const added = handleAddToCart();
+      if (added) {
+        showToast(t("product.added_to_cart", "Added to cart!"), "success");
+      }
+    } finally {
+      setIsAdding(false);
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -31,7 +48,6 @@ export default function ProductActions({ state, actions, helpers }: Props) {
               if (!isNaN(val)) {
                 setQuantity(Math.min(Math.max(1, val), currentStock || 1));
               } else if (e.target.value === '') {
-                // Allows temporary empty state while typing
                 setQuantity('');
               }
             }}
@@ -57,11 +73,18 @@ export default function ProductActions({ state, actions, helpers }: Props) {
       </div>
 
       <button
-        onClick={handleAddToCart}
-        disabled={isOutOfStock || !state.selectedSize || isProductIncomplete}
-        className="w-full md:w-80 h-14 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 rounded-full font-semibold text-base hover:bg-slate-800 dark:hover:bg-white disabled:bg-slate-200 dark:disabled:bg-slate-700 disabled:text-slate-400 dark:disabled:text-slate-500 disabled:cursor-not-allowed transition-all active:scale-[0.98] shadow-md flex items-center justify-center"
+        onClick={handleAdd}
+        disabled={isOutOfStock || !state.selectedSize || isProductIncomplete || isAdding}
+        className="w-full md:w-80 h-14 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 rounded-full font-semibold text-base hover:bg-slate-800 dark:hover:bg-white disabled:bg-slate-200 dark:disabled:bg-slate-700 disabled:text-slate-400 dark:disabled:text-slate-500 disabled:cursor-not-allowed transition-all active:scale-[0.98] shadow-md flex items-center justify-center gap-2"
       >
-        {isProductIncomplete ? t("product.not_ready", "Product Not Ready") : isOutOfStock ? t("product.out_of_stock", "Out of Stock") : t("product.add_to_cart", "Add to Cart")}
+        {isAdding && <i className="fa-solid fa-spinner animate-spin text-sm" />}
+        {isProductIncomplete
+          ? t("product.not_ready", "Product Not Ready")
+          : isOutOfStock
+          ? t("product.out_of_stock", "Out of Stock")
+          : isAdding
+          ? t("product.adding", "Adding...")
+          : t("product.add_to_cart", "Add to Cart")}
       </button>
     </div>
   );

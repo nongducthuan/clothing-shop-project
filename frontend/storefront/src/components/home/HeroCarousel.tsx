@@ -95,29 +95,29 @@ export default function HeroCarousel({ banners = [] }: { banners?: HeroBanner[] 
           <button
             onClick={prev}
             aria-label={t("home.prev_slide", "Previous slide")}
-            className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/40 hover:bg-black/65 text-white flex items-center justify-center transition-all opacity-0 group-hover:opacity-100 focus:opacity-100"
+            className="absolute left-3 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-black/40 hover:bg-black/65 text-white flex items-center justify-center transition-all opacity-40 hover:opacity-100 sm:opacity-0 sm:group-hover:opacity-100 focus:opacity-100"
           >
             <ChevronLeft size={22} />
           </button>
           <button
             onClick={next}
             aria-label={t("home.next_slide", "Next slide")}
-            className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/40 hover:bg-black/65 text-white flex items-center justify-center transition-all opacity-0 group-hover:opacity-100 focus:opacity-100"
+            className="absolute right-3 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-black/40 hover:bg-black/65 text-white flex items-center justify-center transition-all opacity-40 hover:opacity-100 sm:opacity-0 sm:group-hover:opacity-100 focus:opacity-100"
           >
             <ChevronRight size={22} />
           </button>
 
           {/* Dot indicators */}
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2.5">
             {slides.map((_, idx) => (
               <button
                 key={idx}
                 onClick={() => goTo(idx)}
                 aria-label={`Go to slide ${idx + 1}`}
-                className={`rounded-full transition-all duration-300 ${
+                className={`rounded-full transition-all duration-300 min-w-[11px] min-h-[11px] ${
                   idx === current
-                    ? "w-6 h-2 bg-white"
-                    : "w-2 h-2 bg-white/50 hover:bg-white/80"
+                    ? "w-7 h-2.5 bg-white"
+                    : "w-2.5 h-2.5 bg-white/50 hover:bg-white/80"
                 }`}
               />
             ))}

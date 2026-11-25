@@ -35,6 +35,7 @@ export default function CategoryClient() {
         <CategoryHeader
           category={state.currentCategory}
           productCount={state.totalProducts}
+          isLoading={state.isInitialLoad || state.isLoading}
         />
 
         {state.activeVoucher && (

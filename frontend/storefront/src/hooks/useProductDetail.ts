@@ -225,10 +225,14 @@ export function useProductDetail() {
     return currentStock === 0 ? t("product.out_of_stock", "Out of stock") : t("product.in_stock", "In stock: {count} items").replace("{count}", String(currentStock));
   };
 
-  const handleAddToCart = () => {
-    if (!product || !selectedColor || !selectedSize || selectedSize.stock <= 0) return;
-    const requestedQuantity = Number(quantity);
-    if (!Number.isFinite(requestedQuantity) || requestedQuantity < 1) return;
+  const handleAddToCart = (): boolean => {
+    if (!product || !selectedColor || !selectedSize || selectedSize.stock <= 0) return false;
+    const requestedQuantity = typeof quantity === "number" && quantity >= 1 ? quantity : 1;
+    if (!Number.isFinite(requestedQuantity) || requestedQuantity < 1) return false;
+
+    if (quantity === "" || quantity !== requestedQuantity) {
+      setQuantity(requestedQuantity);
+    }
 
     addToCart({
       id: product.id,
@@ -262,6 +266,7 @@ export function useProductDetail() {
         type: "add_to_cart",
       }).catch((err) => console.error("Tracking error:", err));
     }
+    return true;
   };
 
   const formatPrice = (price: number | string | null | undefined) => formatCurrency(price, language);

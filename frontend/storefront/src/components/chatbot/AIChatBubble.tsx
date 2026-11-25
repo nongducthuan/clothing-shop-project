@@ -2,10 +2,16 @@ import { useState } from "react";
 import { Sparkles } from "lucide-react";
 import { useLanguage } from "@shop/shared/context/LanguageContext";
 import AIChatWindow from "./AIChatWindow";
+import { usePathname } from "@/lib/router";
 
 export default function AIChatBubble() {
   const { t } = useLanguage();
   const [open, setOpen] = useState(false);
+  const pathname = usePathname() ?? "";
+
+  // Hide chatbot on cart and checkout pages to avoid overlapping action buttons
+  const hiddenPaths = ["/cart", "/checkout"];
+  if (hiddenPaths.some((p) => pathname.startsWith(p))) return null;
 
   return (
     <>

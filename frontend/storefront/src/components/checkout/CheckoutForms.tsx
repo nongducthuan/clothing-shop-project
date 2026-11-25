@@ -22,6 +22,7 @@ export function ShippingSection({ address, setAddress, fetchLocation, isLocating
       </div>
       <textarea
         rows={3}
+        required
         value={address}
         onChange={(e) => setAddress(e.target.value)}
         placeholder={t("checkout.address_placeholder", "Enter your house number, street, ward, district...")}
@@ -41,10 +42,10 @@ export function GuestContactSection({ guestInfo, onChange }: {
     <section className="mb-10">
       <h3 className="text-xl font-medium text-slate-900 dark:text-slate-100 mb-4">{t("checkout.contact_info", "Contact Information")}</h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <InputField label={t("checkout.full_name", "Full Name")} name="name" value={guestInfo.name} onChange={onChange} placeholder={t("checkout.name_placeholder", "John Doe")} />
-        <InputField label={t("checkout.phone", "Phone Number")} name="phone" value={guestInfo.phone} onChange={onChange} placeholder="0901234567" />
+        <InputField label={t("checkout.full_name", "Full Name")} name="name" value={guestInfo.name} onChange={onChange} placeholder={t("checkout.name_placeholder", "John Doe")} required />
+        <InputField label={t("checkout.phone", "Phone Number")} name="phone" value={guestInfo.phone} onChange={onChange} placeholder="0901234567" required />
         <div className="md:col-span-2">
-          <InputField label={t("checkout.email", "Email Address")} type="email" name="email" value={guestInfo.email} onChange={onChange} placeholder={t("checkout.email_placeholder", "john@example.com")} />
+          <InputField label={t("checkout.email", "Email Address")} type="email" name="email" value={guestInfo.email} onChange={onChange} placeholder={t("checkout.email_placeholder", "john@example.com")} required />
         </div>
       </div>
     </section>

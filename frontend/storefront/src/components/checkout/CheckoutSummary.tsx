@@ -104,14 +104,14 @@ export function CheckoutSummary({ state, helpers }: Props) {
 
         {membershipDiscount > 0 && (
           <div className="flex justify-between text-slate-600 dark:text-slate-400 text-sm">
-            <span>{t("cart.member_discount", "Giảm giá thành viên")}</span>
+            <span>{t("cart.member_discount", "Member Discount")}</span>
             <span className="font-medium text-emerald-600 dark:text-emerald-400">-{formatPrice(membershipDiscount)}</span>
           </div>
         )}
 
         {voucherDiscount > 0 && (
           <div className="flex justify-between text-slate-600 dark:text-slate-400 text-sm">
-            <span>{t("cart.voucher_discount", "Giảm giá voucher")} ({appliedVoucher?.code})</span>
+            <span>{t("cart.voucher_discount", "Voucher Discount")} ({appliedVoucher?.code})</span>
             <span className="font-medium text-emerald-600 dark:text-emerald-400">-{formatPrice(voucherDiscount)}</span>
           </div>
         )}

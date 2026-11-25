@@ -60,7 +60,7 @@ const DesktopNav = ({ menuData, navigate }: { menuData: Record<Gender, CategoryI
 
           {hoveredGender === gender && (
             <div
-              className="absolute left-1/2 -translate-x-1/2 top-full mt-5 bg-white dark:bg-slate-900 shadow-2xl border border-slate-200 dark:border-slate-700 rounded-2xl p-6 w-[600px] z-50 animate-fadeIn"
+              className="absolute left-1/2 -translate-x-1/2 top-full mt-5 bg-white dark:bg-slate-900 shadow-2xl border border-slate-200 dark:border-slate-700 rounded-2xl p-6 w-[min(600px,90vw)] z-50 animate-fadeIn"
               onMouseEnter={() => { if (closeTimer.current !== null) window.clearTimeout(closeTimer.current); }}
               onMouseLeave={handleMouseLeave}
             >

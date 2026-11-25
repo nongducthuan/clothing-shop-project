@@ -32,8 +32,19 @@ export default function Footer() {
               {t("footer.brand_desc", "Experience premium fashion with modern, sophisticated design and minimalist style. Your quality and satisfaction are our top priority.")}
             </p>
             <div className="flex items-center gap-3 pt-2">
-              {['facebook-f', 'instagram', 'tiktok', 'youtube'].map((icon) => (
-                <a key={icon} href="#" className="w-9 h-9 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 hover:text-violet-400 hover:border-violet-500 transition-all">
+              {[
+                { icon: 'facebook-f', href: '#' },
+                { icon: 'instagram', href: '#' },
+                { icon: 'tiktok', href: '#' },
+                { icon: 'youtube', href: '#' },
+              ].map(({ icon, href }) => (
+                <a
+                  key={icon}
+                  href={href}
+                  onClick={href === '#' ? (e) => e.preventDefault() : undefined}
+                  aria-label={icon}
+                  className="w-9 h-9 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 hover:text-violet-400 hover:border-violet-500 transition-all"
+                >
                   <i className={`fa-brands fa-${icon} text-sm`}></i>
                 </a>
               ))}
@@ -116,10 +127,9 @@ export default function Footer() {
         <div className="pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-[11px] text-slate-500 uppercase tracking-widest">
           <p>© {new Date().getFullYear()} LOOM. {t("footer.rights_reserved", "All Rights Reserved.")}</p>
           <div className="flex items-center gap-5 text-slate-500 text-lg">
-            <i className="fa-brands fa-cc-visa hover:text-white transition-colors cursor-pointer"></i>
-            <i className="fa-brands fa-cc-mastercard hover:text-white transition-colors cursor-pointer"></i>
-            <i className="fa-brands fa-cc-paypal hover:text-white transition-colors cursor-pointer"></i>
-            <i className="fa-solid fa-wallet hover:text-white transition-colors cursor-pointer"></i>
+            <i className="fa-solid fa-money-bill-wave hover:text-white transition-colors cursor-default" title="COD"></i>
+            <span className="text-xs font-bold tracking-wider hover:text-white transition-colors cursor-default">MoMo</span>
+            <span className="text-xs font-bold tracking-wider hover:text-white transition-colors cursor-default">VNPay</span>
           </div>
         </div>
       </div>

@@ -13,25 +13,6 @@ export default function ProductSelectors({ state, actions }: Props) {
   return (
     <div className="space-y-8 mb-8 border-t border-slate-100 dark:border-slate-800 pt-8">
 
-      {/* COLOR THUMBNAILS */}
-      {(product.colors?.length ?? 0) > 0 && (
-        <div className="flex gap-3 overflow-x-auto pb-2 custom-scrollbar">
-          {product.colors?.map((color) => (
-            <img
-              key={`thumb-${color.id}`}
-              src={getImageUrl(color.image_url)}
-              className={`w-16 h-20 object-cover rounded-xl cursor-pointer border-2 transition-all ${
-                selectedColor?.id === color.id
-                  ? "border-slate-900 dark:border-slate-100 opacity-100 shadow-md"
-                  : "border-transparent opacity-60 hover:opacity-100"
-              }`}
-              onClick={() => setSelectedColor(color)}
-              alt={getLocalizedText(color, "color_name") || color.color_name}
-            />
-          ))}
-        </div>
-      )}
-
       {/* COLOR DOTS */}
       <div>
         <h3 className="text-xs font-bold text-slate-900 dark:text-slate-100 uppercase tracking-widest mb-3">

@@ -19,7 +19,7 @@ export default function FeaturedCollections() {
               <div
                 key={idx}
                 className="relative rounded-3xl overflow-hidden shadow-lg group cursor-pointer"
-                onClick={() => navigate("/search")}
+                onClick={() => navigate(`/search?gender=${item.gender}`)}
               >
                 <img
                   src={item.img}

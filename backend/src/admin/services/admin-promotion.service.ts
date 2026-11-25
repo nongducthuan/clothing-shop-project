@@ -47,8 +47,36 @@ export class AdminPromotionService {
     }
   }
 
+  private validatePromotionConstraints(payload: PromotionPayload) {
+    if (payload.buy_quantity != null && payload.buy_quantity !== '') {
+      const buyQty = Number(payload.buy_quantity);
+      if (!Number.isFinite(buyQty) || buyQty <= 0) {
+        throw new BadRequestException({ success: false, message: 'buy_quantity must be greater than 0' });
+      }
+    }
+    if (payload.gift_quantity != null && payload.gift_quantity !== '') {
+      const giftQty = Number(payload.gift_quantity);
+      if (!Number.isFinite(giftQty) || giftQty <= 0) {
+        throw new BadRequestException({ success: false, message: 'gift_quantity must be greater than 0' });
+      }
+    }
+    if (payload.max_gift_per_order != null && payload.max_gift_per_order !== '') {
+      const maxGift = Number(payload.max_gift_per_order);
+      if (!Number.isFinite(maxGift) || maxGift <= 0) {
+        throw new BadRequestException({ success: false, message: 'max_gift_per_order must be greater than 0' });
+      }
+    }
+    if (payload.total_gift_limit != null && payload.total_gift_limit !== '') {
+      const totalLimit = Number(payload.total_gift_limit);
+      if (!Number.isFinite(totalLimit) || totalLimit < 0) {
+        throw new BadRequestException({ success: false, message: 'total_gift_limit cannot be negative' });
+      }
+    }
+  }
+
   async createPromotion(payload: PromotionPayload) {
     try {
+      this.validatePromotionConstraints(payload);
       const startDate = this.parseDate(payload.start_date, 'start_date');
       const endDate = this.parseDate(payload.end_date, 'end_date');
       this.validateDateRange(startDate, endDate);
@@ -82,6 +110,7 @@ export class AdminPromotionService {
 
   async updatePromotion(id: string, payload: PromotionPayload) {
     try {
+      this.validatePromotionConstraints(payload);
       const startDate = payload.start_date !== undefined ? this.parseDate(payload.start_date, 'start_date') : undefined;
       const endDate = payload.end_date !== undefined ? this.parseDate(payload.end_date, 'end_date') : undefined;
       if (startDate && endDate) {

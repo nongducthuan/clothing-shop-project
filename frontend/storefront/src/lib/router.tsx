@@ -49,6 +49,8 @@ function toHref(to: To): string {
   return typeof to === "string" ? to : `${to.pathname || ""}${to.search || ""}${to.hash || ""}`;
 }
 
+export { usePathname } from "next/navigation";
+
 // 1. Link: accepts `to` and converts it to `href`
 export interface LinkProps
   extends Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, "href"> {

@@ -34,6 +34,39 @@ export class AdminVoucherService {
     }
   }
 
+  private validateVoucherConstraints(payload: VoucherPayload) {
+    if (payload.discount_percent != null && payload.discount_percent !== '') {
+      const discount = Number(payload.discount_percent);
+      if (!Number.isFinite(discount) || discount <= 0 || discount > 100) {
+        throw new BadRequestException({ success: false, message: 'Phần trăm giảm giá phải từ 1 đến 100%!' });
+      }
+    }
+    if (payload.min_order_value != null && payload.min_order_value !== '') {
+      const minVal = Number(payload.min_order_value);
+      if (!Number.isFinite(minVal) || minVal < 0) {
+        throw new BadRequestException({ success: false, message: 'Giá trị đơn tối thiểu không được âm!' });
+      }
+    }
+    if (payload.max_discount_amount != null && payload.max_discount_amount !== '') {
+      const maxDiscount = Number(payload.max_discount_amount);
+      if (!Number.isFinite(maxDiscount) || maxDiscount < 0) {
+        throw new BadRequestException({ success: false, message: 'Mức giảm tối đa không được âm!' });
+      }
+    }
+    if (payload.usage_limit != null && payload.usage_limit !== '') {
+      const limit = Number(payload.usage_limit);
+      if (!Number.isFinite(limit) || limit < 1) {
+        throw new BadRequestException({ success: false, message: 'Lượt sử dụng tối đa phải từ 1 trở lên!' });
+      }
+    }
+  }
+
+  private validateDateRange(start: Date | null | undefined, end: Date | null | undefined) {
+    if (start && end && !Number.isNaN(start.getTime()) && !Number.isNaN(end.getTime()) && start >= end) {
+      throw new BadRequestException({ success: false, message: 'Thời gian bắt đầu phải trước thời gian kết thúc!' });
+    }
+  }
+
   private relationData(payload: VoucherPayload, voucherId: number) {
     if (payload.apply_scope === 'category' && payload.categoryIds?.length) {
       return payload.categoryIds.map((id) => ({ voucher_id: voucherId, category_id: Number(id) }));
@@ -48,16 +81,21 @@ export class AdminVoucherService {
     try {
       const applyScope = this.parseApplyScope(payload.apply_scope);
       this.validateScopeTargets(applyScope, payload);
+      this.validateVoucherConstraints(payload);
+      const startDate = payload.start_date ? new Date(payload.start_date) : null;
+      const endDate = payload.end_date ? new Date(payload.end_date) : null;
+      this.validateDateRange(startDate, endDate);
+
       await this.prisma.$transaction(async (tx) => {
         const voucher = await tx.voucher.create({
           data: {
             code: payload.code as string,
-            discount_percent: payload.discount_percent != null ? Number(payload.discount_percent) : null,
-            max_discount_amount: payload.max_discount_amount != null ? Number(payload.max_discount_amount) : null,
-            min_order_value: payload.min_order_value != null ? Number(payload.min_order_value) : 0,
-            usage_limit: payload.usage_limit != null ? Number(payload.usage_limit) : null,
-            start_date: payload.start_date ? new Date(payload.start_date) : null,
-            end_date: payload.end_date ? new Date(payload.end_date) : null,
+            discount_percent: payload.discount_percent != null && payload.discount_percent !== '' ? Number(payload.discount_percent) : null,
+            max_discount_amount: payload.max_discount_amount != null && payload.max_discount_amount !== '' ? Number(payload.max_discount_amount) : null,
+            min_order_value: payload.min_order_value != null && payload.min_order_value !== '' ? Number(payload.min_order_value) : 0,
+            usage_limit: payload.usage_limit != null && payload.usage_limit !== '' ? Number(payload.usage_limit) : null,
+            start_date: startDate,
+            end_date: endDate,
             apply_scope: applyScope,
             status: true,
           },
@@ -81,17 +119,33 @@ export class AdminVoucherService {
     try {
       const applyScope = this.parseApplyScope(payload.apply_scope);
       this.validateScopeTargets(applyScope, payload);
+      this.validateVoucherConstraints(payload);
+      const startDate = payload.start_date !== undefined ? (payload.start_date ? new Date(payload.start_date) : null) : undefined;
+      const endDate = payload.end_date !== undefined ? (payload.end_date ? new Date(payload.end_date) : null) : undefined;
+
+      if (startDate !== undefined && endDate !== undefined) {
+        this.validateDateRange(startDate, endDate);
+      } else if (startDate !== undefined || endDate !== undefined) {
+        const existing = await this.prisma.voucher.findUnique({
+          where: { id: Number(id) },
+          select: { start_date: true, end_date: true },
+        });
+        if (existing) {
+          this.validateDateRange(startDate !== undefined ? startDate : existing.start_date, endDate !== undefined ? endDate : existing.end_date);
+        }
+      }
+
       await this.prisma.$transaction(async (tx) => {
         await tx.voucher.update({
           where: { id: Number(id) },
           data: {
             code: payload.code,
-            discount_percent: payload.discount_percent != null ? Number(payload.discount_percent) : null,
-            max_discount_amount: payload.max_discount_amount != null ? Number(payload.max_discount_amount) : null,
-            min_order_value: payload.min_order_value != null ? Number(payload.min_order_value) : 0,
-            usage_limit: payload.usage_limit != null ? Number(payload.usage_limit) : null,
-            start_date: payload.start_date ? new Date(payload.start_date) : null,
-            end_date: payload.end_date ? new Date(payload.end_date) : null,
+            discount_percent: payload.discount_percent != null && payload.discount_percent !== '' ? Number(payload.discount_percent) : null,
+            max_discount_amount: payload.max_discount_amount != null && payload.max_discount_amount !== '' ? Number(payload.max_discount_amount) : null,
+            min_order_value: payload.min_order_value != null && payload.min_order_value !== '' ? Number(payload.min_order_value) : 0,
+            usage_limit: payload.usage_limit != null && payload.usage_limit !== '' ? Number(payload.usage_limit) : null,
+            ...(startDate !== undefined && { start_date: startDate }),
+            ...(endDate !== undefined && { end_date: endDate }),
             apply_scope: applyScope,
           },
         });

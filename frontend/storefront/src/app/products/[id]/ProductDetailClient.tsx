@@ -42,7 +42,7 @@ export default function ProductDetailClient() {
       <div className="max-w-[1200px] mx-auto px-6">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-start">
           <div className="lg:col-span-5 lg:sticky lg:top-24">
-            <ProductImageGallery state={state} />
+            <ProductImageGallery state={state} actions={actions} />
           </div>
 
           <div className="lg:col-span-7 py-2">

@@ -4,6 +4,12 @@ import type { User } from "@shop/shared/types";
 export default function ProfileHeader({ user, logout }: { user: User | null; logout: () => void }) {
   const { t } = useLanguage();
 
+  const handleLogout = () => {
+    if (window.confirm(t("profile.logout_confirm", "Are you sure you want to log out?"))) {
+      logout();
+    }
+  };
+
   return (
     <div className="bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 px-6 sm:px-12 py-8 mb-8">
       <div className="max-w-[1200px] mx-auto flex justify-between items-center">
@@ -12,7 +18,7 @@ export default function ProfileHeader({ user, logout }: { user: User | null; log
           <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">{user?.email}</p>
         </div>
         <button
-          onClick={logout}
+          onClick={handleLogout}
           className="flex items-center gap-2 px-5 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-full font-medium text-sm hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-100 transition-colors"
         >
           {t("profile.logout", "Logout")}

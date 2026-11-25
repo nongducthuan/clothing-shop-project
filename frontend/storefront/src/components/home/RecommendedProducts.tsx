@@ -16,13 +16,15 @@ interface ProductPromotion { buy_product_id: number | string; buy_quantity: numb
  * This prevents "Layout Shift" and improves UX.
  */
 const SkeletonCard = () => (
-  <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm overflow-hidden p-3 animate-pulse border border-gray-100 dark:border-slate-700">
-    {/* Image Placeholder */}
-    <div className="bg-gray-200 dark:bg-slate-700 h-48 w-full rounded-xl mb-3"></div>
-    {/* Title Placeholder */}
-    <div className="h-4 bg-gray-200 dark:bg-slate-700 rounded w-3/4 mb-2"></div>
-    {/* Price Placeholder */}
-    <div className="h-4 bg-gray-200 dark:bg-slate-700 rounded w-1/2"></div>
+  <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm overflow-hidden animate-pulse border border-gray-100 dark:border-slate-700">
+    {/* Image Placeholder — matches ProductCard aspect-[4/5] */}
+    <div className="bg-gray-200 dark:bg-slate-700 w-full aspect-[4/5]"></div>
+    <div className="p-3">
+      {/* Title Placeholder */}
+      <div className="h-4 bg-gray-200 dark:bg-slate-700 rounded w-3/4 mb-2"></div>
+      {/* Price Placeholder */}
+      <div className="h-4 bg-gray-200 dark:bg-slate-700 rounded w-1/2"></div>
+    </div>
   </div>
 );
 
