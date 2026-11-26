@@ -1,7 +1,7 @@
 import type { BuyXGetYPromotion, Order, OrderItem } from '../generated/prisma/client';
 
 export type ReturnOrderItem = Pick<OrderItem, 'id' | 'product_id' | 'quantity' | 'price' | 'payable_amount' | 'is_gift'> & {
-    promotion?: Pick<BuyXGetYPromotion, 'buy_product_id'> | null;
+    promotion?: (Pick<BuyXGetYPromotion, 'buy_product_id'> & Partial<Pick<BuyXGetYPromotion, 'id' | 'buy_quantity' | 'gift_quantity'>>) | null;
 };
 
 export type ReturnOrder = Pick<Order, 'total_price' | 'shipping_fee'> & {
@@ -137,17 +137,58 @@ export function buildReturnPlan(order: ReturnOrder, requestedItems: RequestedRet
         returnItemsToCreate[item.targetIndex].refund_amount = floors[pos];
     });
 
-    const returnedProductIds = new Set<number>();
+    const returnedQtyByProduct = new Map<number, number>();
     for (const ri of parsedReturnItems) {
         const returnedItem = orderItemMap.get(ri.order_item_id);
-        if (returnedItem && !returnedItem.is_gift) returnedProductIds.add(returnedItem.product_id);
+        if (returnedItem && !returnedItem.is_gift) {
+            returnedQtyByProduct.set(
+                returnedItem.product_id,
+                (returnedQtyByProduct.get(returnedItem.product_id) ?? 0) + ri.return_quantity,
+            );
+        }
     }
 
+    const totalBoughtQtyByProduct = new Map<number, number>();
+    for (const item of order.items) {
+        if (!item.is_gift) {
+            totalBoughtQtyByProduct.set(
+                item.product_id,
+                (totalBoughtQtyByProduct.get(item.product_id) ?? 0) + item.quantity,
+            );
+        }
+    }
+
+    // Group gift items by buy_product_id + promotion to handle multi-variant purchases fairly:
+    // if the customer kept enough units of X to still earn some gifts, only pull back the excess.
+    const giftGroups = new Map<string, ReturnOrderItem[]>();
     for (const giftItem of giftItems) {
         const buyProductId = giftItem.promotion?.buy_product_id;
-        if (!buyProductId || !returnedProductIds.has(buyProductId)) continue;
-        if (!returnItemsToCreate.some(r => r.order_item_id === giftItem.id)) {
-            returnItemsToCreate.push({ order_item_id: giftItem.id, return_quantity: giftItem.quantity, refund_amount: 0 });
+        if (!buyProductId || !returnedQtyByProduct.has(buyProductId)) continue;
+        const promoKey = `${buyProductId}:${giftItem.promotion?.id ?? 'default'}`;
+        const list = giftGroups.get(promoKey) ?? [];
+        list.push(giftItem);
+        giftGroups.set(promoKey, list);
+    }
+
+    for (const groupGifts of giftGroups.values()) {
+        const promo = groupGifts[0].promotion!;
+        const buyProductId = promo.buy_product_id;
+        const remainingBuyQty = Math.max(
+            0,
+            (totalBoughtQtyByProduct.get(buyProductId) ?? 0) - (returnedQtyByProduct.get(buyProductId) ?? 0),
+        );
+        const totalGroupGiftQty = groupGifts.reduce((sum, g) => sum + g.quantity, 0);
+        let giftsToReturn = totalGroupGiftQty;
+        if (remainingBuyQty > 0 && promo.buy_quantity && promo.gift_quantity) {
+            const stillEligibleGifts = Math.floor(remainingBuyQty / promo.buy_quantity) * promo.gift_quantity;
+            giftsToReturn = Math.max(0, totalGroupGiftQty - stillEligibleGifts);
+        }
+        for (const giftItem of groupGifts) {
+            if (giftsToReturn <= 0) break;
+            if (returnItemsToCreate.some(r => r.order_item_id === giftItem.id)) continue;
+            const qty = Math.min(giftItem.quantity, giftsToReturn);
+            returnItemsToCreate.push({ order_item_id: giftItem.id, return_quantity: qty, refund_amount: 0 });
+            giftsToReturn -= qty;
         }
     }
 

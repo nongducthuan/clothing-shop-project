@@ -156,8 +156,12 @@ export default function useOrderManager() {
       fetchOrders(); // Refresh list to stay synced
 
       // Update currently viewed order if open in modal
-      if (selectedOrder?.id === orderId) {
-        setSelectedOrder((prev) => prev ? { ...prev, status } : prev);
+      if (selectedOrder && String(selectedOrder.id) === String(orderId)) {
+        setSelectedOrder((prev) => prev ? {
+          ...prev,
+          status,
+          payment_status: status === "Cancelled" && prev.payment_status === "Paid" ? "Refunded" : prev.payment_status,
+        } : prev);
       }
 
       showToast(t("admin.order.toast_status_updated", "Order status updated successfully!"));
@@ -205,7 +209,7 @@ export default function useOrderManager() {
       );
 
       // Update currently viewed order if open in modal
-      if (selectedOrder?.id === orderId) {
+      if (selectedOrder && String(selectedOrder.id) === String(orderId)) {
         setSelectedOrder((prev) => prev ? { ...prev, payment_status: newStatus } : prev);
       }
 

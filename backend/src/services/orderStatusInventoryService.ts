@@ -37,7 +37,10 @@ export async function updateOrderInventory(
                 data: { stock: { decrement: item.quantity } },
             });
             if (result.count !== 1) {
-                throw new Error(`Insufficient stock for product (size_id=${item.size_id})`);
+                throw Object.assign(
+                    new Error(`Insufficient stock for product (size_id=${item.size_id})`),
+                    { name: 'OrderServiceError', httpStatus: 409 },
+                );
             }
         }
     }

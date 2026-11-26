@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import API from "@shop/shared/services/apiClient";
 import { useToast } from "@shop/shared/context/ToastContext";
 import { useLanguage } from "@shop/shared/context/LanguageContext";
@@ -25,20 +25,24 @@ export function useProductInventory(productId: number | string) {
   const [sizeForm, setSizeForm] = useState<SizeFormData>({ size: "", stock: 0 });
 
   const [isUploading, setIsUploading] = useState(false);
+  const fetchSeqRef = useRef(0);
 
   /**
    * Fetches product details and its associated colors/sizes from the server.
    * Uses a timeout to force a clean UI re-render as per original logic.
    */
   const fetchProductData = useCallback(async () => {
+    const seq = ++fetchSeqRef.current;
     try {
       const { data } = await API.get(`/admin/products/${productId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      if (seq !== fetchSeqRef.current) return;
 
       setProduct(null); // Reset to trigger loading state if needed
 
       setTimeout(() => {
+        if (seq !== fetchSeqRef.current) return;
         setProduct(data as InventoryProduct);
         if (data.colors) {
           setColors([...data.colors]);
@@ -127,7 +131,6 @@ export function useProductInventory(productId: number | string) {
     try {
       const currentColor = colors.find((c) => c.id === selectedColorId);
       if (!currentColor) return;
-      const existingSize = currentColor.sizes.find((s) => s.size === sizeForm.size);
 
       const { data } = await API.post(
         `/admin/colors/${selectedColorId}/sizes`,
@@ -136,13 +139,17 @@ export function useProductInventory(productId: number | string) {
       );
 
       // Local state update for immediate UI feedback without refetching the whole product
-      if (existingSize) {
-        existingSize.stock += stockValue;
-      } else {
-        currentColor.sizes.push({ id: data.id, size: sizeForm.size, stock: stockValue });
-      }
-
-      setColors([...colors]);
+      setColors((prev) => prev.map((color) => {
+        if (color.id !== selectedColorId) return color;
+        const existingSizes = color.sizes ?? [];
+        const hasSize = existingSizes.some((s) => s.size === sizeForm.size);
+        return {
+          ...color,
+          sizes: hasSize
+            ? existingSizes.map((s) => (s.size === sizeForm.size ? { ...s, stock: s.stock + stockValue } : s))
+            : [...existingSizes, { id: data.id, size: sizeForm.size, stock: stockValue }],
+        };
+      }));
       setSizeForm({ size: "", stock: 0 });
       showToast(t("admin.pd.toast_stock_updated", "Size stock updated successfully!"), "success");
     } catch {

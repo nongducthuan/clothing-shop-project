@@ -113,7 +113,7 @@ async function loadGiftStock(
     if (giftProductIds.length === 0) return new Map();
 
     const giftProducts: ProductWithOptions[] = await tx.product.findMany({
-        where: { id: { in: giftProductIds }, is_active: true },
+        where: { id: { in: giftProductIds }, is_active: true, category: { is_active: true } },
         include: { colors: { include: { sizes: true } } },
     });
 
@@ -171,10 +171,15 @@ function findEligiblePromotions(
 function getBlockedProductIds(
     activePromotions: GiftPromotion[],
     eligiblePromotionIds: Set<number>,
+    claimedPromotionIds: Set<number>,
 ): Set<number> {
     const blockedProductIds = new Set<number>();
     for (const promotion of activePromotions) {
-        if (eligiblePromotionIds.has(promotion.id) && promotion.is_stackable === false) {
+        if (
+            eligiblePromotionIds.has(promotion.id) &&
+            claimedPromotionIds.has(promotion.id) &&
+            promotion.is_stackable === false
+        ) {
             blockedProductIds.add(promotion.buy_product_id);
         }
     }
@@ -202,7 +207,7 @@ export async function loadOrderValidationContext(
     const sizeIds = items.filter(item => item.size_id).map(item => Number(item.size_id));
 
     const products: ProductWithOptions[] = await tx.product.findMany({
-        where: { id: { in: productIds }, is_active: true },
+        where: { id: { in: productIds }, is_active: true, category: { is_active: true } },
         include: { colors: { include: { sizes: true } } },
     });
     const productMap = new Map(products.map(product => [product.id, product]));
@@ -221,7 +226,11 @@ export async function loadOrderValidationContext(
         giftStockByProduct,
         purchasedQuantityByProduct,
     );
-    const blockedProductIds = getBlockedProductIds(activePromotions, eligiblePromotionIds);
+    const blockedProductIds = getBlockedProductIds(
+        activePromotions,
+        eligiblePromotionIds,
+        new Set(promotionIds),
+    );
 
     // Keep the sales query's own timestamp, as in the previous implementation.
     const sales: ActiveSale[] = await tx.sale.findMany({

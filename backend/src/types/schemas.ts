@@ -15,10 +15,11 @@ const positiveQuantitySchema = z.coerce
 export const registerSchema = z.object({
   name: z
     .string({ error: 'Name must be at least 2 characters' })
+    .trim()
     .min(2, 'Name must be at least 2 characters')
     .max(255, 'Name is too long (max 255 characters)'),
   email: z.string({ error: 'Invalid email format' }).email('Invalid email format'),
-  phone: z.string({ error: 'Phone must be 10-11 digits' }).regex(/^[0-9]{10,11}$/, 'Phone must be 10-11 digits'),
+  phone: z.string({ error: 'Phone must be 10-11 digits starting with 0' }).trim().regex(/^0[0-9]{9,10}$/, 'Phone must be 10-11 digits starting with 0'),
   password: z
     .string({ error: 'Password must be at least 8 characters' })
     .min(8, 'Password must be at least 8 characters'),
@@ -64,6 +65,7 @@ export const applyVoucherSchema = z.object({
   // Tiền hàng GỐC (trước membership/voucher) — CHỈ dùng để kiểm tra điều kiện "đơn tối thiểu".
   // Optional để tương thích ngược; thiếu thì service fallback về orderTotal.
   subtotal: z.number({ error: 'Invalid subtotal' }).nonnegative('Invalid subtotal').optional(),
+  membershipDiscountableSubtotal: z.number({ error: 'Invalid membership discountable subtotal' }).nonnegative('Invalid membership discountable subtotal').optional(),
   // Với scope 'product'/'category', StorefrontVoucherService tự tính lại tiền đủ điều kiện từ các item này.
   cartItems: z.array(cartItemSchema, { error: 'Invalid cart items' }).optional(),
 });

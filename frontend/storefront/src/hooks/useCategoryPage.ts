@@ -34,14 +34,17 @@ export function useCategoryPage() {
   const categoryContextRef = useRef(`${id ?? ""}:${gender ?? ""}`);
 
   const fetchCategoryData = useCallback(async () => {
-    const requestId = ++requestIdRef.current;
     const context = `${id ?? ""}:${gender ?? ""}`;
     const contextChanged = categoryContextRef.current !== context;
     if (contextChanged) {
       categoryContextRef.current = context;
-      setCurrentPage(1);
+      if (currentPage !== 1) {
+        setCurrentPage(1);
+        return;
+      }
     }
-    const requestedPage = contextChanged ? 1 : currentPage;
+    const requestId = ++requestIdRef.current;
+    const requestedPage = currentPage;
     setIsLoading(true);
     setError(null);
 

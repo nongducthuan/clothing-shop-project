@@ -212,12 +212,23 @@ export function useCartPage() {
           let sizeId = userChoice?.size_id || null;
 
           if ((!colorId || !sizeId) && detail?.colors && detail.colors.length > 0) {
-            for (const c of detail.colors) {
-              const availableSize = c.sizes?.find(s => s.stock > 0);
-              if (availableSize) {
-                if (!colorId) colorId = c.id;
-                if (!sizeId) sizeId = availableSize.id;
-                break;
+            if (colorId && !sizeId) {
+              const selectedColor = detail.colors.find(c => c.id === colorId);
+              const availableForColor = selectedColor?.sizes?.find(s => s.stock > 0);
+              if (availableForColor) {
+                sizeId = availableForColor.id;
+              } else {
+                colorId = null;
+              }
+            }
+            if (!colorId || !sizeId) {
+              for (const c of detail.colors) {
+                const availableSize = c.sizes?.find(s => s.stock > 0);
+                if (availableSize) {
+                  colorId = c.id;
+                  sizeId = availableSize.id;
+                  break;
+                }
               }
             }
           }
@@ -359,8 +370,13 @@ export function useCartPage() {
   // Voucher đã áp là kết quả "chụp" tại thời điểm bấm Áp dụng. Khi giỏ / hạng thành viên
   // thay đổi (đổi số lượng, xóa món, ...) phải tính lại để số tiền giảm khớp với đơn thật.
   const appliedVoucherCode = appliedVoucher?.code;
+  const skipNextVoucherReapplyRef = useRef(false);
   useEffect(() => {
     if (!appliedVoucherCode) return;
+    if (skipNextVoucherReapplyRef.current) {
+      skipNextVoucherReapplyRef.current = false;
+      return;
+    }
     let cancelled = false;
     API.post("/vouchers/apply", buildVoucherPayload(appliedVoucherCode))
       .then(res => {
@@ -396,6 +412,7 @@ export function useCartPage() {
       const data = response.data;
 
       if (data.success) {
+        skipNextVoucherReapplyRef.current = true;
         setAppliedVoucher(data.data);
         setVoucherStatus({ type: 'success', rawMessage: data.message });
       } else {

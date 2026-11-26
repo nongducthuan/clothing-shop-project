@@ -47,19 +47,23 @@ export class AdminPromotionService {
     }
   }
 
-  private validatePromotionConstraints(payload: PromotionPayload) {
-    if (payload.buy_quantity != null && payload.buy_quantity !== '') {
-      const buyQty = Number(payload.buy_quantity);
-      if (!Number.isFinite(buyQty) || buyQty <= 0) {
-        throw new BadRequestException({ success: false, message: 'buy_quantity must be greater than 0' });
+  private validatePromotionConstraints(payload: PromotionPayload, requireQuantities = false) {
+    // B-4: treat empty string as missing so Number("") === 0 is never persisted
+    const buyQtyRaw = payload.buy_quantity;
+    if (requireQuantities || (buyQtyRaw != null && buyQtyRaw !== '')) {
+      const buyQty = Number(buyQtyRaw);
+      if (buyQtyRaw == null || buyQtyRaw === '' || !Number.isFinite(buyQty) || !Number.isInteger(buyQty) || buyQty <= 0) {
+        throw new BadRequestException({ success: false, message: 'buy_quantity must be a positive integer' });
       }
     }
-    if (payload.gift_quantity != null && payload.gift_quantity !== '') {
-      const giftQty = Number(payload.gift_quantity);
-      if (!Number.isFinite(giftQty) || giftQty <= 0) {
-        throw new BadRequestException({ success: false, message: 'gift_quantity must be greater than 0' });
+    const giftQtyRaw = payload.gift_quantity;
+    if (requireQuantities || (giftQtyRaw != null && giftQtyRaw !== '')) {
+      const giftQty = Number(giftQtyRaw);
+      if (giftQtyRaw == null || giftQtyRaw === '' || !Number.isFinite(giftQty) || !Number.isInteger(giftQty) || giftQty <= 0) {
+        throw new BadRequestException({ success: false, message: 'gift_quantity must be a positive integer' });
       }
     }
+    // B-5: empty optional fields must become null, not 0
     if (payload.max_gift_per_order != null && payload.max_gift_per_order !== '') {
       const maxGift = Number(payload.max_gift_per_order);
       if (!Number.isFinite(maxGift) || maxGift <= 0) {
@@ -76,12 +80,17 @@ export class AdminPromotionService {
 
   async createPromotion(payload: PromotionPayload) {
     try {
-      this.validatePromotionConstraints(payload);
+      // B-4/B-5: require buy/gift quantities on create
+      this.validatePromotionConstraints(payload, true);
       const startDate = this.parseDate(payload.start_date, 'start_date');
       const endDate = this.parseDate(payload.end_date, 'end_date');
       this.validateDateRange(startDate, endDate);
 
+      // B-6: require at least one name field
       const baseName = payload.name || payload.name_vi || payload.name_en;
+      if (!baseName || !String(baseName).trim()) {
+        throw new BadRequestException({ success: false, message: 'Promotion name is required' });
+      }
       const newPromotion = await this.prisma.buyXGetYPromotion.create({
         data: {
           name: baseName as string,
@@ -93,8 +102,9 @@ export class AdminPromotionService {
           gift_quantity: Number(payload.gift_quantity),
           start_date: startDate,
           end_date: endDate,
-          max_gift_per_order: payload.max_gift_per_order != null ? Number(payload.max_gift_per_order) : null,
-          total_gift_limit: payload.total_gift_limit != null ? Number(payload.total_gift_limit) : null,
+          // B-5: empty string optional fields → null, not 0
+          max_gift_per_order: (payload.max_gift_per_order != null && payload.max_gift_per_order !== '') ? Number(payload.max_gift_per_order) : null,
+          total_gift_limit: (payload.total_gift_limit != null && payload.total_gift_limit !== '') ? Number(payload.total_gift_limit) : null,
           priority: payload.priority != null ? Number(payload.priority) : 0,
           is_stackable: payload.is_stackable === true || payload.is_stackable === 'true',
           status: 'active',
@@ -133,16 +143,18 @@ export class AdminPromotionService {
           name_vi: payload.name_vi !== undefined ? (payload.name_vi || baseName || null) : undefined,
           name_en: payload.name_en !== undefined ? (payload.name_en || baseName || null) : undefined,
           ...(payload.buy_product_id !== undefined && { buy_product_id: Number(payload.buy_product_id) }),
-          ...(payload.buy_quantity !== undefined && { buy_quantity: Number(payload.buy_quantity) }),
+          // B-4: guard updatePromotion — also reject empty string for buy/gift_quantity
+          ...(payload.buy_quantity !== undefined && payload.buy_quantity !== '' && { buy_quantity: Number(payload.buy_quantity) }),
           ...(payload.gift_product_id !== undefined && { gift_product_id: Number(payload.gift_product_id) }),
-          ...(payload.gift_quantity !== undefined && { gift_quantity: Number(payload.gift_quantity) }),
+          ...(payload.gift_quantity !== undefined && payload.gift_quantity !== '' && { gift_quantity: Number(payload.gift_quantity) }),
           ...(startDate !== undefined && { start_date: startDate }),
           ...(endDate !== undefined && { end_date: endDate }),
+          // B-5: empty string → null for optional caps in updatePromotion too
           ...(payload.max_gift_per_order !== undefined && {
-            max_gift_per_order: payload.max_gift_per_order != null ? Number(payload.max_gift_per_order) : null,
+            max_gift_per_order: (payload.max_gift_per_order != null && payload.max_gift_per_order !== '') ? Number(payload.max_gift_per_order) : null,
           }),
           ...(payload.total_gift_limit !== undefined && {
-            total_gift_limit: payload.total_gift_limit != null ? Number(payload.total_gift_limit) : null,
+            total_gift_limit: (payload.total_gift_limit != null && payload.total_gift_limit !== '') ? Number(payload.total_gift_limit) : null,
           }),
           ...(payload.priority !== undefined && { priority: payload.priority != null ? Number(payload.priority) : 0 }),
           ...(payload.is_stackable !== undefined && {

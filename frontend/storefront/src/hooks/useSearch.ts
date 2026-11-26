@@ -93,7 +93,7 @@ export function useSearch() {
             .filter(
               (c) =>
                 (c.name || "").trim().toLowerCase() ===
-                currentCategory.name.trim().toLowerCase()
+                (currentCategory.name || "").trim().toLowerCase()
             )
             .map((c) => String(c.id));
           matchCategory = sameNameCategoryIds.includes(String(p.category_id));
@@ -204,7 +204,8 @@ export function useSearch() {
     if (urlCategory) {
       const currentCat = categories.find((cat) => String(cat.id) === String(urlCategory));
       if (currentCat) {
-        const index = uniqueCategories.findIndex((c) => c.name === currentCat.name);
+        const targetKey = (currentCat.name || "").trim().toLowerCase();
+        const index = uniqueCategories.findIndex((c) => (c.name || "").trim().toLowerCase() === targetKey);
         if (index !== -1) activeIndex = index + 1;
       }
     }

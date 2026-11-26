@@ -40,8 +40,13 @@ export async function applyVoucherDiscount(
 
     if (!voucher_id) return { totalVoucherDiscount, eligibleProductIds };
 
+    const parsedVoucherId = Number(voucher_id);
+    if (!Number.isInteger(parsedVoucherId) || parsedVoucherId <= 0) {
+        throw new OrderCreationError(400, 'Voucher does not exist or has been disabled.');
+    }
+
     const voucher = await tx.voucher.findUnique({
-        where: { id: Number(voucher_id) },
+        where: { id: parsedVoucherId },
         include: { product_vouchers: true, voucher_categories: true },
     });
 

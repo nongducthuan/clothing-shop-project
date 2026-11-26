@@ -104,6 +104,21 @@ export class AdminCategoryService {
     const existing = await this.prisma.category.findUnique({ where: { id: Number(id) } });
     if (!existing) throw new NotFoundException({ status: 'fail', message: 'Category not found' });
 
+    if (gender && gender !== existing.gender) {
+      const mismatchedCount = await this.prisma.product.count({
+        where: {
+          category_id: Number(id),
+          gender: { not: gender as 'male' | 'female' | 'unisex' },
+        },
+      });
+      if (mismatchedCount > 0) {
+        throw new BadRequestException({
+          status: 'fail',
+          message: 'Cannot change category gender while it still contains products with a different gender',
+        });
+      }
+    }
+
     await this.prisma.category.update({
       where: { id: Number(id) },
       data: {

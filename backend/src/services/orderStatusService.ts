@@ -108,7 +108,9 @@ export type StatusLogicOpts = {
     isUndo?: boolean;
     skipFinancial?: boolean;
     skipStock?: boolean;
-    partial?: { returnItems: { size_id: number | null; return_quantity: number }[]; refundAmount: number };
+    expectedStatuses?: string[];
+    expectedPaymentStatus?: PaymentStatus;
+    partial?: { returnItems: { size_id: number | null; return_quantity: number }[]; refundAmount: number; isFullReturn?: boolean };
 };
 
 export const changeOrderStatusLogic = async (
@@ -150,6 +152,18 @@ export const changeOrderStatusLogicTx = async (
         // Ngoại lệ: opts.isUndo (chỉ updateOrderStatus khi khớp UNDO_TRANSITIONS) được phép
         // quay lại đúng 1 bước có kiểm soát — hậu quả đảo chiều do chính logic này xử lý.
         const oldEnum = STATUS_DISPLAY_TO_ENUM[oldStatus] ?? oldStatus;
+        if (opts?.expectedStatuses && !opts.expectedStatuses.includes(oldEnum)) {
+            throw new OrderServiceError(
+                409,
+                `Order #${orderId} status changed to "${oldStatus}" before this operation could complete.`
+            );
+        }
+        if (opts?.expectedPaymentStatus && order.payment_status !== opts.expectedPaymentStatus) {
+            throw new OrderServiceError(
+                409,
+                `Order #${orderId} payment status changed to "${order.payment_status}" before this operation could complete.`
+            );
+        }
         const oldRank: number | undefined = STATUS_RANK[oldEnum];
         const newRank: number | undefined = STATUS_RANK[normalizedStatus];
         if (!opts?.isUndo && oldRank !== undefined && newRank !== undefined && newRank < oldRank) {
@@ -225,12 +239,16 @@ export const changeOrderStatusLogicTx = async (
         ) {
             const v = await tx.voucher.findUnique({ where: { id: orderVoucherId } });
             if (v) {
-                // Guard used_count from going negative on both branches
-                await tx.voucher.update({
-                    where: { id: orderVoucherId },
-                    data: v.usage_limit !== null && v.usage_limit !== undefined
-                        ? { usage_limit: { increment: 1 }, used_count: v.used_count > 0 ? { decrement: 1 } : undefined }
-                        : { used_count: v.used_count > 0 ? { decrement: 1 } : undefined },
+                if (v.usage_limit !== null && v.usage_limit !== undefined) {
+                    await tx.voucher.update({
+                        where: { id: orderVoucherId },
+                        data: { usage_limit: { increment: 1 } },
+                    });
+                }
+                // Atomic guard prevents concurrent cancellations from driving used_count negative
+                await tx.voucher.updateMany({
+                    where: { id: orderVoucherId, used_count: { gt: 0 } },
+                    data: { used_count: { decrement: 1 } },
                 });
             }
         }

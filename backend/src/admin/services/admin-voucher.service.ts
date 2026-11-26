@@ -34,10 +34,10 @@ export class AdminVoucherService {
     }
   }
 
-  private validateVoucherConstraints(payload: VoucherPayload) {
-    if (payload.discount_percent != null && payload.discount_percent !== '') {
+  private validateVoucherConstraints(payload: VoucherPayload, requireDiscount = false) {
+    if (requireDiscount || (payload.discount_percent != null && payload.discount_percent !== '')) {
       const discount = Number(payload.discount_percent);
-      if (!Number.isFinite(discount) || discount <= 0 || discount > 100) {
+      if (payload.discount_percent == null || payload.discount_percent === '' || !Number.isFinite(discount) || discount <= 0 || discount > 100) {
         throw new BadRequestException({ success: false, message: 'Phần trăm giảm giá phải từ 1 đến 100%!' });
       }
     }
@@ -55,10 +55,20 @@ export class AdminVoucherService {
     }
     if (payload.usage_limit != null && payload.usage_limit !== '') {
       const limit = Number(payload.usage_limit);
-      if (!Number.isFinite(limit) || limit < 1) {
-        throw new BadRequestException({ success: false, message: 'Lượt sử dụng tối đa phải từ 1 trở lên!' });
+      // B-8: float usage_limit would fail Prisma Int field → require integer
+      if (!Number.isFinite(limit) || !Number.isInteger(limit) || limit < 1) {
+        throw new BadRequestException({ success: false, message: 'Lượt sử dụng tối đa phải là số nguyên từ 1 trở lên!' });
       }
     }
+  }
+
+  private parseOptionalDate(value: string | Date | null | undefined, label: string): Date | null {
+    if (!value) return null;
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) {
+      throw new BadRequestException({ success: false, message: `${label} không hợp lệ!` });
+    }
+    return parsed;
   }
 
   private validateDateRange(start: Date | null | undefined, end: Date | null | undefined) {
@@ -81,15 +91,20 @@ export class AdminVoucherService {
     try {
       const applyScope = this.parseApplyScope(payload.apply_scope);
       this.validateScopeTargets(applyScope, payload);
-      this.validateVoucherConstraints(payload);
-      const startDate = payload.start_date ? new Date(payload.start_date) : null;
-      const endDate = payload.end_date ? new Date(payload.end_date) : null;
+      this.validateVoucherConstraints(payload, true);
+      // B-9: validate code is non-empty and non-whitespace
+      const code = typeof payload.code === 'string' ? payload.code.trim() : '';
+      if (!code) {
+        throw new BadRequestException({ success: false, message: 'Mã voucher không được để trống!' });
+      }
+      const startDate = this.parseOptionalDate(payload.start_date, 'Thời gian bắt đầu');
+      const endDate = this.parseOptionalDate(payload.end_date, 'Thời gian kết thúc');
       this.validateDateRange(startDate, endDate);
 
       await this.prisma.$transaction(async (tx) => {
         const voucher = await tx.voucher.create({
           data: {
-            code: payload.code as string,
+            code,
             discount_percent: payload.discount_percent != null && payload.discount_percent !== '' ? Number(payload.discount_percent) : null,
             max_discount_amount: payload.max_discount_amount != null && payload.max_discount_amount !== '' ? Number(payload.max_discount_amount) : null,
             min_order_value: payload.min_order_value != null && payload.min_order_value !== '' ? Number(payload.min_order_value) : 0,
@@ -119,9 +134,9 @@ export class AdminVoucherService {
     try {
       const applyScope = this.parseApplyScope(payload.apply_scope);
       this.validateScopeTargets(applyScope, payload);
-      this.validateVoucherConstraints(payload);
-      const startDate = payload.start_date !== undefined ? (payload.start_date ? new Date(payload.start_date) : null) : undefined;
-      const endDate = payload.end_date !== undefined ? (payload.end_date ? new Date(payload.end_date) : null) : undefined;
+      this.validateVoucherConstraints(payload, true);
+      const startDate = payload.start_date !== undefined ? this.parseOptionalDate(payload.start_date, 'Thời gian bắt đầu') : undefined;
+      const endDate = payload.end_date !== undefined ? this.parseOptionalDate(payload.end_date, 'Thời gian kết thúc') : undefined;
 
       if (startDate !== undefined && endDate !== undefined) {
         this.validateDateRange(startDate, endDate);
@@ -168,8 +183,20 @@ export class AdminVoucherService {
 
   async findAll(includeDeleted: boolean) {
     try {
-      const vouchers = await this.prisma.voucher.findMany({ where: includeDeleted ? undefined : { status: true }, orderBy: { created_at: 'desc' } });
-      return { success: true, data: vouchers };
+      const vouchers = await this.prisma.voucher.findMany({
+        where: includeDeleted ? undefined : { status: true },
+        orderBy: { created_at: 'desc' },
+        include: {
+          product_vouchers: { select: { product_id: true } },
+          voucher_categories: { select: { category_id: true } },
+        },
+      });
+      const data = vouchers.map(({ product_vouchers, voucher_categories, ...voucher }) => ({
+        ...voucher,
+        productIds: product_vouchers.map((entry) => entry.product_id),
+        categoryIds: voucher_categories.map((entry) => entry.category_id),
+      }));
+      return { success: true, data };
     } catch (error) {
       throw new InternalServerErrorException({ success: false, message: getErrorMessage(error) });
     }
@@ -177,7 +204,18 @@ export class AdminVoucherService {
 
   async toggleStatus(id: string, status: unknown) {
     try {
-      await this.prisma.voucher.update({ where: { id: Number(id) }, data: { status: Boolean(Number(status)) } });
+      // B-7: Boolean(Number("true")) === false. Parse boolean properly.
+      let boolStatus: boolean;
+      if (typeof status === 'boolean') {
+        boolStatus = status;
+      } else if (status === 'true' || status === '1' || status === 1) {
+        boolStatus = true;
+      } else if (status === 'false' || status === '0' || status === 0) {
+        boolStatus = false;
+      } else {
+        throw new BadRequestException({ success: false, message: 'Invalid status value. Use true or false.' });
+      }
+      await this.prisma.voucher.update({ where: { id: Number(id) }, data: { status: boolStatus } });
       return { success: true, message: 'Voucher status updated successfully!' };
     } catch (error) {
       throw new InternalServerErrorException({ success: false, message: getErrorMessage(error) });

@@ -145,6 +145,17 @@ describe('ZodValidationPipe + createOrderSchema', () => {
       });
     }
   });
+
+  it('giữ lại membershipDiscountableSubtotal trong applyVoucherSchema', () => {
+    const transformed = validate(applyVoucherSchema, {
+      code: 'SALE10',
+      orderTotal: 180000,
+      subtotal: 200000,
+      membershipDiscountableSubtotal: 150000,
+    }) as Record<string, unknown>;
+
+    expect(transformed.membershipDiscountableSubtotal).toBe(150000);
+  });
 });
 
 describe('contract: payload frontend phải sống sót qua ZodValidationPipe', () => {

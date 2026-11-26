@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import API from "@shop/shared/services/apiClient";
 import { useToast } from "@shop/shared/context/ToastContext";
 import { useLanguage } from "@shop/shared/context/LanguageContext";
@@ -43,6 +43,8 @@ export function useReturnRequestForm(orders: ProfileOrder[], onSubmitted: () => 
     ...INITIAL_RETURN_DATA,
     selectedItems: {}
   });
+  // F-4: double-submit guard
+  const submittingRef = useRef(false);
 
   const handleOpenReturnModal = (orderOrId: ProfileOrder | number) => {
     const targetOrder = typeof orderOrId === 'object' ? orderOrId : orders.find((o) => o.id === orderOrId);
@@ -69,7 +71,12 @@ export function useReturnRequestForm(orders: ProfileOrder[], onSubmitted: () => 
     setShowReturnModal(true);
   };
 
+  const submittingRef = useRef(false);
+
   const handleSubmitReturn = async () => {
+    // F-4: prevent double-submit
+    if (submittingRef.current) return;
+    submittingRef.current = true;
     const { bankName, bankNumber, accountHolder, reason, note, images, selectedItems } = returnData;
 
     if (!bankName || !bankNumber || !accountHolder) {

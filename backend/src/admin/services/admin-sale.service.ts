@@ -21,35 +21,67 @@ export class AdminSaleService {
 
   private parseApplyScope(value: unknown): ApplyScope {
     if (value === ApplyScope.all || value === ApplyScope.category || value === ApplyScope.product) return value;
-    throw new Error('Invalid apply scope');
+    throw new BadRequestException({ success: false, message: 'Invalid apply scope' });
+  }
+
+  private validateScopeTargets(applyScope: ApplyScope, payload: SalePayload) {
+    if (applyScope === ApplyScope.category && (!Array.isArray(payload.categoryIds) || payload.categoryIds.length === 0)) {
+      throw new BadRequestException({ success: false, message: 'Vui lòng chọn ít nhất một danh mục!' });
+    }
+    if (applyScope === ApplyScope.product && (!Array.isArray(payload.productIds) || payload.productIds.length === 0)) {
+      throw new BadRequestException({ success: false, message: 'Vui lòng chọn ít nhất một sản phẩm!' });
+    }
+  }
+
+  private validateSalePayload(payload: SalePayload): { applyScope: ApplyScope; discountPercent: number; startDate: Date; endDate: Date } {
+    const applyScope = this.parseApplyScope(payload.apply_scope);
+    this.validateScopeTargets(applyScope, payload);
+
+    const discountPercent = Number(payload.discount_percent);
+    if (!Number.isFinite(discountPercent) || discountPercent <= 0 || discountPercent > 100) {
+      throw new BadRequestException({ success: false, message: 'Phần trăm giảm giá phải từ 1 đến 100%!' });
+    }
+
+    const startDate = new Date(payload.start_date as string | Date);
+    const endDate = new Date(payload.end_date as string | Date);
+    if (!payload.start_date || Number.isNaN(startDate.getTime()) || !payload.end_date || Number.isNaN(endDate.getTime())) {
+      throw new BadRequestException({ success: false, message: 'Invalid start_date or end_date' });
+    }
+    if (startDate >= endDate) {
+      throw new BadRequestException({ success: false, message: 'Thời gian bắt đầu phải trước thời gian kết thúc!' });
+    }
+
+    return { applyScope, discountPercent, startDate, endDate };
   }
 
   async create(payload: SalePayload) {
     try {
       const baseName = payload.name || payload.name_vi || payload.name_en;
-      if (!baseName) throw new BadRequestException({ message: 'Sale name is required' });
+      if (!baseName) throw new BadRequestException({ success: false, message: 'Sale name is required' });
+      const { applyScope, discountPercent, startDate, endDate } = this.validateSalePayload(payload);
       await this.prisma.$transaction(async (tx) => {
         const sale = await tx.sale.create({
           data: {
             name: baseName,
             name_vi: payload.name_vi || baseName || null,
             name_en: payload.name_en || baseName || null,
-            discount_percent: Number(payload.discount_percent),
-            apply_scope: this.parseApplyScope(payload.apply_scope),
-            start_date: new Date(payload.start_date as string),
-            end_date: new Date(payload.end_date as string),
+            discount_percent: discountPercent,
+            apply_scope: applyScope,
+            start_date: startDate,
+            end_date: endDate,
             status: true,
           },
         });
-        if (payload.apply_scope === 'category' && payload.categoryIds?.length) {
+        if (applyScope === 'category' && payload.categoryIds?.length) {
           await tx.saleCategory.createMany({ data: payload.categoryIds.map((id) => ({ sale_id: sale.id, category_id: Number(id) })) });
         }
-        if (payload.apply_scope === 'product' && payload.productIds?.length) {
+        if (applyScope === 'product' && payload.productIds?.length) {
           await tx.productSale.createMany({ data: payload.productIds.map((id) => ({ sale_id: sale.id, product_id: Number(id) })) });
         }
       });
       return { success: true, message: 'Created Successfully!' };
     } catch (error) {
+      if (error instanceof BadRequestException) throw error;
       console.error(error);
       throw new InternalServerErrorException({ success: false, message: getErrorMessage(error) });
     }
@@ -58,6 +90,7 @@ export class AdminSaleService {
   async update(id: string, payload: SalePayload) {
     try {
       const baseName = payload.name || payload.name_vi || payload.name_en;
+      const { applyScope, discountPercent, startDate, endDate } = this.validateSalePayload(payload);
       await this.prisma.$transaction(async (tx) => {
         await tx.sale.update({
           where: { id: Number(id) },
@@ -65,23 +98,24 @@ export class AdminSaleService {
             name: baseName || undefined,
             name_vi: payload.name_vi !== undefined ? (payload.name_vi || baseName || null) : undefined,
             name_en: payload.name_en !== undefined ? (payload.name_en || baseName || null) : undefined,
-            discount_percent: Number(payload.discount_percent),
-            apply_scope: this.parseApplyScope(payload.apply_scope),
-            start_date: new Date(payload.start_date as string),
-            end_date: new Date(payload.end_date as string),
+            discount_percent: discountPercent,
+            apply_scope: applyScope,
+            start_date: startDate,
+            end_date: endDate,
           },
         });
         await tx.saleCategory.deleteMany({ where: { sale_id: Number(id) } });
         await tx.productSale.deleteMany({ where: { sale_id: Number(id) } });
-        if (payload.apply_scope === 'category' && payload.categoryIds?.length) {
+        if (applyScope === 'category' && payload.categoryIds?.length) {
           await tx.saleCategory.createMany({ data: payload.categoryIds.map((categoryId) => ({ sale_id: Number(id), category_id: Number(categoryId) })) });
         }
-        if (payload.apply_scope === 'product' && payload.productIds?.length) {
+        if (applyScope === 'product' && payload.productIds?.length) {
           await tx.productSale.createMany({ data: payload.productIds.map((productId) => ({ sale_id: Number(id), product_id: Number(productId) })) });
         }
       });
       return { success: true, message: 'Sale updated successfully!' };
     } catch (error) {
+      if (error instanceof BadRequestException) throw error;
       console.error('UPDATE SALE ERROR:', getErrorMessage(error));
       throw new InternalServerErrorException({ success: false, message: getErrorMessage(error) });
     }
@@ -89,8 +123,20 @@ export class AdminSaleService {
 
   async findAll() {
     try {
-      const sales = await this.prisma.sale.findMany({ where: { status: true }, orderBy: { created_at: 'desc' } });
-      return { success: true, data: sales };
+      const sales = await this.prisma.sale.findMany({
+        where: { status: true },
+        orderBy: { created_at: 'desc' },
+        include: {
+          product_sales: { select: { product_id: true } },
+          sale_categories: { select: { category_id: true } },
+        },
+      });
+      const data = sales.map(({ product_sales, sale_categories, ...sale }) => ({
+        ...sale,
+        productIds: product_sales.map((entry) => entry.product_id),
+        categoryIds: sale_categories.map((entry) => entry.category_id),
+      }));
+      return { success: true, data };
     } catch (error) {
       throw new InternalServerErrorException({ success: false, message: getErrorMessage(error) });
     }

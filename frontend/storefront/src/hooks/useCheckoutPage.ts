@@ -118,7 +118,7 @@ const useGeolocation = () => {
 export function useCheckoutPage() {
   const navigate = useNavigate();
   const routeLocation = useLocation();
-  const { cart, setCart } = useRequiredContext(CartContext, 'CartContext');
+  const { cart, clearCart } = useRequiredContext(CartContext, 'CartContext');
   const { user, discount, tier } = useRequiredContext(AuthContext, 'AuthContext');
   const { t, language, translateApiMessage } = useLanguage();
   const { fetchCurrentLocation, isLocating, locationError } = useGeolocation();
@@ -239,12 +239,23 @@ export function useCheckoutPage() {
           let chosenSizeId = gift.size_id || null;
 
           if ((!chosenColorId || !chosenSizeId) && detail && detail.colors && detail.colors.length > 0) {
-            for (const c of detail.colors) {
-              const availableSize = c.sizes?.find(s => s.stock > 0);
-              if (availableSize) {
-                if (!chosenColorId) chosenColorId = c.id;
-                if (!chosenSizeId) chosenSizeId = availableSize.id;
-                break;
+            if (chosenColorId && !chosenSizeId) {
+              const selectedColor = detail.colors.find(c => c.id === chosenColorId);
+              const availableForColor = selectedColor?.sizes?.find(s => s.stock > 0);
+              if (availableForColor) {
+                chosenSizeId = availableForColor.id;
+              } else {
+                chosenColorId = null;
+              }
+            }
+            if (!chosenColorId || !chosenSizeId) {
+              for (const c of detail.colors) {
+                const availableSize = c.sizes?.find(s => s.stock > 0);
+                if (availableSize) {
+                  chosenColorId = c.id;
+                  chosenSizeId = availableSize.id;
+                  break;
+                }
               }
             }
           }
@@ -279,11 +290,13 @@ export function useCheckoutPage() {
         sessionStorage.setItem("guestOrderAccessToken", res.data.guestOrderAccessToken);
       }
 
-      setCart([]); // Clear cart
-
       if (res.data.payUrl) {
+        setIsStatusSuccess(true);
+        setStatusMessage(t("checkout.redirecting", "Redirecting to payment gateway..."));
+        clearCart(); // Clear cart synchronously in localStorage before external redirect
         window.location.href = res.data.payUrl;
       } else {
+        clearCart();
         setIsStatusSuccess(true);
         setStatusMessage(t("checkout.success", "Order placed successfully!"));
         setTimeout(() => navigate(user ? "/profile?tab=orders" : "/order"), 2000);

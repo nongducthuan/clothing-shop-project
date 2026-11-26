@@ -67,5 +67,9 @@ describe('useCategoryPage pagination regression', () => {
     await waitFor(() => expect(getMock.mock.calls.some(([url, config]) =>
       url === '/products' && config?.params?.category_id === '2' && config?.params?.page === 1
     )).toBe(true));
+    const cat2ProductCalls = getMock.mock.calls.filter(([url, config]) =>
+      url === '/products' && config?.params?.category_id === '2'
+    );
+    expect(cat2ProductCalls).toHaveLength(1);
   });
 });

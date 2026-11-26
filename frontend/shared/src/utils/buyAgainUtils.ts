@@ -109,7 +109,7 @@ export async function buyAgainFromOrder(
 
   const toAdd: CartItem[] = [];
   for (const item of items) {
-    const product = detailMap.get(item.product_id);
+    const product = detailMap.get(Number(item.product_id));
     const pName = product?.name_vi || product?.name || item.product_name || `#${item.product_id}`;
 
     if (!product) {
@@ -185,8 +185,15 @@ function mergeIntoCart(
         (p) => p.id === item.id && p.size_id === item.size_id && p.color_id === item.color_id
       );
       if (idx >= 0) {
-        // Same variant already in cart → merge quantities (same as CartContext.addToCart)
-        next[idx] = { ...next[idx], quantity: (next[idx].quantity || 1) + (item.quantity || 1) };
+        // Same variant already in cart → merge quantities capped by latest stock & refresh price/stock
+        const mergedQty = (next[idx].quantity || 1) + (item.quantity || 1);
+        const maxStock = typeof item.stock === "number" && Number.isFinite(item.stock) ? Math.max(0, item.stock) : Infinity;
+        next[idx] = {
+          ...next[idx],
+          price: item.price,
+          stock: item.stock,
+          quantity: Math.min(mergedQty, maxStock),
+        };
       } else {
         next.push({ ...item, cartItemId: crypto.randomUUID() });
       }

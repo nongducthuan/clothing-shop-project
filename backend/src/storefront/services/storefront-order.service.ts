@@ -64,6 +64,7 @@ export class StorefrontOrderService {
           voucherDiscount: totalVoucherDiscount,
           eligibleProductIds,
           payableTotal: finalTotal,
+          blockedProductIds,
         });
         itemsToSave.forEach((item, index) => {
           item.discount_amount = itemAllocations[index].discount_amount;
@@ -192,7 +193,9 @@ export class StorefrontOrderService {
       }
       if (newStatus !== 'Cancelled') throw new ForbiddenException({ message: 'You are not allowed to set this order status.' });
       if (!['Pending', 'Confirmed'].includes(order.status)) throw new BadRequestException({ message: `Cannot cancel an order that is already "${order.status}".` });
-      await changeOrderStatusLogic(orderId, newStatus, this.prisma);
+      await changeOrderStatusLogic(orderId, newStatus, this.prisma, {
+        expectedStatuses: ['Pending', 'Confirmed'],
+      });
       const updatedOrder = await this.prisma.order.findUnique({ where: { id: orderId }, select: { payment_status: true } });
       const finalPaymentStatus = updatedOrder?.payment_status ?? order.payment_status;
       try {

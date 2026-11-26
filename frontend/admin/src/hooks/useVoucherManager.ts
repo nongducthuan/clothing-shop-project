@@ -1,12 +1,13 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import API from "@shop/shared/services/apiClient"; // Adjust path as needed
 import { useToast } from "@shop/shared/context/ToastContext";
 import { useLanguage } from "@shop/shared/context/LanguageContext";
+import { toLocalDateTimeInput, fromLocalDateTimeInput } from "@shop/shared/utils/dateUtils";
 import type { FormEvent } from "react";
 
 interface CatalogItem { id: number; name: string; name_vi?: string; name_en?: string; gender?: string; category_id?: number; [key: string]: unknown }
 type Scope = "all" | "category" | "product";
-export interface VoucherRecord { id: number; code: string; discount_percent: number | string; max_discount_amount?: number | string; min_order_value?: number | string; usage_limit?: number | string | null; start_date?: string; end_date?: string; apply_scope?: Scope; [key: string]: unknown }
+export interface VoucherRecord { id: number; code: string; discount_percent: number | string; max_discount_amount?: number | string; min_order_value?: number | string; usage_limit?: number | string | null; start_date?: string; end_date?: string; apply_scope?: Scope; productIds?: number[]; categoryIds?: number[]; [key: string]: unknown }
 export interface VoucherForm { code: string; discount_percent: string | number; max_discount_amount: string | number; min_order_value: string | number; usage_limit: string | number; start_date: string; end_date: string; apply_scope: Scope }
 
 export default function useVoucherManager() {
@@ -26,6 +27,7 @@ export default function useVoucherManager() {
     title: ""
   });
   const [editingId, setEditingId] = useState<number | null>(null);
+  const isSubmittingRef = useRef(false);
   const [formData, setFormData] = useState<VoucherForm>({
     code: "",
     discount_percent: "",
@@ -75,6 +77,7 @@ export default function useVoucherManager() {
     if (!window.confirm(t("admin.confirm_delete", "Are you sure you want to delete this item?"))) return;
     try {
       await API.delete(`/admin/vouchers/${id}`);
+      if (editingId === id) handleCancelEdit();
       showToast(t("admin.toast_deleted", "Đã xóa thành công!"), "success");
       fetchInitialData();
     } catch (error) {
@@ -103,6 +106,7 @@ export default function useVoucherManager() {
   };
 
   const handleEdit = (voucher: VoucherRecord) => {
+    const scope = voucher.apply_scope || "all";
     setEditingId(voucher.id);
     setFormData({
       code: voucher.code || "",
@@ -110,11 +114,13 @@ export default function useVoucherManager() {
       max_discount_amount: voucher.max_discount_amount ? String(voucher.max_discount_amount) : "",
       min_order_value: voucher.min_order_value ? String(voucher.min_order_value) : "",
       usage_limit: voucher.usage_limit ? String(voucher.usage_limit) : "",
-      start_date: voucher.start_date ? voucher.start_date.slice(0, 16) : "",
-      end_date: voucher.end_date ? voucher.end_date.slice(0, 16) : "",
-      apply_scope: voucher.apply_scope || "all"
+      start_date: toLocalDateTimeInput(voucher.start_date),
+      end_date: toLocalDateTimeInput(voucher.end_date),
+      apply_scope: scope
     });
-    setApplyScope(voucher.apply_scope || "all");
+    setApplyScope(scope);
+    setSelectedCategoryIds(scope === "category" && Array.isArray(voucher.categoryIds) ? voucher.categoryIds.map(Number) : []);
+    setSelectedProductIds(scope === "product" && Array.isArray(voucher.productIds) ? voucher.productIds.map(Number) : []);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -128,10 +134,12 @@ export default function useVoucherManager() {
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (isSubmittingRef.current) return;
+    isSubmittingRef.current = true;
     const payload = {
       ...formData,
-      start_date: formData.start_date || null,
-      end_date: formData.end_date || null,
+      start_date: fromLocalDateTimeInput(formData.start_date),
+      end_date: fromLocalDateTimeInput(formData.end_date),
       apply_scope: applyScope,
       productIds: applyScope === "product" ? selectedProductIds : [],
       categoryIds: applyScope === "category" ? selectedCategoryIds : [],
@@ -154,6 +162,8 @@ export default function useVoucherManager() {
     } catch (error) {
       const apiError = error as { response?: { data?: { message?: string } }; message?: string };
       showToast(t("admin.toast_error", "Error: {error}").replace("{error}", translateApiMessage(apiError.response?.data?.message) || apiError.message || ""), "error");
+    } finally {
+      isSubmittingRef.current = false;
     }
   };
 

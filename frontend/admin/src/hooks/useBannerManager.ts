@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import API from "@shop/shared/services/apiClient";
 import { useToast } from "@shop/shared/context/ToastContext";
 import { useLanguage } from "@shop/shared/context/LanguageContext";
@@ -13,11 +13,11 @@ export interface BannerFormData { imageUrl: string; title: string; title_vi: str
 export function useBannerManager() {
   const { showToast } = useToast();
   const { t } = useLanguage();
-  const token = localStorage.getItem("token");
 
   const [banners, setBanners] = useState<BannerRecord[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
+  const isSubmittingRef = useRef(false);
   const [form, setForm] = useState<BannerFormData>({ imageUrl: "", title: "", title_vi: "", title_en: "", subtitle: "", subtitle_vi: "", subtitle_en: "" });
 
   /**
@@ -25,9 +25,7 @@ export function useBannerManager() {
    */
   const fetchBanners = useCallback(async () => {
     try {
-      const res = await API.get("/admin/banners", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await API.get("/admin/banners");
 
       const mappedData = Array.isArray(res.data)
         ? res.data.map((banner: BannerRecord) => ({
@@ -40,7 +38,7 @@ export function useBannerManager() {
     } catch (err) {
       console.error("Fetch Banners Error:", err);
     }
-  }, [token]);
+  }, []);
 
   /**
    * Handles image file upload to the server.
@@ -70,6 +68,8 @@ export function useBannerManager() {
    */
   const saveBanner = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (isSubmittingRef.current) return;
+    isSubmittingRef.current = true;
     try {
       const payload = {
         ...form,
@@ -82,15 +82,15 @@ export function useBannerManager() {
       const endpoint = editingId ? `/admin/banners/${editingId}` : "/admin/banners";
       const method = editingId ? "put" : "post";
 
-      await API[method](endpoint, payload, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await API[method](endpoint, payload);
 
       resetForm();
       fetchBanners();
       showToast(t("admin.banner.toast_saved", "Banner saved successfully!"), "success");
     } catch {
       showToast(t("admin.banner.toast_save_failed", "Failed to save banner!"), "error");
+    } finally {
+      isSubmittingRef.current = false;
     }
   };
 
@@ -100,9 +100,8 @@ export function useBannerManager() {
   const deleteBanner = async (id: number) => {
     if (!window.confirm(t("admin.confirm_delete", "Are you sure you want to delete this item?"))) return;
     try {
-      await API.delete(`/admin/banners/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await API.delete(`/admin/banners/${id}`);
+      if (editingId === id) resetForm();
       fetchBanners();
       showToast(t("admin.banner.toast_deleted", "Banner deleted."), "success");
     } catch {

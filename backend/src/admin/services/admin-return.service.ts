@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { BadRequestException, ConflictException, HttpException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import type { Prisma } from '../../generated/prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { STATUS_DISPLAY_TO_ENUM } from '../../constants/orderStatus';
@@ -14,12 +14,15 @@ export class AdminReturnService {
     try {
       let userIdToNotify: number | null = null;
       await this.prisma.$transaction(async (tx) => {
-        const order = await tx.order.findUnique({ where: { id: orderId }, select: { status: true, user_id: true } });
-        if (!order) throw new Error('Order not found.');
+        const order = await tx.order.findUnique({
+          where: { id: orderId },
+          select: { status: true, user_id: true, items: { select: { id: true, is_gift: true, quantity: true } } },
+        });
+        if (!order) throw new NotFoundException({ message: 'Order not found.' });
         const orderStatus = STATUS_DISPLAY_TO_ENUM[order.status as string] ?? order.status as string;
-        if (!['Delivered', 'Return_Requested'].includes(orderStatus)) throw new Error('Only delivered orders with a pending return can be approved.');
+        if (!['Delivered', 'Return_Requested'].includes(orderStatus)) throw new BadRequestException({ message: 'Only delivered orders with a pending return can be approved.' });
         const returnReq = await tx.returnRequest.findUnique({ where: { order_id: orderId }, include: { items: { include: { order_item: true } } } });
-        if (returnReq && returnReq.status !== 'Pending') throw new Error('Only a pending return request can be approved.');
+        if (returnReq && returnReq.status !== 'Pending') throw new BadRequestException({ message: 'Only a pending return request can be approved.' });
         userIdToNotify = order.user_id;
         const refundAmount = returnReq ? Number(returnReq.refund_amount) : 0;
         const hasPartialItems = !!returnReq?.items && returnReq.items.length > 0;
@@ -30,10 +33,16 @@ export class AdminReturnService {
           await tx.returnRequest.create({ data: { order_id: orderId, reason_code: 'Admin Approval', description: 'Manually approved by admin', status: 'Approved', admin_response: null } });
         }
         if (hasPartialItems) {
+          const purchasableItems = (order.items ?? []).filter((it) => !it.is_gift);
+          const isFullReturn = purchasableItems.length > 0 && purchasableItems.every((it) => {
+            const reqItem = returnReq!.items.find((ri) => ri.order_item_id === it.id);
+            return reqItem !== undefined && reqItem.return_quantity === it.quantity;
+          });
           await changeOrderStatusLogicTx(tx, orderId, 'Return_Approved', {
             partial: {
               returnItems: returnReq!.items.map((item) => ({ size_id: item.order_item.size_id, return_quantity: item.return_quantity })),
               refundAmount: refundAmount + shippingRefund,
+              isFullReturn,
             },
           });
         } else {
@@ -50,6 +59,7 @@ export class AdminReturnService {
       }
       return { message: 'Return request approved successfully!' };
     } catch (error) {
+      if (error instanceof HttpException) throw error;
       console.error(error);
       throw new InternalServerErrorException({ message: error instanceof Error ? error.message : 'Server Error' });
     }
@@ -61,9 +71,9 @@ export class AdminReturnService {
     try {
       const result = await this.prisma.$transaction(async (tx) => {
         const order = await tx.order.findUnique({ where: { id: orderId }, include: { items: true } });
-        if (!order) throw new Error('Order not found.');
+        if (!order) throw new NotFoundException({ message: 'Order not found.' });
         const oldEnum = STATUS_DISPLAY_TO_ENUM[order.status as string] ?? order.status as string;
-        if (oldEnum !== 'Return_Approved') throw new Error(`Only a Return Approved order can be un-approved (current: "${order.status}").`);
+        if (oldEnum !== 'Return_Approved') throw new BadRequestException({ message: `Only a Return Approved order can be un-approved (current: "${order.status}").` });
         const returnReq = await tx.returnRequest.findUnique({
           where: { order_id: orderId },
           include: { items: { include: { order_item: true } }, order: { select: { user_id: true } } },
@@ -80,27 +90,38 @@ export class AdminReturnService {
           for (const deduction of toDeduct) {
             if (!deduction.size_id) continue;
             const size = await tx.productSize.findUnique({ where: { id: deduction.size_id } });
-            if (!size || Number(size.stock) < deduction.qty) throw new Error(`Insufficient stock for product (size_id=${deduction.size_id})`);
+            if (!size || Number(size.stock) < deduction.qty) throw new ConflictException({ message: `Insufficient stock for product (size_id=${deduction.size_id})` });
             await tx.productSize.update({ where: { id: deduction.size_id }, data: { stock: { decrement: deduction.qty } } });
           }
         }
+
+        const purchasableItems = (order.items ?? []).filter((it) => !it.is_gift);
+        const isFullReturn = !hasPartialItems || (
+          purchasableItems.length > 0 && purchasableItems.every((it) => {
+            const reqItem = returnReq!.items.find((ri) => ri.order_item_id === it.id);
+            return reqItem !== undefined && reqItem.return_quantity === it.quantity;
+          })
+        );
 
         const revenueDate = order.delivered_at ? new Date(order.delivered_at) : new Date();
         revenueDate.setHours(0, 0, 0, 0);
         const revenuePayload: Prisma.RevenueUpdateInput = {
           total_sales: { increment: Math.max(0, restoreAmount) },
-          ...(hasPartialItems ? {} : { total_orders: { increment: 1 } }),
+          ...(isFullReturn ? { total_orders: { increment: 1 } } : {}),
         };
         const existingRevenue = await tx.revenue.findUnique({ where: { report_date: revenueDate } });
         if (existingRevenue) await tx.revenue.update({ where: { report_date: revenueDate }, data: revenuePayload });
-        else await tx.revenue.create({ data: { report_date: revenueDate, total_sales: Math.max(0, restoreAmount), total_orders: hasPartialItems ? 0 : 1 } });
+        else await tx.revenue.create({ data: { report_date: revenueDate, total_sales: Math.max(0, restoreAmount), total_orders: isFullReturn ? 1 : 0 } });
 
         if (order.user_id && restoreAmount > 0) {
-          const currentUser = await tx.user.findUnique({ where: { id: order.user_id } });
-          if (currentUser) {
-            const newTotalSpent = Math.max(0, Number(currentUser.total_spent) + restoreAmount);
-            await tx.user.update({ where: { id: order.user_id }, data: { total_spent: newTotalSpent } });
-            const tier = await tx.membership.findFirst({ where: { min_spending: { lte: newTotalSpent }, is_active: true }, orderBy: { min_spending: 'desc' } });
+          const updatedUser = await tx.user.update({
+            where: { id: order.user_id },
+            data: { total_spent: { increment: restoreAmount } },
+            select: { total_spent: true },
+          });
+          if (updatedUser) {
+            const effectiveTotalSpent = Math.max(0, Number(updatedUser.total_spent));
+            const tier = await tx.membership.findFirst({ where: { min_spending: { lte: effectiveTotalSpent }, is_active: true }, orderBy: { min_spending: 'desc' } });
             await tx.user.update({ where: { id: order.user_id }, data: { membership_id: tier?.id ?? null } });
           }
         }
@@ -120,6 +141,7 @@ export class AdminReturnService {
       });
       return { message: 'Return approval undone. Order is back to Return Requested.', ...result };
     } catch (error) {
+      if (error instanceof HttpException) throw error;
       console.error(error);
       throw new InternalServerErrorException({ message: error instanceof Error ? error.message : 'Server Error' });
     }
@@ -130,12 +152,12 @@ export class AdminReturnService {
     try {
       await this.prisma.$transaction(async (tx) => {
         const current = await tx.order.findUnique({ where: { id: orderId }, select: { status: true } });
-        if (!current) throw new Error('Order not found.');
+        if (!current) throw new NotFoundException({ message: 'Order not found.' });
         const currentEnum = STATUS_DISPLAY_TO_ENUM[current.status as string] ?? current.status as string;
         const rejectFromDelivered = currentEnum === 'Delivered';
-        if (!rejectFromDelivered && currentEnum !== 'Return_Requested') throw new Error('Only delivered orders with a pending return can be rejected.');
+        if (!rejectFromDelivered && currentEnum !== 'Return_Requested') throw new BadRequestException({ message: 'Only delivered orders with a pending return can be rejected.' });
         const existing = await tx.returnRequest.findUnique({ where: { order_id: orderId } });
-        if (existing && existing.status !== 'Pending') throw new Error('Only a pending return request can be rejected.');
+        if (existing && existing.status !== 'Pending') throw new BadRequestException({ message: 'Only a pending return request can be rejected.' });
         if (existing) {
           await tx.returnRequest.update({ where: { order_id: orderId }, data: { status: 'Rejected', admin_response: adminNote } });
         } else {
@@ -145,6 +167,7 @@ export class AdminReturnService {
       });
       return { message: 'Return request rejected successfully.' };
     } catch (error) {
+      if (error instanceof HttpException) throw error;
       console.error(error);
       throw new InternalServerErrorException({ message: 'Failed to reject return request', error: error instanceof Error ? error.message : String(error) });
     }

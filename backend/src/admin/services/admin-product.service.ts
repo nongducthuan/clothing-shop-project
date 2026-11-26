@@ -43,9 +43,9 @@ export class AdminProductService {
     const search = typeof query.search === 'string' ? query.search.trim() : '';
     if (search) {
       where.OR = [
-        { name: { contains: search } },
-        { name_vi: { contains: search } },
-        { name_en: { contains: search } },
+        { name: { contains: search, mode: 'insensitive' } },
+        { name_vi: { contains: search, mode: 'insensitive' } },
+        { name_en: { contains: search, mode: 'insensitive' } },
       ];
     }
 
@@ -152,14 +152,26 @@ export class AdminProductService {
 
   async editProduct(id: string, payload: AdminProductPayload) {
     try {
-      await this.validateGenderAndCategory(payload.gender, payload.category_id);
+      const productId = Number(id);
+      if (payload.gender !== undefined || payload.category_id !== undefined) {
+        const existing = (payload.gender === undefined || payload.category_id === undefined)
+          ? await this.prisma.product.findUnique({ where: { id: productId }, select: { gender: true, category_id: true } })
+          : null;
+        if ((payload.gender === undefined || payload.category_id === undefined) && !existing) {
+          throw new NotFoundException({ message: 'Product not found' });
+        }
+        await this.validateGenderAndCategory(
+          payload.gender ?? existing?.gender,
+          payload.category_id ?? existing?.category_id,
+        );
+      }
       const price = payload.price !== undefined ? this.parsePrice(payload.price, 'price') : undefined;
       const importPrice =
         payload.import_price !== undefined ? this.parsePrice(payload.import_price, 'import_price') : undefined;
       const baseName = payload.name || payload.name_vi || payload.name_en;
       const baseDescription = payload.description !== undefined ? payload.description : (payload.description_vi || payload.description_en);
       await this.prisma.product.update({
-        where: { id: Number(id) },
+        where: { id: productId },
         data: {
           name: baseName || undefined,
           name_vi: payload.name_vi !== undefined ? (payload.name_vi || baseName || null) : undefined,
@@ -170,13 +182,17 @@ export class AdminProductService {
           ...(price !== undefined && { price }),
           ...(importPrice !== undefined && { import_price: importPrice }),
           ...(payload.image_url !== undefined && { image_url: payload.image_url || null }),
-          gender: payload.gender as never,
-          category_id: Number(payload.category_id),
+          ...(payload.gender !== undefined && { gender: payload.gender as never }),
+          ...(payload.category_id !== undefined && { category_id: Number(payload.category_id) }),
         },
       });
       return { affected: 1 };
     } catch (error) {
-      if (error instanceof BadRequestException) throw error;
+      if (error instanceof BadRequestException || error instanceof NotFoundException) throw error;
+      // B-11: map Prisma P2025 (record not found) to 404 instead of 500
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+        throw new NotFoundException({ message: 'Product not found' });
+      }
       console.error(error);
       throw new InternalServerErrorException({ message: 'Server error editing product' });
     }

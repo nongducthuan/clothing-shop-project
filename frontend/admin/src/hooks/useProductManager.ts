@@ -17,7 +17,6 @@ import type { FormEvent } from "react";
  * và giữ 2 thao tác cần phối hợp nhiều phần: lưu (handleSubmit) và xoá (handleDelete).
  */
 export default function useProductManager() {
-  const token = localStorage.getItem("token");
   const { showToast } = useToast();
   const { t } = useLanguage();
 
@@ -66,7 +65,7 @@ export default function useProductManager() {
     try {
       const endpoint = editingId ? `/admin/products/${editingId}` : "/admin/products";
       const method = editingId ? productApi.put : productApi.post;
-      await method(endpoint, payload, { headers: { Authorization: `Bearer ${token}` } });
+      await method(endpoint, payload);
 
       showToast(editingId ? t("admin.product.toast_updated", "Product updated!") : t("admin.product.toast_created", "Product created!"));
       resetForm();
@@ -84,8 +83,9 @@ export default function useProductManager() {
   const handleDelete = useCallback(async (id: number) => {
     if (!window.confirm(t("admin.product.confirm_delete", "Delete this product?"))) return;
     try {
-      await productApi.delete(`/admin/products/${id}`, { headers: { Authorization: `Bearer ${token}` } });
+      await productApi.delete(`/admin/products/${id}`);
       setProducts((prev) => prev.filter((p) => p.id !== id));
+      if (editingId === id) resetForm();
       showToast(t("admin.product.toast_deleted", "Product deleted"));
       // Xoá bản ghi cuối cùng của trang cuối → lùi 1 trang, nếu không bảng sẽ trống
       // dù dữ liệu vẫn còn ở trang trước.
@@ -94,7 +94,7 @@ export default function useProductManager() {
     } catch {
       showToast(t("admin.product.toast_delete_failed", "Delete failed"), "error");
     }
-  }, [token, showToast, t, page, setPage, products.length, setProducts, fetchProducts]);
+  }, [showToast, t, page, setPage, products.length, setProducts, fetchProducts, editingId, resetForm]);
 
   return {
     state: {

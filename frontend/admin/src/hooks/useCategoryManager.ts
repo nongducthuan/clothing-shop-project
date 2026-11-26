@@ -16,8 +16,6 @@ interface RecommendedName { name: string; name_vi?: string }
 export function useCategoryManager() {
   const { showToast } = useToast();
   const { t, translateApiMessage } = useLanguage();
-  const token = localStorage.getItem("token");
-  const authConfig = { headers: { Authorization: `Bearer ${token}` } };
 
   const [categories, setCategories] = useState<CategoryRecord[]>([]);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -80,9 +78,9 @@ export function useCategoryManager() {
         name_en: (form.name_en || "").trim() || form.name.trim(),
       };
       if (editingId) {
-        await API.put(`/admin/categories/${editingId}`, payload, authConfig);
+        await API.put(`/admin/categories/${editingId}`, payload);
       } else {
-        await API.post("/admin/categories", payload, authConfig);
+        await API.post("/admin/categories", payload);
       }
       resetForm();
       await fetchCategories();
@@ -133,7 +131,8 @@ export function useCategoryManager() {
   const handleDelete = async (id: number) => {
     if (!window.confirm(t("admin.confirm_delete", "Are you sure you want to delete this item?"))) return;
     try {
-      await API.delete(`/admin/categories/${id}`, authConfig);
+      await API.delete(`/admin/categories/${id}`);
+      if (editingId === id) resetForm();
       await fetchCategories();
       showToast(t("admin.category.toast_deleted", "Category deleted successfully!"), "success");
     } catch {

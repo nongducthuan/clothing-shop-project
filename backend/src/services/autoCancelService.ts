@@ -34,7 +34,7 @@ export class AutoCancelService implements OnModuleInit, OnModuleDestroy {
           status: 'Pending',
           payment_status: 'Unpaid',
           payment_method: { in: ['momo', 'vnpay'] },
-          created_at: { lt: cutoff },
+          updated_at: { lt: cutoff },
         },
         select: { id: true, email: true, name: true },
         take: BATCH_LIMIT,
@@ -44,7 +44,10 @@ export class AutoCancelService implements OnModuleInit, OnModuleDestroy {
       let cancelled = 0;
       for (const order of expired) {
         try {
-          await changeOrderStatusLogic(order.id, 'Cancelled', this.prisma);
+          await changeOrderStatusLogic(order.id, 'Cancelled', this.prisma, {
+            expectedStatuses: ['Pending'],
+            expectedPaymentStatus: 'Unpaid',
+          });
           cancelled += 1;
           if (order.email) {
             sendEmail(

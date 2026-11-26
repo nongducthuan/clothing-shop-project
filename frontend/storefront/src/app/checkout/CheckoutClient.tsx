@@ -11,7 +11,7 @@ export default function CheckoutClient() {
   const { state, actions, helpers } = useCheckoutPage();
   const { t } = useLanguage();
 
-  if (state.cart.length === 0) {
+  if (state.cart.length === 0 && !state.isStatusSuccess) {
     return <EmptyCheckout onShop={() => actions.navigate("/")} />;
   }
 
@@ -52,7 +52,7 @@ export default function CheckoutClient() {
             <div className="mt-12 pt-8 border-t border-slate-100 dark:border-slate-800">
               <button
                 onClick={actions.handleSubmitOrder}
-                disabled={state.isSubmitting}
+                disabled={state.isSubmitting || state.isStatusSuccess}
                 className="w-full md:w-80 md:mx-auto disabled:opacity-60 disabled:cursor-not-allowed bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 h-12 rounded-full font-semibold text-base hover:bg-slate-800 dark:hover:bg-white transition-all active:scale-[0.98] shadow-md flex items-center justify-center gap-2"
               >
                 {state.isSubmitting ? (

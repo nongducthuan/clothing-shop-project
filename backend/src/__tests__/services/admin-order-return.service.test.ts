@@ -140,3 +140,44 @@ describe('AdminReturnService.rejectReturn – từ chối đổi trả', () => {
     expect(result).toEqual({ message: 'Return request rejected successfully.' });
   });
 });
+
+describe('AdminReturnService.approveReturn – hoàn toàn bộ đơn qua ReturnRequestItem', () => {
+  it('trừ cả Revenue.total_orders khi khách trả toàn bộ sản phẩm mua', async () => {
+    const fullOrder = {
+      ...deliveredOrder,
+      status: 'Return_Requested',
+      items: [
+        { id: 1, product_id: 10, size_id: 100, quantity: 2, is_gift: false },
+        { id: 2, product_id: 11, size_id: 101, quantity: 1, is_gift: true },
+      ],
+    };
+    tx.order.findUnique.mockResolvedValue(fullOrder);
+    tx.returnRequest.findUnique.mockResolvedValue({
+      id: 55,
+      order_id: 326,
+      status: 'Pending',
+      refund_amount: 500000,
+      shipping_refund: 0,
+      items: [{ order_item_id: 1, return_quantity: 2, order_item: { size_id: 100 } }],
+    });
+    tx.revenue.findUnique.mockResolvedValue({
+      id: 1,
+      report_date: new Date('2026-01-10T00:00:00Z'),
+      total_revenue: 500000,
+      total_orders: 3,
+    });
+    tx.user.findUnique.mockResolvedValue({ id: 1, total_spent: 500000 });
+    tx.membership.findFirst.mockResolvedValue(null);
+
+    await returnService.approveReturn('326');
+
+    expect(tx.revenue.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          total_sales: { increment: -500000 },
+          total_orders: { increment: -1 },
+        }),
+      })
+    );
+  });
+});

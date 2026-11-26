@@ -116,7 +116,19 @@ export class StorefrontPaymentService {
         const current = await tx.order.findUnique({ where: { id: orderId } });
         if (!current) return 'not-found';
         if (current.payment_status === 'Paid') return classifyRepeatPayment(tx, orderId, method, providerReference);
-        if (CLOSED_ORDER_STATUSES.includes(current.status) || current.payment_status === 'Refunded') return 'closed';
+        if (CLOSED_ORDER_STATUSES.includes(current.status) || current.payment_status === 'Refunded') {
+          // B-2: record reconciliation log even when the race was lost to a cancel/refund
+          await tx.paymentStatusLog.create({
+            data: {
+              order_id: orderId,
+              from_status: current.payment_status,
+              to_status: current.payment_status,
+              changed_by: null,
+              note: `Late ${method} success (${providerReference}); closed/refunded order (concurrent cancel race) requires reconciliation`.slice(0, 255),
+            },
+          });
+          return 'closed';
+        }
         if (!REPAYABLE_ORDER_STATUSES.includes(current.status)) {
           await tx.paymentStatusLog.create({
             data: {
@@ -259,22 +271,55 @@ export class StorefrontPaymentService {
         throw new ForbiddenException({ message: 'Forbidden: You do not have permission to pay for this order.' });
       }
       if (order.payment_status === 'Paid') throw new BadRequestException({ message: 'This order is already paid.' });
+      if (order.payment_status === 'Refunded') throw new BadRequestException({ message: 'Cannot pay for a refunded order.' });
       if (CLOSED_ORDER_STATUSES.includes(order.status)) throw new BadRequestException({ message: 'Cannot change payment method or pay for a closed order.' });
       if (!REPAYABLE_ORDER_STATUSES.includes(order.status)) throw new BadRequestException({ message: 'Payment can only be changed or retried while the order is Pending or Confirmed.' });
       const targetMethod = String(body.new_payment_method || order.payment_method).toLowerCase();
       if (!['momo', 'vnpay', 'cod'].includes(targetMethod)) throw new BadRequestException({ message: 'Invalid payment method selected.' });
-      if (targetMethod !== order.payment_method) await this.prisma.order.update({ where: { id: order.id }, data: { payment_method: targetMethod as 'momo' | 'vnpay' | 'cod' } });
+      const commitPaymentMethodIfStillRepayable = async () => {
+        if (targetMethod !== order.payment_method) {
+          const updated = await this.prisma.order.updateMany({
+            where: {
+              id: order.id,
+              payment_status: 'Unpaid',
+              status: { in: REPAYABLE_ORDER_STATUSES },
+            },
+            data: { payment_method: targetMethod as 'momo' | 'vnpay' | 'cod' },
+          });
+          if (updated.count === 0) {
+            throw new BadRequestException({ message: 'Order status or payment status changed; cannot update payment method.' });
+          }
+          return;
+        }
+        const stillRepayable = await this.prisma.order.findFirst({
+          where: {
+            id: order.id,
+            payment_status: 'Unpaid',
+            status: { in: REPAYABLE_ORDER_STATUSES },
+          },
+          select: { id: true },
+        });
+        if (!stillRepayable) {
+          throw new BadRequestException({ message: 'Order status or payment status changed; cannot retry payment.' });
+        }
+      };
       if (targetMethod === 'momo') {
         const momoOrderId = `REPAY_${order.id}_${Date.now()}`;
         const momoResponse = await getMomoPayUrl(momoOrderId, Number(order.total_price), `Retry payment for order #${order.id}`);
+        if (!momoResponse?.payUrl) throw new Error(momoResponse?.message || 'Failed to get MoMo payUrl');
+        await commitPaymentMethodIfStillRepayable();
         return { payUrl: momoResponse.payUrl, payment_method: 'momo' };
       }
       if (targetMethod === 'vnpay') {
         const clientIp = getGatewayClientIp(remoteAddress);
         const vnpayUrl = generateVnPayUrl({ orderId: `${order.id}_${Date.now()}`, amount: Number(order.total_price), orderInfo: `Retry payment for order #${order.id}`, ipAddr: clientIp, bankCode: 'VNBANK' });
+        await commitPaymentMethodIfStillRepayable();
         return { payUrl: vnpayUrl, payment_method: 'vnpay' };
       }
-      if (targetMethod === 'cod') return { message: 'Switched to Cash on Delivery (COD) successfully.', payUrl: null, payment_method: 'cod' };
+      if (targetMethod === 'cod') {
+        await commitPaymentMethodIfStillRepayable();
+        return { message: 'Switched to Cash on Delivery (COD) successfully.', payUrl: null, payment_method: 'cod' };
+      }
       throw new BadRequestException({ message: 'Repayment is not supported for this payment method.' });
     } catch (error) {
       if (error instanceof NotFoundException || error instanceof ForbiddenException || error instanceof BadRequestException) throw error;

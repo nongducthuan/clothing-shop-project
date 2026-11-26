@@ -135,6 +135,7 @@ export class AdminProductVariantService {
   async getInventory() {
     try {
       const inventory = await this.prisma.product.findMany({
+        where: { is_active: true },
         select: {
           id: true,
           name: true,

@@ -56,9 +56,12 @@ export class StorefrontProductService {
 
   async getRepresentative(categoryId?: string) {
     if (!categoryId) throw new BadRequestException({ message: 'Missing category_id' });
+    // B-12: guard NaN before Prisma
+    const catId = Number(categoryId);
+    if (!Number.isInteger(catId) || catId <= 0) throw new BadRequestException({ message: 'Invalid category_id' });
     try {
       const product = await this.prisma.product.findFirst({
-        where: { category_id: Number(categoryId), is_active: true },
+        where: { category_id: catId, is_active: true },
         orderBy: { created_at: 'desc' },
       });
       if (!product) throw new NotFoundException({ message: 'Product not found' });
@@ -72,9 +75,9 @@ export class StorefrontProductService {
 
   async getProducts(query: ProductQuery) {
     try {
-      const page = Number(query.page) || 1;
-      const limit = Number(query.limit) || 8;
-      const where: Prisma.ProductWhereInput = { is_active: true };
+      const page = Math.max(1, Math.floor(Number(query.page) || 1));
+      const limit = Math.min(2000, Math.max(1, Math.floor(Number(query.limit) || 8)));
+      const where: Prisma.ProductWhereInput = { is_active: true, category: { is_active: true } };
       if (query.category_id) where.category_id = Number(query.category_id);
       if (query.gender && query.gender !== '') where.gender = this.parseGender(query.gender);
       const [productsRaw, totalProducts, activeSales] = await Promise.all([
@@ -100,11 +103,12 @@ export class StorefrontProductService {
 
   async searchProducts(query: ProductQuery) {
     try {
-      const page = Number(query.page) || 1;
-      const limit = Number(query.limit) || 8;
+      const page = Math.max(1, Math.floor(Number(query.page) || 1));
+      const limit = Math.min(2000, Math.max(1, Math.floor(Number(query.limit) || 8)));
       const search = query.q ? String(query.q) : '';
       const where: Prisma.ProductWhereInput = {
         is_active: true,
+        category: { is_active: true },
         OR: [
           { name: { contains: search, mode: 'insensitive' } },
           { name_vi: { contains: search, mode: 'insensitive' } },
@@ -142,9 +146,11 @@ export class StorefrontProductService {
 
   async getProduct(id: string, userId?: number) {
     try {
+      // B-12: guard NaN
       const productId = Number(id);
+      if (!Number.isInteger(productId) || productId <= 0) throw new BadRequestException({ message: 'Invalid product id' });
       const [product, activeSales] = await Promise.all([
-        this.prisma.product.findFirst({ where: { id: productId, is_active: true }, include: { category: true, colors: { include: { sizes: true } } } }),
+        this.prisma.product.findFirst({ where: { id: productId, is_active: true, category: { is_active: true } }, include: { category: true, colors: { include: { sizes: true } } } }),
         this.getActiveSalesCache(),
       ]);
       if (!product) throw new NotFoundException({ message: 'Product not found' });
@@ -176,8 +182,11 @@ export class StorefrontProductService {
 
   async getProductOptions(id: string) {
     try {
+      // B-12: guard NaN
+      const productId = Number(id);
+      if (!Number.isInteger(productId) || productId <= 0) throw new BadRequestException({ message: 'Invalid product id' });
       return await this.prisma.productColor.findMany({
-        where: { product_id: Number(id), product: { is_active: true } },
+        where: { product_id: productId, product: { is_active: true, category: { is_active: true } } },
         include: { sizes: true },
       });
     } catch (error) {
@@ -244,8 +253,10 @@ export class StorefrontProductService {
       if (!Array.isArray(body.productIds) || body.productIds.length === 0) {
         throw new BadRequestException({ success: false, message: 'productIds array required' });
       }
-      const ids = body.productIds.map(Number).filter((id) => id > 0);
-      const products = await this.prisma.product.findMany({ where: { id: { in: ids } }, select: { id: true, price: true, category_id: true } });
+      const ids = body.productIds.map(Number).filter((id) => Number.isInteger(id) && id > 0);
+      const products = ids.length > 0
+        ? await this.prisma.product.findMany({ where: { id: { in: ids }, is_active: true, category: { is_active: true } }, select: { id: true, price: true, category_id: true } })
+        : [];
       const sales = await this.getActiveSalesCache();
       const priceMap: Record<number, number> = {};
       for (const product of products) {

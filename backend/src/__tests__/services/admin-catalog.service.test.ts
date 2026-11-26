@@ -8,9 +8,10 @@ import { AdminMembershipService } from '../../admin/services/admin-membership.se
 
 const prismaMock = {
   banner: { findMany: jest.fn(), create: jest.fn(), update: jest.fn(), delete: jest.fn() },
+  category: { findUnique: jest.fn(), update: jest.fn() },
   productColor: { create: jest.fn(), delete: jest.fn() },
   productSize: { findFirst: jest.fn(), create: jest.fn(), update: jest.fn(), delete: jest.fn(), findUnique: jest.fn() },
-  product: { findMany: jest.fn() },
+  product: { findMany: jest.fn(), count: jest.fn() },
 };
 const prisma = prismaMock as unknown as PrismaService;
 const service = new AdminCatalogService(
@@ -87,5 +88,15 @@ describe('AdminCatalogService', () => {
         stock: 5,
       }],
     });
+  });
+
+  it('blocks changing category gender when products with a different gender exist', async () => {
+    prismaMock.category.findUnique.mockResolvedValue({ id: 5, gender: 'male' });
+    prismaMock.product.count.mockResolvedValue(2);
+
+    await expect(service.updateCategory('5', { name: 'Shirts', gender: 'unisex' }))
+      .rejects.toBeInstanceOf(BadRequestException);
+
+    expect(prismaMock.category.update).not.toHaveBeenCalled();
   });
 });

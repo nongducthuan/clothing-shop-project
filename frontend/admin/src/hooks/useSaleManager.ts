@@ -1,11 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import API from "@shop/shared/services/apiClient";
 import { useToast } from "@shop/shared/context/ToastContext";
 import { useLanguage } from "@shop/shared/context/LanguageContext";
+import { toLocalDateTimeInput, fromLocalDateTimeInput } from "@shop/shared/utils/dateUtils";
 import type { FormEvent } from "react";
 
 interface CatalogItem { id: number; name: string; name_vi?: string; name_en?: string; gender?: string; category_id?: number; [key: string]: unknown }
-export interface SaleRecord { id: number; name: string; name_vi?: string; name_en?: string; discount_percent: number | string; start_date: string; end_date: string; apply_scope?: "all" | "category" | "product"; [key: string]: unknown }
+export interface SaleRecord { id: number; name: string; name_vi?: string; name_en?: string; discount_percent: number | string; start_date: string; end_date: string; apply_scope?: "all" | "category" | "product"; productIds?: number[]; categoryIds?: number[]; [key: string]: unknown }
 export interface SaleForm { name: string; name_vi: string; name_en: string; discount_percent: string | number; start_date: string; end_date: string; apply_scope: "all" | "category" | "product" }
 
 export default function useSaleManager() {
@@ -23,6 +24,7 @@ export default function useSaleManager() {
 
   const [detailModal, setDetailModal] = useState<{ isOpen: boolean; data: CatalogItem[]; title: string }>({ isOpen: false, data: [], title: "" });
   const [editingId, setEditingId] = useState<number | null>(null);
+  const isSubmittingRef = useRef(false);
 
   const [formData, setFormData] = useState<SaleForm>({
     name: "",
@@ -85,6 +87,7 @@ export default function useSaleManager() {
     if (!window.confirm(t("admin.confirm_delete", "Are you sure you want to delete this item?"))) return;
     try {
       await API.delete(`/admin/sales/${id}`);
+      if (editingId === id) handleCancelEdit();
       showToast(t("admin.toast_deleted", "Đã xóa thành công!"), "success");
       fetchInitialData();
     } catch (error) {
@@ -96,17 +99,20 @@ export default function useSaleManager() {
   const emptySaleForm: SaleForm = { name: "", name_vi: "", name_en: "", discount_percent: "", start_date: "", end_date: "", apply_scope: "all" };
 
   const handleEdit = (sale: SaleRecord) => {
+    const scope = sale.apply_scope || "all";
     setEditingId(sale.id);
     setFormData({
       name: sale.name || "",
       name_vi: sale.name_vi || sale.name || "",
       name_en: sale.name_en || sale.name || "",
       discount_percent: String(sale.discount_percent),
-      start_date: sale.start_date ? sale.start_date.slice(0, 16) : "",
-      end_date: sale.end_date ? sale.end_date.slice(0, 16) : "",
-      apply_scope: sale.apply_scope || "all"
+      start_date: toLocalDateTimeInput(sale.start_date),
+      end_date: toLocalDateTimeInput(sale.end_date),
+      apply_scope: scope
     });
-    setApplyScope(sale.apply_scope || "all");
+    setApplyScope(scope);
+    setSelectedCategoryIds(scope === "category" && Array.isArray(sale.categoryIds) ? sale.categoryIds.map(Number) : []);
+    setSelectedProductIds(scope === "product" && Array.isArray(sale.productIds) ? sale.productIds.map(Number) : []);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -120,9 +126,13 @@ export default function useSaleManager() {
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (isSubmittingRef.current) return;
+    isSubmittingRef.current = true;
 
     const payload = {
       ...formData,
+      start_date: fromLocalDateTimeInput(formData.start_date) || "",
+      end_date: fromLocalDateTimeInput(formData.end_date) || "",
       name_vi: (formData.name_vi || "").trim() || (formData.name || "").trim(),
       name_en: (formData.name_en || "").trim() || (formData.name || "").trim(),
       apply_scope: applyScope,
@@ -147,6 +157,8 @@ export default function useSaleManager() {
     } catch (error) {
       const apiError = error as { response?: { data?: { message?: string } }; message?: string };
       showToast(t("admin.toast_error", "Error: {error}").replace("{error}", translateApiMessage(apiError.response?.data?.message) || apiError.message || ""), "error");
+    } finally {
+      isSubmittingRef.current = false;
     }
   };
 

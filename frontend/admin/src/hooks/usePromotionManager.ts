@@ -5,6 +5,7 @@ import type { PromotionFormData } from "../components/promotions/PromotionForm";
 import API from "@shop/shared/services/apiClient";
 import { useToast } from "@shop/shared/context/ToastContext";
 import { useLanguage } from "@shop/shared/context/LanguageContext";
+import { toLocalDateTimeInput, fromLocalDateTimeInput } from "@shop/shared/utils/dateUtils";
 
 interface CatalogProduct extends PromotionProduct { name_vi?: string; name_en?: string; total_stock?: number; stock?: number }
 interface CatalogCategory { id: number; name: string; name_vi?: string; name_en?: string; [key: string]: unknown }
@@ -97,6 +98,8 @@ export default function usePromotionManager() {
       setIsLoading(true);
       const payload = {
         ...formData,
+        start_date: fromLocalDateTimeInput(formData.start_date) || "",
+        end_date: fromLocalDateTimeInput(formData.end_date) || "",
         name_vi: (formData.name_vi || "").trim?.() || formData.name_vi || formData.name || "",
         name_en: (formData.name_en || "").trim?.() || formData.name_en || formData.name || "",
         max_gift_per_order: formData.max_gift_per_order || null,
@@ -161,12 +164,11 @@ export default function usePromotionManager() {
   };
 
   const formatForInputDate = (dateString?: string | null) => {
-    if (!dateString) return "";
-    return new Date(dateString).toISOString().substring(0, 16);
+    return toLocalDateTimeInput(dateString);
   };
 
   const getProductName = (id: number | string) => {
-    const product = products.find((p) => p.id === id);
+    const product = products.find((p) => String(p.id) === String(id));
     return product ? (getLocalizedText(product, "name") || product.name) : t("admin.product_id_fallback").replace("{id}", String(id));
   };
 
