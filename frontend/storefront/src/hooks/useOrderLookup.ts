@@ -47,18 +47,18 @@ export function useOrderLookup() {
     setRepayBusy: setLoading,
     setCancelOrderBusy: (orderId) => setLoading(orderId !== null),
     setCancelReturnBusy: setLoading,
-    // Sau repay không redirect: đóng modal rồi verify OTP lại để làm mới danh sách
+    // F-1: OTP is consumed on first verify; use guestOrderAccessToken for refresh instead
     onRepaySuccess: async () => {
       setPaymentModalOrder(null);
-      if (email && otp) {
+      const token = sessionStorage.getItem('guestOrderAccessToken');
+      if (token) {
         try {
-          const refreshRes = await API.post("/orders/otp/verify", { email, code: otp });
+          const refreshRes = await API.get("/orders/guest", {
+            headers: { Authorization: `Bearer ${token}` },
+          });
           if (refreshRes.data?.orders) setOrders(refreshRes.data.orders);
-          if (refreshRes.data?.guestOrderAccessToken) {
-            sessionStorage.setItem('guestOrderAccessToken', refreshRes.data.guestOrderAccessToken);
-          }
         } catch {
-          // Ignore OTP re-verification error on background refresh
+          // Ignore refresh error — user can re-verify with a new OTP
         }
       }
     },

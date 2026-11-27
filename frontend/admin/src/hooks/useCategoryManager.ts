@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import type { ChangeEvent, FormEvent } from "react";
 import API from "@shop/shared/services/apiClient";
 import { useToast } from "@shop/shared/context/ToastContext";
@@ -26,6 +26,7 @@ export function useCategoryManager() {
   const [recommendNames, setRecommendNames] = useState<RecommendedName[]>([]);
 
   const [form, setForm] = useState<CategoryFormData>({ name: "", name_vi: "", name_en: "", gender: "", image_url: "" });
+  const contextSeqRef = useRef(0);
 
   /**
    * Fetches all categories and sorts them by a predefined gender order.
@@ -56,10 +57,13 @@ export function useCategoryManager() {
     setForm((prev) => ({ ...prev, [name]: value }));
 
     if (name === "gender" && value) {
+      const seq = ++contextSeqRef.current;
       try {
         const res = await API.get(`/admin/categories/recommend?gender=${value}`);
+        if (seq !== contextSeqRef.current) return;
         setRecommendNames(res.data.data || []);
       } catch {
+        if (seq !== contextSeqRef.current) return;
         setRecommendNames([]);
       }
     }
@@ -111,15 +115,18 @@ export function useCategoryManager() {
       image_url: cat.image_url || "",
     });
 
+    const seq = ++contextSeqRef.current;
     try {
       // Load preview images from existing products and current recommendations
       const [imagesRes, recommendRes] = await Promise.all([
         API.get(`/admin/categories/${cat.id}/images`),
         API.get(`/admin/categories/recommend?gender=${cat.gender}`),
       ]);
+      if (seq !== contextSeqRef.current) return;
       setCategoryImages(imagesRes.data.data || []);
       setRecommendNames(recommendRes.data.data || []);
     } catch (error) {
+      if (seq !== contextSeqRef.current) return;
       console.error("Failed to load editing context:", error);
     }
   };
@@ -134,6 +141,8 @@ export function useCategoryManager() {
       await API.delete(`/admin/categories/${id}`);
       if (editingId === id) resetForm();
       await fetchCategories();
+      // F-12: notify other components (breadcrumb, filters) that categories changed
+      window.dispatchEvent(new Event("categories-updated"));
       showToast(t("admin.category.toast_deleted", "Category deleted successfully!"), "success");
     } catch {
       showToast(t("admin.category.toast_delete_failed", "Cannot delete category containing products."), "error");
@@ -144,6 +153,7 @@ export function useCategoryManager() {
    * Resets form and all temporary data (images, suggestions).
    */
   const resetForm = () => {
+    contextSeqRef.current += 1;
     setEditingId(null);
     setForm({ name: "", name_vi: "", name_en: "", gender: "", image_url: "" });
     setCategoryImages([]);

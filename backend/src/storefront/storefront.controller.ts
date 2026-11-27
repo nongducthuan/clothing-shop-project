@@ -197,6 +197,12 @@ export class StorefrontController {
     return this.storefrontOrderService.getOrders(user?.id);
   }
 
+  @UseGuards(GuestOrderAccessGuard)
+  @Get('orders/guest')
+  getGuestOrders(@GuestEmail() guestEmail?: string) {
+    return this.storefrontOrderService.getGuestOrders(guestEmail);
+  }
+
   @UseGuards(OptionalJwtAuthGuard, GuestOrderAccessGuard)
   @Put('orders/status')
   changeOrderStatus(@Body() body: { order_id?: string | number; new_status?: string }, @CurrentUser() user?: import('../common/interfaces/jwt-payload.interface').JwtPayload, @GuestEmail() guestEmail?: string) {

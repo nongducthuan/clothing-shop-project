@@ -154,7 +154,7 @@ export function useCartPage() {
     };
 
     void refreshCartItems().catch((error) => console.error("Cart refresh failed", error));
-  }, [cart, setCart]);
+  }, [cart.length, setCart]);
 
   // Logic: Calculate earned gifts grouped by Product ID with chosen/default variants
   const earnedGifts = useMemo(() => {
@@ -214,7 +214,9 @@ export function useCartPage() {
           if ((!colorId || !sizeId) && detail?.colors && detail.colors.length > 0) {
             if (colorId && !sizeId) {
               const selectedColor = detail.colors.find(c => c.id === colorId);
-              const availableForColor = selectedColor?.sizes?.find(s => s.stock > 0);
+              // F-3: prefer a size with enough stock for the full gift quantity
+              const availableForColor = selectedColor?.sizes?.find(s => s.stock >= totalGiftQty)
+                || selectedColor?.sizes?.find(s => s.stock > 0);
               if (availableForColor) {
                 sizeId = availableForColor.id;
               } else {
@@ -223,7 +225,9 @@ export function useCartPage() {
             }
             if (!colorId || !sizeId) {
               for (const c of detail.colors) {
-                const availableSize = c.sizes?.find(s => s.stock > 0);
+                // F-3: prefer a size with enough stock for the full gift quantity
+                const availableSize = c.sizes?.find(s => s.stock >= totalGiftQty)
+                  || c.sizes?.find(s => s.stock > 0);
                 if (availableSize) {
                   colorId = c.id;
                   sizeId = availableSize.id;
@@ -257,15 +261,21 @@ export function useCartPage() {
     }));
   };
 
+  // F-6: deduplicate concurrent gift detail fetches using a ref
+  const fetchedCartGiftIdsRef = useRef<Set<number>>(new Set());
   useEffect(() => {
     earnedGifts.forEach(gift => {
-      if (!giftProductsDetails[gift.giftProductId]) {
+      if (!giftProductsDetails[gift.giftProductId] && !fetchedCartGiftIdsRef.current.has(gift.giftProductId)) {
+        fetchedCartGiftIdsRef.current.add(gift.giftProductId);
         API.get(`/products/${gift.giftProductId}`)
           .then(res => {
             const product = res.data?.data || res.data;
             setGiftProductsDetails(prev => ({ ...prev, [gift.giftProductId]: product }));
           })
-          .catch(err => console.error("Error fetching gift details", err));
+          .catch(err => {
+            fetchedCartGiftIdsRef.current.delete(gift.giftProductId);
+            console.error("Error fetching gift details", err);
+          });
       }
     });
   }, [earnedGifts, giftProductsDetails]);
@@ -304,7 +314,7 @@ export function useCartPage() {
 
     if (final < 0) final = 0;
 
-    const shipFee = calculateShippingFee("", quantityValue, final);
+    const shipFee: number | null = null;
     const finalWithShipping = final + (shipFee || 0);
 
     return {

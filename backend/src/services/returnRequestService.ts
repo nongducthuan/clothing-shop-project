@@ -128,10 +128,21 @@ export function buildReturnPlan(order: ReturnOrder, requestedItems: RequestedRet
     const fractions = nonGiftReturnItems.map((item, i) => ({ i, frac: item.rawRefund - floors[i] }));
     fractions.sort((a, b) => b.frac - a.frac || a.i - b.i);
     let remainingCents = targetTotalRefund - floors.reduce((s, v) => s + v, 0);
-    for (const { i } of fractions) {
-        if (remainingCents <= 0) break;
-        floors[i] += 1;
-        remainingCents -= 1;
+    if (remainingCents > 0) {
+        for (const { i } of fractions) {
+            if (remainingCents <= 0) break;
+            floors[i] += 1;
+            remainingCents -= 1;
+        }
+    } else if (remainingCents < 0) {
+        // Legacy discounted orders without payable_amount may have rawRefund sum > targetTotalRefund
+        for (let idx = fractions.length - 1; idx >= 0 && remainingCents < 0; idx -= 1) {
+            const { i } = fractions[idx];
+            if (floors[i] <= 0) continue;
+            const deduct = Math.min(floors[i], -remainingCents);
+            floors[i] -= deduct;
+            remainingCents += deduct;
+        }
     }
     nonGiftReturnItems.forEach((item, pos) => {
         returnItemsToCreate[item.targetIndex].refund_amount = floors[pos];

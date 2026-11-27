@@ -53,14 +53,14 @@ export class AdminPromotionService {
     if (requireQuantities || (buyQtyRaw != null && buyQtyRaw !== '')) {
       const buyQty = Number(buyQtyRaw);
       if (buyQtyRaw == null || buyQtyRaw === '' || !Number.isFinite(buyQty) || !Number.isInteger(buyQty) || buyQty <= 0) {
-        throw new BadRequestException({ success: false, message: 'buy_quantity must be a positive integer' });
+        throw new BadRequestException({ success: false, message: 'buy_quantity must be greater than 0' });
       }
     }
     const giftQtyRaw = payload.gift_quantity;
     if (requireQuantities || (giftQtyRaw != null && giftQtyRaw !== '')) {
       const giftQty = Number(giftQtyRaw);
       if (giftQtyRaw == null || giftQtyRaw === '' || !Number.isFinite(giftQty) || !Number.isInteger(giftQty) || giftQty <= 0) {
-        throw new BadRequestException({ success: false, message: 'gift_quantity must be a positive integer' });
+        throw new BadRequestException({ success: false, message: 'gift_quantity must be greater than 0' });
       }
     }
     // B-5: empty optional fields must become null, not 0

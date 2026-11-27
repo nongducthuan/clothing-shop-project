@@ -2,7 +2,7 @@ import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import jwt from 'jsonwebtoken';
 
 type GuestRequest = {
-  headers: { 'x-guest-order-access'?: string | string[] };
+  headers: { 'x-guest-order-access'?: string | string[]; authorization?: string | string[] };
   params?: Record<string, string | undefined>;
   body?: { order_id?: unknown } | null;
   guestOrderEmail?: string;
@@ -23,9 +23,12 @@ type GuestRequest = {
 export class GuestOrderAccessGuard implements CanActivate {
   canActivate(context: ExecutionContext): boolean {
     const request = context.switchToHttp().getRequest<GuestRequest>();
-    const token = request.headers['x-guest-order-access'];
+    const headerToken = request.headers['x-guest-order-access'];
+    const authHeader = typeof request.headers.authorization === 'string' ? request.headers.authorization : '';
+    const bearerToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : undefined;
+    const token = typeof headerToken === 'string' ? headerToken : bearerToken;
     const secret = process.env.JWT_SECRET;
-    if (typeof token !== 'string' || !secret) return true;
+    if (typeof token !== 'string' || !token || !secret) return true;
 
     try {
       const payload = jwt.verify(token, secret);

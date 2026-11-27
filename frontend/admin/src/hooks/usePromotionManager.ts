@@ -138,8 +138,9 @@ export default function usePromotionManager() {
       start_date: formatForInputDate(promo.start_date),
       end_date: formatForInputDate(promo.end_date),
       is_stackable: Boolean(promo.is_stackable),
-      max_gift_per_order: String(promo.max_gift_per_order || ""),
-      total_gift_limit: String(promo.total_gift_limit || ""),
+      // F-11: use String(val ?? "") so that 0 is preserved as "0", not dropped to ""
+      max_gift_per_order: String(promo.max_gift_per_order ?? ""),
+      total_gift_limit: String(promo.total_gift_limit ?? ""),
       priority: String(promo.priority || "0"),
     });
     window.scrollTo({ top: 0, behavior: 'smooth' });

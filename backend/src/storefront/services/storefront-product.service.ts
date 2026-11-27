@@ -78,7 +78,11 @@ export class StorefrontProductService {
       const page = Math.max(1, Math.floor(Number(query.page) || 1));
       const limit = Math.min(2000, Math.max(1, Math.floor(Number(query.limit) || 8)));
       const where: Prisma.ProductWhereInput = { is_active: true, category: { is_active: true } };
-      if (query.category_id) where.category_id = Number(query.category_id);
+      if (query.category_id) {
+        const catId = Number(query.category_id);
+        if (!Number.isInteger(catId) || catId <= 0) throw new BadRequestException({ message: 'Invalid category_id' });
+        where.category_id = catId;
+      }
       if (query.gender && query.gender !== '') where.gender = this.parseGender(query.gender);
       const [productsRaw, totalProducts, activeSales] = await Promise.all([
         this.prisma.product.findMany({
@@ -118,7 +122,11 @@ export class StorefrontProductService {
           { description_en: { contains: search, mode: 'insensitive' } },
         ],
       };
-      if (query.category) where.category_id = Number(query.category);
+      if (query.category) {
+        const catId = Number(query.category);
+        if (!Number.isInteger(catId) || catId <= 0) throw new BadRequestException({ message: 'Invalid category' });
+        where.category_id = catId;
+      }
       if (query.gender && query.gender !== '') where.gender = this.parseGender(query.gender);
       const [productsRaw, totalProducts, activeSales] = await Promise.all([
         this.prisma.product.findMany({
@@ -204,8 +212,9 @@ export class StorefrontProductService {
       try {
         const query = Prisma.sql`
           SELECT DISTINCT p.* FROM products p
+          JOIN categories c ON p.category_id = c.id
           JOIN user_product_interaction upi ON p.id = upi.product_id
-          WHERE p.is_active IS TRUE
+          WHERE p.is_active IS TRUE AND c.is_active IS TRUE
           AND upi.user_id IN (
             SELECT DISTINCT t2.user_id
             FROM user_product_interaction t1
@@ -227,8 +236,8 @@ export class StorefrontProductService {
     if (products.length < targetSize) {
       const missing = targetSize - products.length;
       const query = excludeIds.length
-        ? Prisma.sql`SELECT * FROM products WHERE is_active IS TRUE AND id NOT IN (${Prisma.join(excludeIds)}) ORDER BY RANDOM() LIMIT ${missing}`
-        : Prisma.sql`SELECT * FROM products WHERE is_active IS TRUE ORDER BY RANDOM() LIMIT ${missing}`;
+        ? Prisma.sql`SELECT p.* FROM products p JOIN categories c ON p.category_id = c.id WHERE p.is_active IS TRUE AND c.is_active IS TRUE AND p.id NOT IN (${Prisma.join(excludeIds)}) ORDER BY RANDOM() LIMIT ${missing}`
+        : Prisma.sql`SELECT p.* FROM products p JOIN categories c ON p.category_id = c.id WHERE p.is_active IS TRUE AND c.is_active IS TRUE ORDER BY RANDOM() LIMIT ${missing}`;
       products = [...products, ...await this.prisma.$queryRaw<Product[]>(query)];
     }
     const activeSales = await this.getActiveSalesCache();

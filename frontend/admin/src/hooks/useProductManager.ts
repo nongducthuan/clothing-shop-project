@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useRef } from "react";
 import { useToast } from "@shop/shared/context/ToastContext";
 import { useLanguage } from "@shop/shared/context/LanguageContext";
 import { productApi } from "./product/productApi";
@@ -31,18 +31,24 @@ export default function useProductManager() {
   });
   const productForm = useProductForm();
   const { form, editingId, resetForm } = productForm;
+  // F-10: double-submit guard
+  const submittingRef = useRef(false);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (submittingRef.current) return;
+    submittingRef.current = true;
     const cleanName = form.name.trim();
     if (!cleanName || !form.price || !form.category_id) {
       showToast(t("admin.product.toast_required_missing", "Required fields missing"), "error");
+      submittingRef.current = false;
       return;
     }
 
     const categoryObj = categories.find((c: { id: number | string; gender: string }) => String(c.id) === String(form.category_id));
     if (categoryObj && categoryObj.gender !== form.gender) {
       showToast(t("admin.product.toast_gender_mismatch", "Gender mismatch with category!"), "error");
+      submittingRef.current = false;
       return;
     }
 
@@ -77,6 +83,8 @@ export default function useProductManager() {
       else await fetchProducts();
     } catch {
       showToast(t("admin.product.toast_save_failed", "Save failed"), "error");
+    } finally {
+      submittingRef.current = false;
     }
   };
 

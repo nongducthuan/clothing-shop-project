@@ -11,7 +11,7 @@ export function getDiscountableSubtotal(
   return items.reduce((sum, item) =>
     blockedProductIds.has(Number(item.id))
       ? sum
-      : sum + Number(item.price) * (item.quantity ?? 1),
+      : sum + (Number(item.price) || 0) * (Number(item.quantity ?? 1) || 0),
   0);
 }
 

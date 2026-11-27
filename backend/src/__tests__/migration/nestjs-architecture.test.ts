@@ -28,12 +28,12 @@ describe('NestJS migration architecture guardrails', () => {
   const runtimeFiles = listTypeScriptFiles(sourceRoot);
   const runtimeText = runtimeFiles.map((file) => fs.readFileSync(file, 'utf8')).join('\n');
 
-  it('keeps all 99 routes as native NestJS controller handlers', () => {
+  it('keeps all 100 routes as native NestJS controller handlers', () => {
     const routeCount = controllers.reduce(
       (count, source) => count + (source.match(/^\s{2}@(Get|Post|Put|Patch|Delete)\(/gm) ?? []).length,
       0,
     );
-    expect(routeCount).toBe(99);
+    expect(routeCount).toBe(100);
     expect(adminController).toContain('@Controller(\'admin\')');
     expect(storefrontController).toContain('@Controller()');
     expect(notificationController).toContain('@Controller(\'notifications\')');

@@ -4,7 +4,6 @@ import OrderDetailsModal from "../components/orders/OrderDetailsModal.tsx";
 import UndoApproveModal from "../components/orders/UndoApproveModal.tsx";
 import AdminPagination from "../components/layout/AdminPagination";
 import useOrderManager from "../hooks/useOrderManager";
-import EmptyState from "@shop/shared/components/common/EmptyState";
 import { useLanguage } from "@shop/shared/context/LanguageContext";
 import { useState } from "react";
 import type { AdminOrder } from "../components/orders/orderTypes";
@@ -24,7 +23,6 @@ const PageHeader = () => {
 };
 
 export default function OrderManager() {
-  const { t } = useLanguage();
   const {
     filters,
     pagination,
@@ -51,30 +49,13 @@ export default function OrderManager() {
     setSelectedOrder(order);
   };
 
-  // EmptyState toàn trang CHỈ khi hệ thống thực sự chưa có đơn nào (không phải do bộ lọc).
-  // Nếu che cả thanh tab/lọc, admin sẽ bị kẹt: không còn cách nào bỏ bộ lọc để xem lại.
-  const isSystemEmpty =
-    pagination.totalOrders === 0 &&
-    filters.activeTab === "Standard" &&
-    filters.currentActiveFilter === "All";
-
   return (
     <div className="container mx-auto px-4 py-8 lg:px-8 max-w-7xl flex-1">
 
       <PageHeader />
 
-      {/* Main Content Area */}
+      {/* Main Content Area — luôn render OrderCard/OrderTable để giữ thanh chuyển tab Standard ↔ Returns */}
       <div className="bg-white dark:bg-slate-800 p-4 md:p-8 rounded-[2rem] border border-slate-200/80 dark:border-slate-700 shadow-sm min-h-[500px]">
-        {isSystemEmpty ? (
-          /* Global Empty State */
-          <div className="flex items-center justify-center h-full min-h-[400px]">
-            <EmptyState
-              title={t("admin.system_is_empty")}
-              subtitle={t("admin.no_orders_subtitle")}
-              icon="fa-box-open"
-            />
-          </div>
-        ) : (
           <>
             {/* Mobile View - Hiển thị dạng thẻ và gọi Modal khi xem chi tiết */}
             <OrderCard
@@ -112,7 +93,6 @@ export default function OrderManager() {
               onPageChange={handlePageChange}
             />
           </>
-        )}
       </div>
 
       {/* Details Modal (Dành riêng cho Mobile View) */}

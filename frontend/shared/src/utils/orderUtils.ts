@@ -137,7 +137,7 @@ export function isPaymentAllowed(currentPayment: string, targetPayment: string, 
  * Chỉ ảnh hưởng cách trình bày; dữ liệu payment_status không đổi.
  */
 export function isClosedOrderStatus(status: string): boolean {
-  return status === "Cancelled" || RETURN_STATUS_VARIANTS.includes(status);
+  return ["Cancelled", "Return Approved", "Return_Approved"].includes(status);
 }
 
 /**

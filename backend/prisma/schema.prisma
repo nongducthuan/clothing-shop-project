@@ -118,7 +118,6 @@ model ProductSize {
   color_id                Int
   size                    SizeEnum
   stock                   Int                     @default(0)
-  extra_price             Decimal                 @default(0.00) @db.Decimal(10, 2)
   order_items             OrderItem[]
   color                   ProductColor            @relation(fields: [color_id], references: [id], onDelete: Cascade)
   promotion_usage_history PromotionUsageHistory[]

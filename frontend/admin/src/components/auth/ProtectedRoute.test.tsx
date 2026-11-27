@@ -41,7 +41,7 @@ describe("admin ProtectedRoute", () => {
   });
 
   it("shows a translated no-access screen with a logout button for other roles", () => {
-    const logout = renderAt("/orders", { role: "user" });
+    const logout = renderAt("/orders", { role: "customer" });
     expect(screen.queryByText("secret")).toBeNull();
     fireEvent.click(screen.getByRole("button"));
     expect(logout).toHaveBeenCalled();

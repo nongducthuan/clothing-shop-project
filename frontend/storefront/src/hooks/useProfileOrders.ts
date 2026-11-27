@@ -17,10 +17,7 @@ export function useProfileOrders(shouldLoad: boolean) {
     setLoadingOrders(true);
     setHasFetchedOrders(true);
     try {
-      const token = localStorage.getItem("token");
-      const response = await API.get("/orders", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await API.get("/orders");
       setOrders(response.data as ProfileOrder[]);
     } catch (error) {
       console.error("Order Fetch Error:", error);

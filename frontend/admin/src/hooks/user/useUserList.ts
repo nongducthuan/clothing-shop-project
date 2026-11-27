@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import API from "@shop/shared/services/apiClient";
 import type { AdminUser, AdminMembership } from "./userTypes";
 
@@ -14,8 +14,10 @@ export function useUserList({ page, debouncedSearch, filterRole }: UserListQuery
   const [memberships, setMemberships] = useState<AdminMembership[]>([]);
   const [pagination, setPagination] = useState({ currentPage: 1, totalPages: 1, totalUsers: 0 });
   const [isLoading, setIsLoading] = useState(true);
+  const fetchSeqRef = useRef(0);
 
   const fetchUsers = useCallback(async () => {
+    const seq = ++fetchSeqRef.current;
     try {
       const params: Record<string, string | number> = {
         page,
@@ -25,6 +27,7 @@ export function useUserList({ page, debouncedSearch, filterRole }: UserListQuery
       if (filterRole !== "all") params.role = filterRole;
 
       const res = await API.get("/admin/users", { params });
+      if (seq !== fetchSeqRef.current) return;
       const payload = res.data;
       const list = Array.isArray(payload) ? payload : payload.data;
       setUsers(Array.isArray(list) ? list : []);
@@ -40,9 +43,10 @@ export function useUserList({ page, debouncedSearch, filterRole }: UserListQuery
         setPagination({ currentPage: 1, totalPages: 1, totalUsers: total });
       }
     } catch (error) {
+      if (seq !== fetchSeqRef.current) return;
       console.error("Failed to fetch users:", error);
     } finally {
-      setIsLoading(false);
+      if (seq === fetchSeqRef.current) setIsLoading(false);
     }
   }, [page, debouncedSearch, filterRole]);
 

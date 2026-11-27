@@ -123,8 +123,8 @@ counts.runtimeFiles = runtimeFiles.length;
 const runtimeText = runtimeFiles.map((file) => fs.readFileSync(file, 'utf8')).join('\n');
 const controllerText = routeControllerPaths.map(read).join('\n');
 
-if (counts.routes !== 99) errors.push(`Expected 99 decorated routes; found ${counts.routes}`);
-if (counts.routeHandlersDelegatingToServices !== 99) errors.push(`Expected all 99 routes to delegate to injectable services; found ${counts.routeHandlersDelegatingToServices}`);
+if (counts.routes !== 100) errors.push(`Expected 100 decorated routes; found ${counts.routes}`);
+if (counts.routeHandlersDelegatingToServices !== 100) errors.push(`Expected all 100 routes to delegate to injectable services; found ${counts.routeHandlersDelegatingToServices}`);
 if (/\brun\s*\(|\bnext\s*\(|\bres\s*\(/.test(controllerText)) errors.push('Legacy Express forwarding patterns found in route controllers');
 if (fs.existsSync(path.join(src, 'controllers'))) errors.push('Legacy src/controllers directory still exists');
 if (fs.existsSync(path.join(root, 'test-fixtures'))) errors.push('Legacy test-fixtures directory still exists');

@@ -129,6 +129,13 @@ export function useCheckoutPage() {
   const [guestInfo, setGuestInfo] = useState({ name: "", phone: "", email: "" });
   const [giftDetails, setGiftDetails] = useState<Record<number, CheckoutGiftDetail>>({});
   const fetchedGiftIdsRef = useRef<Set<number>>(new Set());
+  // F-5: clear redirect timer on unmount
+  const redirectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    return () => {
+      if (redirectTimerRef.current) clearTimeout(redirectTimerRef.current);
+    };
+  }, []);
 
   const routeState = routeLocation.state as CheckoutRouteState | null;
   const appliedVoucher = routeState?.appliedVoucher ?? null;
@@ -241,7 +248,9 @@ export function useCheckoutPage() {
           if ((!chosenColorId || !chosenSizeId) && detail && detail.colors && detail.colors.length > 0) {
             if (chosenColorId && !chosenSizeId) {
               const selectedColor = detail.colors.find(c => c.id === chosenColorId);
-              const availableForColor = selectedColor?.sizes?.find(s => s.stock > 0);
+              // F-3: prefer a size with enough stock for gift.quantity
+              const availableForColor = selectedColor?.sizes?.find(s => s.stock >= gift.quantity)
+                || selectedColor?.sizes?.find(s => s.stock > 0);
               if (availableForColor) {
                 chosenSizeId = availableForColor.id;
               } else {
@@ -250,7 +259,9 @@ export function useCheckoutPage() {
             }
             if (!chosenColorId || !chosenSizeId) {
               for (const c of detail.colors) {
-                const availableSize = c.sizes?.find(s => s.stock > 0);
+                // F-3: prefer a size with enough stock for gift.quantity
+                const availableSize = c.sizes?.find(s => s.stock >= gift.quantity)
+                  || c.sizes?.find(s => s.stock > 0);
                 if (availableSize) {
                   chosenColorId = c.id;
                   chosenSizeId = availableSize.id;
@@ -299,7 +310,7 @@ export function useCheckoutPage() {
         clearCart();
         setIsStatusSuccess(true);
         setStatusMessage(t("checkout.success", "Order placed successfully!"));
-        setTimeout(() => navigate(user ? "/profile?tab=orders" : "/order"), 2000);
+        redirectTimerRef.current = setTimeout(() => navigate(user ? "/profile?tab=orders" : "/order"), 2000);
       }
     } catch (err) {
       setIsStatusSuccess(false);

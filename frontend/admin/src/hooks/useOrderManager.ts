@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import API from "@shop/shared/services/apiClient";
 import { useToast } from "@shop/shared/context/ToastContext";
 import { useLanguage } from "@shop/shared/context/LanguageContext";
@@ -57,19 +57,25 @@ export default function useOrderManager() {
    * Việc có cần nhắc hoàn tiền hay không dựa trên "tiền đã thu chưa",
    * KHÔNG dựa vào payment_method (COD giao xong vẫn đã thu tiền mặt).
    */
+  // F-8: verify selectedOrder ID matches before using as fallback
   const findOrderById = (orderId: number | string) =>
-    orders.find((o) => String(o.id) === String(orderId)) || selectedOrder;
+    orders.find((o) => String(o.id) === String(orderId))
+    || (selectedOrder && String(selectedOrder.id) === String(orderId) ? selectedOrder : null);
+
+  const fetchSeqRef = useRef(0);
 
   /**
    * Lấy MỘT TRANG đơn hàng từ backend. Backend tự lọc theo tab + trạng thái và
    * sắp xếp mới nhất trước (orderBy created_at desc) → không lọc/sắp xếp lại ở client.
    */
   const fetchOrders = useCallback(async () => {
+    const seq = ++fetchSeqRef.current;
     try {
       const res = await API.get("/admin/orders", {
         headers: { Authorization: `Bearer ${getToken()}` },
         params: { page, limit: PAGE_SIZE, tab: activeTab, status: currentActiveFilter },
       });
+      if (seq !== fetchSeqRef.current) return;
 
       const ordersData = res.data?.data ?? res.data;
       const pageOrders: OrderRecord[] = Array.isArray(ordersData) ? ordersData : [];
@@ -89,6 +95,7 @@ export default function useOrderManager() {
         totalOrders: Number(res.data?.totalOrders) || 0,
       });
     } catch {
+      if (seq !== fetchSeqRef.current) return;
       showToast(t("admin.order.toast_load_failed", "Error loading orders"), "error");
     }
   }, [activeTab, currentActiveFilter, getToken, page, showToast, t]);

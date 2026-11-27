@@ -112,7 +112,7 @@ export async function getMomoPayUrl(
                 try {
                     const parsed: unknown = JSON.parse(data);
                     if (isRecord(parsed)) {
-                        resolve(parsed as MomoPayResponse);
+                        resolve({ ...(parsed as MomoPayResponse), orderId: (parsed as MomoPayResponse).orderId ?? momoOrderId });
                     } else {
                         resolve({ errorCode: -1, message: 'Invalid MoMo response payload' });
                     }

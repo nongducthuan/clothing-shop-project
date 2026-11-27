@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useToast } from "@shop/shared/context/ToastContext";
 import { useLanguage } from "@shop/shared/context/LanguageContext";
 import { productApi, PAGE_SIZE } from "./productApi";
@@ -23,8 +23,10 @@ export function useProductList({ page, filterGender, selectedCategoryIds, deboun
   const [products, setProducts] = useState<ProductRecord[]>([]);
   const [pagination, setPagination] = useState({ currentPage: 1, totalPages: 1, totalProducts: 0 });
   const [loading, setLoading] = useState(false);
+  const fetchSeqRef = useRef(0);
 
   const fetchProducts = useCallback(async () => {
+    const seq = ++fetchSeqRef.current;
     setLoading(true);
     try {
       const params = new URLSearchParams({ page: String(page), limit: String(PAGE_SIZE) });
@@ -35,6 +37,7 @@ export function useProductList({ page, filterGender, selectedCategoryIds, deboun
       const prodRes = await productApi.get(`/admin/products?${params.toString()}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      if (seq !== fetchSeqRef.current) return;
       const payload = prodRes.data;
 
       setProducts(Array.isArray(payload?.data) ? payload.data : []);
@@ -44,10 +47,11 @@ export function useProductList({ page, filterGender, selectedCategoryIds, deboun
         totalProducts: payload?.totalProducts ?? 0,
       });
     } catch (err: unknown) {
+      if (seq !== fetchSeqRef.current) return;
       console.error("Data Load Error:", err);
       showToast(t("admin.product.toast_load_failed", "Failed to load data"), "error");
     } finally {
-      setLoading(false);
+      if (seq === fetchSeqRef.current) setLoading(false);
     }
   }, [token, showToast, t, page, filterGender, selectedCategoryIds, debouncedSearch]);
 

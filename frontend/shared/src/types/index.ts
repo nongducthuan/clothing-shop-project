@@ -6,7 +6,7 @@ export interface User {
   email: string;
   phone?: string;
   address?: string;
-  role: 'admin' | 'user';
+  role: 'admin' | 'customer';
   tier_name?: string;
   discount_percent?: number;
   total_spent?: number;
@@ -98,40 +98,54 @@ export interface CartItem {
 }
 
 export type OrderStatus =
-  | 'pending'
-  | 'confirmed'
-  | 'shipping'
-  | 'delivered'
-  | 'cancelled'
-  | 'return_requested'
-  | 'returned';
+  | 'Pending'
+  | 'Confirmed'
+  | 'Shipping'
+  | 'Delivered'
+  | 'Cancelled'
+  | 'Return Requested'
+  | 'Return_Requested'
+  | 'Return Rejected'
+  | 'Return_Rejected'
+  | 'Return Approved'
+  | 'Return_Approved';
 
 export interface OrderItem {
   id: number;
   order_id: number;
-  product_variant_id: number;
+  product_id: number;
+  color_id?: number | null;
+  size_id?: number | null;
   quantity: number;
-  unit_price: number;
+  price: number;
+  is_gift?: boolean;
+  promotion_id?: number | null;
+  import_price_snapshot?: number;
   product_name?: string;
   color_name?: string;
   size_name?: string;
   image_url?: string;
+  product?: { name: string; name_vi?: string; name_en?: string; image_url?: string };
+  color?: { color_name: string; color_name_vi?: string; color_name_en?: string; image_url?: string };
+  size?: { size: string };
 }
 
 export interface Order {
   id: number;
-  user_id?: number;
-  status: OrderStatus;
-  total_amount: number;
+  user_id?: number | null;
+  status: OrderStatus | string;
+  total_price: number;
+  shipping_fee?: number;
   discount_amount?: number;
-  final_amount?: number;
-  shipping_address?: string;
-  recipient_name?: string;
-  recipient_phone?: string;
+  address?: string;
+  name?: string;
+  phone?: string;
+  email?: string;
   payment_method?: string;
-  note?: string;
-  voucher_code?: string;
+  payment_status?: 'Unpaid' | 'Paid' | 'Refunded';
+  voucher_id?: number | null;
   items?: OrderItem[];
+  return_request?: unknown;
   created_at?: string;
   updated_at?: string;
 }
@@ -149,14 +163,15 @@ export interface Banner {
 export interface Voucher {
   id: number;
   code: string;
-  discount_type: 'percent' | 'fixed';
-  discount_value: number;
-  min_order_amount?: number;
-  max_discount_amount?: number;
-  usage_limit?: number;
+  discount_percent?: number | null;
+  max_discount_amount?: number | null;
+  min_order_value?: number;
+  usage_limit?: number | null;
   used_count?: number;
-  is_active: boolean;
-  expires_at?: string;
+  status: boolean;
+  apply_scope?: 'all' | 'product' | 'category';
+  start_date?: string | null;
+  end_date?: string | null;
   created_at?: string;
 }
 
@@ -164,21 +179,28 @@ export interface Sale {
   id: number;
   name: string;
   discount_percent: number;
+  apply_scope?: 'all' | 'product' | 'category';
   start_date: string;
   end_date: string;
-  is_active: boolean;
+  status: boolean;
   created_at?: string;
 }
 
 export interface Promotion {
   id: number;
-  name: string;
-  description?: string;
-  type: 'gift' | 'discount' | 'tier';
-  min_quantity?: number;
-  gift_product_id?: number;
-  discount_percent?: number;
+  buy_product_id: number;
+  gift_product_id: number;
+  buy_quantity: number;
+  gift_quantity: number;
   is_active: boolean;
+  status?: string;
+  is_stackable?: boolean;
+  max_gift_per_order?: number | null;
+  total_gift_limit?: number | null;
+  total_gifts_issued?: number;
+  priority?: number;
+  start_date?: string;
+  end_date?: string;
   created_at?: string;
 }
 

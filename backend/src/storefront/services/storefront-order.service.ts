@@ -121,6 +121,9 @@ export class StorefrontOrderService {
         try {
           const momoResponse = await getMomoPayUrl(orderId.toString(), finalTotal, `Payment for order #${orderId}`);
           if (!momoResponse?.payUrl) throw new Error(momoResponse?.message || 'Failed to get MoMo payUrl');
+          if (momoResponse.orderId) {
+            await this.prisma.order.update({ where: { id: orderId }, data: { momo_order_id: momoResponse.orderId } });
+          }
           return { message: 'Redirecting to MoMo', orderId, payUrl: momoResponse.payUrl, guestOrderAccessToken };
         } catch (error) {
           console.error('MoMo API Error:', error);
@@ -147,30 +150,47 @@ export class StorefrontOrderService {
     }
   }
 
+  private readonly orderDetailInclude = {
+    return_request: { include: { items: { include: { order_item: { include: {
+      product: { select: { name: true, name_vi: true, name_en: true, image_url: true } },
+      color: { select: { color_name: true, color_name_vi: true, color_name_en: true, image_url: true } },
+      size: { select: { size: true } },
+    } } } } } },
+    voucher: { select: { id: true, code: true, discount_percent: true, max_discount_amount: true } },
+    items: { include: {
+      promotion: { select: { id: true, buy_product_id: true, gift_product_id: true, buy_quantity: true, gift_quantity: true } },
+      product: { select: { name: true, name_vi: true, name_en: true, image_url: true } },
+      color: { select: { color_name: true, color_name_vi: true, color_name_en: true, image_url: true } },
+      size: { select: { size: true } },
+    } },
+  } as const;
+
   async getOrders(userId?: number) {
     if (!userId) throw new UnauthorizedException({ message: 'Unauthorized' });
     try {
       const orders = await this.prisma.order.findMany({
         where: { user_id: userId }, orderBy: { created_at: 'desc' },
-        include: {
-          return_request: { include: { items: { include: { order_item: { include: {
-            product: { select: { name: true, name_vi: true, name_en: true, image_url: true } },
-            color: { select: { color_name: true, color_name_vi: true, color_name_en: true, image_url: true } },
-            size: { select: { size: true } },
-          } } } } } },
-          voucher: { select: { id: true, code: true, discount_percent: true, max_discount_amount: true } },
-          items: { include: {
-            promotion: { select: { id: true, buy_product_id: true, gift_product_id: true, buy_quantity: true, gift_quantity: true } },
-            product: { select: { name: true, name_vi: true, name_en: true, image_url: true } },
-            color: { select: { color_name: true, color_name_vi: true, color_name_en: true, image_url: true } },
-            size: { select: { size: true } },
-          } },
-        },
+        include: this.orderDetailInclude,
       });
       return orders.map(formatOrderResponse);
     } catch (error) {
       console.error('Get orders error:', error);
       throw new InternalServerErrorException({ message: 'Error fetching order list' });
+    }
+  }
+
+  async getGuestOrders(guestEmail?: string) {
+    if (!guestEmail) throw new UnauthorizedException({ message: 'Unauthorized' });
+    try {
+      const orders = await this.prisma.order.findMany({
+        where: { email: { equals: guestEmail, mode: 'insensitive' } },
+        orderBy: { created_at: 'desc' },
+        include: this.orderDetailInclude,
+      });
+      return { orders: orders.map(formatOrderResponse) };
+    } catch (error) {
+      console.error('Get guest orders error:', error);
+      throw new InternalServerErrorException({ message: 'Error fetching guest order list' });
     }
   }
 
@@ -181,6 +201,9 @@ export class StorefrontOrderService {
   ) {
     try {
       const orderId = Number(body.order_id);
+      if (!Number.isInteger(orderId) || orderId <= 0) {
+        throw new BadRequestException({ message: 'Invalid order_id' });
+      }
       const newStatus = body.new_status;
       const order = await this.prisma.order.findUnique({ where: { id: orderId } });
       if (!order) throw new NotFoundException({ message: 'Order not found.' });

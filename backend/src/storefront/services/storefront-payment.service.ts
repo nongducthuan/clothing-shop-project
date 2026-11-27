@@ -261,7 +261,11 @@ export class StorefrontPaymentService {
     remoteAddress?: string,
   ) {
     try {
-      const order = await this.prisma.order.findUnique({ where: { id: Number(id) } });
+      const orderId = Number(id);
+      if (!Number.isInteger(orderId) || orderId <= 0) {
+        throw new BadRequestException({ message: 'Invalid order id' });
+      }
+      const order = await this.prisma.order.findUnique({ where: { id: orderId } });
       if (!order) throw new NotFoundException({ message: 'Order not found' });
       const isAdmin = user?.role === 'admin';
       const ownsByAccount = order.user_id !== null && user?.id === order.user_id;
@@ -308,6 +312,10 @@ export class StorefrontPaymentService {
         const momoResponse = await getMomoPayUrl(momoOrderId, Number(order.total_price), `Retry payment for order #${order.id}`);
         if (!momoResponse?.payUrl) throw new Error(momoResponse?.message || 'Failed to get MoMo payUrl');
         await commitPaymentMethodIfStillRepayable();
+        await this.prisma.order.update({
+          where: { id: order.id },
+          data: { momo_order_id: momoResponse.orderId ?? momoOrderId },
+        });
         return { payUrl: momoResponse.payUrl, payment_method: 'momo' };
       }
       if (targetMethod === 'vnpay') {

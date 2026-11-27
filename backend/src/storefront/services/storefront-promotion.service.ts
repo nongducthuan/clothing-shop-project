@@ -49,7 +49,7 @@ export class StorefrontPromotionService {
 
   async calculateCart(body: { cartItems?: unknown }) {
     try {
-      const cartItems: CartItem[] = Array.isArray(body.cartItems) ? body.cartItems.filter(isCartItem) : [];
+      const cartItems: CartItem[] = Array.isArray(body.cartItems) ? body.cartItems.filter(isCartItem).map(item => ({ ...item })) : [];
       if (!cartItems.length) throw new BadRequestException({ success: false, message: 'Empty Cart' });
       const now = new Date();
       const promotions = await this.prisma.buyXGetYPromotion.findMany({

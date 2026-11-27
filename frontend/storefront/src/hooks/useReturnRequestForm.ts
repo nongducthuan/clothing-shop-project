@@ -71,8 +71,6 @@ export function useReturnRequestForm(orders: ProfileOrder[], onSubmitted: () => 
     setShowReturnModal(true);
   };
 
-  const submittingRef = useRef(false);
-
   const handleSubmitReturn = async () => {
     // F-4: prevent double-submit
     if (submittingRef.current) return;
@@ -81,22 +79,26 @@ export function useReturnRequestForm(orders: ProfileOrder[], onSubmitted: () => 
 
     if (!bankName || !bankNumber || !accountHolder) {
       showToast(t("profile.fill_bank"), "warning");
+      submittingRef.current = false;
       return;
     }
 
     if (!reason) {
       showToast(t("lookup.no_reason_selected_err", "Vui lòng chọn lý do đổi trả."), "warning");
+      submittingRef.current = false;
       return;
     }
 
     if (!note || !String(note).trim()) {
       showToast(t("lookup.desc_required_err", "Vui lòng mô tả chi tiết vấn đề."), "warning");
+      submittingRef.current = false;
       return;
     }
 
     const currentOrder = returnOrder || orders.find((o) => o.id === returnOrderId);
     if (!currentOrder?.email) {
       showToast(t("profile.order_email_not_found"), "error");
+      submittingRef.current = false;
       return;
     }
 
@@ -104,6 +106,7 @@ export function useReturnRequestForm(orders: ProfileOrder[], onSubmitted: () => 
 
     if (returnItems.length === 0) {
       showToast(t("lookup.no_items_selected_err", "Vui lòng chọn ít nhất 1 sản phẩm để trả."), "warning");
+      submittingRef.current = false;
       return;
     }
 
@@ -133,6 +136,8 @@ export function useReturnRequestForm(orders: ProfileOrder[], onSubmitted: () => 
       console.error("Connection error:", error);
       const err = error as AxiosErr;
       showToast(translateApiMessage(err.response?.data?.message) || t("profile.connect_error"), "error");
+    } finally {
+      submittingRef.current = false;
     }
   };
 

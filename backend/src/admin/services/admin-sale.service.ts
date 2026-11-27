@@ -144,9 +144,20 @@ export class AdminSaleService {
 
   async toggleStatus(id: string, status: unknown) {
     try {
-      await this.prisma.sale.update({ where: { id: Number(id) }, data: { status: Boolean(Number(status)) } });
+      let boolStatus: boolean;
+      if (typeof status === 'boolean') {
+        boolStatus = status;
+      } else if (status === 'true' || status === '1' || status === 1) {
+        boolStatus = true;
+      } else if (status === 'false' || status === '0' || status === 0) {
+        boolStatus = false;
+      } else {
+        throw new BadRequestException({ success: false, message: 'Invalid status value. Use true or false.' });
+      }
+      await this.prisma.sale.update({ where: { id: Number(id) }, data: { status: boolStatus } });
       return { success: true, message: 'Update status successfully!' };
     } catch (error) {
+      if (error instanceof BadRequestException) throw error;
       throw new InternalServerErrorException({ success: false, message: getErrorMessage(error) });
     }
   }

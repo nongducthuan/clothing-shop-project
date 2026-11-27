@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AlertTriangle, RotateCcw } from "lucide-react";
 import { useLanguage } from "@shop/shared/context/LanguageContext";
 import type { AdminOrder } from "./orderTypes";
@@ -27,6 +27,11 @@ export default function UndoApproveModal({ order, onClose, onConfirm, formatCurr
   const [stockReturned, setStockReturned] = useState<boolean | null>(null);
   const [moneyRefunded, setMoneyRefunded] = useState<boolean | null>(null);
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    setStockReturned(null);
+    setMoneyRefunded(null);
+  }, [order?.id]);
 
   if (!order) return null;
 

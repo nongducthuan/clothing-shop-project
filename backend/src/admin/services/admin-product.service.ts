@@ -200,7 +200,9 @@ export class AdminProductService {
 
   async removeProduct(id: string) {
     try {
-      await this.prisma.product.update({ where: { id: Number(id) }, data: { is_active: false } });
+      const productId = Number(id);
+      if (!Number.isInteger(productId) || productId <= 0) throw new BadRequestException({ message: 'Invalid product id' });
+      await this.prisma.product.update({ where: { id: productId }, data: { is_active: false } });
       return { affected: 1 };
     } catch (error) {
       console.error(error);

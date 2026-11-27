@@ -16,19 +16,26 @@ export class AdminProductVariantService {
   async addColor(productId: string, payload: ColorPayload) {
     try {
       const { color_name, color_name_vi, color_name_en, color_code, image_url } = payload;
-      const baseName = color_name || color_name_vi || color_name_en;
+      const baseName = (color_name || color_name_vi || color_name_en || '').trim();
+      if (!baseName) {
+        throw new BadRequestException({ message: 'Color name is required' });
+      }
+      if (!image_url || !String(image_url).trim()) {
+        throw new BadRequestException({ message: 'Color image_url is required' });
+      }
       const color = await this.prisma.productColor.create({
         data: {
           product_id: Number(productId),
-          color_name: baseName as string,
+          color_name: baseName,
           color_name_vi: color_name_vi || baseName || null,
           color_name_en: color_name_en || baseName || null,
           color_code,
-          image_url: image_url as string,
+          image_url: String(image_url),
         },
       });
       return { id: color.id };
     } catch (error) {
+      if (error instanceof BadRequestException) throw error;
       console.error(error);
       throw new InternalServerErrorException({ message: 'Server error' });
     }
@@ -54,8 +61,8 @@ export class AdminProductVariantService {
     try {
       const { size, stock, increment } = payload;
       const stockNumber = Number(stock);
-      if (!size || typeof size !== 'string') {
-        throw new BadRequestException({ message: 'Size is required' });
+      if (!size || typeof size !== 'string' || !Object.values(SizeEnum).includes(size as SizeEnum)) {
+        throw new BadRequestException({ message: 'Invalid size. Must be one of: XS, S, M, L, XL, XXL' });
       }
       if (!Number.isInteger(stockNumber) || stockNumber < 0) {
         throw new BadRequestException({ message: 'Stock must be a non-negative integer' });

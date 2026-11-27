@@ -2,6 +2,11 @@ import type { FormattableOrder } from '../types/orderTypes';
 import { ENUM_TO_DISPLAY_STATUS } from '../constants/orderStatus';
 import { getReturnDeadline, isWithinReturnWindow } from '../constants/returnPolicy';
 
+const safeNum = (val: unknown, fallback = 0): number => {
+    const n = Number(val);
+    return Number.isFinite(n) ? n : fallback;
+};
+
 /** Chuyển đổi Prisma order row → response shape dùng chung cho getOrders và verifyOtpAndGetOrders. */
 export function formatOrderResponse(order: FormattableOrder) {
     return {
@@ -10,10 +15,10 @@ export function formatOrderResponse(order: FormattableOrder) {
         name: order.name,
         phone: order.phone,
         address: order.address,
-        total_price: Number(order.total_price),
-        shipping_fee: Number(order.shipping_fee || 0),
-        membership_discount: Number(order.membership_discount || 0),
-        voucher_discount: Number(order.voucher_discount || 0),
+        total_price: safeNum(order.total_price),
+        shipping_fee: safeNum(order.shipping_fee),
+        membership_discount: safeNum(order.membership_discount),
+        voucher_discount: safeNum(order.voucher_discount),
         status: ENUM_TO_DISPLAY_STATUS[order.status] || order.status,
         payment_method: order.payment_method,
         payment_status: order.payment_status,

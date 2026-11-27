@@ -70,9 +70,9 @@ describe('AdminProductService.getProducts – phân trang + lọc chạy ở ser
     expect(findManyArgs().where).toEqual({
       is_active: true,
       OR: [
-        { name: { contains: 'ao' } },
-        { name_vi: { contains: 'ao' } },
-        { name_en: { contains: 'ao' } },
+        { name: { contains: 'ao', mode: 'insensitive' } },
+        { name_vi: { contains: 'ao', mode: 'insensitive' } },
+        { name_en: { contains: 'ao', mode: 'insensitive' } },
       ],
     });
   });
